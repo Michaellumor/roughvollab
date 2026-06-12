@@ -1,0 +1,114 @@
+cff-version: 1.2.0
+message: >
+  If you use RoughVolLab in your research, please cite it using
+  the metadata below. This file is machine-readable by GitHub,
+  Zenodo, and most reference managers.
+
+title: >
+  RoughVolLab: Simulation, pricing, and optimal control
+  under rough stochastic volatility
+
+abstract: >
+  RoughVolLab is an open-source Python platform providing a unified
+  codebase for rough volatility research. It covers four layers:
+  (1) fractional Brownian motion simulation and Hurst estimation;
+  (2) multilevel Monte Carlo pricing of Asian and path-dependent
+  options under rough dynamics; (3) non-linear market friction
+  modelling including Almgren-Chriss impact and rough execution
+  slippage; and (4) a risk-aware deep hedging engine using path
+  signature features and CVaR-sensitive reinforcement learning.
+  The software accompanies an independent research programme and
+  each module is built to publication standard and is individually
+  citable.
+
+authors:
+  - family-names: "Lumor"
+    given-names: "Michael"
+    affiliation: >
+      Department of Mathematics,
+      University of Salford
+    orcid: https://orcid.org/0009-0000-0326-3891
+
+version: "0.1.0-research"
+date-released: "2026-06-12"
+
+repository-code: "https://github.com/Michaellumor/roughvollab"
+url: "https://github.com/Michaellumor/roughvollab"
+license: MIT
+
+keywords:
+  - rough volatility
+  - fractional Brownian motion
+  - stochastic volatility
+  - multilevel Monte Carlo
+  - Asian options
+  - deep hedging
+  - reinforcement learning
+  - path signatures
+  - stochastic optimal control
+  - quantitative finance
+  - mathematical finance
+
+references:
+  - type: article
+    title: "Volatility is rough"
+    authors:
+      - family-names: Gatheral
+        given-names: Jim
+      - family-names: Jaisson
+        given-names: Thibault
+      - family-names: Rosenbaum
+        given-names: Mathieu
+    journal: "Quantitative Finance"
+    year: 2018
+    doi: "10.1080/14697688.2017.1393551"
+
+  - type: article
+    title: >
+      Hybrid scheme for Brownian semistationary processes
+    authors:
+      - family-names: Bennedsen
+        given-names: Mikkel
+      - family-names: Lunde
+        given-names: Asger
+      - family-names: Pakkanen
+        given-names: Mikko S.
+    journal: "Finance and Stochastics"
+    year: 2017
+    doi: "10.1007/s00780-017-0327-7"
+
+  - type: article
+    title: "Multilevel Monte Carlo path simulation"
+    authors:
+      - family-names: Giles
+        given-names: Michael B.
+    journal: "Operations Research"
+    year: 2008
+    doi: "10.1287/opre.1070.0496"
+
+  - type: article
+    title: "Deep hedging"
+    authors:
+      - family-names: Buehler
+        given-names: Hans
+      - family-names: Gonon
+        given-names: Lukas
+      - family-names: Teichmann
+        given-names: Josef
+      - family-names: Wood
+        given-names: Ben
+    journal: "Quantitative Finance"
+    year: 2019
+    doi: "10.1080/14697688.2019.1571683"
+
+  - type: article
+    title: >
+      The characteristic function of rough Heston models
+    authors:
+      - family-names: El Euch
+        given-names: Omar
+      - family-names: Rosenbaum
+        given-names: Mathieu
+    journal: "Mathematical Finance"
+    year: 2019
+    doi: "10.1111/mafi.12173"
