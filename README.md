@@ -21,6 +21,11 @@
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
 
+Each layer is mapped to the undergraduate and postgraduate mathematics it
+draws on, with current build status:
+
+![RoughVolLab module-to-layer map](roughvollab_module_map.png)
+
 ---
 
 ## Quick start
