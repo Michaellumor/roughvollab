@@ -29,7 +29,8 @@ by a run that actually happened.
 |---|---|---|---|
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit: simulation-grounded bias study, then real BTC/ETH + equity data | 🧭 specced 2026-06-13 | — |
+| `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. §1 GJR + oracle gate done (+`test_layer1c.py`); §2–4 pending | 🔄 §1 complete | 2026-06-13 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -338,6 +339,25 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   adds no new repo. Agreed sequence: Year 2 marks → L1-1 fix +
   pytest/CI → Layer 1c → P3 arXiv note + JOSS submission. Marks remain
   first; one focus at a time.
+- **D11** *(2026-06-13)* Started Layer 1c the disciplined way
+  (extract-and-test first). Created `roughvol_core.py` — the single
+  trusted rough-path engine, lifted verbatim from validated L1b and
+  pinned by `test_roughvol_core.py` (18 tests). Two are L1-1 regression
+  guards: empirical variance must match the discrete formula, and forward
+  variance E[V_t]=ξ₀ must hold — the bug the clobber reintroduced cannot
+  return silently again. Added `rough_log_variance_paths` (returns the
+  log-vol path, the object estimators consume). Edge case found + fixed:
+  at H=0.5 the κ=0 weight exponent a→0 divides by zero; handled as the
+  flat Brownian kernel — which is also Layer 1c's smooth null. First
+  estimator (GJR structure-function) built with a Rung-0 oracle gate;
+  passes for H∈{0.05,…,0.70} (`test_layer1c.py`, +6 tests). **Calibration
+  finding:** the spec's flat "|bias|<0.01 for every estimator" is NOT
+  achievable for GJR even on clean spot-vol paths — it carries a
+  systematic positive finite-lag bias growing as H→0 (≈+0.06 at H=0.05,
+  ≈+0.006 at H=0.3, essentially unbiased for H≥0.3). This is a real
+  estimator property, not a bug; the gate is now per-regime
+  (`ORACLE_TOLERANCE`), and quantifying this bias is itself part of the
+  audit's contribution. Figure: output/layer1c_oracle_gate.png.
 
 ---
 
