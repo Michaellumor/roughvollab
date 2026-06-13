@@ -18,17 +18,6 @@
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
 
-The framework is systematically partitioned into independent, verifiable research layers, mapped directly to undergraduate and postgraduate milestones:
-
-*   `layer1_rough_vol.py`: Fractional Brownian Motion generation via Exact Cholesky and fast Riemann-Liouville Volterra kernel path structures.  
-    **Status**: `✅ complete (v1.0)`
-*   `layer1b_mlmc_asian.py`: Multi-Level Monte Carlo (MLMC) estimator arrays for Asian path-dependent option payouts, including an empirical analysis of the Giles complexity rate decay ($\beta \to 2H$) under ultra-rough environments.  
-    **Status**: `✅ complete (v1.0)`
-*   `layer2_frictions.py`: Implementation of non-linear Almgren-Chriss execution dynamics, fractional delays, and a numerical verification framework detailing the formal breakdown of the classical Markovian HJB partial differential operator.  
-    **Status**: `✅ complete (v1.0)`
-*   `layer3_rl_hedging.py`: Risk-aware optimization and control engine utilizing low-order Chen Iterated Integrals (Path Signatures) and localized Temporal Difference matrix optimization constrained by a Conditional Value-at-Risk (CVaR) downside tail-risk handler.  
-    **Status**: `✅ complete (v1.0)`
-
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
 
@@ -69,16 +58,6 @@ rough volatility needs specialised estimators, and motivates the antithetic
 and conditional-MC couplings on the roadmap.
 
 ![Measured beta vs Hurst exponent](layer1b_beta_vs_H.png)
-
-## 📊 Generated Diagnostic Suite
-
-Upon running the unified modules, the computational engine automatically populates the `./output/` directory with the following validation artifacts:
-
-1.  `section1_fbm.png`: Theoretical variance scaling grids vs. exact fractional path topologies.
-2.  `layer1b_mlmc.png`: Variance reduction and error decay tracking across discrete MLMC grids.
-3.  `layer1b_beta_vs_H.png`: Asymptotic decay mapping showing the structural collapse of the standard Giles regime ($\beta < 1$) under low Hurst environments.
-4.  `layer2_4_breakdown.png`: Verification of the non-Markovian residue field explosion proving the insufficiency of continuous-time classical PDEs.
-5.  `layer3_control_policy.png`: Comparative allocation phase-portraits demonstrating the dynamic safety shielding of the CVaR-constrained agent vs. risk-neutral models.
 
 ## Key references
 
