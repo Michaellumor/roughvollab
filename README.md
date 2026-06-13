@@ -59,6 +59,8 @@ and conditional-MC couplings on the roadmap.
 
 ![Measured beta vs Hurst exponent](layer1b_beta_vs_H.png)
 
+---
+
 ## Key references
 
 - Gatheral, Jaisson & Rosenbaum (2018). *Volatility is rough.* Quantitative Finance.
