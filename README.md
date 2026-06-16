@@ -12,8 +12,10 @@
 
 | File | Layer | Status |
 |------|-------|--------|
+| `roughvol_core.py` | Shared rough-path engine (κ=0 Volterra), pinned by tests | ✅ 18 tests pass |
 | `layer1_rough_vol.py` | fBm simulation, hybrid scheme, Hurst estimation | ✅ complete |
 | `layer1b_mlmc_asian.py` | MLMC Asian option pricing, complexity under roughness | ✅ complete (v0.1) |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + oracle gate done; §2–4 next) | 🔄 §1 complete |
 | `layer2_frictions.py` | Almgren-Chriss, rough slippage, Markov breakdown | 🔜 coming |
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
@@ -64,15 +66,34 @@ and conditional-MC couplings on the roadmap.
 
 ![Measured beta vs Hurst exponent](layer1b_beta_vs_H.png)
 
+### Layer 1c — estimator audit (first finding)
+
+Building the roughness-estimator audit on the same validated engine, the
+Gatheral-Jaisson-Rosenbaum structure-function estimator was run on clean
+simulated paths with *known* Hurst exponent (the Rung-0 oracle check). It
+recovers H across the roughness range, but with a systematic positive
+finite-lag bias that grows as H → 0 — roughly +0.06 at H = 0.05, falling to
+near-zero by H = 0.3. This is a real property of the estimator on perfect
+data, before any market microstructure noise enters; quantifying it, and
+how it interacts with the noise of estimating volatility from returns, is
+the goal of Layer 1c (see [`ROADMAP.md`](ROADMAP.md)).
+
 ---
 
 ## Key references
 
-- Gatheral, Jaisson & Rosenbaum (2018). *Volatility is rough.* Quantitative Finance.
-- Bennedsen, Lunde & Pakkanen (2017). *Hybrid scheme for Brownian semistationary processes.* Finance and Stochastics.
-- Giles (2008). *Multilevel Monte Carlo path simulation.* Operations Research.
-- Buehler et al. (2019). *Deep hedging.* Quantitative Finance.
-- El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance.
+Papers whose methods are implemented in the current code:
+
+- Gatheral, Jaisson & Rosenbaum (2018). *Volatility is rough.* Quantitative Finance. — RFSV model and the structure-function roughness estimator (Layers 1, 1c).
+- Bayer, Friz & Gatheral (2016). *Pricing under rough volatility.* Quantitative Finance. — the rough Bergomi model priced in Layer 1b.
+- Bennedsen, Lunde & Pakkanen (2017). *Hybrid scheme for Brownian semistationary processes.* Finance and Stochastics. — the κ=0 hybrid scheme in `roughvol_core.py`.
+- Giles (2008). *Multilevel Monte Carlo path simulation.* Operations Research. — the MLMC method underpinning Layer 1b.
+- Cont & Das (2022). *Rough volatility: fact or artefact?* — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
+
+Planned layers (not yet implemented — listed to indicate direction):
+
+- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — basis for the RL hedging engine (Layer 3).
+- El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance. — for rough Heston pricing and calibration (Layer 4).
 
 ---
 
