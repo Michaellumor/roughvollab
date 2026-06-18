@@ -98,6 +98,54 @@ def test_pvariation_accepts_1d_input():
     assert 0.0 < H_est < 0.6
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Section 3 — MF-DFA estimator
+# ──────────────────────────────────────────────────────────────────────────
+
+from layer1c_roughness_audit import mfdfa_hurst, MFDFA_TOLERANCE
+
+
+@pytest.mark.parametrize("H_true", [0.10, 0.30, 0.45])
+def test_mfdfa_recovers_known_H_within_tolerance(H_true):
+    """Rung-0 gate as a unit test: MF-DFA must recover H within its
+    calibrated per-regime tolerance on clean spot-vol paths."""
+    _, logV = rough_log_variance_paths(8192, H_true, 120, eta=1.5,
+                                       rng=np.random.default_rng(303))
+    H_est = mfdfa_hurst(logV)
+    assert abs(H_est - H_true) <= MFDFA_TOLERANCE[H_true], (
+        f"H_true={H_true}: estimate {H_est:.4f} outside "
+        f"tolerance {MFDFA_TOLERANCE[H_true]}"
+    )
+
+
+def test_mfdfa_bias_is_negative_opposite_to_others():
+    """MF-DFA's distinctive signature: it UNDER-estimates (negative bias) at
+    small H — OPPOSITE to GJR and Cont–Das. This sign difference is the key
+    audit finding; if it flips, the estimators' relationship has changed."""
+    _, logV = rough_log_variance_paths(8192, 0.05, 120, eta=1.5,
+                                       rng=np.random.default_rng(303))
+    bias = mfdfa_hurst(logV) - 0.05
+    assert bias < 0, f"MF-DFA bias at H=0.05 should be negative, got {bias:+.4f}"
+
+
+def test_mfdfa_multifractal_h_flat_on_monofractal():
+    """Rough Bergomi is monofractal: h(q) should be ≈ constant across q.
+    Check h(2) and h(3) are close (the multifractality diagnostic)."""
+    _, logV = rough_log_variance_paths(8192, 0.1, 120, eta=1.5,
+                                       rng=np.random.default_rng(303))
+    h2 = mfdfa_hurst(logV, q=2.0) + 1.0       # back to raw h(q)
+    h3 = mfdfa_hurst(logV, q=3.0) + 1.0
+    assert abs(h2 - h3) < 0.10, f"h(2)={h2:.3f}, h(3)={h3:.3f} — not monofractal"
+
+
+def test_mfdfa_accepts_1d_input():
+    """Single-path (1-D) input must work."""
+    _, logV = rough_log_variance_paths(8192, 0.3, 1, eta=1.5,
+                                       rng=np.random.default_rng(11))
+    H_est = mfdfa_hurst(logV[0])
+    assert 0.0 < H_est < 0.6
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. §1 GJR + §2 Cont–Das p-variation done, both through oracle gate (+`test_layer1c.py`); §3 MF-DFA + corruption ladder pending | 🔄 §1–2 complete | 2026-06-18 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. §1 GJR + §2 Cont–Das + §3 MF-DFA — all three core estimators through oracle gate (+`test_layer1c.py`, 35 tests); corruption ladder pending | 🔄 §1–3 complete | 2026-06-18 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -376,6 +376,24 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   precisely is itself evidence relevant to the fact-or-artefact debate, and
   strengthens publication seed P3. Figure overlays both biases:
   output/layer1c_pvariation_gate.png.
+- **D13** *(2026-06-18)* Built Layer 1c §3 — the MF-DFA estimator
+  (`mfdfa_hurst`) — through the same Rung-0 oracle gate, completing the
+  three core estimators. Steps: profile (cumulative sum) → non-overlapping
+  windows → detrend each (fit and SUBTRACT an order-1 polynomial; the trend
+  is removed, not measured) → q-th order fluctuation F_q(s) → slope is the
+  generalised Hurst h(q); since the profile integrates the ≈fBm log-vol,
+  H = h(2) − 1. Gate passes for H∈{0.05,…,0.45} (`test_layer1c.py`, +6
+  tests → 35 total). **Headline finding — sharper than §2's:** MF-DFA's
+  bias runs OPPOSITE to GJR and Cont–Das. Those two OVER-estimate roughness
+  at small H (positive bias); MF-DFA UNDER-estimates (negative bias, ≈−0.023
+  at H=0.05 → −0.009 at H=0.45), and its bias is INTRINSIC (barely changes
+  with n, unlike the partly-finite-sample bias of the other two). That three
+  independent estimators disagree even in the SIGN of their small-H bias is
+  strong evidence that small-H roughness measurements are estimator-
+  dependent — a sharper point for the fact-or-artefact debate than mere
+  agreement, and a stronger spine for publication seed P3. Figure overlays
+  all three biases: output/layer1c_mfdfa_gate.png. Three core estimators now
+  validated; corruption ladder (Rung 1 = RV proxy first) is the next arc.
 
 ---
 
