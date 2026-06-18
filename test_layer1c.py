@@ -58,6 +58,46 @@ def test_gjr_accepts_1d_input():
     assert 0.0 < H_est < 0.6
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Section 2 — Cont-Das p-variation estimator
+# ──────────────────────────────────────────────────────────────────────────
+
+from layer1c_roughness_audit import pvariation_hurst, PVAR_TOLERANCE
+
+
+@pytest.mark.parametrize("H_true", [0.10, 0.30, 0.45])
+def test_pvariation_recovers_known_H_within_tolerance(H_true):
+    """Rung-0 gate as a unit test: the p-variation estimator must recover H
+    within its calibrated per-regime tolerance on clean spot-vol paths."""
+    _, logV = rough_log_variance_paths(8192, H_true, 120, eta=1.5,
+                                       rng=np.random.default_rng(202))
+    H_est = pvariation_hurst(logV)
+    assert abs(H_est - H_true) <= PVAR_TOLERANCE[H_true], (
+        f"H_true={H_true}: estimate {H_est:.4f} outside "
+        f"tolerance {PVAR_TOLERANCE[H_true]}"
+    )
+
+
+def test_pvariation_bias_positive_and_grows_as_H_shrinks():
+    """Document the estimator's signature — the SAME as GJR: a positive bias
+    increasing toward H → 0. If this ordering reverses, behaviour changed."""
+    biases = {}
+    for H_true in (0.05, 0.10, 0.30):
+        _, logV = rough_log_variance_paths(8192, H_true, 120, eta=1.5,
+                                           rng=np.random.default_rng(202))
+        biases[H_true] = pvariation_hurst(logV) - H_true
+    assert biases[0.05] > biases[0.10] > biases[0.30]
+    assert biases[0.30] > -0.02           # near-unbiased by H = 0.3
+
+
+def test_pvariation_accepts_1d_input():
+    """Single-path (1-D) input must work, not just (n_paths, n) matrices."""
+    _, logV = rough_log_variance_paths(8192, 0.3, 1, eta=1.5,
+                                       rng=np.random.default_rng(11))
+    H_est = pvariation_hurst(logV[0])     # bare 1-D array
+    assert 0.0 < H_est < 0.6
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. §1 GJR + oracle gate done (+`test_layer1c.py`); §2–4 pending | 🔄 §1 complete | 2026-06-13 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. §1 GJR + §2 Cont–Das p-variation done, both through oracle gate (+`test_layer1c.py`); §3 MF-DFA + corruption ladder pending | 🔄 §1–2 complete | 2026-06-18 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -358,6 +358,24 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   estimator property, not a bug; the gate is now per-regime
   (`ORACLE_TOLERANCE`), and quantifying this bias is itself part of the
   audit's contribution. Figure: output/layer1c_oracle_gate.png.
+- **D12** *(2026-06-18)* Built Layer 1c §2 — the Cont–Das normalised
+  p-variation estimator (`pvariation_hurst`) — through the same Rung-0
+  oracle gate, the §1 way (probe → build → validate → test → log).
+  Mechanism: sweep power p; the p-variation V_p(s) ∝ s^{1−pH} has scaling
+  exponent (1−pH) that crosses zero at the critical p* = 1/H, so H = 1/p*.
+  Model-free by construction (does NOT assume fBm) — exactly why Cont & Das
+  built it: to referee the roughness claim without the circularity of
+  presupposing a rough model. Gate passes for H∈{0.05,…,0.45}
+  (`test_layer1c.py`, +5 tests → 29 total). **Headline finding:** the
+  p-variation estimator carries the SAME bias signature as GJR — positive,
+  growing as H→0 (≈+0.07 at H=0.05, ≈+0.009 at H=0.3, essentially unbiased
+  by H=0.45). Build probe established it is PART finite-sample (bias at
+  H=0.05 shrank +0.089→+0.068 going n=4096→8192) and PART intrinsic to the
+  rough regime. That two *independent* estimators — one assuming fBm (GJR),
+  one model-free (Cont–Das) — agree small-H roughness is hard to measure
+  precisely is itself evidence relevant to the fact-or-artefact debate, and
+  strengthens publication seed P3. Figure overlays both biases:
+  output/layer1c_pvariation_gate.png.
 
 ---
 
