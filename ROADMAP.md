@@ -357,7 +357,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   ≈+0.006 at H=0.3, essentially unbiased for H≥0.3). This is a real
   estimator property, not a bug; the gate is now per-regime
   (`ORACLE_TOLERANCE`), and quantifying this bias is itself part of the
-  audit's contribution. Figure: output/layer1c_oracle_gate.png.
+  audit's contribution. Figure: layer1c_oracle_gate.png.
 - **D12** *(2026-06-18)* Built Layer 1c §2 — the Cont–Das normalised
   p-variation estimator (`pvariation_hurst`) — through the same Rung-0
   oracle gate, the §1 way (probe → build → validate → test → log).
@@ -375,7 +375,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   one model-free (Cont–Das) — agree small-H roughness is hard to measure
   precisely is itself evidence relevant to the fact-or-artefact debate, and
   strengthens publication seed P3. Figure overlays both biases:
-  output/layer1c_pvariation_gate.png.
+  layer1c_pvariation_gate.png.
 - **D13** *(2026-06-18)* Built Layer 1c §3 — the MF-DFA estimator
   (`mfdfa_hurst`) — through the same Rung-0 oracle gate, completing the
   three core estimators. Steps: profile (cumulative sum) → non-overlapping
@@ -392,7 +392,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   strong evidence that small-H roughness measurements are estimator-
   dependent — a sharper point for the fact-or-artefact debate than mere
   agreement, and a stronger spine for publication seed P3. Figure overlays
-  all three biases: output/layer1c_mfdfa_gate.png. Three core estimators now
+  all three biases: layer1c_mfdfa_gate.png. Three core estimators now
   validated; corruption ladder (Rung 1 = RV proxy first) is the next arc.
 - **D14** *(2026-06-19)* Built corruption ladder **Rung 1 — the RV proxy**
   (`rung1_rv_proxy`, `realized_log_variance`), the decisive test of the
@@ -417,7 +417,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   p-variation zero-crossing, returning nan rather than crashing — itself
   information (the proxy can be too corrupt to resolve). Strongly advances
   publication seed P3 (this is arguably its centrepiece result). Figure:
-  output/layer1c_rung1_rvproxy.png. Next rungs: microstructure noise (R2),
+  layer1c_rung1_rvproxy.png. Next rungs: microstructure noise (R2),
   jumps (R3 — use the captured fractional-jump-diffusion controlled null),
   finite-sample (R4).
 - **D15** *(2026-06-19)* Extended Rung 1 with the **bias envelope**
@@ -442,7 +442,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   that murkiness is itself the finding — it explains why the fact-or-artefact
   debate is so hard to settle where it actually lives. +2 tests (collapse at
   noisy window, recovery at cleaner window) → 40 total. Figure:
-  output/layer1c_rung1_envelope.png.
+  layer1c_rung1_envelope.png.
 
 ---
 
