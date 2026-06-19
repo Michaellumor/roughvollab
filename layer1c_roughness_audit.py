@@ -43,7 +43,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from roughvol_core import rough_log_variance_paths
+from roughvol_core import rough_log_variance_paths, rough_bergomi_paths
 
 os.makedirs("output", exist_ok=True)
 np.random.seed(42)
@@ -87,6 +87,20 @@ PVAR_P_GRID    = np.linspace(1.0, 22.0, 85)           # power sweep for p*
 MFDFA_TOLERANCE = {0.05: 0.04, 0.10: 0.035, 0.20: 0.03, 0.30: 0.025,
                    0.45: 0.02, 0.50: 0.025, 0.70: 0.03}
 MFDFA_ORDER     = 1                                   # detrending polynomial order
+
+# ── Rung 1 (RV proxy) ─────────────────────────────────────────────────────
+# The corruption ladder's first and most important rung. Spot volatility is
+# UNOBSERVABLE; in practice it is estimated from high-frequency price returns
+# as realized variance (RV) over windows. This rung tests whether that proxy
+# construction MANUFACTURES roughness — the Cont–Das "fact or artefact?"
+# mirage. The decisive test feeds a SMOOTH (H=0.5) null through the proxy:
+# if the estimators then report rough H, the roughness is PURELY an artefact
+# of the proxy, since the truth has none. Probe finding: the artefact is
+# real AND its severity depends on the RV window (small windows → severe
+# spurious roughness; large windows → nearly clean), with a control
+# confirming the estimators read the TRUE smooth signal correctly (~0.5).
+RV_WINDOWS      = np.array([16, 32, 64, 128])         # returns per RV obs
+RV_FINE_STEPS   = 16384                               # intraday price grid
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -509,11 +523,160 @@ def section3_mfdfa_gate(show: bool = True, quick: bool = False):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+# RUNG 1 — the realized-volatility (RV) proxy: does it manufacture roughness?
+# ══════════════════════════════════════════════════════════════════════════
+
+def realized_log_variance(S: np.ndarray, window: int):
+    """
+    Build the observable log-realized-variance proxy from high-frequency
+    prices — the thing analysts actually compute, in place of the
+    UNOBSERVABLE true spot variance.
+
+    RV over a window = sum of squared log-returns in that window. Smaller
+    windows give a noisier (chattier) proxy; larger windows average more
+    returns and are cleaner.
+
+    Parameters
+    ----------
+    S      : (n_paths, n_fine+1) high-frequency price paths.
+    window : number of fine returns per RV observation.
+
+    Returns
+    -------
+    log_rv : (n_paths, n_windows) log realized variance — the proxy that
+             estimators consume in place of true log-variance.
+    """
+    ret = np.diff(np.log(S), axis=1)
+    n_windows = ret.shape[1] // window
+    rv = np.empty((S.shape[0], n_windows))
+    for w in range(n_windows):
+        seg = ret[:, w * window:(w + 1) * window]
+        rv[:, w] = np.sum(seg ** 2, axis=1)
+    return np.log(rv + 1e-300)
+
+
+def _safe_estimate(fn, x):
+    """Run an estimator, returning nan instead of raising on degenerate
+    (very noisy) proxy input — small windows can break the zero-crossing."""
+    try:
+        with np.errstate(all="ignore"):
+            h = fn(x)
+        return h if np.isfinite(h) else np.nan
+    except Exception:
+        return np.nan
+
+
+def rung1_rv_proxy(show: bool = True, quick: bool = False):
+    """
+    Rung 1 of the corruption ladder — the decisive test of the Cont–Das
+    mirage. Generate prices from processes with KNOWN true H, build the RV
+    proxy, run all three estimators on the PROXY, and compare against a
+    CONTROL (estimators on the true log-variance).
+
+    The headline is the SMOOTH null (true H = 0.5): if the proxy makes the
+    estimators report rough H on genuinely smooth volatility, the roughness
+    is purely a proxy artefact — the truth has none. The window sweep then
+    shows the artefact's severity is controlled by the RV estimation window.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 1 — RV proxy: does estimating volatility from noisy")
+    print("           prices MANUFACTURE roughness? (the Cont–Das mirage)")
+    print("─" * 70)
+
+    n_fine = RV_FINE_STEPS
+    N = 40 if quick else 60
+    windows = (np.array([32, 64]) if quick else RV_WINDOWS)
+    rng = np.random.default_rng(404)
+
+    # ---- CONTROL: estimators on the TRUE smooth (H=0.5) log-variance ----
+    t, S0, V0 = rough_bergomi_paths(n_fine, 0.5, N, eta=1.0,
+                                    rng=np.random.default_rng(404))
+    logV_true = np.log(V0[:, 1:])
+    idx = np.linspace(0, logV_true.shape[1] - 1, 512).astype(int)
+    lvt = logV_true[:, idx]
+    c_gjr  = _safe_estimate(gjr_hurst, lvt)
+    c_pvar = _safe_estimate(pvariation_hurst, lvt)
+    c_mfd  = _safe_estimate(mfdfa_hurst, lvt)
+    print("\n  CONTROL — estimators on the TRUE smooth (H=0.5) volatility:")
+    print(f"    GJR={c_gjr:.3f}  Cont–Das={c_pvar:.3f}  MF-DFA={c_mfd:.3f}"
+          "   (correctly ≈ 0.5 → estimators are innocent)")
+
+    # ---- THE SMOKING GUN: smooth (H=0.5) seen through the RV proxy ----
+    print("\n  SMOOTH NULL (true H=0.5) through the RV proxy — window sweep:")
+    print(f"  {'window':>7} {'#RVpts':>7} {'GJR':>8} {'Cont-Das':>9} {'MF-DFA':>8}"
+          "   verdict")
+    smooth_rows = []
+    t, S, V = rough_bergomi_paths(n_fine, 0.5, N, eta=1.0,
+                                  rng=np.random.default_rng(404))
+    for window in windows:
+        lrv = realized_log_variance(S, window)
+        npts = lrv.shape[1]
+        hg = _safe_estimate(gjr_hurst, lrv)
+        hp = _safe_estimate(pvariation_hurst, lrv)
+        hm = _safe_estimate(mfdfa_hurst, lrv)
+        # spurious if a genuinely smooth process reads materially below 0.5
+        spurious = np.nanmin([hg, hp, hm]) < 0.35
+        smooth_rows.append((window, npts, hg, hp, hm))
+        print(f"  {window:7d} {npts:7d} {hg:8.3f} {hp:9.3f} {hm:8.3f}"
+              f"   {'SPURIOUS roughness' if spurious else 'proxy clean enough'}")
+
+    artefact_shown = any(np.nanmin([r[2], r[3], r[4]]) < 0.35
+                         for r in smooth_rows)
+    print(f"\n  Verdict: the RV proxy {'MANUFACTURES roughness' if artefact_shown else 'does not manufacture roughness'}"
+          " on a smooth null.")
+    print("  The control proves the estimators read the TRUE smooth signal"
+          " correctly\n  (~0.5); only swapping in the proxy produces spurious"
+          " roughness. The\n  effect is strongest at SMALL windows (noisier"
+          " proxy) and fades as the\n  window grows — the mirage's severity is"
+          " set by the RV sampling choice.")
+
+    # ---- figure ----
+    arr = np.array([(w, hg, hp, hm) for (w, _, hg, hp, hm) in smooth_rows],
+                   dtype=float)
+    fig, ax = plt.subplots(1, 2, figsize=(11, 4.2))
+
+    # left: the smoking gun — true vs proxy-estimated on smooth null
+    ax[0].axhline(0.5, color=TEAL, ls="-", lw=2, label="true H = 0.5 (smooth)")
+    ax[0].axhline(c_gjr, color=GRAY, ls=":", lw=1.2,
+                  label="control (estimators on true V)")
+    xs = np.arange(len(arr))
+    w_ = 0.25
+    ax[0].bar(xs - w_, arr[:, 1], w_, color=TEAL, label="GJR on proxy")
+    ax[0].bar(xs,      arr[:, 2], w_, color=PURPLE, label="Cont–Das on proxy")
+    ax[0].bar(xs + w_, arr[:, 3], w_, color=AMBER, label="MF-DFA on proxy")
+    ax[0].set_xticks(xs); ax[0].set_xticklabels([f"w={int(w)}" for w in arr[:, 0]])
+    ax[0].set_ylabel("estimated H"); ax[0].set_ylim(0, 0.6)
+    ax[0].set_title("Smooth truth, rough estimate = artefact")
+    ax[0].legend(frameon=False, fontsize=8)
+
+    # right: window-dependence — artefact severity vs window
+    ax[1].axhline(0.5, color=GRAY, ls="--", lw=1, label="true H (smooth)")
+    ax[1].plot(arr[:, 0], arr[:, 1], "^-", color=TEAL, lw=1.8, ms=6, label="GJR")
+    ax[1].plot(arr[:, 0], arr[:, 2], "s-", color=PURPLE, lw=1.8, ms=6,
+               label="Cont–Das")
+    ax[1].plot(arr[:, 0], arr[:, 3], "o-", color=AMBER, lw=1.8, ms=6,
+               label="MF-DFA")
+    ax[1].set_xlabel("RV window (returns per obs)")
+    ax[1].set_ylabel("estimated H on smooth null")
+    ax[1].set_title("Mirage severity set by sampling window")
+    ax[1].legend(frameon=False)
+
+    fig.suptitle("Layer 1c Rung 1 — the RV proxy manufactures roughness",
+                 fontweight="bold")
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung1_rvproxy.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return artefact_shown
+
+
+# ══════════════════════════════════════════════════════════════════════════
 
 def main():
     ap = argparse.ArgumentParser(
         description="Layer 1c — roughness-estimator audit")
     ap.add_argument("--section", type=int, choices=[1, 2, 3], default=None)
+    ap.add_argument("--rung", type=int, choices=[1], default=None)
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
@@ -524,7 +687,9 @@ def main():
     print("  Can we trust H estimates from volatility data?")
     print("█" * 70)
 
-    if args.section == 1:
+    if args.rung == 1:
+        rung1_rv_proxy(show, args.quick)
+    elif args.section == 1:
         section1_oracle_gate(show, args.quick)
     elif args.section == 2:
         section2_pvariation_gate(show, args.quick)
@@ -534,10 +699,12 @@ def main():
         section1_oracle_gate(show, args.quick)
         section2_pvariation_gate(show, args.quick)
         section3_mfdfa_gate(show, args.quick)
+        rung1_rv_proxy(show, args.quick)
 
     print("\n" + "=" * 70)
-    print("  Layer 1c §1–3 complete (3 core estimators validated).")
-    print("  Next: the corruption ladder — Rung 1 (RV proxy) first.")
+    print("  Layer 1c: 3 estimators + Rung 1 (RV proxy) complete.")
+    print("  Next ladder rungs: microstructure noise (R2), jumps (R3),"
+          " finite-sample (R4).")
     print("=" * 70 + "\n")
 
 

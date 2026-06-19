@@ -146,6 +146,61 @@ def test_mfdfa_accepts_1d_input():
     assert 0.0 < H_est < 0.6
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Rung 1 — RV proxy (the corruption ladder's decisive mirage test)
+# ──────────────────────────────────────────────────────────────────────────
+
+from roughvol_core import rough_bergomi_paths
+from layer1c_roughness_audit import realized_log_variance
+
+
+def test_rung1_control_estimators_innocent_on_true_smooth_signal():
+    """CONTROL: on the TRUE smooth (H=0.5) volatility, all three estimators
+    must correctly report ≈ 0.5. This proves any spurious roughness seen via
+    the proxy is the PROXY's doing, not a fault in the estimators."""
+    _, S, V = rough_bergomi_paths(16384, 0.5, 50, eta=1.0,
+                                  rng=np.random.default_rng(404))
+    logV_true = np.log(V[:, 1:])
+    idx = np.linspace(0, logV_true.shape[1] - 1, 512).astype(int)
+    lvt = logV_true[:, idx]
+    for est in (gjr_hurst, pvariation_hurst, mfdfa_hurst):
+        H = est(lvt)
+        assert H > 0.4, (
+            f"{est.__name__} on TRUE smooth signal gave {H:.3f}; should be "
+            f"≈0.5 — estimators must be innocent for the Rung-1 logic to hold"
+        )
+
+
+def test_rung1_proxy_manufactures_spurious_roughness_on_smooth_null():
+    """THE SMOKING GUN: a genuinely SMOOTH (H=0.5) process, viewed through
+    the RV proxy at a small window, must read as ROUGH — demonstrating the
+    Cont–Das mirage. If a smooth truth produces a rough estimate, the
+    roughness is purely a proxy artefact."""
+    _, S, V = rough_bergomi_paths(16384, 0.5, 50, eta=1.0,
+                                  rng=np.random.default_rng(404))
+    log_rv = realized_log_variance(S, window=32)
+    H_proxy = gjr_hurst(log_rv)
+    assert H_proxy < 0.3, (
+        f"smooth null through RV proxy gave H={H_proxy:.3f}; the artefact "
+        f"should drive it well below the true 0.5 (toward the rough regime)"
+    )
+
+
+def test_rung1_artefact_severity_decreases_with_window():
+    """The mirage's severity is set by the RV window: a SMALL window (noisy
+    proxy) manufactures MORE spurious roughness than a LARGE window (cleaner
+    proxy). So the estimated H on the smooth null should INCREASE toward the
+    true 0.5 as the window grows."""
+    _, S, V = rough_bergomi_paths(16384, 0.5, 50, eta=1.0,
+                                  rng=np.random.default_rng(404))
+    H_small = gjr_hurst(realized_log_variance(S, window=32))
+    H_large = gjr_hurst(realized_log_variance(S, window=128))
+    assert H_large > H_small, (
+        f"larger window should give cleaner proxy (H {H_large:.3f}) than "
+        f"small window (H {H_small:.3f}) — artefact must fade with window"
+    )
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

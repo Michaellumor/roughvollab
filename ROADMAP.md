@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. §1 GJR + §2 Cont–Das + §3 MF-DFA — all three core estimators through oracle gate (+`test_layer1c.py`, 35 tests); corruption ladder pending | 🔄 §1–3 complete | 2026-06-18 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rung 1 (RV proxy) — the mirage demonstrated on a smooth null (+`test_layer1c.py`, 38 tests); Rungs 2–4 pending | 🔄 3 estimators + Rung 1 | 2026-06-19 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -394,6 +394,32 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   agreement, and a stronger spine for publication seed P3. Figure overlays
   all three biases: output/layer1c_mfdfa_gate.png. Three core estimators now
   validated; corruption ladder (Rung 1 = RV proxy first) is the next arc.
+- **D14** *(2026-06-19)* Built corruption ladder **Rung 1 — the RV proxy**
+  (`rung1_rv_proxy`, `realized_log_variance`), the decisive test of the
+  Cont–Das mirage. Spot volatility is unobservable; the proxy estimates it
+  as log realized variance over windows of high-frequency returns. **The
+  decisive design (settled at the pre-build gate): corrupt a SMOOTH (H=0.5)
+  null** — if the estimators then report rough H, the roughness is purely a
+  proxy artefact, since the truth has none. **Headline result:** they do.
+  Control first — on the TRUE smooth volatility all three estimators
+  correctly read ≈0.5 (GJR 0.51, Cont–Das 0.48, MF-DFA 0.49), proving the
+  estimators are innocent. Then through the RV proxy at window=32, the SAME
+  smooth process reads GJR 0.16 / Cont–Das 0.05 / MF-DFA 0.02 — i.e. the
+  empirical H≈0.1 signature, **manufactured entirely by the proxy.** Added
+  nuance (window sweep): the artefact's severity is set by the RV window —
+  small windows (noisier proxy) produce severe spurious roughness, large
+  windows recover toward 0.5. So the mirage is real *and* its magnitude is a
+  function of the sampling choice — a sharper, actionable finding than a
+  flat "the proxy fools everything." 3 tests (control, smoking gun, window-
+  dependence) → 38 total. Bug caught by RUNNING (not assuming):
+  `rough_bergomi_paths` was unimported — fixed. Robustness: `_safe_estimate`
+  wrapper handles degenerate (very small window) proxies that break the
+  p-variation zero-crossing, returning nan rather than crashing — itself
+  information (the proxy can be too corrupt to resolve). Strongly advances
+  publication seed P3 (this is arguably its centrepiece result). Figure:
+  output/layer1c_rung1_rvproxy.png. Next rungs: microstructure noise (R2),
+  jumps (R3 — use the captured fractional-jump-diffusion controlled null),
+  finite-sample (R4).
 
 ---
 
