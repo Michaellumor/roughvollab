@@ -15,7 +15,7 @@
 | `roughvol_core.py` | Shared rough-path engine (κ=0 Volterra), pinned by tests | ✅ 18 tests pass |
 | `layer1_rough_vol.py` | fBm simulation, hybrid scheme, Hurst estimation | ✅ complete |
 | `layer1b_mlmc_asian.py` | MLMC Asian option pricing, complexity under roughness | ✅ complete (v0.1) |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption-ladder Rung 1: RV-proxy mirage on a smooth null *and* the full bias envelope across true H; Rungs 2–4 next) | 🔄 3 estimators + Rung 1 (+envelope) |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption-ladder Rungs 1–2: RV-proxy mirage + bias envelope, and microstructure noise + subsampling mitigation; Rungs 3–4 next) | 🔄 3 estimators + Rungs 1–2 |
 | `layer2_frictions.py` | Almgren-Chriss, rough slippage, Markov breakdown | 🔜 coming |
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
@@ -92,9 +92,18 @@ window — the empirical H ≈ 0.1 signature) — even though the underlying
 volatility has no roughness at all. A control confirms the estimators read
 the *true* smooth signal correctly (≈ 0.5), so the spurious roughness is
 purely an artefact of the proxy construction; its severity is governed by
-the sampling window (smaller windows → more spurious roughness). The
-remaining rungs (microstructure noise, jumps, finite-sample) extend this
-audit; see [`ROADMAP.md`](ROADMAP.md).
+the sampling window (smaller windows → more spurious roughness).
+
+A second corruption rung (microstructure noise) poisons the **price itself**
+before any return is taken — modelling the bid-ask bounce as Y = X + η.
+Differencing gives an MA(1) structure with negative autocorrelation, which
+reads as roughness, so adding noise drags the estimate **down** toward
+spurious roughness (a different mechanism from the proxy, with the same
+outcome — they compound). The artefact grows with the noise-to-signal ratio
+and afflicts smooth and rough paths alike; subsampling the price series
+(taking every k-th tick) dilutes the tick-independent noise relative to the
+persistent signal and partly recovers the estimate. The remaining rungs
+(jumps, finite-sample) extend this audit; see [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
