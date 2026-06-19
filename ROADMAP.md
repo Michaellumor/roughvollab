@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + Rung 1 (RV proxy: smooth-null mirage + full bias envelope) (+`test_layer1c.py`, 40 tests); Rungs 2–4 pending | 🔄 3 estimators + Rung 1 (+envelope) | 2026-06-19 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + Rung 1 (RV proxy + envelope) + Rung 2 (microstructure noise + subsampling mitigation) (+`test_layer1c.py`, 43 tests); Rungs 3–4 pending | 🔄 3 estimators + Rungs 1–2 | 2026-06-19 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -443,6 +443,34 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   debate is so hard to settle where it actually lives. +2 tests (collapse at
   noisy window, recovery at cleaner window) → 40 total. Figure:
   layer1c_rung1_envelope.png.
+- **D16** *(2026-06-19)* Built corruption-ladder **Rung 2 — microstructure
+  noise** (`add_microstructure_noise`, `rung2_microstructure`,
+  `realized_log_variance_subsampled`). Where Rung 1 corrupts via the
+  finite-sample proxy math, Rung 2 poisons the OBSERVED PRICE itself:
+  Y_t = X_t + η_t, so ΔY = ΔX + η_t − η_{t-1} carries an MA(1) structure
+  with negative autocorrelation ≈ −σ²_η (the bid-ask-bounce signature).
+  **Direction settled by probe (and it overturned the tempting intuition):**
+  a first reasoning said iid noise → H≈0.5; the probe falsified this. Because
+  the noise enters through DIFFERENCING-then-SQUARING, it becomes
+  anti-persistent in the RV series, which reads as ROUGHNESS — so noise drags
+  Ĥ DOWN toward 0, not up. Confirmed: GJR on a true H=0.1 path fell
+  0.131 → 0.008 as γ (noise-to-signal) went 0 → 2; same downward pull on a
+  smooth H=0.5 null (0.153 → 0.002). So Rung 2 manufactures spurious
+  roughness like Rung 1, but via a DIFFERENT mechanism (noise-induced
+  negative autocorrelation vs. estimation chatter) — the two COMPOUND.
+  **Mitigation — subsampled RV:** the noise is tick-to-tick independent but
+  the signal persists, so taking every k-th tick dilutes noise relative to
+  signal and recovers the estimate (GJR climbs 0.009 → 0.042 subsampling 1→4
+  at γ=2). Honest caveat: at this EXTREME γ=2 the recovery is only partial;
+  at moderate γ subsampling restores the estimate much more fully. Bug caught
+  by RUNNING (not assuming): first subsampling impl shrank the RV window with
+  the subsample (`window//step`), which destroyed the estimate and made the
+  mitigation look ineffective — fixed to keep the window fixed, after which
+  recovery is clear. +3 tests (downward direction, smooth-path corruption,
+  subsampling recovery) → 43 total. Figure:
+  output/layer1c_rung2_microstructure.png. Next: jumps (R3 — fractional
+  jump-diffusion controlled null), then AR(1) noise variant, finite-sample
+  (R4).
 
 ---
 

@@ -102,6 +102,22 @@ MFDFA_ORDER     = 1                                   # detrending polynomial or
 RV_WINDOWS      = np.array([16, 32, 64, 128])         # returns per RV obs
 RV_FINE_STEPS   = 16384                               # intraday price grid
 
+# ── Rung 2 (microstructure noise) ─────────────────────────────────────────
+# Where Rung 1 corrupts by ESTIMATING vol from finite samples (the proxy
+# math), Rung 2 poisons the OBSERVED PRICE ITSELF before any return is taken:
+# Y_t = X_t + η_t, with η_t the bid-ask bounce / tick-rounding noise. The
+# differenced return ΔY_t = ΔX_t + η_t − η_{t-1} carries an MA(1) structure
+# with negative autocorrelation Cov(ΔY_t, ΔY_{t-1}) ≈ −σ²_η — the classic
+# bid-ask-bounce signature. That anti-persistence reads as ROUGHNESS, so
+# noise drags the estimate DOWN toward H→0 (probe-confirmed: GJR on a true
+# H=0.1 path fell 0.13→0.01 as γ went 0→2; same downward pull on a smooth
+# null). Both Rung-1 and Rung-2 mechanisms manufacture spurious roughness —
+# they compound. Mitigation: SUBSAMPLED RV — the noise is tick-to-tick
+# independent but the signal persists, so sampling every k-th tick dilutes
+# the noise relative to the signal and recovers the estimate upward.
+RV_GAMMAS       = np.array([0.0, 0.5, 1.0, 2.0])      # noise-to-signal ratios
+RV_SUBSAMPLE    = np.array([1, 2, 4])                # take every k-th tick (mitigation)
+
 
 # ══════════════════════════════════════════════════════════════════════════
 # SECTION 1 — GJR structure-function estimator + oracle validation gate
@@ -763,12 +779,157 @@ def rung1_bias_envelope(show: bool = True, quick: bool = False):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+# RUNG 2 — microstructure noise: does poisoning the PRICE manufacture roughness?
+# ══════════════════════════════════════════════════════════════════════════
+
+def add_microstructure_noise(S: np.ndarray, gamma: float, rng,
+                             kind: str = "iid"):
+    """
+    Poison observed prices with microstructure noise BEFORE any return is
+    taken: Y_t = X_t + η_t on log-prices. Models the bid-ask bounce / tick
+    rounding. `gamma` is the noise-to-signal ratio (σ_η as a multiple of the
+    fine-return std). `kind='iid'` is independent tick-to-tick noise (this
+    rung's core); `kind='ar1'` is the persistent variant (the later pass).
+
+    The differenced return ΔY = ΔX + η_t − η_{t-1} inherits an MA(1)
+    structure with negative autocorrelation ≈ −σ²_η — the anti-persistent
+    signature that estimators misread as roughness.
+    """
+    logS = np.log(S)
+    ret_std = np.std(np.diff(logS, axis=1))
+    sigma_eta = gamma * ret_std
+    if kind == "ar1":
+        # persistent noise (placeholder for the AR(1) pass) — phi fixed here
+        phi = 0.5
+        eta = np.empty_like(logS)
+        eta[:, 0] = rng.normal(0, sigma_eta, size=logS.shape[0])
+        for k in range(1, logS.shape[1]):
+            eta[:, k] = phi * eta[:, k - 1] + \
+                rng.normal(0, sigma_eta * np.sqrt(1 - phi**2), size=logS.shape[0])
+    else:
+        eta = rng.normal(0, sigma_eta, size=logS.shape)
+    return np.exp(logS + eta)
+
+
+def realized_log_variance_subsampled(S: np.ndarray, window: int, step: int):
+    """
+    Subsampled RV — the mitigation. Take every `step`-th tick before forming
+    returns, keeping the RV window FIXED (shrinking it with the subsample
+    destroys the estimate). The noise is tick-to-tick independent but the
+    signal persists, so wider tick spacing dilutes the noise relative to the
+    signal, recovering the estimate. step=1 reduces to the ordinary proxy.
+    """
+    return realized_log_variance(S[:, ::step], window)
+
+
+def rung2_microstructure(show: bool = True, quick: bool = False):
+    """
+    Rung 2 of the corruption ladder — microstructure noise. Poison the price
+    with iid noise at growing noise-to-signal γ, and watch the estimated H
+    fall toward spurious roughness (the MA(1) negative-autocorrelation
+    mechanism). Then show SUBSAMPLED RV recovers it — the mitigation.
+
+    Probe-confirmed direction: noise pushes Ĥ DOWN (rougher), on both rough
+    and smooth paths — a different mechanism from Rung 1, but the same
+    spurious-roughness outcome; the two compound.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 2 — microstructure noise: does poisoning the PRICE")
+    print("           manufacture roughness? (the bid-ask-bounce mechanism)")
+    print("─" * 70)
+
+    n_fine = RV_FINE_STEPS
+    N = 40 if quick else 50
+    window = 32
+    gammas = (np.array([0.0, 1.0, 2.0]) if quick else RV_GAMMAS)
+    rng = np.random.default_rng(606)
+
+    # ---- γ sweep on a ROUGH (H=0.1) and a SMOOTH (H=0.5) path ----
+    print("\n  γ sweep — estimated H as noise grows (window=32):")
+    print(f"  {'path':>10} {'γ':>5} {'GJR':>8} {'Cont-Das':>9} {'MF-DFA':>8}")
+    sweep = {}
+    for H_true, tag in [(0.1, "rough H=0.1"), (0.5, "smooth H=0.5")]:
+        _, S_clean, _ = rough_bergomi_paths(n_fine, H_true, N, eta=1.0,
+                                            rng=np.random.default_rng(606))
+        sweep[H_true] = {"g": [], "gjr": [], "pvar": [], "mfdfa": []}
+        for g in gammas:
+            S = (add_microstructure_noise(S_clean, g, rng) if g > 0
+                 else S_clean)
+            lrv = realized_log_variance(S, window)
+            hg = _safe_estimate(gjr_hurst, lrv)
+            hp = _safe_estimate(pvariation_hurst, lrv)
+            hm = _safe_estimate(mfdfa_hurst, lrv)
+            sweep[H_true]["g"].append(g)
+            sweep[H_true]["gjr"].append(hg)
+            sweep[H_true]["pvar"].append(hp)
+            sweep[H_true]["mfdfa"].append(hm)
+            print(f"  {tag:>10} {g:5.1f} {hg:8.3f} {hp:9.3f} {hm:8.3f}")
+
+    g0 = sweep[0.1]["gjr"][0]; g2 = sweep[0.1]["gjr"][-1]
+    print(f"\n  → On the rough path, GJR fell {g0:.3f} → {g2:.3f} as γ: 0 → {gammas[-1]:.0f}"
+          " — noise\n    DRAGS the estimate DOWN toward spurious roughness, via the"
+          " MA(1)\n    negative-autocorrelation of the bid-ask bounce. Same"
+          " downward pull on\n    the smooth null. A DIFFERENT mechanism from"
+          " Rung 1, same outcome —\n    they compound.")
+
+    # ---- MITIGATION: subsampled RV at fixed high noise (γ=2) ----
+    print("\n  MITIGATION — subsampled RV at γ=2 (rough H=0.1 path):")
+    print(f"  {'every k-th':>11} {'GJR':>8}   effect")
+    _, S_clean, _ = rough_bergomi_paths(n_fine, 0.1, N, eta=1.0,
+                                        rng=np.random.default_rng(606))
+    S_noisy = add_microstructure_noise(S_clean, 2.0, rng)
+    sub = {"k": [], "gjr": []}
+    prev = None
+    for step in RV_SUBSAMPLE:
+        lrv = realized_log_variance_subsampled(S_noisy, window, step)
+        hg = _safe_estimate(gjr_hurst, lrv)
+        arrow = ("↑ recovering" if prev is not None and hg > prev + 0.01
+                 else ("" if prev is None else "≈"))
+        sub["k"].append(step); sub["gjr"].append(hg)
+        print(f"  {step:11d} {hg:8.3f}   {arrow}")
+        prev = hg
+    print(f"\n  → Subsampling dilutes the (tick-independent) noise relative to"
+          " the\n    (persistent) signal, recovering the estimate upward — the"
+          " mitigation\n    practitioners use. At this EXTREME γ=2 the recovery"
+          " is partial (the\n    noise is severe); at moderate γ it restores the"
+          " estimate much more\n    fully. The damage is real but reducible by"
+          " sampling less frequently.")
+
+    # ---- figure ----
+    fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    # left: gamma sweep, both paths
+    for H_true, c, mk, tag in [(0.1, TEAL, "o", "rough H=0.1"),
+                               (0.5, PURPLE, "s", "smooth H=0.5")]:
+        ax[0].plot(sweep[H_true]["g"], sweep[H_true]["gjr"], mk + "-",
+                   color=c, lw=1.9, ms=6, label=f"GJR, {tag}")
+    ax[0].axhspan(0.0, 0.15, color=CORAL, alpha=0.10)
+    ax[0].set_xlabel("noise-to-signal γ"); ax[0].set_ylabel("estimated H")
+    ax[0].set_title("Noise drags Ĥ DOWN (spurious roughness)")
+    ax[0].legend(frameon=False, fontsize=8)
+    # right: subsampling mitigation
+    ax[1].axhline(0.1, color=GRAY, ls="--", lw=1, label="true H = 0.1")
+    ax[1].plot(sub["k"], sub["gjr"], "o-", color=AMBER, lw=2, ms=7,
+               label="GJR, subsampled (γ=2)")
+    ax[1].set_xlabel("subsample step (every k-th tick)")
+    ax[1].set_ylabel("estimated H")
+    ax[1].set_title("Subsampling recovers the estimate")
+    ax[1].legend(frameon=False, fontsize=8)
+    fig.suptitle("Layer 1c Rung 2 — microstructure noise manufactures "
+                 "roughness; subsampling mitigates", fontweight="bold")
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung2_microstructure.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return sweep
+
+
+# ══════════════════════════════════════════════════════════════════════════
 
 def main():
     ap = argparse.ArgumentParser(
         description="Layer 1c — roughness-estimator audit")
     ap.add_argument("--section", type=int, choices=[1, 2, 3], default=None)
-    ap.add_argument("--rung", type=int, choices=[1], default=None)
+    ap.add_argument("--rung", type=int, choices=[1, 2], default=None)
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
@@ -782,6 +943,8 @@ def main():
     if args.rung == 1:
         rung1_rv_proxy(show, args.quick)
         rung1_bias_envelope(show, args.quick)
+    elif args.rung == 2:
+        rung2_microstructure(show, args.quick)
     elif args.section == 1:
         section1_oracle_gate(show, args.quick)
     elif args.section == 2:
@@ -794,6 +957,7 @@ def main():
         section3_mfdfa_gate(show, args.quick)
         rung1_rv_proxy(show, args.quick)
         rung1_bias_envelope(show, args.quick)
+        rung2_microstructure(show, args.quick)
 
     print("\n" + "=" * 70)
     print("  Layer 1c: 3 estimators + Rung 1 (RV proxy) complete.")

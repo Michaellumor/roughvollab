@@ -241,6 +241,63 @@ def test_rung1_envelope_recovers_at_cleaner_window():
     )
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Rung 2 — microstructure noise
+# ──────────────────────────────────────────────────────────────────────────
+
+from layer1c_roughness_audit import (add_microstructure_noise,
+                                     realized_log_variance_subsampled)
+
+
+def test_rung2_noise_drags_estimate_down_toward_roughness():
+    """Microstructure noise (iid on log-prices) induces MA(1) negative
+    autocorrelation in returns, which reads as ROUGHNESS — so adding noise
+    must drag the estimated H DOWN, not up. (Corrects the tempting intuition
+    that iid noise → H=0.5.)"""
+    _, S, _ = rough_bergomi_paths(16384, 0.1, 40, eta=1.0,
+                                  rng=np.random.default_rng(606))
+    rng = np.random.default_rng(99)
+    H_clean = gjr_hurst(realized_log_variance(S, 32))
+    S_noisy = add_microstructure_noise(S, gamma=2.0, rng=rng)
+    H_noisy = gjr_hurst(realized_log_variance(S_noisy, 32))
+    assert H_noisy < H_clean, (
+        f"noise should DRAG H down (rougher): clean {H_clean:.3f} vs "
+        f"noisy {H_noisy:.3f}"
+    )
+
+
+def test_rung2_noise_corrupts_even_smooth_path():
+    """The artefact is not confined to rough paths: microstructure noise
+    drives a genuinely SMOOTH (H=0.5) process into the spurious-rough band
+    too — manufacturing roughness from nothing, like Rung 1 but via a
+    different mechanism."""
+    _, S, _ = rough_bergomi_paths(16384, 0.5, 40, eta=1.0,
+                                  rng=np.random.default_rng(606))
+    S_noisy = add_microstructure_noise(S, gamma=2.0,
+                                       rng=np.random.default_rng(99))
+    H_noisy = gjr_hurst(realized_log_variance(S_noisy, 32))
+    assert H_noisy < 0.3, (
+        f"smooth path under heavy noise read H={H_noisy:.3f}; should be "
+        f"dragged into the spurious-rough band"
+    )
+
+
+def test_rung2_subsampling_recovers_estimate():
+    """The mitigation: subsampled RV dilutes the tick-independent noise
+    relative to the persistent signal, so a wider subsample step recovers
+    the estimate upward (away from the noise-induced spurious roughness)."""
+    _, S, _ = rough_bergomi_paths(16384, 0.1, 40, eta=1.0,
+                                  rng=np.random.default_rng(606))
+    S_noisy = add_microstructure_noise(S, gamma=2.0,
+                                       rng=np.random.default_rng(99))
+    H_step1 = gjr_hurst(realized_log_variance_subsampled(S_noisy, 32, 1))
+    H_step4 = gjr_hurst(realized_log_variance_subsampled(S_noisy, 32, 4))
+    assert H_step4 > H_step1, (
+        f"subsampling should recover the estimate: every-4th {H_step4:.3f} "
+        f"vs every-1st {H_step1:.3f}"
+    )
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))
