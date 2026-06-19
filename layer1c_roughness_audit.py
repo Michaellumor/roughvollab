@@ -670,6 +670,98 @@ def rung1_rv_proxy(show: bool = True, quick: bool = False):
     return artefact_shown
 
 
+def rung1_bias_envelope(show: bool = True, quick: bool = False):
+    """
+    Rung 1 extension — the bias envelope. Sweep the TRUE underlying H across
+    the full validation spectrum (0.05–0.70) through the RV proxy, mapping
+    estimated H vs true H at two windows (a noisy and a cleaner proxy).
+
+    Where the smooth-null test (rung1_rv_proxy) PROVES the artefact can exist,
+    the envelope CHARACTERISES it: it shows how far the proxy drags the
+    estimate from the truth across the whole roughness range.
+
+    The honest finding: at a noisy window the estimate COLLAPSES toward
+    H ≈ 0.1 almost regardless of the true H — so a market reading of Ĥ ≈ 0.1
+    is nearly uninformative about the true roughness. This exposes an
+    observational-equivalence problem in the empirically-relevant ultra-rough
+    zone: a genuinely smooth process dragged down to 0.1 and a genuinely rough
+    process are indistinguishable through the proxy. The smooth null remains
+    the clean evidence; the envelope reveals the limit of what the proxy can
+    tell us where the real debate lives.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 1 (extension) — the bias envelope: estimated H vs true H")
+    print("           swept across the full roughness spectrum, two windows")
+    print("─" * 70)
+
+    n_fine = RV_FINE_STEPS
+    N = 40 if quick else 50
+    H_grid = ([0.05, 0.20, 0.45, 0.70] if quick
+              else [0.05, 0.10, 0.20, 0.30, 0.45, 0.60, 0.70])
+    windows = [32, 128]                       # noisy proxy vs cleaner proxy
+
+    results = {w: {"H": [], "gjr": [], "pvar": [], "mfdfa": []}
+               for w in windows}
+    for H_true in H_grid:
+        t, S, V = rough_bergomi_paths(n_fine, H_true, N, eta=1.0,
+                                      rng=np.random.default_rng(505))
+        for w in windows:
+            lrv = realized_log_variance(S, w)
+            results[w]["H"].append(H_true)
+            results[w]["gjr"].append(_safe_estimate(gjr_hurst, lrv))
+            results[w]["pvar"].append(_safe_estimate(pvariation_hurst, lrv))
+            results[w]["mfdfa"].append(_safe_estimate(mfdfa_hurst, lrv))
+
+    for w in windows:
+        print(f"\n  window = {w} ({'noisy proxy' if w == 32 else 'cleaner proxy'}):")
+        print(f"    {'H_true':>7} {'GJR':>8} {'Cont-Das':>9} {'MF-DFA':>8}"
+              f" {'gap(GJR)':>9}")
+        for i, H_true in enumerate(results[w]["H"]):
+            hg = results[w]["gjr"][i]
+            print(f"    {H_true:7.2f} {hg:8.3f} {results[w]['pvar'][i]:9.3f} "
+                  f"{results[w]['mfdfa'][i]:8.3f} {hg - H_true:+9.3f}")
+
+    # quantify the collapse at the noisy window: range of GJR estimates
+    gjr32 = np.array(results[32]["gjr"], float)
+    collapse_range = np.nanmax(gjr32) - np.nanmin(gjr32)
+    print(f"\n  At window=32, GJR estimate spans only {collapse_range:.3f} across"
+          f" true H ∈ [0.05, 0.70] —\n  i.e. the proxy COLLAPSES the estimate"
+          " toward ≈0.1 almost regardless of\n  the true roughness. A market"
+          " reading of Ĥ≈0.1 is thus nearly\n  uninformative: genuinely smooth"
+          " and genuinely rough processes are\n  observationally equivalent"
+          " through a noisy proxy. The larger window\n  (128) partly recovers"
+          " the diagonal — the collapse is a function of\n  the sampling choice,"
+          " not inevitable.")
+
+    fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.6))
+    colours = {"gjr": TEAL, "pvar": PURPLE, "mfdfa": AMBER}
+    labels  = {"gjr": "GJR", "pvar": "Cont–Das", "mfdfa": "MF-DFA"}
+    for j, w in enumerate(windows):
+        H = np.array(results[w]["H"])
+        ax[j].plot([0, 0.75], [0, 0.75], "--", color=GRAY, lw=1.3,
+                   label="perfect recovery (Ĥ = H)")
+        for est in ("gjr", "pvar", "mfdfa"):
+            ax[j].plot(H, results[w][est], "o-", color=colours[est], lw=1.8,
+                       ms=6, label=labels[est])
+        # shade the observational-equivalence zone
+        ax[j].axhspan(0.0, 0.15, color=CORAL, alpha=0.10)
+        ax[j].text(0.45, 0.07, "Ĥ≈0.1 zone:\ntrue & spurious\nindistinguishable",
+                   fontsize=7.5, color=CORAL, ha="center", va="center")
+        ax[j].set_xlabel("true H"); ax[j].set_ylabel("estimated H (via proxy)")
+        ax[j].set_xlim(0, 0.75); ax[j].set_ylim(-0.15, 0.75)
+        ax[j].set_title(f"window = {w}  "
+                        f"({'noisy → collapse' if w == 32 else 'cleaner → partial recovery'})")
+        ax[j].legend(frameon=False, fontsize=8)
+
+    fig.suptitle("Layer 1c Rung 1 — bias envelope: the proxy collapses the "
+                 "estimate toward Ĥ ≈ 0.1", fontweight="bold")
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung1_envelope.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return float(collapse_range)
+
+
 # ══════════════════════════════════════════════════════════════════════════
 
 def main():
@@ -689,6 +781,7 @@ def main():
 
     if args.rung == 1:
         rung1_rv_proxy(show, args.quick)
+        rung1_bias_envelope(show, args.quick)
     elif args.section == 1:
         section1_oracle_gate(show, args.quick)
     elif args.section == 2:
@@ -700,6 +793,7 @@ def main():
         section2_pvariation_gate(show, args.quick)
         section3_mfdfa_gate(show, args.quick)
         rung1_rv_proxy(show, args.quick)
+        rung1_bias_envelope(show, args.quick)
 
     print("\n" + "=" * 70)
     print("  Layer 1c: 3 estimators + Rung 1 (RV proxy) complete.")

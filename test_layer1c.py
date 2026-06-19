@@ -201,6 +201,46 @@ def test_rung1_artefact_severity_decreases_with_window():
     )
 
 
+def test_rung1_envelope_collapses_at_noisy_window():
+    """Bias envelope: at a noisy window, the estimate COLLAPSES toward ≈0.1
+    almost regardless of true H — so the spread of estimated H across the
+    full true-H spectrum is small, and the smooth/persistent end reads far
+    BELOW its true value (the observational-equivalence problem)."""
+    ests = []
+    for H_true in (0.05, 0.30, 0.70):
+        _, S, V = rough_bergomi_paths(16384, H_true, 40, eta=1.0,
+                                      rng=np.random.default_rng(505))
+        ests.append(gjr_hurst(realized_log_variance(S, window=32)))
+    span = max(ests) - min(ests)
+    # despite true H ranging over 0.65, the proxy estimate barely moves
+    assert span < 0.20, (
+        f"noisy-window estimate spanned {span:.3f} across true H∈[0.05,0.70]; "
+        f"the collapse means it should stay in a narrow band near ~0.1"
+    )
+    # and the genuinely smooth/persistent end must read spuriously low
+    assert ests[-1] < 0.30, (
+        f"true H=0.70 read as {ests[-1]:.3f} through the noisy proxy — should "
+        f"be dragged far below truth into the spurious-rough band"
+    )
+
+
+def test_rung1_envelope_recovers_at_cleaner_window():
+    """The collapse is not inevitable: at a CLEANER (larger) window the
+    estimate tracks the true H far better, so the spread across the spectrum
+    is materially larger than at the noisy window."""
+    def span_at(window):
+        ests = []
+        for H_true in (0.05, 0.30, 0.70):
+            _, S, V = rough_bergomi_paths(16384, H_true, 40, eta=1.0,
+                                          rng=np.random.default_rng(505))
+            ests.append(gjr_hurst(realized_log_variance(S, window)))
+        return max(ests) - min(ests)
+    assert span_at(128) > span_at(32), (
+        "cleaner window should recover more of the true-H range than the "
+        "noisy window — the collapse must depend on the sampling choice"
+    )
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

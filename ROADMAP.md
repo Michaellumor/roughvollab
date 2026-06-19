@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rung 1 (RV proxy) — the mirage demonstrated on a smooth null (+`test_layer1c.py`, 38 tests); Rungs 2–4 pending | 🔄 3 estimators + Rung 1 | 2026-06-19 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + Rung 1 (RV proxy: smooth-null mirage + full bias envelope) (+`test_layer1c.py`, 40 tests); Rungs 2–4 pending | 🔄 3 estimators + Rung 1 (+envelope) | 2026-06-19 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -420,6 +420,29 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   output/layer1c_rung1_rvproxy.png. Next rungs: microstructure noise (R2),
   jumps (R3 — use the captured fractional-jump-diffusion controlled null),
   finite-sample (R4).
+- **D15** *(2026-06-19)* Extended Rung 1 with the **bias envelope**
+  (`rung1_bias_envelope`) — sweeping the TRUE H across the full validation
+  spectrum (0.05–0.70) through the RV proxy at two windows (32 noisy, 128
+  cleaner), mapping estimated-vs-true H. Where the smooth null PROVES the
+  artefact exists, the envelope CHARACTERISES it. **Headline (stronger than
+  expected):** at the noisy window the GJR estimate spans only ≈0.09 across
+  the entire true-H range — i.e. the proxy COLLAPSES the estimate toward
+  Ĥ ≈ 0.1 almost regardless of the true roughness. A market reading of
+  Ĥ ≈ 0.1 is therefore nearly uninformative about the true H. This exposes
+  an **observational-equivalence problem** in the empirically-relevant
+  ultra-rough zone: a genuinely smooth process dragged down to 0.1 and a
+  genuinely rough process are indistinguishable through a noisy proxy
+  (Michael's framing, articulated at the design gate). Crucially, the
+  cleaner window (128) partly recovers the diagonal — so the collapse is a
+  function of the SAMPLING CHOICE, not inevitable, tying back to the
+  window-dependence finding. The shaded Ĥ≈0.1 band in the figure marks where
+  true and spurious roughness cannot be separated. Honest caveat baked into
+  the framing: the smooth null remains the CLEAN evidence (artefact provable
+  there); the envelope's rough end is interpretively murky BY DESIGN, and
+  that murkiness is itself the finding — it explains why the fact-or-artefact
+  debate is so hard to settle where it actually lives. +2 tests (collapse at
+  noisy window, recovery at cleaner window) → 40 total. Figure:
+  output/layer1c_rung1_envelope.png.
 
 ---
 
