@@ -540,6 +540,23 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   evidence: Rung 2 wrong→corrected, Rung 3 right→confirmed, Rung 4 partly
   right→refined. Figure: output/layer1c_rung4_finitesample.png. Remaining
   before Phase B: optional AR(1) noise variant, optional Rung 5 (calendar).
+- **D19** *(2026-06-20)* Built the **AR(1) persistent-noise variant**
+  (`rung2_ar1_noise`; `add_microstructure_noise` upgraded with a φ
+  parameter) — the parked Rung 2 Option 2. Where Rung 2's core iid noise is
+  memoryless (→ MA(1) negative autocorrelation → spurious ROUGHNESS, Ĥ down),
+  real frictions are often PERSISTENT (stale quotes, VWAP/TWAP child-order
+  pressure, slow liquidity replenishment), modelled as AR(1):
+  η_t = φ·η_{t-1} + shock. Controlled comparison (single variable = noise
+  persistence): fix smooth H=0.5, RV window, γ=1.0; sweep φ. **Prediction
+  CONFIRMED (a second clean confirmation):** the downward push weakens at low
+  φ and REVERSES upward as φ grows — GJR 0.02 (φ=0, iid baseline) → 0.13
+  (φ=0.95), a lift of +0.115; MF-DFA −0.36 → −0.03. So iid noise fakes
+  ROUGHNESS while persistent noise fakes SMOOTHNESS — the DIRECTION of the
+  microstructure artefact depends on the noise's temporal structure. Deepens
+  the fact-or-artefact problem: not even the sign of the bias is fixed
+  (frictions can manufacture either illusion). +1 test (persistence lifts Ĥ)
+  → 51 total. Figure: layer1c_rung2_ar1.png. Remaining before Phase B:
+  optional Rung 5 (calendar effects).
 
 ---
 

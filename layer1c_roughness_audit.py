@@ -117,6 +117,7 @@ RV_FINE_STEPS   = 16384                               # intraday price grid
 # the noise relative to the signal and recovers the estimate upward.
 RV_GAMMAS       = np.array([0.0, 0.5, 1.0, 2.0])      # noise-to-signal ratios
 RV_SUBSAMPLE    = np.array([1, 2, 4])                # take every k-th tick (mitigation)
+RV_AR1_PHIS     = np.array([0.0, 0.3, 0.6, 0.8, 0.95])  # AR(1) noise persistence sweep
 
 # ── Rung 3 (price jumps) ──────────────────────────────────────────────────
 # Can the estimators tell true fractal roughness from jump noise? A jump is a
@@ -817,29 +818,32 @@ def rung1_bias_envelope(show: bool = True, quick: bool = False):
 # ══════════════════════════════════════════════════════════════════════════
 
 def add_microstructure_noise(S: np.ndarray, gamma: float, rng,
-                             kind: str = "iid"):
+                             kind: str = "iid", phi: float = 0.5):
     """
     Poison observed prices with microstructure noise BEFORE any return is
     taken: Y_t = X_t + η_t on log-prices. Models the bid-ask bounce / tick
     rounding. `gamma` is the noise-to-signal ratio (σ_η as a multiple of the
-    fine-return std). `kind='iid'` is independent tick-to-tick noise (this
-    rung's core); `kind='ar1'` is the persistent variant (the later pass).
+    fine-return std). `kind='iid'` is independent tick-to-tick noise (Rung 2
+    core); `kind='ar1'` is the persistent variant with AR(1) parameter `phi`
+    (η_t = φ·η_{t-1} + shock), modelling stale quotes / VWAP child-order
+    pressure / slow liquidity replenishment.
 
-    The differenced return ΔY = ΔX + η_t − η_{t-1} inherits an MA(1)
-    structure with negative autocorrelation ≈ −σ²_η — the anti-persistent
-    signature that estimators misread as roughness.
+    iid noise → differenced return ΔY = ΔX + η_t − η_{t-1} has MA(1) NEGATIVE
+    autocorrelation → misread as ROUGHNESS (Ĥ down). Persistent (φ>0) noise
+    "sticks together" → smooth mini-trends → the downward push weakens and,
+    as φ grows, REVERSES upward (Ĥ toward 0.5+) — frictions can fake
+    smoothness as readily as roughness.
     """
     logS = np.log(S)
     ret_std = np.std(np.diff(logS, axis=1))
     sigma_eta = gamma * ret_std
     if kind == "ar1":
-        # persistent noise (placeholder for the AR(1) pass) — phi fixed here
-        phi = 0.5
         eta = np.empty_like(logS)
         eta[:, 0] = rng.normal(0, sigma_eta, size=logS.shape[0])
+        innov = sigma_eta * np.sqrt(1 - phi ** 2)   # keep marginal var const
         for k in range(1, logS.shape[1]):
             eta[:, k] = phi * eta[:, k - 1] + \
-                rng.normal(0, sigma_eta * np.sqrt(1 - phi**2), size=logS.shape[0])
+                rng.normal(0, innov, size=logS.shape[0])
     else:
         eta = rng.normal(0, sigma_eta, size=logS.shape)
     return np.exp(logS + eta)
@@ -955,6 +959,86 @@ def rung2_microstructure(show: bool = True, quick: bool = False):
     if show: plt.show()
     plt.close(fig)
     return sweep
+
+
+def rung2_ar1_noise(show: bool = True, quick: bool = False):
+    """
+    Rung 2 extension — AR(1) (persistent) microstructure noise. Where Rung 2's
+    core uses iid noise (→ negative-autocorrelation → spurious ROUGHNESS, Ĥ
+    down), real frictions are often PERSISTENT: stale quotes, VWAP/TWAP
+    child-order pressure, slow liquidity replenishment. Persistent noise
+    (AR(1), φ>0) "sticks together", making smooth mini-trends rather than a
+    zig-zag.
+
+    Controlled comparison (single variable = noise persistence): fix the
+    smooth H=0.5 base, the RV window, and γ; sweep φ from 0 (iid) up. Probe-
+    confirmed: the downward push WEAKENS at low φ and REVERSES upward as φ
+    grows (GJR 0.02 at φ=0 → 0.13 at φ=0.95). So microstructure noise can
+    fabricate an illusion of SMOOTHNESS as readily as roughness — the
+    direction depends on the noise's temporal structure.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 2 (extension) — AR(1) persistent noise: frictions can fake")
+    print("           SMOOTHNESS too. Sweep noise persistence φ.")
+    print("─" * 70)
+
+    n_fine = RV_FINE_STEPS
+    N = 40 if quick else 50
+    window = 32
+    gamma = 1.0
+    phis = (np.array([0.0, 0.6, 0.95]) if quick else RV_AR1_PHIS)
+    _, S_smooth, _ = rough_bergomi_paths(n_fine, 0.5, N, eta=1.0,
+                                         rng=np.random.default_rng(909))
+    rng = np.random.default_rng(111)
+
+    res = {"phi": [], "gjr": [], "pvar": [], "mfdfa": []}
+    print(f"\n  Smooth H=0.5, γ={gamma}, sweep φ (noise persistence):")
+    print(f"  {'φ':>5} {'GJR':>8} {'Cont-Das':>9} {'MF-DFA':>8}   note")
+    for phi in phis:
+        S = add_microstructure_noise(S_smooth, gamma, rng, kind="ar1", phi=phi)
+        lrv = realized_log_variance(S, window)
+        hg = _safe_estimate(gjr_hurst, lrv)
+        hp = _safe_estimate(pvariation_hurst, lrv)
+        hm = _safe_estimate(mfdfa_hurst, lrv)
+        res["phi"].append(phi); res["gjr"].append(hg)
+        res["pvar"].append(hp); res["mfdfa"].append(hm)
+        note = "iid baseline (Rung 2)" if phi == 0 else "↑ persistence lifts Ĥ"
+        print(f"  {phi:5.2f} {hg:8.3f} {hp:9.3f} {hm:8.3f}   {note}")
+
+    lift = res["gjr"][-1] - res["gjr"][0]
+    print(f"\n  → As noise persistence φ grows 0 → {phis[-1]:.2f}, GJR climbs"
+          f" {res['gjr'][0]:.3f} →\n    {res['gjr'][-1]:.3f} (a lift of"
+          f" {lift:+.3f}). iid noise fakes ROUGHNESS (down);\n    persistent"
+          " noise fakes SMOOTHNESS (up). The direction of the\n    microstructure"
+          " artefact depends on the noise's temporal structure —\n    frictions"
+          " can manufacture either illusion. Deepens the fact-or-\n    artefact"
+          " problem: not even the DIRECTION of the bias is fixed.")
+
+    # ---- figure ----
+    fig, ax = plt.subplots(figsize=(7.5, 4.6))
+    phi = np.array(res["phi"])
+    ax.axhline(0.5, color=TEAL, ls="-", lw=1.4, alpha=0.6,
+               label="true H = 0.5 (smooth)")
+    ax.axhspan(0.0, 0.15, color=CORAL, alpha=0.10)
+    ax.plot(phi, res["gjr"], "o-", color=PURPLE, lw=2, ms=7, label="GJR")
+    ax.plot(phi, res["mfdfa"], "^-", color=AMBER, lw=2, ms=7, label="MF-DFA")
+    ax.annotate("iid → fakes roughness", xy=(0.0, res["gjr"][0]),
+                xytext=(0.15, -0.05), fontsize=8, color=GRAY,
+                arrowprops=dict(arrowstyle="->", color=GRAY))
+    ax.annotate("persistent → fakes smoothness", xy=(0.95, res["gjr"][-1]),
+                xytext=(0.45, 0.35), fontsize=8, color=GRAY,
+                arrowprops=dict(arrowstyle="->", color=GRAY))
+    ax.set_xlabel("noise persistence φ (AR(1))")
+    ax.set_ylabel("estimated H (smooth null)")
+    ax.set_title("AR(1) noise: persistence flips the bias direction upward")
+    ax.legend(frameon=False, fontsize=8)
+    fig.suptitle("Layer 1c Rung 2 (ext.) — frictions can fabricate smoothness "
+                 "as readily as roughness", fontweight="bold", fontsize=11)
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung2_ar1.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return float(lift)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -1224,6 +1308,7 @@ def main():
         rung1_bias_envelope(show, args.quick)
     elif args.rung == 2:
         rung2_microstructure(show, args.quick)
+        rung2_ar1_noise(show, args.quick)
     elif args.rung == 3:
         rung3_jumps(show, args.quick)
     elif args.rung == 4:
@@ -1241,6 +1326,7 @@ def main():
         rung1_rv_proxy(show, args.quick)
         rung1_bias_envelope(show, args.quick)
         rung2_microstructure(show, args.quick)
+        rung2_ar1_noise(show, args.quick)
         rung3_jumps(show, args.quick)
         rung4_finite_sample(show, args.quick)
 

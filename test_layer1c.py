@@ -298,6 +298,25 @@ def test_rung2_subsampling_recovers_estimate():
     )
 
 
+def test_rung2_ar1_persistence_lifts_estimate():
+    """AR(1) (persistent) noise reverses the direction: where iid noise (φ=0)
+    fakes roughness (Ĥ down), persistent noise (high φ) makes smooth
+    mini-trends that lift Ĥ back UP — so frictions can fabricate smoothness as
+    readily as roughness."""
+    _, S, _ = rough_bergomi_paths(16384, 0.5, 40, eta=1.0,
+                                  rng=np.random.default_rng(909))
+    rng = np.random.default_rng(111)
+    H_iid = gjr_hurst(realized_log_variance(
+        add_microstructure_noise(S, 1.0, rng, kind="ar1", phi=0.0), 32))
+    H_persistent = gjr_hurst(realized_log_variance(
+        add_microstructure_noise(S, 1.0, rng, kind="ar1", phi=0.95), 32))
+    assert H_persistent > H_iid + 0.03, (
+        f"persistent AR(1) noise (φ=0.95, Ĥ={H_persistent:.3f}) should lift "
+        f"the estimate above iid (φ=0, Ĥ={H_iid:.3f}) — frictions can fake "
+        f"smoothness"
+    )
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Rung 3 — price jumps
 # ──────────────────────────────────────────────────────────────────────────
