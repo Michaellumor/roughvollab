@@ -672,6 +672,17 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   threaded into build_bias_curve, a deliberate edit to a tested module); FTW
   quasi-likelihood (stretch #4) to harden inference from labels to identified
   sets. Does NOT advance Layers 2–4 (the RL/frictions destination).
+  **2026-06-20 (cont.) — Layer 1c step 4: assets located on the map**
+- **L1c-MAP-4** Added η calibration + asset placement to identifiability_map.py
+  (+4 tests, 15 green). calibrate_eta pins η by bisection so model daily-log-RV
+  std matches the asset's (Phase B calibration, reusable; clamps at the grid edge
+  when the asset is more variable than the model spans). place_asset loads a Phase
+  B RV CSV, calibrates η, reuses interpret() to invert each estimator's Ĥ against
+  the matched curve; status uses the map's identified/de-biasable/non-identified
+  definition. plot_identifiability_map(..., placements=) overlays each asset as a
+  star (identified), bracket (multivalued), or off-grid arrow (below-floor) at
+  (implied H, η̂). Run --assets CSV:LABEL:WINDOW; set --eta to span calibrated η.
+  Open: step 5 (microstructure-noise robustness axis), FTW quasi-likelihood.
 ---
 
 ## Publication seeds
