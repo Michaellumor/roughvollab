@@ -125,8 +125,13 @@ identified — so the conclusion does not rest on an assumed η.
 2. **Jumps (Rung 3) not separately removed.** Microstructure (Rung 2) is
    empirically ruled out (Result 2); a jump-robust (bipower) re-run is a cheap
    further check but is not expected to change the verdict.
-3. **One market class.** BTC and ETH agree, but both are crypto; equities (a
-   separate data source) would test cross-asset generality.
+3. **Asset / proxy generality.** BTC and ETH agree. A first equity check (S&P
+   500, Garman–Klass range variance on free daily OHLC) reads *less rough*
+   (GJR Ĥ ≈ 0.13) but is **also non-identified** — so the wall holds across
+   asset classes, continuous (crypto) and gapped (equity). That comparison
+   mixes a calendar difference with a range-vs-RV proxy difference, so it is
+   suggestive, not a clean isolation; broader equity coverage and an intraday
+   equity RV (if a data source is obtained) would strengthen it.
 
 ## Conclusion
 
@@ -152,6 +157,8 @@ support — and caught its own attempt to do so.
 ## Optional further work (not required for this conclusion)
 
 - Jump-robust (bipower) re-run as an additional check on Result 3.
-- Equities as a second data source for cross-asset generality (new data brick).
+- Broader equity coverage (more tickers; an intraday equity RV if a data
+  source is obtained). A first SPX range-variance pass is done — less rough,
+  also non-identified.
 - Rung 5 (calendar effects): still deferred — muted for 24/7 crypto, relevant
   if equities are added.

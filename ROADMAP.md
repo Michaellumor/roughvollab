@@ -33,6 +33,7 @@ by a run that actually happened.
 | `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rungs 1–5 complete (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample; calendar/day-of-week seasonality + deseasonalise) (+`test_layer1c.py`) | ✅ estimators + full ladder | 2026-06-20 |
 | `binance_data.py`, `kline_verifier.py`, `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy (Rung-1 twin) | ✅ 66 tests pass | 2026-06-20 |
 | `estimate_h.py`, `interpret_h.py` | Phase B analysis: 3 estimators + disagreement; de-bias vs matched Rung-1 envelope | ✅ 21 tests pass | 2026-06-20 |
+| `equity_data.py` | Equity arm: free daily OHLC → Garman–Klass/Parkinson range log-variance (Rung-5 gap leg), pipeline-compatible | ✅ 6 tests; run on SPX | 2026-06-20 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -234,11 +235,13 @@ model-assuming estimator (Cont–Das cannot resolve, MF-DFA unphysical),
 microstructure ruled out by the sweep, and de-biasing non-identified at the
 data-calibrated vol-of-vol (η ≥ 1.5, where rough ≡ smooth through the proxy).
 Empirical vindication of the Cont–Das/Rogers artefact position. Methodological
-note: planned bootstrap CIs were replaced by **sub-window stability** — a moving-
-block bootstrap would shred the long-range dependence being measured. Still open
-(not load-bearing for the finding): jump-robust (bipower) re-run; the equity arm;
-Hayashi–Yoshida / Epps refinement for asynchronous ticks; Rung 5 (calendar). The
-spec below is retained as the original plan.
+note: planned bootstrap CIs were replaced by **sub-window stability** — a moving-block bootstrap would shred the long-range dependence being measured. Still open
+(not load-bearing for the finding): jump-robust (bipower) re-run; deeper equity
+coverage (the first leg is done — SPX range-variance run 2026-06-20, Ĥ≈0.13,
+also non-identified — see the equity decisions-log entry; more tickers would
+test stability); Hayashi–Yoshida / Epps refinement for asynchronous ticks; Rung
+5's real gap leg is now done (SPX-vs-crypto). The spec below is retained as the
+original plan.
 
 - Crypto: BTC, ETH (+ one liquid alt) from public exchange kline APIs,
   1-min bars, full history; 5-min RV with subsampling; bipower variant.
@@ -626,20 +629,29 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   remaining data leg. Figure: layer1c_rung5_calendar.png. Closing message and
   `--rung 5` CLI updated; the simulated corruption ladder is now Rungs 1–5.
 
-- **2026-06-20 — Equity arm tooling built (Rung-5 gap leg, in progress).** Free
+- **2026-06-20 — Equity arm built AND run; Rung-5 gap leg closed.** Free
   intraday equity history at a 2019–2025 span does not exist, so — per the
   ROADMAP's sanctioned fallback — the equity arm uses a RANGE-BASED daily
   variance on free daily OHLC. `equity_data.py` (+`test_equity_data.py`, 6
   tests): a stdlib stooq downloader + Garman–Klass / Parkinson daily
   log-variance builder that emits the SAME CSV header as rv_series.py, so
   estimate_h / interpret_h read it unchanged (verified end-to-end: a built
-  series loads through load_log_rv_csv and runs the three estimators). NOT yet
-  run on real data — needs the download on a networked machine. Fidelity
-  caveats recorded in the module: the range proxy is TRADING-SESSION only (no
-  overnight gap), and an equity-vs-crypto Ĥ gap mixes a calendar difference with
-  a proxy difference — suggestive, not the clean isolation (that is the
-  simulated Rung 5). Next: download SPY / ^SPX, build the series, run estimate_h
-  + interpret_h, and compare to the BTC/ETH result — the real gap leg of Rung 5.
+  series loads through load_log_rv_csv and runs the three estimators). RUN on
+  real data: S&P 500 (^GSPC, 1,759 daily obs 2019–2025) via **yfinance** —
+  stooq now sits behind a JavaScript bot-wall so the auto-downloader correctly
+  errors out; yfinance, or a manually-downloaded CSV, is the route (the builder
+  reads both). **Result: SPX GJR Ĥ ≈ 0.132 — LESS rough than crypto's ~0.08**,
+  the right direction for a calendar/gap effect; and de-biasing SPX is
+  NON-IDENTIFIED too (GJR above the calibrated range, MF-DFA multi-valued,
+  Cont–Das nan). So the observational-equivalence wall holds across BOTH asset
+  classes — continuous crypto AND gapped equity — a stronger, more general
+  finding than crypto alone. Fidelity caveats (in the module): the range proxy
+  is TRADING-SESSION only (no overnight gap), and an equity-vs-crypto Ĥ gap
+  mixes a calendar difference with a proxy (range-vs-RV) difference — so read
+  SPX-vs-crypto as suggestive corroboration, not the clean isolation (that is
+  the simulated Rung 5). Both legs of Rung 5 now exist: clean simulated
+  isolation + real cross-asset comparison. Possible next: more equity tickers
+  (QQQ, ^FTSE) to check whether ~0.13 is stable across equities.
 
 ---
 

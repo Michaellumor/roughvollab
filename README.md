@@ -21,6 +21,7 @@
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
 | `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
+| `equity_data.py` | Equity arm: free daily OHLC → range-based log-variance (Rung-5 gap leg) | ✅ 6 tests; run on SPX |
 
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
@@ -147,6 +148,15 @@ variability forces η ≥ 1.5, exactly the regime where rough and smooth are
 observationally equivalent through the proxy). An empirical demonstration, on
 crypto, of the Cont–Das / Rogers position — with the model dependence calibrated
 away rather than assumed.
+
+The same wall holds across asset classes. An equity arm (`equity_data.py`,
+Garman–Klass range variance on free S&P 500 daily OHLC) reads SPX as **less
+rough** than crypto (GJR Ĥ ≈ 0.13 vs ≈ 0.08) — the expected direction for a
+calendar/gap effect — yet de-biasing SPX is **non-identified too**. So the
+roughness reading resists identification whether the calendar is continuous
+(crypto) or gapped (equity). This is suggestive rather than a clean isolation
+(it mixes a calendar difference with a range-vs-RV proxy difference); the clean
+isolation is the simulated Rung 5 in `layer1c_roughness_audit.py`.
 
 ---
 
