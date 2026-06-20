@@ -58,11 +58,15 @@ from interpret_h import (
     ESTIMATORS,
     BiasCurve,
     build_bias_curve,
+    interpret,
     _classify_inversion,
     _is_monotone,
     _local_slope,
     _FLAT_SLOPE,
 )
+from roughvol_core import rough_bergomi_paths
+from layer1c_roughness_audit import realized_log_variance
+from estimate_h import load_log_rv_csv
 
 __all__ = [
     "IDENTIFIED",
@@ -76,6 +80,10 @@ __all__ = [
     "build_identifiability_map",
     "plot_identifiability_map",
     "locate_observed",
+    "model_daily_logrv_sd",
+    "calibrate_eta",
+    "AssetPlacement",
+    "place_asset",
 ]
 
 # ── project palette ────────────────────────────────────────────────────────
@@ -251,10 +259,12 @@ def build_identifiability_map(eta_grid: Sequence[float] = DEFAULT_ETA_GRID,
 # ───────────────────────────────────────────────────────────────────────────
 def plot_identifiability_map(imap: IdentifiabilityMap,
                              out: Optional[str] = "output/identifiability_map.png",
-                             show: bool = True):
+                             show: bool = True,
+                             placements: Optional[list] = None):
     """Render the map: rows = estimators, cols = Δ; each panel x = true H, y = η,
     cell colour = identifiability status. The teal region is where roughness is
-    actually recoverable; coral is where rough ≡ smooth."""
+    actually recoverable; coral is where rough ≡ smooth. If `placements` are
+    given, real assets are overlaid as markers in the panel matching their Δ."""
     names = list(ESTIMATORS)
     nrow, ncol = len(names), imap.window_grid.size
     cmap = ListedColormap([_STATUS_COLOR[s] for s in _STATUS_ORDER])
@@ -280,6 +290,11 @@ def plot_identifiability_map(imap: IdentifiabilityMap,
                 ax.set_xlabel("true H", fontsize=9)
             if c == 0:
                 ax.set_ylabel(f"{name}\nη (vol-of-vol)", fontsize=9)
+            if placements:
+                win = int(imap.window_grid[c])
+                for pl in placements:
+                    if int(pl.window) == win:
+                        _overlay_asset(ax, pl, name, imap)
 
     present = sorted({imap.status[n][a][b][i]
                       for n in names for a in range(imap.eta_grid.size)
@@ -302,6 +317,40 @@ def plot_identifiability_map(imap: IdentifiabilityMap,
     return fig
 
 
+def _overlay_asset(ax, pl, name: str, imap: IdentifiabilityMap) -> None:
+    """Draw one asset on a panel: a star at (implied true H, calibrated η),
+    coloured by status. Below-floor and multivalued get honest off-grid / bracket
+    markers instead of a fake point."""
+    g, eta = imap.true_grid, imap.eta_grid
+    y = float(np.interp(pl.eta_hat, eta, np.arange(eta.size)))
+    st = pl.status.get(name)
+    lbl = dict(fontsize=7, color="black", zorder=7,
+               bbox=dict(boxstyle="round,pad=0.12", fc="white", ec="none", alpha=0.78))
+
+    if st == BELOW_FLOOR:
+        ax.scatter([-0.42], [y], marker="<", s=70, facecolor="white",
+                   edgecolor="black", linewidth=1.0, zorder=7, clip_on=False)
+        ax.annotate(f"{pl.label} (η̂={pl.eta_hat:.1f}): below floor", xy=(-0.4, y),
+                    xytext=(-0.4, y + 0.28), **lbl)
+    elif st == NON_IDENTIFIED and len(pl.candidates.get(name, [])) >= 2:
+        xs = [float(np.interp(c, g, np.arange(g.size))) for c in pl.candidates[name]]
+        ax.plot(xs, [y] * len(xs), "-", color="white", lw=1.2, zorder=6)
+        ax.scatter(xs, [y] * len(xs), marker="o", s=30, facecolor="none",
+                   edgecolor="white", linewidth=1.4, zorder=7)
+        ax.annotate(f"{pl.label} (η̂={pl.eta_hat:.1f}): multivalued", xy=(xs[0], y),
+                    xytext=(min(xs), y + 0.28), **lbl)
+    else:
+        h = pl.implied_H.get(name, np.nan)
+        if not np.isfinite(h):
+            return
+        x = float(np.interp(h, g, np.arange(g.size)))
+        face = "white" if st == IDENTIFIED else "none"
+        ax.scatter([x], [y], marker="*", s=150, facecolor=face,
+                   edgecolor="black", linewidth=1.1, zorder=7)
+        ax.annotate(f"{pl.label} (η̂={pl.eta_hat:.1f})", xy=(x, y),
+                    xytext=(x + 0.12, y + 0.24), **lbl)
+
+
 # ───────────────────────────────────────────────────────────────────────────
 # step 4 hook — locate a real asset on the map (entry point, not the full leg)
 # ───────────────────────────────────────────────────────────────────────────
@@ -318,6 +367,109 @@ def locate_observed(observed_H: float, curve: BiasCurve, name: str):
                "below_floor": BELOW_FLOOR, "above_ceiling": ABOVE_CEILING,
                "uncalibrated": UNCALIBRATED}
     return mapping.get(inv_status, inv_status), sols
+
+
+# ───────────────────────────────────────────────────────────────────────────
+# step 4 — calibrate η per asset, then place the asset on the map
+# ───────────────────────────────────────────────────────────────────────────
+def model_daily_logrv_sd(eta: float, *, H: float, window: int, n_obs: int,
+                         n_paths: int = 24, seed: int = 0) -> float:
+    """Std of model daily-log-RV at vol-of-vol η (mean over paths).
+
+    The roughness reading is non-identified only *relative to a model of
+    plausible vol-of-vol*. Rather than assume η, we pin it by matching this
+    quantity to the asset's own daily-log-RV std — the Phase B calibration, made
+    reusable. Monotone increasing in η, which makes the calibration well-posed.
+    """
+    rng = np.random.default_rng(seed)
+    _, S, _ = rough_bergomi_paths(n_obs * window, H, n_paths=n_paths,
+                                  eta=eta, rng=rng)
+    rv = realized_log_variance(S, window)                 # (n_paths, n_obs)
+    return float(np.nanmean(np.nanstd(rv, axis=1)))
+
+
+def calibrate_eta(observed_sd: float, *, H: float = 0.10, window: int,
+                  n_obs: int, n_paths: int = 24, eta_lo: float = 0.2,
+                  eta_hi: float = 4.0, tol: float = 0.02, max_iter: int = 16,
+                  seed: int = 0) -> float:
+    """η such that model daily-log-RV std matches the asset's `observed_sd`.
+
+    Bisection (the std is monotone in η). If the asset is more variable than the
+    model produces even at `eta_hi`, η is clamped there — the honest "the model
+    is calmer than the asset at every η we tried" outcome from Phase B (which is
+    what forces η ≳ 1.5 for crypto).
+    """
+    s_lo = model_daily_logrv_sd(eta_lo, H=H, window=window, n_obs=n_obs,
+                                n_paths=n_paths, seed=seed)
+    s_hi = model_daily_logrv_sd(eta_hi, H=H, window=window, n_obs=n_obs,
+                                n_paths=n_paths, seed=seed)
+    if observed_sd <= s_lo:
+        return eta_lo
+    if observed_sd >= s_hi:
+        return eta_hi
+    lo, hi = eta_lo, eta_hi
+    for _ in range(max_iter):
+        mid = 0.5 * (lo + hi)
+        s = model_daily_logrv_sd(mid, H=H, window=window, n_obs=n_obs,
+                                 n_paths=n_paths, seed=seed)
+        if abs(s - observed_sd) < tol:
+            return mid
+        lo, hi = (mid, hi) if s < observed_sd else (lo, mid)
+    return 0.5 * (lo + hi)
+
+
+@dataclass
+class AssetPlacement:
+    """Where one real asset lands on the identifiability map."""
+    label: str
+    window: int
+    eta_hat: float
+    observed_sd: float
+    observed_H: dict
+    implied_H: dict
+    implied_sd: dict
+    status: dict
+    candidates: dict
+
+
+def place_asset(label: str, csv_path: str, window: int, *,
+                H_ref: float = 0.10, n_mc: int = 40, cal_paths: int = 24,
+                z: float = 1.96, smooth: float = _SMOOTH, seed: int = 505
+                ) -> AssetPlacement:
+    """Calibrate η from the asset's RV variability, then locate it on the map.
+
+    Loads the asset's daily-log-RV CSV (a Phase B output), calibrates η to its
+    std, then reuses interpret() to invert each estimator's observed Ĥ against the
+    matched bias curve at the calibrated η. Status uses the SAME identified /
+    de-biasable / non-identified definition as the map cells (smooth-null exclusion
+    via the implied-H confidence band).
+    """
+    log_rv, _, _ = load_log_rv_csv(csv_path)
+    n_obs = int(log_rv.size)
+    observed_sd = float(np.nanstd(log_rv))
+    eta_hat = calibrate_eta(observed_sd, H=H_ref, window=window, n_obs=n_obs,
+                            n_paths=cal_paths, seed=seed)
+
+    interp = interpret(csv_path, window=window, eta=eta_hat, n_mc=n_mc,
+                       label=label, seed=seed)
+
+    status = {}
+    for name in ESTIMATORS:
+        reason = interp.reason[name]
+        if reason == "ok":
+            h, hsd = interp.implied[name], interp.implied_sd[name]
+            ident = bool(np.isfinite(h) and np.isfinite(hsd)
+                         and h + z * hsd < smooth)
+            status[name] = IDENTIFIED if ident else DEBIASABLE
+        else:
+            status[name] = {"multivalued": NON_IDENTIFIED,
+                            "below_floor": BELOW_FLOOR,
+                            "above_ceiling": ABOVE_CEILING,
+                            "uncalibrated": UNCALIBRATED}.get(reason, reason)
+
+    return AssetPlacement(label, window, float(eta_hat), observed_sd,
+                          interp.observed, interp.implied, interp.implied_sd,
+                          status, interp.candidates)
 
 
 # ───────────────────────────────────────────────────────────────────────────
@@ -358,6 +510,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     p.add_argument("--windows", help="comma list of Δ windows, e.g. 48,96,288")
     p.add_argument("--n-obs", type=int, default=None)
     p.add_argument("--n-mc", type=int, default=None)
+    p.add_argument("--assets", nargs="*", default=None,
+                   help="asset overlays as CSVPATH:LABEL:WINDOW (space-separated)")
     args = p.parse_args(argv)
 
     if args.quick:
@@ -378,7 +532,19 @@ def main(argv: Optional[list[str]] = None) -> int:
     imap = build_identifiability_map(eta_grid, window_grid, true_grid,
                                      n_obs=n_obs, n_mc=n_mc)
     _summarise(imap)
-    plot_identifiability_map(imap, out=args.out, show=not args.no_show)
+
+    placements = None
+    if args.assets:
+        placements = []
+        for spec in args.assets:
+            path, label, win = spec.rsplit(":", 2)
+            pl = place_asset(label, path, int(win), n_mc=n_mc)
+            placements.append(pl)
+            print(f"  placed {label}: η̂ = {pl.eta_hat:.2f}, status = "
+                  + ", ".join(f"{k} {v}" for k, v in pl.status.items()))
+
+    plot_identifiability_map(imap, out=args.out, show=not args.no_show,
+                             placements=placements)
     return 0
 
 

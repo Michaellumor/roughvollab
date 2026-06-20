@@ -15,9 +15,12 @@ import pytest
 from identifiability_map import (
     IDENTIFIED, DEBIASABLE, NON_IDENTIFIED, UNCALIBRATED,
     cell_status, build_identifiability_map, plot_identifiability_map,
-    locate_observed,
+    locate_observed, calibrate_eta, model_daily_logrv_sd, place_asset,
+    AssetPlacement,
 )
 from interpret_h import build_bias_curve
+from roughvol_core import rough_bergomi_paths
+from layer1c_roughness_audit import realized_log_variance
 
 # A clean, steep, monotone curve: observed Ĥ ≈ true H (slope ≈ 1), tight spread.
 _G = np.array([0.05, 0.10, 0.20, 0.30, 0.45, 0.60])
@@ -90,6 +93,57 @@ def test_build_map_shape_and_valid_statuses_quick():
         assert set(imap.status[name][0][0]) <= valid
     # plotting must not raise (headless)
     plot_identifiability_map(imap, out=None, show=False)
+
+
+# ── step 4: η calibration + asset placement ─────────────────────────────────
+
+def _make_asset_csv(path, *, H, eta, n_obs, window, seed=7):
+    """Write a synthetic asset CSV (a model path standing in for real data)."""
+    rng = np.random.default_rng(seed)
+    _, S, _ = rough_bergomi_paths(n_obs * window, H, n_paths=1, eta=eta, rng=rng)
+    log_rv = realized_log_variance(S, window)[0]
+    with open(path, "w") as f:
+        f.write("period_start_ms,log_rv\n")
+        for k, v in enumerate(log_rv):
+            f.write(f"{k},{v}\n")
+
+
+def test_calibrate_eta_recovers_known_eta():
+    # Fixed-seed model std is a smooth monotone function of η, so calibrating to
+    # a series generated at η*=1.5 (same draws) recovers it tightly.
+    rng = np.random.default_rng(3)
+    _, S, _ = rough_bergomi_paths(150 * 24, 0.10, n_paths=8, eta=1.5, rng=rng)
+    obs_sd = float(np.nanmean(np.nanstd(realized_log_variance(S, 24), axis=1)))
+    eta_hat = calibrate_eta(obs_sd, H=0.10, window=24, n_obs=150, n_paths=8, seed=3)
+    assert abs(eta_hat - 1.5) < 0.3
+
+
+def test_model_sd_increases_with_eta():
+    lo = model_daily_logrv_sd(0.5, H=0.10, window=24, n_obs=120, n_paths=6, seed=1)
+    hi = model_daily_logrv_sd(2.5, H=0.10, window=24, n_obs=120, n_paths=6, seed=1)
+    assert hi > lo
+
+
+def test_place_asset_smoke(tmp_path):
+    csv = tmp_path / "fake_asset.csv"
+    _make_asset_csv(str(csv), H=0.10, eta=1.5, n_obs=120, window=24, seed=9)
+    pl = place_asset("FAKE", str(csv), window=24, n_mc=3, cal_paths=6)
+    assert isinstance(pl, AssetPlacement)
+    assert pl.eta_hat > 0 and np.isfinite(pl.observed_sd)
+    valid = {IDENTIFIED, DEBIASABLE, NON_IDENTIFIED, "below-floor",
+             "above-ceiling", UNCALIBRATED}
+    assert set(pl.status.values()) <= valid
+    assert set(pl.observed_H) == {"GJR", "Cont-Das", "MF-DFA"}
+
+
+def test_plot_with_placements_no_raise(tmp_path):
+    csv = tmp_path / "fake_asset.csv"
+    _make_asset_csv(str(csv), H=0.10, eta=1.5, n_obs=120, window=24, seed=11)
+    pl = place_asset("FAKE", str(csv), window=24, n_mc=3, cal_paths=6)
+    imap = build_identifiability_map(np.array([1.5]), np.array([24]),
+                                     np.array([0.05, 0.10, 0.45, 0.60]),
+                                     n_obs=100, n_mc=3, progress=False)
+    plot_identifiability_map(imap, out=None, show=False, placements=[pl])
 
 
 if __name__ == "__main__":
