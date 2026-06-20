@@ -435,6 +435,42 @@ def test_rung4_mfdfa_breaks_the_claim():
     )
 
 
+def test_rung5_deseasonalize_removes_weekly_cycle():
+    """deseasonalize() must strip the deterministic period-7 cycle: after it,
+    the per-phase means are ~0, while the injected cycle was clearly present."""
+    from layer1c_roughness_audit import add_weekly_seasonality, deseasonalize
+    rng = np.random.default_rng(0)
+    base = rng.standard_normal((3, 700)) * 0.2
+    A, P = 1.0, 7
+    contaminated = add_weekly_seasonality(base, A, period=P)
+    cleaned = deseasonalize(contaminated, period=P)
+    cols = np.arange(cleaned.shape[1])
+    cphase = [contaminated[:, (cols % P) == ph].mean() for ph in range(P)]
+    assert max(cphase) - min(cphase) > 0.5, "injected cycle too weak to test"
+    phase_means = [cleaned[:, (cols % P) == ph].mean() for ph in range(P)]
+    assert max(abs(m) for m in phase_means) < 0.05, \
+        f"deseasonalize left a residual cycle: phase means {phase_means}"
+
+
+def test_rung5_seasonality_biases_gjr_up_and_deseasonalize_recovers():
+    """A deterministic weekly cycle biases GJR UP (reads smoother); removing it
+    by deseasonalising returns Ĥ to the clean value — a removable artefact."""
+    from layer1c_roughness_audit import add_weekly_seasonality, deseasonalize
+    _, logV = rough_log_variance_paths(1500, 0.1, 12, eta=1.5,
+                                       rng=np.random.default_rng(909))
+    clean = gjr_hurst(logV)
+    A = 1.0 * float(np.std(logV))
+    cont = add_weekly_seasonality(logV, A, period=7)
+    biased = gjr_hurst(cont)
+    recovered = gjr_hurst(deseasonalize(cont, period=7))
+    assert biased > clean + 0.01, (
+        f"weekly seasonality should bias GJR UP (smoother): clean {clean:.3f} "
+        f"-> contaminated {biased:.3f}")
+    assert abs(recovered - clean) < 0.02, (
+        f"deseasonalising should recover the clean Ĥ: clean {clean:.3f} "
+        f"-> deseasonalised {recovered:.3f}")
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

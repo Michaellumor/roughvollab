@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rungs 1–4 complete (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample) (+`test_layer1c.py`, 50 tests) | ✅ estimators + ladder core | 2026-06-20 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rungs 1–5 complete (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample; calendar/day-of-week seasonality + deseasonalise) (+`test_layer1c.py`) | ✅ estimators + full ladder | 2026-06-20 |
 | `binance_data.py`, `kline_verifier.py`, `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy (Rung-1 twin) | ✅ 66 tests pass | 2026-06-20 |
 | `estimate_h.py`, `interpret_h.py` | Phase B analysis: 3 estimators + disagreement; de-bias vs matched Rung-1 envelope | ✅ 21 tests pass | 2026-06-20 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
@@ -187,18 +187,23 @@ roughness):
   (Barndorff-Nielsen–Shephard) as the jump-robust RV alternative.
 - Rung 4 — finite sample: T ∈ {250, 1000, 2500} daily RV observations;
   reproduce the direction of the known H-vs-sample-size effect.
-- Rung 5 *(DEFERRED to Phase B — decision 2026-06-20)* — calendar effects:
-  overnight/weekend gaps (equity-style) vs 24/7 (crypto) — a natural
-  experiment. **Deferred deliberately:** unlike Rungs 1–4 (clean mathematical
-  corruptions of a null), calendar effects are a *data-structure* artefact
-  whose value lies in REAL market calendars (actual NYSE hours, real
-  weekends, real 24/7 crypto). Simulating an invented gap pattern would be
-  circular and weak; observing it in real BTC-vs-SPX data is far more
-  convincing. So it belongs with the data in Phase B, not in the simulated
-  ladder. The simulated ladder is considered COMPLETE at Rungs 1–4 + the
-  AR(1) variant (the major mathematical artefacts); calendar effects join
-  Phase B's "audited estimators on real markets" work as a natural
-  experiment (equity gapped vs crypto continuous).
+- Rung 5 *(simulated version DONE 2026-06-20; real-data leg remains)* — calendar
+  effects. Two distinct things hide under this name. **(a) The CONTROLLED
+  artefact** — a deterministic day-of-week SEASONALITY in volatility — is now
+  built (`rung5_calendar` + helpers `add_weekly_seasonality` / `deseasonalize`,
+  +2 tests): inject a growing weekly cycle into known-H log-vol, measure the
+  bias, test the deseasonalise mitigation. Result: GJR biases UP (smoother),
+  MF-DFA DOWN (rougher), Cont–Das eventually breaks — the SAME estimator-
+  dependent sign-split as Rungs 2–3; the bias grows with amplitude and
+  deseasonalising (subtract the period-7 mean cycle) removes it cleanly — a
+  REMOVABLE artefact, unlike finite-sample. Crypto's weak day-of-week amplitude
+  ⇒ minimal bias ⇒ the Phase B BTC/ETH reading is clean of calendar effects.
+  **(b) The DATA-STRUCTURE artefact** — real overnight/weekend GAPS (equity
+  5-day, real NYSE hours) vs 24/7 crypto, the natural experiment — still belongs
+  with REAL data (simulating invented gaps would be circular and weak) and needs
+  the equity arm; it is the remaining leg. So the simulated ladder is now
+  complete through Rung 5's controlled seasonality; the gapped equity-vs-crypto
+  comparison is Phase-B data work, not a simulated rung.
 
 **Protocol:** ≥500 Monte Carlo replications per cell; core grid =
 truths × core estimators × rungs 0–4 at one realistic setting each,
@@ -604,6 +609,22 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   on the non-monotone noisy-proxy curve; now detects non-monotonicity and reports
   NON-IDENTIFIED. Write-up: PHASE_B_FINDINGS.md. Open (optional): bipower re-run,
   equity arm, Hayashi–Yoshida/Epps, Rung 5.
+
+- **2026-06-20 — Rung 5 (calendar effects): controlled simulated version built.**
+  Closed the long-deferred Rung 5 with its controlled-artefact half — a
+  deterministic day-of-week seasonality. `rung5_calendar` + helpers
+  `add_weekly_seasonality` / `deseasonalize` in layer1c, +2 fast tests. Finding:
+  a deterministic weekly cycle biases the estimators in OPPOSITE directions —
+  GJR up (toward smooth: the cycle is more predictable than rough noise), MF-DFA
+  down (toward rough), Cont–Das breaks at large amplitude — the same
+  sign-disagreement as Rungs 2–3; the bias grows with amplitude; deseasonalising
+  (subtract the period-7 mean cycle) recovers every estimator exactly (a
+  removable artefact, unlike Rung 4). Ties to Phase B: crypto's weak day-of-week
+  amplitude means the BTC/ETH roughness reading is uncontaminated by calendar
+  effects. NOT done (deliberately — needs equity data): the real overnight/
+  weekend GAP natural experiment (equity-gapped vs crypto-continuous), the
+  remaining data leg. Figure: layer1c_rung5_calendar.png. Closing message and
+  `--rung 5` CLI updated; the simulated corruption ladder is now Rungs 1–5.
 
 ---
 

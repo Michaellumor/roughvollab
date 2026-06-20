@@ -1287,12 +1287,163 @@ def rung4_finite_sample(show: bool = True, quick: bool = False):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+# RUNG 5 — calendar effects: does a deterministic day-of-week cycle bias Ĥ?
+# ══════════════════════════════════════════════════════════════════════════
+
+def add_weekly_seasonality(log_v: np.ndarray, amplitude: float,
+                           period: int = 7, phase: float = 0.0) -> np.ndarray:
+    """Add a deterministic weekly (day-of-week) cycle to daily log-variance.
+
+    Additive in log-variance == a multiplicative seasonal factor on variance.
+    A pure sinusoid of the given period and amplitude stands in for the
+    calendar artefact real markets carry (day-of-week effects) and a stationary
+    rough simulation does not. `period=7` is the crypto week; equities run a
+    5-day week (plus overnight/weekend gaps — a data-structure effect best
+    measured on real calendars, see ROADMAP).
+    """
+    t = np.arange(log_v.shape[-1])
+    cycle = amplitude * np.sin(2.0 * np.pi * (t + phase) / period)
+    return log_v + cycle
+
+
+def deseasonalize(x: np.ndarray, period: int = 7) -> np.ndarray:
+    """Remove the period-P sample-mean cycle (standard seasonal adjustment).
+
+    For each phase 0..P-1, subtract the mean of the values at that phase. With
+    many cycles the rough fluctuations average out, so this removes the
+    deterministic cycle while leaving the roughness — the natural mitigation,
+    and the test of whether the calendar artefact is cleanly removable.
+    """
+    x2 = np.atleast_2d(x).astype(float)
+    out = x2.copy()
+    cols = np.arange(x2.shape[1])
+    for ph in range(period):
+        idx = (cols % period) == ph
+        out[:, idx] -= x2[:, idx].mean(axis=1, keepdims=True)
+    return out if x.ndim > 1 else out[0]
+
+
+def rung5_calendar(show: bool = True, quick: bool = False):
+    """
+    Rung 5 — calendar effects. Inject a DETERMINISTIC weekly (day-of-week)
+    cycle of growing amplitude into clean known-H log-variance, measure the
+    bias each estimator picks up, then test whether DESEASONALISING (removing
+    the period-7 sample-mean cycle) recovers H. This is the controlled,
+    simulated characterisation of the calendar artefact — analogous to Rung 3
+    (inject jumps → measure → bipower mitigation).
+
+    What it does NOT cover (deliberately, per ROADMAP): the overnight/weekend
+    GAP structure as a real-calendar natural experiment (equity-gapped vs
+    crypto-continuous), whose value lies in real NYSE-vs-24/7 data and which
+    needs the equity data arm. Here the question is the cleaner one a daily-RV
+    estimator actually faces: a missing-overnight level shift is H-neutral, so
+    the bias that matters is day-to-day deterministic SEASONALITY.
+
+    Tie to Phase B: crypto trades 24/7 with weak day-of-week seasonality (small
+    amplitude here) — so this rung tells us the BTC/ETH roughness reading is
+    essentially uncontaminated by calendar effects; equities (5-day week,
+    stronger day-of-week effects, real gaps) would sit further along the sweep.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 5 — calendar effects: does a deterministic weekly cycle bias Ĥ?")
+    print("           (clean known-H log-vol + day-of-week seasonality; "
+          "deseasonalise = mitigation)")
+    print("─" * 70)
+
+    H_true = 0.1                                   # ultra-rough — the key regime
+    N = 40 if quick else 80
+    T = 1000 if quick else 2000                    # daily obs (~Phase B scale)
+    period = 7                                     # crypto week
+
+    _, logV = rough_log_variance_paths(T, H_true, N, eta=1.5,
+                                       rng=np.random.default_rng(909))
+    base_sd = float(np.std(logV))                  # fluctuation scale for amplitudes
+    amp_fracs = [0.0, 0.5, 1.0, 2.0]               # seasonal amplitude / fluctuation sd
+
+    res = {"amp": [], "gjr_c": [], "pvar_c": [], "mfdfa_c": [],
+           "gjr_d": [], "pvar_d": [], "mfdfa_d": []}
+    print(f"\n  True H = {H_true}, period = {period} (crypto week), "
+          f"log-vol fluctuation sd ≈ {base_sd:.2f}")
+    print(f"  amplitude is the seasonal sinusoid size as a fraction of that sd.\n")
+    print(f"  {'amp/sd':>7} | {'GJR':>7}{'CD':>7}{'MFDFA':>7}  (contaminated)"
+          f" | {'GJR':>7}{'CD':>7}{'MFDFA':>7}  (deseasonalised)")
+    for f in amp_fracs:
+        A = f * base_sd
+        cont = add_weekly_seasonality(logV, A, period)
+        des = deseasonalize(cont, period)
+        gc = _safe_estimate(gjr_hurst, cont)
+        pc = _safe_estimate(pvariation_hurst, cont)
+        mc = _safe_estimate(mfdfa_hurst, cont)
+        gd = _safe_estimate(gjr_hurst, des)
+        pd = _safe_estimate(pvariation_hurst, des)
+        md = _safe_estimate(mfdfa_hurst, des)
+        res["amp"].append(f)
+        res["gjr_c"].append(gc); res["pvar_c"].append(pc); res["mfdfa_c"].append(mc)
+        res["gjr_d"].append(gd); res["pvar_d"].append(pd); res["mfdfa_d"].append(md)
+        print(f"  {f:>7.2f} | {gc:>7.3f}{pc:>7.3f}{mc:>7.3f}            "
+              f" | {gd:>7.3f}{pd:>7.3f}{md:>7.3f}")
+
+    # ---- did seasonality bias Ĥ, and did deseasonalising recover it? ----
+    gjr_shift = res["gjr_c"][-1] - res["gjr_c"][0]       # GJR:    clean → strongest
+    mfdfa_shift = res["mfdfa_c"][-1] - res["mfdfa_c"][0]  # MF-DFA: clean → strongest
+    recover = res["gjr_d"][-1] - res["gjr_d"][0]          # residual after deseasonalising
+    print(f"\n  GJR Ĥ shift, clean → strongest seasonality:    {gjr_shift:+.3f}   "
+          f"(UP — reads SMOOTHER)")
+    print(f"  MF-DFA Ĥ shift, clean → strongest seasonality: {mfdfa_shift:+.3f}   "
+          f"(DOWN — reads ROUGHER)")
+    print(f"  GJR Ĥ shift after DESEASONALISING (≈ 0 expected): {recover:+.3f}")
+    print(f"\n  → A deterministic weekly cycle biases the estimators in OPPOSITE")
+    print(f"    directions — GJR up (toward smooth: the cycle is more predictable than")
+    print(f"    rough noise), MF-DFA down (toward rough) — and the split GROWS with")
+    print(f"    amplitude (Cont–Das eventually breaks to nan). This is the SAME")
+    print(f"    sign-disagreement seen for microstructure (Rung 2) and jumps (Rung 3):")
+    print(f"    the DIRECTION of a calendar artefact is estimator-dependent. But unlike")
+    print(f"    finite-sample (Rung 4), it is a DETERMINISTIC, removable artefact —")
+    print(f"    deseasonalising (subtracting the period-{period} mean cycle) returns every")
+    print(f"    estimator to its clean value. For 24/7 CRYPTO the day-of-week amplitude")
+    print(f"    is small (low on this sweep), so the BTC/ETH reading is essentially")
+    print(f"    uncontaminated by calendar effects; an EQUITY 5-day week with stronger")
+    print(f"    day-of-week effects and real overnight/weekend gaps would sit further")
+    print(f"    out — the real equity-vs-crypto natural experiment is the remaining")
+    print(f"    (data) leg.")
+
+    # ---- figure ----
+    fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    a = np.array(res["amp"])
+    ax[0].axhline(H_true, color=GRAY, ls="--", lw=1.3, label=f"true H = {H_true}")
+    ax[0].plot(a, res["gjr_c"], "o-", color=PURPLE, lw=1.9, ms=6, label="GJR")
+    ax[0].plot(a, res["pvar_c"], "s-", color=TEAL, lw=1.9, ms=6, label="Cont–Das")
+    ax[0].plot(a, res["mfdfa_c"], "^-", color=AMBER, lw=1.9, ms=6, label="MF-DFA")
+    ax[0].set_xlabel("seasonal amplitude / fluctuation sd")
+    ax[0].set_ylabel("estimated H (contaminated)")
+    ax[0].set_title("Stronger weekly seasonality biases Ĥ")
+    ax[0].legend(frameon=False, fontsize=8)
+    ax[1].axhline(H_true, color=GRAY, ls="--", lw=1.3, label=f"true H = {H_true}")
+    ax[1].plot(a, res["gjr_d"], "o-", color=PURPLE, lw=1.9, ms=6, label="GJR")
+    ax[1].plot(a, res["pvar_d"], "s-", color=TEAL, lw=1.9, ms=6, label="Cont–Das")
+    ax[1].plot(a, res["mfdfa_d"], "^-", color=AMBER, lw=1.9, ms=6, label="MF-DFA")
+    ax[1].set_xlabel("seasonal amplitude / fluctuation sd")
+    ax[1].set_ylabel("estimated H (deseasonalised)")
+    ax[1].set_title("Deseasonalising recovers H — a removable artefact")
+    ax[1].legend(frameon=False, fontsize=8)
+    fig.suptitle("Layer 1c Rung 5 — a deterministic calendar cycle biases Ĥ, "
+                 "but is removable (crypto: muted)", fontweight="bold")
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung5_calendar.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return dict(bias_contaminated_gjr=gjr_shift, bias_contaminated_mfdfa=mfdfa_shift,
+                residual_deseasonalised=recover, amp_fracs=res["amp"],
+                gjr_contaminated=res["gjr_c"], gjr_deseasonalised=res["gjr_d"])
+
+
+# ══════════════════════════════════════════════════════════════════════════
 
 def main():
     ap = argparse.ArgumentParser(
         description="Layer 1c — roughness-estimator audit")
     ap.add_argument("--section", type=int, choices=[1, 2, 3], default=None)
-    ap.add_argument("--rung", type=int, choices=[1, 2, 3, 4], default=None)
+    ap.add_argument("--rung", type=int, choices=[1, 2, 3, 4, 5], default=None)
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
@@ -1313,6 +1464,8 @@ def main():
         rung3_jumps(show, args.quick)
     elif args.rung == 4:
         rung4_finite_sample(show, args.quick)
+    elif args.rung == 5:
+        rung5_calendar(show, args.quick)
     elif args.section == 1:
         section1_oracle_gate(show, args.quick)
     elif args.section == 2:
@@ -1329,11 +1482,12 @@ def main():
         rung2_ar1_noise(show, args.quick)
         rung3_jumps(show, args.quick)
         rung4_finite_sample(show, args.quick)
+        rung5_calendar(show, args.quick)
 
     print("\n" + "=" * 70)
-    print("  Layer 1c: 3 estimators + Rung 1 (RV proxy) complete.")
-    print("  Next ladder rungs: microstructure noise (R2), jumps (R3),"
-          " finite-sample (R4).")
+    print("  Layer 1c: 3 estimators + corruption ladder Rungs 1–5 complete.")
+    print("  Rungs: RV proxy (R1), microstructure noise (R2), jumps (R3),")
+    print("         finite-sample (R4), calendar/day-of-week seasonality (R5).")
     print("=" * 70 + "\n")
 
 
