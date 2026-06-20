@@ -31,6 +31,8 @@ by a run that actually happened.
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
 | `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rungs 1–4 complete (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample) (+`test_layer1c.py`, 50 tests) | ✅ estimators + ladder core | 2026-06-20 |
+| `binance_data.py`, `kline_verifier.py`, `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy (Rung-1 twin) | ✅ 66 tests pass | 2026-06-20 |
+| `estimate_h.py`, `interpret_h.py` | Phase B analysis: 3 estimators + disagreement; de-bias vs matched Rung-1 envelope | ✅ 21 tests pass | 2026-06-20 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -216,6 +218,22 @@ bootstrap otherwise). Batched generation per Layer 1b conventions (D8).
   the corruption regimes where |bias| < 0.05 ("trustworthy zone").
 
 ### Phase B — real data (only with audited estimators)
+
+**STATUS (2026-06-20): CRYPTO ARM COMPLETE.** Pipeline built and tested
+(`binance_data` → `kline_verifier` → `rv_series` → `estimate_h` → `interpret_h`,
+87 tests; runbook `run_phaseb.md`). Analysis run on BTCUSDT + ETHUSDT, 2019–2025,
+2,557 daily obs. **Finding (full write-up: `PHASE_B_FINDINGS.md`):** the apparent
+ultra-roughness of crypto vol (GJR Ĥ ≈ 0.08) is real and sampling-invariant but
+**NOT IDENTIFIED** as a property of the latent volatility — seen only by the
+model-assuming estimator (Cont–Das cannot resolve, MF-DFA unphysical),
+microstructure ruled out by the sweep, and de-biasing non-identified at the
+data-calibrated vol-of-vol (η ≥ 1.5, where rough ≡ smooth through the proxy).
+Empirical vindication of the Cont–Das/Rogers artefact position. Methodological
+note: planned bootstrap CIs were replaced by **sub-window stability** — a moving-
+block bootstrap would shred the long-range dependence being measured. Still open
+(not load-bearing for the finding): jump-robust (bipower) re-run; the equity arm;
+Hayashi–Yoshida / Epps refinement for asynchronous ticks; Rung 5 (calendar). The
+spec below is retained as the original plan.
 
 - Crypto: BTC, ETH (+ one liquid alt) from public exchange kline APIs,
   1-min bars, full history; 5-min RV with subsampling; bipower variant.
@@ -567,6 +585,25 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   (frictions can manufacture either illusion). +1 test (persistence lifts Ĥ)
   → 51 total. Figure: layer1c_rung2_ar1.png. Remaining before Phase B:
   optional Rung 5 (calendar effects).
+
+- **2026-06-20 — Phase B crypto arm built and analysed; the headline finding.**
+  Built the real-data pipeline (downloader+verifier+RV-series+estimator-runner+
+  de-biaser, 87 tests, runbook). Ran it on BTCUSDT+ETHUSDT 2019–2025 (2,557 daily
+  obs each). Result chain: (1) GJR reads Ĥ ≈ 0.08 (BTC) / 0.07 (ETH), clean
+  monofractal, but Cont–Das returns nan and MF-DFA returns negative/unphysical at
+  every sampling — only the model-assuming estimator sees roughness. (2) Sampling
+  sweep 1m/5m/15m is flat (GJR even ticks *up* at 1m), which RULES OUT
+  microstructure noise (it has the opposite signature). (3) De-biasing against a
+  matched Rung-1 envelope is NON-IDENTIFIED: observed below the model floor at 5m,
+  bias curve non-monotone (rough≡smooth) at 30m. (4) Robustness/calibration:
+  matching the model's log-RV variability to the data's (sd≈1.13) forces η≥1.5 for
+  every H, and at η≥1.5 the verdict is non-identified — so it does NOT rest on an
+  assumed η. Conclusion: crypto vol's latent roughness is not identifiable from
+  RV-proxy data — empirical Cont–Das/Rogers. Bug caught + fixed mid-analysis: the
+  de-bias tool assumed a monotone bias curve and reported a false "true H = 0.43"
+  on the non-monotone noisy-proxy curve; now detects non-monotonicity and reports
+  NON-IDENTIFIED. Write-up: PHASE_B_FINDINGS.md. Open (optional): bipower re-run,
+  equity arm, Hayashi–Yoshida/Epps, Rung 5.
 
 ---
 

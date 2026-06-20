@@ -19,6 +19,8 @@
 | `layer2_frictions.py` | Almgren-Chriss, rough slippage, Markov breakdown | 🔜 coming |
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
+| `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
+| `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
 
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
@@ -119,6 +121,32 @@ mitigation** — financial history is finite — which bears directly on anyone
 measuring H ≈ 0.1 from a few years of daily data. Together the four rungs map
 how proxy estimation, microstructure noise, jumps, and finite samples each
 distort measured roughness; see [`ROADMAP.md`](ROADMAP.md).
+
+---
+
+## Phase B — real-data pipeline & finding (complete)
+
+A five-stage, fully-tested pipeline takes raw exchange data to a de-biased
+roughness estimate: `binance_data.py` (download + SHA-256 verify) →
+`kline_verifier.py` (data-quality diagnostics) → `rv_series.py` (log-RV proxy,
+byte-identical to the Layer 1c Rung-1 object) → `estimate_h.py` (GJR + Cont–Das
++ MF-DFA, with trust signals and cross-estimator disagreement) → `interpret_h.py`
+(de-bias an observed Ĥ against a *matched* Rung-1 bias envelope, recovering the
+implied **true** H and flagging where the inversion is ill-posed). Runbook:
+[`run_phaseb.md`](run_phaseb.md). 87 tests.
+
+**Finding** (BTCUSDT + ETHUSDT, 2019–2025, 2,557 daily observations; full
+write-up in [`PHASE_B_FINDINGS.md`](PHASE_B_FINDINGS.md)): the apparent
+ultra-roughness of crypto volatility (GJR Ĥ ≈ 0.08) is real and
+sampling-invariant, but **not identifiable** as a property of the latent
+volatility. It is seen only by the estimator that *assumes* a rough model; the
+model-free Cont–Das cannot resolve it and MF-DFA is unphysical; microstructure
+noise is ruled out by the sampling sweep; and de-biasing is non-identified at
+the vol-of-vol the data itself selects (calibrating η to the observed RV
+variability forces η ≥ 1.5, exactly the regime where rough and smooth are
+observationally equivalent through the proxy). An empirical demonstration, on
+crypto, of the Cont–Das / Rogers position — with the model dependence calibrated
+away rather than assumed.
 
 ---
 
