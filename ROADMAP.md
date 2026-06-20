@@ -185,8 +185,18 @@ roughness):
   (Barndorff-Nielsen–Shephard) as the jump-robust RV alternative.
 - Rung 4 — finite sample: T ∈ {250, 1000, 2500} daily RV observations;
   reproduce the direction of the known H-vs-sample-size effect.
-- Rung 5 *(optional)* — calendar effects: overnight/weekend gaps
-  (equity-style) vs 24/7 (crypto) — a natural experiment.
+- Rung 5 *(DEFERRED to Phase B — decision 2026-06-20)* — calendar effects:
+  overnight/weekend gaps (equity-style) vs 24/7 (crypto) — a natural
+  experiment. **Deferred deliberately:** unlike Rungs 1–4 (clean mathematical
+  corruptions of a null), calendar effects are a *data-structure* artefact
+  whose value lies in REAL market calendars (actual NYSE hours, real
+  weekends, real 24/7 crypto). Simulating an invented gap pattern would be
+  circular and weak; observing it in real BTC-vs-SPX data is far more
+  convincing. So it belongs with the data in Phase B, not in the simulated
+  ladder. The simulated ladder is considered COMPLETE at Rungs 1–4 + the
+  AR(1) variant (the major mathematical artefacts); calendar effects join
+  Phase B's "audited estimators on real markets" work as a natural
+  experiment (equity gapped vs crypto continuous).
 
 **Protocol:** ≥500 Monte Carlo replications per cell; core grid =
 truths × core estimators × rungs 0–4 at one realistic setting each,
