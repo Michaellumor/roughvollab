@@ -298,6 +298,62 @@ def test_rung2_subsampling_recovers_estimate():
     )
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Rung 3 — price jumps
+# ──────────────────────────────────────────────────────────────────────────
+
+from layer1c_roughness_audit import (add_compound_poisson_jumps,
+                                     bipower_log_variance, JUMP_INTENSITY,
+                                     JUMP_SIZE)
+
+
+def test_rung3_jumps_fake_roughness_on_smooth_null():
+    """The identification failure: jumps on a genuinely SMOOTH (H=0.5)
+    process make the estimators report rough H — they misread isolated
+    point-singularities (jumps) as global roughness."""
+    _, S, _ = rough_bergomi_paths(16384, 0.5, 40, eta=1.0,
+                                  rng=np.random.default_rng(707))
+    S_jump = add_compound_poisson_jumps(S, JUMP_INTENSITY, JUMP_SIZE,
+                                        rng=np.random.default_rng(707))
+    H_jump = gjr_hurst(realized_log_variance(S_jump, 32))
+    assert H_jump < 0.25, (
+        f"jumps on a smooth null gave H={H_jump:.3f}; should collapse into "
+        f"the rough regime (the jump mirage)"
+    )
+
+
+def test_rung3_bipower_variation_recovers_estimate():
+    """The mitigation: bipower variation pairs ADJACENT |returns|, so an
+    isolated jump (in one return) is multiplied by its clean neighbour and
+    stays bounded — recovering the estimate upward vs ordinary RV on jumps."""
+    _, S, _ = rough_bergomi_paths(16384, 0.5, 40, eta=1.0,
+                                  rng=np.random.default_rng(707))
+    S_jump = add_compound_poisson_jumps(S, JUMP_INTENSITY, JUMP_SIZE,
+                                        rng=np.random.default_rng(707))
+    H_rv = gjr_hurst(realized_log_variance(S_jump, 32))
+    H_bv = gjr_hurst(bipower_log_variance(S_jump, 32))
+    assert H_bv > H_rv, (
+        f"bipower ({H_bv:.3f}) should recover above ordinary RV on jumps "
+        f"({H_rv:.3f}) — the jump-robust mitigation"
+    )
+
+
+def test_rung3_clustered_jumps_also_collapse_not_up():
+    """The honest competing-case record: the hypothesis that clustered jumps
+    would push H UP (via persistence) did NOT hold for price jumps — clustered
+    jumps also collapse the estimate downward, like independent ones."""
+    _, S, _ = rough_bergomi_paths(16384, 0.5, 40, eta=1.0,
+                                  rng=np.random.default_rng(707))
+    S_clust = add_compound_poisson_jumps(S, JUMP_INTENSITY, JUMP_SIZE,
+                                         rng=np.random.default_rng(707),
+                                         clustered=True)
+    H_clust = gjr_hurst(realized_log_variance(S_clust, 32))
+    assert H_clust < 0.25, (
+        f"clustered jumps gave H={H_clust:.3f}; the competing 'up' case did "
+        f"not appear — clustered jumps also push down"
+    )
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

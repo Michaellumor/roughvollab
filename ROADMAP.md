@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + Rung 1 (RV proxy + envelope) + Rung 2 (microstructure noise + subsampling mitigation) (+`test_layer1c.py`, 43 tests); Rungs 3–4 pending | 🔄 3 estimators + Rungs 1–2 | 2026-06-19 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + Rungs 1–3 (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower variation) (+`test_layer1c.py`, 46 tests); Rung 4 pending | 🔄 3 estimators + Rungs 1–3 | 2026-06-20 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -471,6 +471,33 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   output/layer1c_rung2_microstructure.png. Next: jumps (R3 — fractional
   jump-diffusion controlled null), then AR(1) noise variant, finite-sample
   (R4).
+- **D17** *(2026-06-20)* Built corruption-ladder **Rung 3 — price jumps**
+  (`add_compound_poisson_jumps`, `bipower_log_variance`, `rung3_jumps`).
+  Question: can the estimators tell true fractal roughness from jump noise?
+  A jump is a LOCAL singularity (Hölder exponent 0 at one instant);
+  roughness is GLOBAL. Through a finite window both inject extreme small-
+  scale variation, so estimators suffer an IDENTIFICATION FAILURE. Controlled
+  null: SMOOTH (H=0.5) base + compound-Poisson jumps, so any roughness is
+  purely the jump mirage. **Result — baseline prediction CONFIRMED, competing
+  prediction NOT:** at the pre-build gate two directions were predicted —
+  (baseline) independent jumps → Ĥ DOWN via point-singularity flattening, and
+  (competing) clustered jumps → Ĥ UP via persistence/variance-plateaus. The
+  probe confirmed the baseline (jumps drag GJR to −0.02, MF-DFA to −0.33 on a
+  smooth null — the mirage) but the competing case did NOT appear: clustered
+  jumps ALSO collapse downward (GJR −0.02). So for PRICE jumps the downward
+  mirage dominates; the upward effect, if real, needs conditions not reached
+  (jumps in volatility, or true self-excitation) — logged honestly as a
+  tested-but-unconfirmed hypothesis. **Mitigation — BIPOWER VARIATION**
+  (Barndorff-Nielsen–Shephard): instead of squaring returns (one jump²
+  dominates), it pairs ADJACENT |returns| |r_t|·|r_{t-1}|; because jumps are
+  isolated, a jump-return is multiplied by its CLEAN neighbour and stays
+  bounded. Recovers GJR −0.02 → 0.06 (partial — reduces, not erases, jump
+  sensitivity). +3 tests (jump mirage, bipower recovery, clustered-also-down)
+  → 46 total. Gate note: this rung had a CORRECTLY-CALIBRATED prediction —
+  baseline right, competing held open and ruled out by probe (contrast Rung
+  2, where the first prediction was wrong). Figure:
+  output/layer1c_rung3_jumps.png. Next: finite-sample (R4), then AR(1) noise
+  variant; then Phase B (real data).
 
 ---
 

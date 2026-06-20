@@ -15,7 +15,7 @@
 | `roughvol_core.py` | Shared rough-path engine (κ=0 Volterra), pinned by tests | ✅ 18 tests pass |
 | `layer1_rough_vol.py` | fBm simulation, hybrid scheme, Hurst estimation | ✅ complete |
 | `layer1b_mlmc_asian.py` | MLMC Asian option pricing, complexity under roughness | ✅ complete (v0.1) |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption-ladder Rungs 1–2: RV-proxy mirage + bias envelope, and microstructure noise + subsampling mitigation; Rungs 3–4 next) | 🔄 3 estimators + Rungs 1–2 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption-ladder Rungs 1–3: RV-proxy mirage + bias envelope; microstructure noise + subsampling; jumps + bipower variation; Rung 4 next) | 🔄 3 estimators + Rungs 1–3 |
 | `layer2_frictions.py` | Almgren-Chriss, rough slippage, Markov breakdown | 🔜 coming |
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |

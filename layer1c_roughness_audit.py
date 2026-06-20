@@ -118,6 +118,24 @@ RV_FINE_STEPS   = 16384                               # intraday price grid
 RV_GAMMAS       = np.array([0.0, 0.5, 1.0, 2.0])      # noise-to-signal ratios
 RV_SUBSAMPLE    = np.array([1, 2, 4])                # take every k-th tick (mitigation)
 
+# ── Rung 3 (price jumps) ──────────────────────────────────────────────────
+# Can the estimators tell true fractal roughness from jump noise? A jump is a
+# LOCAL singularity (discontinuity at one point, Hölder exponent 0); roughness
+# is a GLOBAL singularity (hyper-violent oscillation everywhere). Through a
+# finite window both inject extreme small-scale variation, so estimators
+# suffer an IDENTIFICATION FAILURE — they misread isolated jumps as global
+# roughness. Controlled null: a SMOOTH (H=0.5) base + compound-Poisson jumps,
+# so any roughness reported is purely the jump mirage. Probe-confirmed:
+# jumps (independent OR clustered) drag Ĥ DOWN toward/below 0 (GJR −0.02 on a
+# smooth null) — the baseline prediction. The competing case (clustered jumps
+# → persistence → Ĥ up) did NOT appear for price jumps; the downward mirage
+# dominates. Mitigation: BIPOWER VARIATION (Barndorff-Nielsen–Shephard) —
+# instead of squaring returns (one jump² dominates), it pairs ADJACENT
+# |returns|, so an isolated jump is multiplied by its CLEAN neighbour and
+# stays bounded. Probe-confirmed recovery: GJR −0.02 → 0.05 switching RV→BV.
+JUMP_INTENSITY  = 50                                 # expected #jumps per path
+JUMP_SIZE       = 0.03                                # std of jump magnitude (log-price)
+
 
 # ══════════════════════════════════════════════════════════════════════════
 # SECTION 1 — GJR structure-function estimator + oracle validation gate
@@ -924,12 +942,161 @@ def rung2_microstructure(show: bool = True, quick: bool = False):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+# RUNG 3 — price jumps: can estimators tell roughness from jump noise?
+# ══════════════════════════════════════════════════════════════════════════
+
+def add_compound_poisson_jumps(S: np.ndarray, intensity: float, size: float,
+                               rng, clustered: bool = False):
+    """
+    Add compound-Poisson jumps to prices. A jump is a LOCAL singularity — a
+    discontinuous shift at one instant that persists thereafter. `intensity`
+    is the expected number of jumps per path; `size` the std of jump
+    magnitude (log-price). If `clustered`, jumps arrive in bursts (a crude
+    self-exciting analogue) rather than uniformly.
+    """
+    logS = np.log(S).copy()
+    n_paths, n = logS.shape
+    for p in range(n_paths):
+        if clustered:
+            n_bursts = max(1, int(intensity / 5))
+            centres = rng.integers(0, n, size=n_bursts)
+            times = []
+            for c in centres:
+                times += list(np.clip(c + rng.integers(-20, 20, size=5),
+                                      0, n - 1))
+            times = np.array(times)
+        else:
+            times = rng.integers(0, n, size=rng.poisson(intensity))
+        for t in times:
+            logS[p, t:] += rng.normal(0, size)     # shift path from t onward
+    return np.exp(logS)
+
+
+def bipower_log_variance(S: np.ndarray, window: int):
+    """
+    Bipower variation (Barndorff-Nielsen–Shephard) — the jump-ROBUST RV
+    alternative. Instead of squaring returns (so one jump² dominates), it
+    sums products of ADJACENT absolute returns |r_t|·|r_{t-1}| (scaled by
+    π/2). Because jumps are isolated, a jump-return is paired with a CLEAN
+    neighbour, so the product stays bounded and the jump cannot blow up the
+    measure. Returns log bipower variation over windows.
+    """
+    aret = np.abs(np.diff(np.log(S), axis=1))
+    prod = aret[:, 1:] * aret[:, :-1]              # adjacent products
+    n_windows = prod.shape[1] // window
+    bv = (np.pi / 2) * np.array(
+        [np.sum(prod[:, w * window:(w + 1) * window], axis=1)
+         for w in range(n_windows)]).T
+    return np.log(bv + 1e-300)
+
+
+def rung3_jumps(show: bool = True, quick: bool = False):
+    """
+    Rung 3 — price jumps. On a SMOOTH (H=0.5) controlled null, add
+    compound-Poisson jumps and show the estimators misread them as roughness
+    (Ĥ collapses) — the identification failure. Then show BIPOWER VARIATION
+    recovers the estimate (the jump-robust mitigation). Finally (the honest
+    'we tested it' record) show that CLUSTERED jumps STILL push down, i.e.
+    the competing 'clustered → persistence → Ĥ up' case did not appear for
+    price jumps.
+
+    Probe-confirmed: jumps drive Ĥ DOWN; bipower recovers it; clustering
+    does not reverse the direction.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 3 — price jumps: can estimators tell roughness from jumps?")
+    print("           (jump = local singularity; roughness = global)")
+    print("─" * 70)
+
+    n_fine = RV_FINE_STEPS
+    N = 40 if quick else 50
+    window = 32
+    rng = np.random.default_rng(707)
+    _, S_smooth, _ = rough_bergomi_paths(n_fine, 0.5, N, eta=1.0,
+                                         rng=np.random.default_rng(707))
+
+    # ---- the identification failure: jumps on a smooth null ----
+    lrv_clean = realized_log_variance(S_smooth, window)
+    S_jump = add_compound_poisson_jumps(S_smooth, JUMP_INTENSITY, JUMP_SIZE,
+                                        rng)
+    lrv_jump = realized_log_variance(S_jump, window)
+    bpv_jump = bipower_log_variance(S_jump, window)
+
+    c_gjr = _safe_estimate(gjr_hurst, lrv_clean)
+    j_gjr = _safe_estimate(gjr_hurst, lrv_jump)
+    b_gjr = _safe_estimate(gjr_hurst, bpv_jump)
+    c_mfd = _safe_estimate(mfdfa_hurst, lrv_clean)
+    j_mfd = _safe_estimate(mfdfa_hurst, lrv_jump)
+    b_mfd = _safe_estimate(mfdfa_hurst, bpv_jump)
+
+    print("\n  Smooth (H=0.5) null — what jumps do, and how bipower mitigates:")
+    print(f"  {'measure':>28} {'GJR':>8} {'MF-DFA':>8}")
+    print(f"  {'clean smooth, ordinary RV':>28} {c_gjr:8.3f} {c_mfd:8.3f}")
+    print(f"  {'+ jumps, ordinary RV':>28} {j_gjr:8.3f} {j_mfd:8.3f}"
+          "   ← collapses (jump mirage)")
+    print(f"  {'+ jumps, BIPOWER variation':>28} {b_gjr:8.3f} {b_mfd:8.3f}"
+          "   ← recovered (jump-robust)")
+    print(f"\n  → Jumps on a SMOOTH process drive Ĥ DOWN into the rough regime —"
+          " the\n    estimators misread isolated point-singularities as global"
+          " roughness\n    (the identification failure). BIPOWER variation pairs"
+          " each return with\n    its clean neighbour, so isolated jumps cannot"
+          " dominate, and the\n    estimate recovers upward. (Partial recovery:"
+          " bipower reduces, not\n    erases, jump sensitivity.)")
+
+    # ---- the honest competing-case test: clustered jumps still go down ----
+    S_clust = add_compound_poisson_jumps(S_smooth, JUMP_INTENSITY, JUMP_SIZE,
+                                         rng, clustered=True)
+    cl_gjr = _safe_estimate(gjr_hurst, realized_log_variance(S_clust, window))
+    print("\n  Competing-case check — do CLUSTERED jumps push Ĥ UP instead?")
+    print(f"    independent jumps: GJR = {j_gjr:.3f}")
+    print(f"    clustered jumps:   GJR = {cl_gjr:.3f}")
+    print("  → Clustered jumps ALSO collapse downward — the competing"
+          " 'clustering →\n    persistence → Ĥ up' case did NOT appear for price"
+          " jumps; the downward\n    mirage dominates. (The upward effect, if it"
+          " exists, needs conditions\n    not reached here — e.g. jumps in"
+          " volatility, or true self-excitation.)")
+
+    # ---- figure ----
+    fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    # left: the mirage and the bipower recovery (GJR + MF-DFA)
+    cats = ["clean\n(RV)", "+jumps\n(RV)", "+jumps\n(bipower)"]
+    xs = np.arange(3)
+    ax[0].axhline(0.5, color=TEAL, ls="-", lw=1.5, alpha=0.6,
+                  label="true H = 0.5 (smooth)")
+    ax[0].axhspan(0.0, 0.15, color=CORAL, alpha=0.10)
+    ax[0].bar(xs - 0.18, [c_gjr, j_gjr, b_gjr], 0.36, color=PURPLE, label="GJR")
+    ax[0].bar(xs + 0.18, [c_mfd, j_mfd, b_mfd], 0.36, color=AMBER,
+              label="MF-DFA")
+    ax[0].set_xticks(xs); ax[0].set_xticklabels(cats, fontsize=8)
+    ax[0].set_ylabel("estimated H")
+    ax[0].set_title("Jumps fake roughness; bipower recovers")
+    ax[0].legend(frameon=False, fontsize=8)
+    # right: competing-case — independent vs clustered both collapse
+    ax[1].axhline(0.5, color=GRAY, ls="--", lw=1, label="true H (smooth)")
+    ax[1].axhspan(0.0, 0.15, color=CORAL, alpha=0.10)
+    ax[1].bar([0, 1], [j_gjr, cl_gjr], 0.5, color=[PURPLE, CORAL])
+    ax[1].set_xticks([0, 1])
+    ax[1].set_xticklabels(["independent\njumps", "clustered\njumps"],
+                          fontsize=8)
+    ax[1].set_ylabel("estimated H (GJR)")
+    ax[1].set_title("Both collapse down (no upward case)")
+    ax[1].legend(frameon=False, fontsize=8)
+    fig.suptitle("Layer 1c Rung 3 — jumps masquerade as roughness; bipower "
+                 "variation mitigates", fontweight="bold")
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung3_jumps.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return dict(clean=c_gjr, jump=j_gjr, bipower=b_gjr, clustered=cl_gjr)
+
+
+# ══════════════════════════════════════════════════════════════════════════
 
 def main():
     ap = argparse.ArgumentParser(
         description="Layer 1c — roughness-estimator audit")
     ap.add_argument("--section", type=int, choices=[1, 2, 3], default=None)
-    ap.add_argument("--rung", type=int, choices=[1, 2], default=None)
+    ap.add_argument("--rung", type=int, choices=[1, 2, 3], default=None)
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
@@ -945,6 +1112,8 @@ def main():
         rung1_bias_envelope(show, args.quick)
     elif args.rung == 2:
         rung2_microstructure(show, args.quick)
+    elif args.rung == 3:
+        rung3_jumps(show, args.quick)
     elif args.section == 1:
         section1_oracle_gate(show, args.quick)
     elif args.section == 2:
@@ -958,6 +1127,7 @@ def main():
         rung1_rv_proxy(show, args.quick)
         rung1_bias_envelope(show, args.quick)
         rung2_microstructure(show, args.quick)
+        rung3_jumps(show, args.quick)
 
     print("\n" + "=" * 70)
     print("  Layer 1c: 3 estimators + Rung 1 (RV proxy) complete.")
