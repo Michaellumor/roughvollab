@@ -626,6 +626,21 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   remaining data leg. Figure: layer1c_rung5_calendar.png. Closing message and
   `--rung 5` CLI updated; the simulated corruption ladder is now Rungs 1–5.
 
+- **2026-06-20 — Equity arm tooling built (Rung-5 gap leg, in progress).** Free
+  intraday equity history at a 2019–2025 span does not exist, so — per the
+  ROADMAP's sanctioned fallback — the equity arm uses a RANGE-BASED daily
+  variance on free daily OHLC. `equity_data.py` (+`test_equity_data.py`, 6
+  tests): a stdlib stooq downloader + Garman–Klass / Parkinson daily
+  log-variance builder that emits the SAME CSV header as rv_series.py, so
+  estimate_h / interpret_h read it unchanged (verified end-to-end: a built
+  series loads through load_log_rv_csv and runs the three estimators). NOT yet
+  run on real data — needs the download on a networked machine. Fidelity
+  caveats recorded in the module: the range proxy is TRADING-SESSION only (no
+  overnight gap), and an equity-vs-crypto Ĥ gap mixes a calendar difference with
+  a proxy difference — suggestive, not the clean isolation (that is the
+  simulated Rung 5). Next: download SPY / ^SPX, build the series, run estimate_h
+  + interpret_h, and compare to the BTC/ETH result — the real gap leg of Rung 5.
+
 ---
 
 ## Publication seeds
