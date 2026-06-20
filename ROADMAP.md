@@ -30,7 +30,7 @@ by a run that actually happened.
 | `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + Rungs 1–3 (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower variation) (+`test_layer1c.py`, 46 tests); Rung 4 pending | 🔄 3 estimators + Rungs 1–3 | 2026-06-20 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rungs 1–4 complete (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample) (+`test_layer1c.py`, 50 tests) | ✅ estimators + ladder core | 2026-06-20 |
 | `layer2_frictions.py` | Almgren–Chriss, rough slippage, Markov breakdown | 🔜 spec below | — |
 | `layer3_rl_hedging.py` | Path signatures, actor–critic, CVaR deep hedging | 🔜 spec below | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 spec below | — |
@@ -511,6 +511,35 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   2, where the first prediction was wrong). Figure:
   output/layer1c_rung3_jumps.png. Next: finite-sample (R4), then AR(1) noise
   variant; then Phase B (real data).
+- **D18** *(2026-06-20)* Built corruption-ladder **Rung 4 — finite sample**
+  (`rung4_finite_sample`), completing the ladder's core. Unlike Rungs 1–3
+  this rung does NOT poison the data — it is clean and matches true H; the
+  corruption is EPISTEMOLOGICAL (forcing an asymptotic estimator into a
+  truncated timeline). On clean True H=0.1 paths, sweep T ∈ {8000…250} and
+  measure each estimator's bias. **Result — an honest ESTIMATOR-DEPENDENT
+  split, with a bold prediction partly confirmed and partly falsified:** at
+  the gate the prediction was (a) Ĥ shifts UP as T shrinks, and (b) a
+  striking claim — finite-sample bias is "exclusively an upward gravity
+  well, structurally impossible to fabricate false roughness." The probe
+  (plus a disentangling probe separating finite-sample effect from baseline
+  bias) found: GJR and Cont–Das carry a roughly CONSTANT upward bias (bias
+  change ≈ −0.003/−0.005 from T=8000→250 — essentially NO finite-sample
+  effect), and never read below true H — so the claim HOLDS for them. But
+  MF-DFA shows a GENUINE finite-sample push DOWN (bias −0.02 → −0.08 as T
+  shrinks) and reads BELOW true H at small T — so the claim FAILS for
+  MF-DFA, which fabricates extra roughness from small samples. So finite-
+  sample bias is estimator-dependent: regression-on-spot-vol estimators
+  (GJR) resist it; large-scale-aggregating estimators (MF-DFA) are
+  vulnerable. Crucially, unlike Rungs 1–3 there is NO mitigation — financial
+  history is finite. This bears directly on anyone measuring H≈0.1 from a few
+  years of daily data. Honest note: the "upward, can't-fake-roughness" claim
+  was elegant and DIRECTIONALLY right (dominant effect is upward for most
+  estimators) but NOT universal — logged as partially falsified. +4 tests
+  (GJR T-stable, MF-DFA drifts down, claim holds for GJR, claim breaks for
+  MF-DFA) → 50 total. This completes the Rung 2/3/4 arc of prediction-vs-
+  evidence: Rung 2 wrong→corrected, Rung 3 right→confirmed, Rung 4 partly
+  right→refined. Figure: output/layer1c_rung4_finitesample.png. Remaining
+  before Phase B: optional AR(1) noise variant, optional Rung 5 (calendar).
 
 ---
 

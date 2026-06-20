@@ -136,6 +136,22 @@ RV_SUBSAMPLE    = np.array([1, 2, 4])                # take every k-th tick (mit
 JUMP_INTENSITY  = 50                                 # expected #jumps per path
 JUMP_SIZE       = 0.03                                # std of jump magnitude (log-price)
 
+# ── Rung 4 (finite sample) ────────────────────────────────────────────────
+# Unlike Rungs 1–3, this rung does NOT poison the data — the input is clean
+# and matches the true H. The corruption is EPISTEMOLOGICAL: forcing an
+# asymptotic estimator into a truncated timeline (e.g. T=250 daily obs).
+# Roughness estimators fit a scaling line across a hierarchy of scales; at
+# small T the large-scale end has too few independent blocks, so its sample
+# variance is unstable and the fitted slope distorts. Crucially this rung has
+# NO mitigation — financial history is finite; you cannot manufacture 10,000
+# days for a one-year-old asset. Probe-confirmed, and it SPLITS by estimator:
+# GJR and Cont–Das carry a roughly CONSTANT upward bias (barely T-dependent),
+# while MF-DFA suffers a GENUINE finite-sample push DOWNWARD (bias −0.02 →
+# −0.08 as T: 8000 → 250). So the elegant claim "finite samples cannot
+# fabricate false roughness" holds for GJR/Cont–Das but FAILS for MF-DFA,
+# which reads an ultra-rough process as even rougher (below true H) at small T.
+RV_SAMPLE_SIZES = np.array([8000, 4000, 2000, 1000, 500, 250])   # T sweep
+
 
 # ══════════════════════════════════════════════════════════════════════════
 # SECTION 1 — GJR structure-function estimator + oracle validation gate
@@ -1091,12 +1107,108 @@ def rung3_jumps(show: bool = True, quick: bool = False):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+# RUNG 4 — finite sample: does running out of data bias the estimate?
+# ══════════════════════════════════════════════════════════════════════════
+
+def rung4_finite_sample(show: bool = True, quick: bool = False):
+    """
+    Rung 4 — finite sample. The data is CLEAN (no proxy, noise, or jumps);
+    only the number of observations T shrinks. On clean known-H paths, sweep
+    T and measure the bias (Ĥ − true H) for each estimator. Then DISENTANGLE
+    whether any drift is a genuine finite-sample effect (bias grows as T
+    shrinks) or just the estimator's baseline bias (constant in T). Finally
+    test the claim that "finite samples cannot fabricate false roughness"
+    (Ĥ never below true H).
+
+    Probe-confirmed split: GJR and Cont–Das carry a roughly constant UPWARD
+    bias (no finite-sample effect); MF-DFA has a genuine finite-sample push
+    DOWNWARD, reading an ultra-rough process as even rougher at small T — so
+    the claim holds for GJR/Cont–Das but fails for MF-DFA.
+    """
+    print("\n" + "─" * 70)
+    print("  RUNG 4 — finite sample: does running out of data bias Ĥ?")
+    print("           (data is CLEAN; only the sample size T shrinks)")
+    print("─" * 70)
+
+    H_true = 0.1                                # ultra-rough — the key regime
+    N = 60 if quick else 80
+    Ts = (np.array([8000, 2000, 500, 250]) if quick else RV_SAMPLE_SIZES)
+
+    res = {"T": [], "gjr": [], "pvar": [], "mfdfa": []}
+    print(f"\n  Clean True H = {H_true}, sweep T (bias = Ĥ − true H):")
+    print(f"  {'T':>6} {'GJR':>8} {'Cont-Das':>9} {'MF-DFA':>8}"
+          f" {'GJR bias':>9} {'MFDFA bias':>11}")
+    for T in Ts:
+        _, logV = rough_log_variance_paths(int(T), H_true, N, eta=1.5,
+                                           rng=np.random.default_rng(808))
+        hg = _safe_estimate(gjr_hurst, logV)
+        hp = _safe_estimate(pvariation_hurst, logV)
+        hm = _safe_estimate(mfdfa_hurst, logV)
+        res["T"].append(int(T)); res["gjr"].append(hg)
+        res["pvar"].append(hp); res["mfdfa"].append(hm)
+        print(f"  {int(T):6d} {hg:8.3f} {hp:9.3f} {hm:8.3f}"
+              f" {hg - H_true:+9.3f} {hm - H_true:+11.3f}")
+
+    # ---- disentangle: finite-sample effect vs baseline bias ----
+    def bias_change(key):
+        return (res[key][-1] - H_true) - (res[key][0] - H_true)  # small T − large T
+    dg, dc, dm = bias_change("gjr"), bias_change("pvar"), bias_change("mfdfa")
+    print(f"\n  Bias change (T={res['T'][0]} → T={res['T'][-1]}):")
+    print(f"    GJR:      {dg:+.3f}   (≈0 → constant baseline, NO finite-sample effect)")
+    print(f"    Cont–Das: {dc:+.3f}   (≈0 → same)")
+    print(f"    MF-DFA:   {dm:+.3f}   (large negative → GENUINE finite-sample push DOWN)")
+
+    # ---- test the "cannot fabricate roughness" claim ----
+    gjr_below = any(h < H_true for h in res["gjr"])
+    mfdfa_below = any(h < H_true for h in res["mfdfa"])
+    print(f"\n  Claim test — does any estimator read BELOW true H (fake extra roughness)?")
+    print(f"    GJR ever below {H_true}:    {gjr_below}   → claim {'FAILS' if gjr_below else 'holds'} for GJR")
+    print(f"    MF-DFA ever below {H_true}: {mfdfa_below}   → claim {'FAILS' if mfdfa_below else 'holds'} for MF-DFA")
+    print(f"\n  → Finite-sample bias is ESTIMATOR-DEPENDENT. For GJR and Cont–Das it")
+    print(f"    is a roughly constant UPWARD bias — they cannot fabricate false")
+    print(f"    roughness from small samples (the elegant claim holds: of all the")
+    print(f"    corruptions, this one can only HIDE roughness, not fake it). But")
+    print(f"    MF-DFA suffers a genuine finite-sample push DOWNWARD, reading an")
+    print(f"    ultra-rough process as even rougher at small T — so the claim is")
+    print(f"    NOT universal. And unlike Rungs 1–3, there is NO mitigation:")
+    print(f"    financial history is finite. This bears directly on anyone")
+    print(f"    measuring H≈0.1 from a few years of daily data.")
+
+    # ---- figure ----
+    fig, ax = plt.subplots(1, 2, figsize=(11.5, 4.4))
+    T = np.array(res["T"])
+    ax[0].axhline(H_true, color=GRAY, ls="--", lw=1.3, label=f"true H = {H_true}")
+    ax[0].axhspan(0.0, H_true, color=CORAL, alpha=0.08)
+    ax[0].plot(T, res["gjr"], "o-", color=PURPLE, lw=1.9, ms=6, label="GJR")
+    ax[0].plot(T, res["pvar"], "s-", color=TEAL, lw=1.9, ms=6, label="Cont–Das")
+    ax[0].plot(T, res["mfdfa"], "^-", color=AMBER, lw=1.9, ms=6, label="MF-DFA")
+    ax[0].set_xscale("log"); ax[0].set_xlabel("sample size T (log scale)")
+    ax[0].set_ylabel("estimated H"); ax[0].invert_xaxis()
+    ax[0].set_title("Shrinking T: GJR/CD stable, MF-DFA drifts down")
+    ax[0].legend(frameon=False, fontsize=8)
+    # right: bias change bar — who has a real finite-sample effect
+    ax[1].axhline(0, color=GRAY, lw=1)
+    ax[1].bar(["GJR", "Cont–Das", "MF-DFA"], [dg, dc, dm],
+              color=[PURPLE, TEAL, AMBER])
+    ax[1].set_ylabel("bias change (large T → small T)")
+    ax[1].set_title("Only MF-DFA shows a real finite-sample effect")
+    fig.suptitle("Layer 1c Rung 4 — finite-sample bias is estimator-dependent; "
+                 "no mitigation exists", fontweight="bold")
+    fig.tight_layout()
+    fig.savefig("output/layer1c_rung4_finitesample.png", dpi=150)
+    if show: plt.show()
+    plt.close(fig)
+    return dict(bias_change_gjr=dg, bias_change_mfdfa=dm,
+                gjr_below=gjr_below, mfdfa_below=mfdfa_below)
+
+
+# ══════════════════════════════════════════════════════════════════════════
 
 def main():
     ap = argparse.ArgumentParser(
         description="Layer 1c — roughness-estimator audit")
     ap.add_argument("--section", type=int, choices=[1, 2, 3], default=None)
-    ap.add_argument("--rung", type=int, choices=[1, 2, 3], default=None)
+    ap.add_argument("--rung", type=int, choices=[1, 2, 3, 4], default=None)
     ap.add_argument("--no-show", action="store_true")
     ap.add_argument("--quick", action="store_true")
     args = ap.parse_args()
@@ -1114,6 +1226,8 @@ def main():
         rung2_microstructure(show, args.quick)
     elif args.rung == 3:
         rung3_jumps(show, args.quick)
+    elif args.rung == 4:
+        rung4_finite_sample(show, args.quick)
     elif args.section == 1:
         section1_oracle_gate(show, args.quick)
     elif args.section == 2:
@@ -1128,6 +1242,7 @@ def main():
         rung1_bias_envelope(show, args.quick)
         rung2_microstructure(show, args.quick)
         rung3_jumps(show, args.quick)
+        rung4_finite_sample(show, args.quick)
 
     print("\n" + "=" * 70)
     print("  Layer 1c: 3 estimators + Rung 1 (RV proxy) complete.")

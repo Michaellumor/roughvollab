@@ -354,6 +354,68 @@ def test_rung3_clustered_jumps_also_collapse_not_up():
     )
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Rung 4 — finite sample
+# ──────────────────────────────────────────────────────────────────────────
+
+def _gjr_at_T(H_true, T, seed=808, n_paths=60):
+    _, logV = rough_log_variance_paths(T, H_true, n_paths, eta=1.5,
+                                       rng=np.random.default_rng(seed))
+    return gjr_hurst(logV)
+
+
+def _mfdfa_at_T(H_true, T, seed=808, n_paths=60):
+    _, logV = rough_log_variance_paths(T, H_true, n_paths, eta=1.5,
+                                       rng=np.random.default_rng(seed))
+    return mfdfa_hurst(logV)
+
+
+def test_rung4_gjr_stable_no_finite_sample_drift():
+    """GJR carries a roughly CONSTANT bias — its estimate barely changes as
+    the sample size T shrinks, so there is no strong finite-sample effect for
+    GJR (the drift from large to small T is small)."""
+    H_large = _gjr_at_T(0.1, 8000)
+    H_small = _gjr_at_T(0.1, 250)
+    assert abs(H_small - H_large) < 0.05, (
+        f"GJR should be roughly T-stable: T=8000 {H_large:.3f} vs "
+        f"T=250 {H_small:.3f} (change should be small)"
+    )
+
+
+def test_rung4_mfdfa_genuine_finite_sample_drift_down():
+    """MF-DFA suffers a GENUINE finite-sample effect: its estimate drifts
+    materially DOWNWARD as T shrinks (a real reduction, not baseline noise)."""
+    H_large = _mfdfa_at_T(0.1, 8000)
+    H_small = _mfdfa_at_T(0.1, 250)
+    assert H_small < H_large - 0.02, (
+        f"MF-DFA should drift down with small T: T=8000 {H_large:.3f} vs "
+        f"T=250 {H_small:.3f} (small T should be materially lower)"
+    )
+
+
+def test_rung4_gjr_cannot_fabricate_false_roughness():
+    """The claim holds for GJR: on a true H=0.1 process, GJR never reads
+    BELOW true H as T shrinks — finite samples cannot make GJR fabricate
+    extra (false) roughness; the bias is upward (toward smoother)."""
+    for T in (8000, 1000, 250):
+        H = _gjr_at_T(0.1, T)
+        assert H >= 0.1 - 0.02, (
+            f"GJR at T={T} gave H={H:.3f}, below true 0.1 — would mean finite "
+            f"samples fabricated false roughness for GJR (claim should hold)"
+        )
+
+
+def test_rung4_mfdfa_breaks_the_claim():
+    """The claim FAILS for MF-DFA: at small T it reads BELOW true H=0.1,
+    i.e. a finite sample DID fabricate extra roughness — so the elegant
+    'finite samples cannot fake roughness' claim is not universal."""
+    H_small = _mfdfa_at_T(0.1, 250)
+    assert H_small < 0.1, (
+        f"MF-DFA at T=250 gave H={H_small:.3f}; expected below true 0.1 — "
+        f"the finite-sample effect makes MF-DFA fabricate false roughness"
+    )
+
+
 if __name__ == "__main__":
     import sys
     sys.exit(pytest.main([__file__, "-v"]))

@@ -15,7 +15,7 @@
 | `roughvol_core.py` | Shared rough-path engine (κ=0 Volterra), pinned by tests | ✅ 18 tests pass |
 | `layer1_rough_vol.py` | fBm simulation, hybrid scheme, Hurst estimation | ✅ complete |
 | `layer1b_mlmc_asian.py` | MLMC Asian option pricing, complexity under roughness | ✅ complete (v0.1) |
-| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption-ladder Rungs 1–3: RV-proxy mirage + bias envelope; microstructure noise + subsampling; jumps + bipower variation; Rung 4 next) | 🔄 3 estimators + Rungs 1–3 |
+| `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption ladder Rungs 1–4: RV-proxy mirage + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample) | ✅ estimators + ladder core |
 | `layer2_frictions.py` | Almgren-Chriss, rough slippage, Markov breakdown | 🔜 coming |
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
@@ -102,8 +102,23 @@ spurious roughness (a different mechanism from the proxy, with the same
 outcome — they compound). The artefact grows with the noise-to-signal ratio
 and afflicts smooth and rough paths alike; subsampling the price series
 (taking every k-th tick) dilutes the tick-independent noise relative to the
-persistent signal and partly recovers the estimate. The remaining rungs
-(jumps, finite-sample) extend this audit; see [`ROADMAP.md`](ROADMAP.md).
+persistent signal and partly recovers the estimate.
+
+A third rung adds price **jumps** (compound Poisson) to a smooth null. A jump
+is a local singularity; roughness is global; through a finite window the
+estimators cannot tell them apart, so jumps too are misread as roughness and
+collapse the estimate. **Bipower variation** (Barndorff-Nielsen–Shephard) —
+pairing adjacent absolute returns so an isolated jump meets a clean
+neighbour — partly recovers it. The fourth rung is **finite sample**: with
+clean data but few observations, the estimate is biased — and here the
+result is estimator-dependent. GJR and Cont–Das carry a roughly constant
+upward bias and never fabricate false roughness from small samples, but
+MF-DFA suffers a genuine downward finite-sample drift, reading an ultra-rough
+process as even rougher. Unlike the other rungs, finite-sample bias has **no
+mitigation** — financial history is finite — which bears directly on anyone
+measuring H ≈ 0.1 from a few years of daily data. Together the four rungs map
+how proxy estimation, microstructure noise, jumps, and finite samples each
+distort measured roughness; see [`ROADMAP.md`](ROADMAP.md).
 
 ---
 
