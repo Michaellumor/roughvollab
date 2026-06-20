@@ -652,7 +652,26 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   the simulated Rung 5). Both legs of Rung 5 now exist: clean simulated
   isolation + real cross-asset comparison. Possible next: more equity tickers
   (QQQ, ^FTSE) to check whether ~0.13 is stable across equities.
-
+**2026-06-20 (cont.) — Layer 1c capstone: identifiability map (P3)**
+- **L1c-MAP** Built `identifiability_map.py` (+ `test_identifiability_map.py`,
+  11 green) — the operating-characteristics deliverable P3 calls for, made
+  formal. (1) `cell_status` = an operational identifiability definition:
+  non-monotone curve ⇒ multivalued (rough ≡ smooth); |local slope| < _FLAT_SLOPE
+  ⇒ collapse; else identified iff the ±zσ single-sample band separates the
+  cell's Ĥ from the smooth null E[Ĥ | H=½]. Reuses interpret_h's audited
+  `_is_monotone`/`_local_slope`, so the map and the Phase-B interpreter share
+  ONE definition. (2) `build_identifiability_map` sweeps the bias curve over
+  (η, Δ). (3) `plot_identifiability_map` = the phase diagram (estimator × Δ
+  panels, η × H cells). New file only; nothing tested touched. Commit fe3688c.
+- **P3 framing upgrade** from "can we trust roughness estimates? (audit)" to
+  "here is the identifiable region; the major assets fall outside it —
+  reconciling GJR-rough (H≈0.1) and Cont–Das-artefact as two readings of one
+  ill-posed inverse problem."
+- **Open** step 4 (calibrate η per asset, drop BTC/ETH/SPX on the map via
+  `locate_observed`); step 5 (microstructure-noise robustness — needs a γ param
+  threaded into build_bias_curve, a deliberate edit to a tested module); FTW
+  quasi-likelihood (stretch #4) to harden inference from labels to identified
+  sets. Does NOT advance Layers 2–4 (the RL/frictions destination).
 ---
 
 ## Publication seeds
