@@ -1,0 +1,45 @@
+ROUGHVOLLAB · ASSET-CLASS BOUNDARY TEST  (refined)
+is measured roughness a property of the data — or of the calendar / proxy?
+
+┌────────────────────────────────┐  ┌────────────────────────────────┐
+│ CRYPTO STREAM · Binance        │  │ EQUITY STREAM · Yahoo OHLC     │
+│ 24/7/365 continuous            │  │ 5 trading days / week          │
+│ no close, no gaps              │  │ overnight + weekend gaps       │
+│ BTCUSDT, ETHUSDT               │  │ ~6.5h/day (NYSE)               │
+│ → intraday-return RV           │  │ → range-based daily (GK)       │
+└────────────────┬───────────────┘  └────────────────┬───────────────┘
+                 │                                   │
+                 └─────────────────┬─────────────────┘
+                                   ▼
+         ┌───────────────────────────────────────────────────┐
+         │ SAME AUDITED ESTIMATOR SUITE  (Layer 1c)          │
+         │ GJR · Cont–Das (p-variation) · MF-DFA             │
+         └─────────────────────────┬─────────────────────────┘
+                 ┌─────────────────┴─────────────────┐
+                 │                                   │
+                 ▼                                   ▼
+┌────────────────────────────────┐  ┌────────────────────────────────┐
+│ Ĥ (crypto) ≈ 0.08              │  │ Ĥ (equity, SPX) ≈ 0.13         │
+│ continuous-clock reading       │  │ gapped-clock reading           │
+└────────────────┬───────────────┘  └────────────────┬───────────────┘
+                 │                                   │
+                 └─────────────────┬─────────────────┘
+                                   ▼
+┌────────────────────────────────────────────────────────────────────┐
+│ CROSS-EXAMINATION  —  does measured roughness differ by structure? │
+│                                                                    │
+│ Equity reads less rough (0.08 → 0.13): direction fits a gap effect │
+│ but the comparison will NOT close —                                │
+│   • CONFOUNDED      intraday-RV (crypto) vs range proxy (equity),  │
+│                     tangled with the four ladder artefacts         │
+│   • NON-IDENTIFIED  de-biasing can't pin true H on EITHER side     │
+│                                                                    │
+│ VERDICT:  suggestive, not a clean attribution                      │
+└──────────────────────────────────┬─────────────────────────────────┘
+                                   ▼
+         ┌───────────────────────────────────────────────────┐
+         │ CLEAN ISOLATION  =  simulated Rung 5              │
+         │ vary ONLY the calendar at fixed true H —          │
+         │ the one test that unmixes calendar from           │
+         │ proxy and asset dynamics                          │
+         └───────────────────────────────────────────────────┘
