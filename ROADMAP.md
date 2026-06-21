@@ -702,7 +702,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   to smooth the Volterra error. Figures already exist (§2, §3, §4).
 - **P2:** improved estimators — antithetic and conditional-MC couplings
   (extensions 1–2), benchmarked against P1's baseline.
-- - **P3 (drafted 2026-06-21):** *"When is volatility roughness identifiable?
+- **P3 (drafted 2026-06-21):** *"When is volatility roughness identifiable?
   A simulation-grounded audit of Hurst estimation from realized variance,
   with application to cryptocurrency."* Content-complete draft (markdown +
   Overleaf-ready LaTeX, 10pp): identifiability map + real-asset placement
