@@ -692,6 +692,9 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
 - **P3 drafted** content-complete (~3.8k words; abstract→§1–6→reproducibility→refs→appendix), all numbers from the runs above. Title upgraded: "When is volatility roughness identifiable? A simulation-grounded audit of Hurst estimation from realized variance, with application to cryptocurrency." Overleaf-ready LaTeX built (pdflatex-clean, 10pp) + "Use of generative AI" statement. Remaining: insert the 2 figures.
 - **Citations** all 16 verified vs originals. Fixed: Rogers = book chapter (Options — 45 Years…, ch.9, 173–184), not a working paper; Fukasawa–Takabatake–Westphal = 2019 arXiv:1905.04852 "Is volatility rough?" + 2022 Math. Finance 32(4):1086–1132 "Consistent estimation…". Added: SIAM *Rough Volatility* (2024); Takaishi 2025 (FRL 74, 106683). Confirmed Cont–Das = 2024 (Sankhya B 86:191–223).
 - **Committed:** paper_outputs.py (one-command P3 figure/number regen) added to the repo as a reproducibility asset; reuses already-tested modules, so it ships without its own test (output/ stays gitignored). No advance on Layers 2–4.
+
+**2026-06-21 — Layer 2 Piece 1 spec**
+**L2-P1-spec** Wrote the gate-check spec for classical Almgren–Chriss (cost E/V, sinh optimum, λ=0 linear limit, efficient frontier; 7 validation gates). All closed-form targets verified numerically before commit. Build not started — acceptance = 7 gates green before any rough-vol work. Spec file: layer2_piece1_gate_check.md.
 ---
 
 ## Publication seeds
