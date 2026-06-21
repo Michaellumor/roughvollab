@@ -112,3 +112,13 @@ references:
     journal: "Mathematical Finance"
     year: 2019
     doi: "10.1111/mafi.12173"
+- type: article
+    title: "Rough volatility: fact or artefact?"
+    authors:
+      - family-names: Cont
+        given-names: Rama
+      - family-names: Das
+        given-names: Purba
+    journal: "Sankhya B"
+    year: 2024
+    doi: "10.1007/s13571-024-00295-2"
