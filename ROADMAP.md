@@ -31,6 +31,7 @@ by a run that actually happened.
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study | ✅ v0.1 complete, validated | 2026-06-12 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
 | `layer1c_roughness_audit.py` | Roughness-estimator audit. 3 estimators (§1–3) + corruption ladder Rungs 1–5 complete (RV proxy + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample; calendar/day-of-week seasonality + deseasonalise) (+`test_layer1c.py`) | ✅ estimators + full ladder | 2026-06-20 |
+| `identifiability_map.py` | Layer 1c capstone (P3): identifiability map over (η, Δ) — classifier + factorial sweep + phase diagram + per-asset η-calibration & placement (+`test_identifiability_map.py`) | ✅ 15 tests pass | 2026-06-21 |
 | `binance_data.py`, `kline_verifier.py`, `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy (Rung-1 twin) | ✅ 66 tests pass | 2026-06-20 |
 | `estimate_h.py`, `interpret_h.py` | Phase B analysis: 3 estimators + disagreement; de-bias vs matched Rung-1 envelope | ✅ 21 tests pass | 2026-06-20 |
 | `equity_data.py` | Equity arm: free daily OHLC → Garman–Klass/Parkinson range log-variance (Rung-5 gap leg), pipeline-compatible | ✅ 6 tests; run on SPX | 2026-06-20 |
