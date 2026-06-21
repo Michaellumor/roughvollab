@@ -684,6 +684,13 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   star (identified), bracket (multivalued), or off-grid arrow (below-floor) at
   (implied H, η̂). Run --assets CSV:LABEL:WINDOW; set --eta to span calibrated η.
   Open: step 5 (microstructure-noise robustness axis), FTW quasi-likelihood.
+  **2026-06-21 — P3: real-data placement + paper drafted**
+- **L1c-MAP-runs** Ran the map on real processed RV (grid η∈{0.5,1.5,2.5,3.5}, Δ∈{48,96,288}, n_obs=2500, n_mc=40). Identifiable fractions: GJR id 12% / non-id 85% / de-bias 4%; MF-DFA id 30% / non-id 61% / de-bias 10%; Cont–Das non-id 92% / uncal 8% — region real but concentrated at fine Δ. Placement at calibrated η̂: BTC (n=2557, η̂=1.57) GJR 0.083→non-identified, Cont–Das NaN→uncalibrated, MF-DFA −0.057→below-floor; ETH (n=2557, η̂=1.45) GJR 0.070→non-identified, Cont–Das NaN→uncalibrated, MF-DFA −0.065→non-identified. Headline holds: no identified reading on any asset, on a map where the method works elsewhere.
+- **Sampling sweep** (1m/5m/15m) — GJR flat/rising as sampling fines (BTC 0.092/0.083/0.083; ETH 0.077/0.070/0.070) ⇒ microstructure-noise confound ruled out. BTC monofractal (Δh≈0.04); ETH multifractal spread (Δh≈0.08).
+- **SPX** (Garman–Klass range proxy): η̂ clamps at floor 0.20; GJR 0.132 & MF-DFA above-ceiling, Cont–Das undefined — non-identified but proxy-confounded; weak corroboration only, NOT a clean second asset class.
+- **P3 drafted** content-complete (~3.8k words; abstract→§1–6→reproducibility→refs→appendix), all numbers from the runs above. Title upgraded: "When is volatility roughness identifiable? A simulation-grounded audit of Hurst estimation from realized variance, with application to cryptocurrency." Overleaf-ready LaTeX built (pdflatex-clean, 10pp) + "Use of generative AI" statement. Remaining: insert the 2 figures.
+- **Citations** all 16 verified vs originals. Fixed: Rogers = book chapter (Options — 45 Years…, ch.9, 173–184), not a working paper; Fukasawa–Takabatake–Westphal = 2019 arXiv:1905.04852 "Is volatility rough?" + 2022 Math. Finance 32(4):1086–1132 "Consistent estimation…". Added: SIAM *Rough Volatility* (2024); Takaishi 2025 (FRL 74, 106683). Confirmed Cont–Das = 2024 (Sankhya B 86:191–223).
+- **Not committed:** paper_outputs.py (one-command P3 figure/number regen) sits in working outputs — commit if it should be a repo reproducibility asset. No advance on Layers 2–4.
 ---
 
 ## Publication seeds
