@@ -260,11 +260,21 @@ def build_identifiability_map(eta_grid: Sequence[float] = DEFAULT_ETA_GRID,
 def plot_identifiability_map(imap: IdentifiabilityMap,
                              out: Optional[str] = "output/identifiability_map.png",
                              show: bool = True,
-                             placements: Optional[list] = None):
+                             placements: Optional[list] = None,
+                             eta_reference: Optional[float] = None,
+                             eta_reference_label: Optional[str] = None,
+                             title: Optional[str] = "Identifiability map of the "
+                             "roughness exponent (rough-Bergomi ground truth)"):
     """Render the map: rows = estimators, cols = Δ; each panel x = true H, y = η,
     cell colour = identifiability status. The teal region is where roughness is
     actually recoverable; coral is where rough ≡ smooth. If `placements` are
-    given, real assets are overlaid as markers in the panel matching their Δ."""
+    given, real assets are overlaid as markers in the panel matching their Δ.
+
+    If `eta_reference` is given, a dashed horizontal line marks that η on every
+    panel (e.g. an asset's calibrated vol-of-vol) — showing at a glance which
+    status band the operating point falls in. Pass `title=None` to suppress the
+    figure title (e.g. when a LaTeX caption already carries it)."""
+    import matplotlib.patheffects as pe
     names = list(ESTIMATORS)
     nrow, ncol = len(names), imap.window_grid.size
     cmap = ListedColormap([_STATUS_COLOR[s] for s in _STATUS_ORDER])
@@ -295,6 +305,18 @@ def plot_identifiability_map(imap: IdentifiabilityMap,
                 for pl in placements:
                     if int(pl.window) == win:
                         _overlay_asset(ax, pl, name, imap)
+            if eta_reference is not None:
+                y_ref = float(np.interp(eta_reference, imap.eta_grid,
+                                        np.arange(imap.eta_grid.size)))
+                ax.axhline(y_ref, color="black", lw=1.6, ls=(0, (5, 3)), zorder=6,
+                           path_effects=[pe.withStroke(linewidth=3.2,
+                                                        foreground="white")])
+                if eta_reference_label and r == 0 and c == 0:
+                    ax.annotate(eta_reference_label, xy=(-0.35, y_ref),
+                                xytext=(-0.35, y_ref + 0.32), fontsize=7.5,
+                                color="black", zorder=8,
+                                bbox=dict(boxstyle="round,pad=0.18", fc="white",
+                                          ec="none", alpha=0.85))
 
     present = sorted({imap.status[n][a][b][i]
                       for n in names for a in range(imap.eta_grid.size)
@@ -303,9 +325,11 @@ def plot_identifiability_map(imap: IdentifiabilityMap,
     handles = [Patch(facecolor=_STATUS_COLOR[s], label=s) for s in present]
     fig.legend(handles=handles, loc="lower center", ncol=len(handles),
                frameon=False, fontsize=9, bbox_to_anchor=(0.5, -0.01))
-    fig.suptitle("Identifiability map of the roughness exponent "
-                 "(rough-Bergomi ground truth)", fontsize=12)
-    fig.tight_layout(rect=(0, 0.05, 1, 0.97))
+    if title:
+        fig.suptitle(title, fontsize=12)
+        fig.tight_layout(rect=(0, 0.05, 1, 0.97))
+    else:
+        fig.tight_layout(rect=(0, 0.05, 1, 0.99))
 
     if out:
         Path(out).parent.mkdir(parents=True, exist_ok=True)

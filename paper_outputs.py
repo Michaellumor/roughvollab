@@ -59,7 +59,6 @@ def fig1_bias_curves(out: str, *, eta: float, window: int, n_obs: int,
         ax.fill_between(grid, m - s, m + s, color=_CURVE_COLOR[name], alpha=0.12)
     ax.axhline(_SMOOTH, color="black", lw=0.8, ls=":", label="smooth null (H = ½)")
     ax.set_xlabel("true H"); ax.set_ylabel("estimated Ĥ")
-    ax.set_title(f"Estimator bias curves (η = {eta}, Δ = {window})")
     ax.legend(fontsize=8, loc="upper left", frameon=False)
     fig.tight_layout()
     Path(out).parent.mkdir(parents=True, exist_ok=True)
@@ -124,8 +123,13 @@ def main(argv=None) -> int:
 
     crypto = [pl for pl in (_place("BTC", args.btc, args.window, args.n_mc),
                             _place("ETH", args.eth, args.window, args.n_mc)) if pl]
-    plot_identifiability_map(imap, out=str(od / "fig2_map_with_assets.png"),
-                             show=False, placements=crypto)
+    eta_ref = float(np.mean([pl.eta_hat for pl in crypto])) if crypto else None
+    plot_identifiability_map(
+        imap, out=str(od / "fig2_map_with_assets.png"), show=False,
+        eta_reference=eta_ref,
+        eta_reference_label=(f"crypto η̂ ≈ {eta_ref:.2f} → non-identified"
+                             if eta_ref is not None else None),
+        title=None)
 
     spx = _place("SPX", args.spx, args.spx_window, args.n_mc)
 
