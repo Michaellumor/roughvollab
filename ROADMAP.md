@@ -702,11 +702,13 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   to smooth the Volterra error. Figures already exist (§2, §3, §4).
 - **P2:** improved estimators — antithetic and conditional-MC couplings
   (extensions 1–2), benchmarked against P1's baseline.
-- **P3 (from Layer 1c):** *"Can we trust roughness estimates from
-  realized volatility? A simulation-grounded audit, with application to
-  crypto."* Operating-characteristics tables + the Ĥ-vs-Δ signature
-  plot. Target: arXiv q-fin.ST, then SIURO (SIAM Undergraduate Research
-  Online).
+- - **P3 (drafted 2026-06-21):** *"When is volatility roughness identifiable?
+  A simulation-grounded audit of Hurst estimation from realized variance,
+  with application to cryptocurrency."* Content-complete draft (markdown +
+  Overleaf-ready LaTeX, 10pp): identifiability map + real-asset placement
+  (BTC/ETH/SPX all non-identified at calibrated η̂); 2 figures, 2 tables,
+  16 verified refs, AI-use statement. Remaining: insert the 2 figures.
+  Target: arXiv q-fin.ST, then SIURO.
 - Long-range: MLMC for market-risk measures (nested estimation) — aligns
   with the PhD direction.
 
