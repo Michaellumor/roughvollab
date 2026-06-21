@@ -168,7 +168,7 @@ Papers whose methods are implemented in the current code:
 - Bayer, Friz & Gatheral (2016). *Pricing under rough volatility.* Quantitative Finance. — the rough Bergomi model priced in Layer 1b.
 - Bennedsen, Lunde & Pakkanen (2017). *Hybrid scheme for Brownian semistationary processes.* Finance and Stochastics. — the κ=0 hybrid scheme in `roughvol_core.py`.
 - Giles (2008). *Multilevel Monte Carlo path simulation.* Operations Research. — the MLMC method underpinning Layer 1b.
-- Cont & Das (2022). *Rough volatility: fact or artefact?* — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
+- Cont & Das (2024). *Rough volatility: fact or artefact?* Sankhya B. — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
 
 Planned layers (not yet implemented — listed to indicate direction):
 
