@@ -174,21 +174,78 @@ def volterra_weights(n: int, H: float, T: float) -> tuple:
     return g, v
 
 
-def _paths_from_increments(dW1, dW2, n, p, payoff="asian"):
+def volterra_weights_kappa1(n: int, H: float, T: float) -> tuple:
     """
-    Rough Bergomi payoff from given Brownian increments (one grid level).
+    kappa=1 BLP hybrid weights/constants: the NEAREST (most singular) kernel
+    cell is integrated exactly instead of via the optimal Riemann point b_1.
+
+    Returns
+    -------
+    g_hyb    : (n,)  convolution kernel = g with the nearest weight g_1 zeroed
+    v_k1     : (n,)  EXACT discrete Var(W~_{t_i}) for the kappa=1 scheme,
+                     v_k1 = v_kappa0 - 2H*dt*g_1^2 + dt^{2H}
+    c_near   : float W_{i,1} = c_near*dW_i + sig_perp*Z_i   (= Cov/dt)
+    sig_perp : float residual std of the exact nearest-cell integral
+               sig_perp^2 = dt^{2H}/(2H) - dt^{2H}/(H+1/2)^2  (>0 for H<1/2)
+    """
+    dt = T / n
+    g, v0 = volterra_weights(n, H, T)
+    g_hyb = g.copy()
+    g_hyb[0] = 0.0
+    v_k1 = v0 - 2.0 * H * dt * g[0]**2 + dt**(2 * H)
+    cov = dt**(H + 0.5) / (H + 0.5)              # Cov(W_{i,1}, dW_i)
+    var_near = dt**(2 * H) / (2 * H)             # Var(W_{i,1})
+    c_near = cov / dt
+    sig_perp = np.sqrt(max(var_near - dt**(2 * H) / (H + 0.5)**2, 0.0))
+    return g_hyb, v_k1, c_near, sig_perp
+
+
+def _volterra(dW1, n, p, kappa=0, Z=None):
+    """
+    Volterra path W~ and its lognormal-compensator variance v.
+
+    kappa=0 (default): the existing optimal-discretisation (Riemann) scheme —
+        W~ is a pure convolution of the increments, MLMC coupling stays exact.
+    kappa=1          : BLP hybrid — nearest cell integrated EXACTLY.  Needs Z
+        (fresh N(0,1) per cell) for the correlated nearest-cell Gaussian, and
+        uses the kappa=1 discrete variance v_k1 in the compensator (using v_k0
+        here is the silent-bias trap that G-H1b guards against).
+    """
+    H, T = p["H"], p["T"]
+    if kappa == 0:
+        g, v = volterra_weights(n, H, T)
+        W_tilde = np.sqrt(2.0 * H) * fftconvolve(dW1, g[None, :], axes=1)[:, :n]
+        return W_tilde, v
+    if kappa == 1:
+        if Z is None:
+            raise ValueError("kappa=1 needs Z (fresh N(0,1) nearest-cell residuals)")
+        g_hyb, v_k1, c_near, sig_perp = volterra_weights_kappa1(n, H, T)
+        W_near = c_near * dW1 + sig_perp * Z                    # exact near cell
+        far = fftconvolve(dW1, g_hyb[None, :], axes=1)[:, :n]    # k>=2 Riemann tail
+        W_tilde = np.sqrt(2.0 * H) * (W_near + far)
+        return W_tilde, v_k1
+    raise ValueError(f"kappa must be 0 or 1, got {kappa}")
+
+
+def _simulate_paths(dW1, dW2, n, p, kappa=0, Z=None):
+    """
+    Shared rough-Bergomi path engine (used by every estimator).
 
     dW1 : (N, n) increments driving the Volterra process  (scaled sqrt(dt))
     dW2 : (N, n) orthogonal increments for the asset
-    Returns the discounted payoff per path, shape (N,).
+    kappa, Z : optional kappa=1 hybrid Volterra (Z = nearest-cell residuals)
+
+    Returns
+    -------
+    S      : (N, n+1) asset paths including S0
+    logS   : (N, n+1) log-asset relative to log S0 (logS[:, 0] = 0)
+    V_left : (N, n)   instantaneous variance at the left endpoints
     """
-    H, eta, rho = p["H"], p["eta"], p["rho"]
-    xi0, S0, K, T, r = p["xi0"], p["S0"], p["K"], p["T"], p["r"]
+    eta, rho = p["eta"], p["rho"]
+    xi0, S0, T, r = p["xi0"], p["S0"], p["T"], p["r"]
     dt = T / n
 
-    g, v = volterra_weights(n, H, T)
-    # Volterra process at t_1..t_n via FFT convolution along the time axis
-    W_tilde = np.sqrt(2.0 * H) * fftconvolve(dW1, g[None, :], axes=1)[:, :n]
+    W_tilde, v = _volterra(dW1, n, p, kappa, Z)
 
     # variance at left endpoints t_0..t_{n-1}; exact forward variance E[V]=xi0
     V_left = np.empty_like(dW1)
@@ -202,7 +259,16 @@ def _paths_from_increments(dW1, dW2, n, p, payoff="asian"):
     logS  = np.concatenate([np.zeros((dW1.shape[0], 1)),
                             np.cumsum(dlogS, axis=1)], axis=1)
     S = S0 * np.exp(logS)                                # (N, n+1) incl. S0
+    return S, logS, V_left
 
+
+def _paths_from_increments(dW1, dW2, n, p, payoff="asian", kappa=0, Z=None):
+    """
+    Rough Bergomi payoff from given Brownian increments (one grid level).
+    Returns the discounted payoff per path, shape (N,).
+    """
+    S, _, _ = _simulate_paths(dW1, dW2, n, p, kappa, Z)
+    K, T, r = p["K"], p["T"], p["r"]
     if payoff == "european":
         return np.exp(-r * T) * np.maximum(S[:, -1] - K, 0.0)
     # trapezoidal arithmetic average on the level's own grid
@@ -210,15 +276,96 @@ def _paths_from_increments(dW1, dW2, n, p, payoff="asian"):
     return np.exp(-r * T) * np.maximum(A - K, 0.0)
 
 
+def _cond_asian_payoff(dW1, dW2, n, p, kappa=0, Z=None):
+    """
+    Conditional control-variate payoff for the arithmetic Asian:
+
+        P_cond = arith - ( geom - E[geom | W] ),     W = dW1 (variance path).
+
+    The geometric-average control geom - E[geom|W] has zero conditional mean
+    given the variance path, so P_cond is UNBIASED for the arithmetic-Asian
+    price with bias identical to the plain arithmetic payoff on the same grid.
+    Conditional on W the log-prices are Gaussian, hence the geometric average
+    is lognormal and E[geom|W] is closed form (a Black-Scholes formula) — this
+    removes the orthogonal driver W_perp from the control exactly.  Yields a
+    large constant-factor single-level variance reduction (~4x at the defaults);
+    see p2_conditional_verify.py for the gate-check.  Arithmetic-Asian only.
+
+    kappa/Z select the Volterra scheme for the variance path V (kappa=1 needs
+    the near-cell Gaussian Z).  The conditioning is unchanged — given the
+    variance path, logS is still Gaussian in dW2, so G stays conditionally
+    lognormal; only V's discretisation changes, and both muG and sigG^2 read
+    that same (kappa=1) V.  Unbiased for the kappa-1 arithmetic price.
+    """
+    H, rho = p["H"], p["rho"]
+    S0, K, T, r = p["S0"], p["K"], p["T"], p["r"]
+    dt = T / n
+    S, logS, V_left = _simulate_paths(dW1, dW2, n, p, kappa, Z)
+    disc = np.exp(-r * T)
+
+    A = (0.5 * S[:, 0] + S[:, 1:-1].sum(axis=1) + 0.5 * S[:, -1]) / n
+    arith = disc * np.maximum(A - K, 0.0)
+
+    # geometric average with the SAME trapezoidal weights w_k (1/2n at the
+    # endpoints, 1/n inside);  LG = sum_k w_k logS_k
+    LG = (0.5 * logS[:, 0] + logS[:, 1:-1].sum(axis=1)
+          + 0.5 * logS[:, -1]) / n
+    geom = disc * np.maximum(S0 * np.exp(LG) - K, 0.0)
+
+    # conditional law of LG given W:  Gaussian(muG, sigG^2).  W_bar_j is the
+    # cumulative trapezoidal weight on the steps strictly after step j.
+    mu = (r - 0.5 * V_left) * dt + np.sqrt(V_left) * rho * dW1   # E[dlogS | W]
+    M  = np.concatenate([np.zeros((dW1.shape[0], 1)),
+                         np.cumsum(mu, axis=1)], axis=1)
+    muG  = (0.5 * M[:, 0] + M[:, 1:-1].sum(axis=1) + 0.5 * M[:, -1]) / n
+    jj   = np.arange(n)
+    Wbar = 1.0 - (1.0 + 2.0 * jj) / (2.0 * n)
+    sigG2 = (1.0 - rho**2) * dt * (V_left * Wbar[None, :]**2).sum(axis=1)
+    sigG  = np.sqrt(np.maximum(sigG2, 1e-300))
+    F  = S0 * np.exp(muG + 0.5 * sigG2)
+    d1 = (np.log(F / K) + 0.5 * sigG2) / sigG
+    Egeom = disc * (F * norm.cdf(d1) - K * norm.cdf(d1 - sigG))
+    return arith - geom + Egeom
+
+
+def _level_cost_coef(l, antithetic=False):
+    """Per-sample work at level l, in units of n_f = n0*2^l (gamma=1 model).
+    Naive: P_f (n_f) + P_c (n_f/2) = 1.5.  Antithetic: + the swapped fine path
+    P_fa (n_f) = 2.5.  Conditional reuses the same two paths (1.5) plus only an
+    O(n) closed-form/geometric post-process — a small measured constant (~1.3x,
+    see p2_conditional_verify.py) that does not change the cost RATE gamma, so
+    it is not charged here; fold it in explicitly for exact cost comparisons."""
+    if l == 0:
+        return 1.0
+    return 2.5 if antithetic else 1.5
+
+
 def mlmc_asian_level(l: int, N: int, p: dict = PARAMS,
                      payoff: str = "asian", batch: int = 5000,
-                     rng: np.random.Generator = None) -> np.ndarray:
+                     rng: np.random.Generator = None,
+                     antithetic: bool = False,
+                     conditional: bool = False,
+                     kappa: int = 0) -> np.ndarray:
     """
-    Draw N coupled samples of Y_l = P_f - P_c at level l (Y_0 = P_0).
+    Draw N coupled samples of the MLMC correction Y_l at level l (Y_0 = P_0).
 
     Fine grid n_f = n0 * 2^l; coarse grid n_c = n_f / 2.  Both levels are
     deterministic functions of the SAME fine Brownian increments, with the
     coarse increments obtained by pairwise summation — exact MLMC coupling.
+
+    Estimator (opt-in; the default is the plain coupling and is unchanged):
+
+      naive (default)   Y = P_f - P_c
+      antithetic=True   Y = 0.5*(P_f + P_fa) - P_c     (Giles-Szpruch)
+          P_fa swaps the paired fine increments within each coarse step; the
+          coarse increment (their sum) is invariant, so P_c and the coupling
+          are unchanged.  Verified net slightly WORSE here (variance factor
+          ~1.45x < cost factor 2.5/1.5); see p2_antithetic_verify.py.
+      conditional=True  payoffs use the geometric-control estimator P_cond
+          (arithmetic Asian only); unbiased, ~4x single-level variance cut.
+          See p2_conditional_verify.py.
+
+    The two estimators are alternative variance routes; enable at most one.
 
     Returns
     -------
@@ -226,6 +373,25 @@ def mlmc_asian_level(l: int, N: int, p: dict = PARAMS,
         out[0] = Y_l samples (the MLMC correction),
         out[1] = P_f samples (fine-level payoff, for consistency checks).
     """
+    if antithetic and conditional:
+        raise ValueError("antithetic and conditional are alternative "
+                         "estimators; enable at most one")
+    if conditional and payoff != "asian":
+        raise ValueError("conditional control variate is implemented for the "
+                         "arithmetic Asian only")
+    if kappa not in (0, 1):
+        raise ValueError(f"kappa must be 0 or 1, got {kappa}")
+    if kappa == 1 and (antithetic or conditional):
+        raise ValueError("kappa=1 is a separate scheme axis; combine with "
+                         "neither antithetic nor conditional")
+    if kappa == 1 and l > 0:
+        raise NotImplementedError(
+            "kappa=1 coarse coupler is not wired yet — fine path only (l=0). "
+            "See kappa1_hybrid_coupling_design.md / gh2_kappa1_coupler.py.")
+    payoff_fn = ((lambda a, b, m: _cond_asian_payoff(a, b, m, p)) if conditional
+                 else (lambda a, b, m, Z=None:
+                       _paths_from_increments(a, b, m, p, payoff, kappa, Z)))
+
     rng = rng or np.random.default_rng()
     n_f  = p["n0"] * 2**l
     dt_f = p["T"] / n_f
@@ -238,16 +404,24 @@ def mlmc_asian_level(l: int, N: int, p: dict = PARAMS,
         nb  = min(batch, N - done)
         dW1 = rng.standard_normal((nb, n_f)) * np.sqrt(dt_f)
         dW2 = rng.standard_normal((nb, n_f)) * np.sqrt(dt_f)
+        Zf  = rng.standard_normal((nb, n_f)) if kappa == 1 else None
 
-        P_f = _paths_from_increments(dW1, dW2, n_f, p, payoff)
+        P_f = payoff_fn(dW1, dW2, n_f, Zf) if kappa == 1 else payoff_fn(dW1, dW2, n_f)
         if l == 0:
             Y = P_f
         else:
             n_c    = n_f // 2
             dW1_c  = dW1.reshape(nb, n_c, 2).sum(axis=2)
             dW2_c  = dW2.reshape(nb, n_c, 2).sum(axis=2)
-            P_c    = _paths_from_increments(dW1_c, dW2_c, n_c, p, payoff)
-            Y = P_f - P_c
+            P_c    = payoff_fn(dW1_c, dW2_c, n_c)
+            if antithetic:
+                # swap the paired fine increments within each coarse step
+                dW1_s = dW1.reshape(nb, n_c, 2)[:, :, ::-1].reshape(nb, n_f)
+                dW2_s = dW2.reshape(nb, n_c, 2)[:, :, ::-1].reshape(nb, n_f)
+                P_fa  = payoff_fn(dW1_s, dW2_s, n_f)
+                Y = 0.5 * (P_f + P_fa) - P_c
+            else:
+                Y = P_f - P_c
 
         out[0, done:done + nb] = Y
         out[1, done:done + nb] = P_f
@@ -334,7 +508,8 @@ def section1_validation(show: bool = True, quick: bool = False):
 
 def estimate_rates(L: int = 6, N: int = 20_000, p: dict = PARAMS,
                    payoff: str = "asian", seed: int = 7,
-                   verbose: bool = True) -> dict:
+                   verbose: bool = True, antithetic: bool = False,
+                   conditional: bool = False) -> dict:
     """
     Giles-style mlmc_test: fixed N samples on each level l = 0..L, then
 
@@ -351,12 +526,13 @@ def estimate_rates(L: int = 6, N: int = 20_000, p: dict = PARAMS,
 
     for l in range(L + 1):
         t0 = time.time()
-        s = mlmc_asian_level(l, N, p, payoff, rng=rng)
+        s = mlmc_asian_level(l, N, p, payoff, rng=rng,
+                             antithetic=antithetic, conditional=conditional)
         wall = time.time() - t0
         Y, Pf = s[0], s[1]
         m_l.append(Y.mean());  v_l.append(Y.var())
         a_l.append(Pf.mean()); vf_l.append(Pf.var())
-        c_l.append(p["n0"] * 2**l * (1.5 if l else 1.0))   # fine + coarse work
+        c_l.append(p["n0"] * 2**l * _level_cost_coef(l, antithetic))
         if l:
             num = a_l[l] - a_l[l - 1] - m_l[l]
             den = 3 * (np.sqrt(vf_l[l]) + np.sqrt(vf_l[l - 1])
@@ -435,7 +611,8 @@ def section2_rates(show: bool = True, quick: bool = False):
 
 def mlmc_run(eps: float, p: dict = PARAMS, alpha: float = None,
              beta: float = None, N0: int = 2_000, Lmin: int = 2,
-             Lmax: int = 9, seed: int = 11, verbose: bool = True) -> dict:
+             Lmax: int = 9, seed: int = 11, verbose: bool = True,
+             antithetic: bool = False, conditional: bool = False) -> dict:
     """
     Giles' adaptive MLMC.  Chooses per-level sample sizes
 
@@ -461,11 +638,12 @@ def mlmc_run(eps: float, p: dict = PARAMS, alpha: float = None,
         for l in range(L + 1):
             if dNl[l] < 1: continue
             n_new = int(dNl[l])
-            s = mlmc_asian_level(l, n_new, p, rng=rng)
+            s = mlmc_asian_level(l, n_new, p, rng=rng,
+                                 antithetic=antithetic, conditional=conditional)
             sums[0, l] += s[0].sum()
             sums[1, l] += (s[0]**2).sum()
             Nl[l]    += n_new
-            costl[l] += n_new * p["n0"] * 2**l * (1.5 if l else 1.0)
+            costl[l] += n_new * p["n0"] * 2**l * _level_cost_coef(l, antithetic)
 
         ml = np.abs(sums[0] / Nl)
         Vl = np.maximum(0.0, sums[1] / Nl - (sums[0] / Nl)**2)
