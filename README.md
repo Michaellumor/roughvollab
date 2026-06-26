@@ -4,7 +4,26 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
 
-**RoughVolLab** is an open-source Python platform for simulation, pricing, and optimal control under rough stochastic volatility. Built on the mathematical foundation that volatility is rough — that is, driven by fractional Brownian motion with Hurst exponent H ≈ 0.1 rather than standard Brownian motion — the library provides a unified, pedagogically structured codebase spanning four research layers: (1) exact and fast O(N log N) simulation of fractional Brownian motion and rough volatility models (rough Bergomi, rough Heston); (2) multilevel Monte Carlo pricing of path-dependent derivatives including Asian options, with a rigorous complexity analysis under rough dynamics; (3) non-linear market friction modelling including Almgren-Chriss market impact and rough execution slippage; and (4) a risk-aware reinforcement learning hedging engine using path signature features to handle the non-Markovian state space that rough volatility induces. No existing open-source tool covers this full stack. RoughVolLab is designed for three audiences: students encountering rough volatility for the first time, researchers needing reproducible baselines, and practitioners building production-grade rough vol implementations. The codebase is an independent research programme by a mathematics undergraduate at the University of Salford, built to publication standard and designed to grow into doctoral research — every module is individually citable, and every numerical claim is backed by a committed, reproducible run.
+**An open-source research programme on rough stochastic volatility — built on the principle of honest measurement over confident numbers.**
+
+RoughVolLab interrogates the rough-volatility paradigm rather than assuming it. The paradigm holds that log-volatility behaves as a fractional process with a small Hurst exponent (H ≈ 0.1). This project asks **three questions** about that claim and reports the honest answer to each — two of which are negative, and deliberately so. It is an independent research programme by a mathematics undergraduate at the University of Salford, built to publication standard, where every numerical claim is backed by a committed, reproducible run.
+
+> The unifying question: *is what we're seeing real, or an artefact of how we looked?*
+
+### Three questions, three honest answers
+
+**1. Is the roughness identifiable from data? — *Often, no.***
+Roughness is measured through a noisy, discretely-sampled proxy of latent volatility. Rather than adjudicating whether measured roughness is genuine, RoughVolLab asks a prior question: *for what region of vol-of-vol and sampling parameters is the Hurst exponent identifiable at all?* Using a verified rough-Bergomi simulator, three roughness estimators (structure-function regression, a model-free *p*-variation index, and multifractal DFA) are characterised across the parameter space and formalised into an *identifiability map*. **Finding:** an identifiable region exists, but it is narrow: even multifractal DFA — the most favourable of the three estimators — recovers roughness across only ~30% of the parameter grid (concentrated at fine sampling), and the regime real assets occupy (BTC, ETH, S&P 500, whose calibration forces high vol-of-vol) falls **outside** it, where the inversion is non-identified. This reframes the "rough vs artefact" debate as a question of what the data can support. *(Layer 1c + Phase B, below.)*
+
+**2. Can it be priced cheaply? — *Yes, but not with the fashionable tool.***
+Pricing options under the rough model needs large Monte Carlo simulations, and Multilevel Monte Carlo (MLMC) is the celebrated cost-cutting technique. **Does it pay here?** **Finding:** for arithmetic-Asian options under rough Bergomi, **MLMC does not earn its place.** A conditional ("turbocharged") *standard* Monte Carlo estimator is the method of choice — and conditioning works best as single-grid standard MC, *not* bolted onto the multilevel machinery (the decisive κ-invariant ratio std-MC / conditional-MLMC = 0.41–0.45 < 1). Exact near-cell integration (κ=1) sharpens the winner further (~1.3–1.5× cheaper) without changing the convergence rate. *(Layer 1b / P2, below.)*
+
+**3. Can the structure be traded? — *No.***
+If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artifact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 3 execution arc, below.)*
+
+### The discipline
+
+Every claim follows the same gate-check: **state the mechanism → commit a falsifiable prediction → build/run → verify against a known answer.** Comparisons are pinned to matched accuracy / matched risk so no method wins by being sloppy, and nothing is declared "tested" without a test that names it. **Negative results are first-class outcomes** — two of the three headline findings are negative, and the value is in having earned them rather than assumed otherwise. The full prediction-and-result history lives in [`ROADMAP.md`](ROADMAP.md); the gate-check specs and recorded verdicts live in [`docs/gate_checks/`](docs/gate_checks/).
 
 ---
 
@@ -14,16 +33,19 @@
 |------|-------|--------|
 | `roughvol_core.py` | Shared rough-path engine (κ=0 Volterra), pinned by tests | ✅ 18 tests pass |
 | `layer1_rough_vol.py` | fBm simulation, hybrid scheme, Hurst estimation | ✅ complete |
-| `layer1b_mlmc_asian.py` | MLMC Asian option pricing, complexity under roughness | ✅ complete (v0.1) |
+| `layer1b_mlmc_asian.py` | MLMC Asian pricing + complexity; opt-in antithetic / conditional / κ=1 estimator flags (P2) | ✅ complete (v0.1) + P2 |
+| `layer1b_kappa1.py` | Exact near-cell (κ=1) Volterra module + coarse coupler | ✅ G-H1 / G-H2 pass |
 | `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption ladder Rungs 1–5: RV-proxy mirage + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample; calendar/day-of-week seasonality) | ✅ estimators + full ladder |
 | `identifiability_map.py` | Layer 1c capstone — identifiability map over (η, Δ): classifier, phase diagram, per-asset η-calibration & placement (the P3 deliverable) | ✅ 15 tests pass |
 | `paper_outputs.py` | Reproducibility script — one command regenerates the P3 figures (bias curves + identifiability map with asset overlay) and prints every paper number | ✅ reuses tested modules |
+| `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2/3): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren-Chriss, rough slippage, Markov breakdown | 🔜 coming |
 | `layer3_rl_hedging.py` | Path signatures, actor-critic, CVaR deep hedging | 🔜 coming |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 coming |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
 | `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
 | `equity_data.py` | Equity arm: free daily OHLC → range-based log-variance (Rung-5 gap leg) | ✅ 6 tests; run on SPX |
+| `docs/gate_checks/` | Gate-check specs + recorded verdicts (the audit index) | ✅ living |
 
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
@@ -65,9 +87,15 @@ decay rate β tracks the pathwise bound 2H across the roughness spectrum:
 because the Volterra strong error acts as a slowly-decaying common factor
 that averaging cannot cancel. With β ≈ 2H ≪ γ = 1 this is the worst Giles
 regime, and at ε = 0.025 naive MLMC costs *more* than standard Monte Carlo
-(cost ratio ≈ 0.6×). That negative result is the point: it quantifies why
-rough volatility needs specialised estimators, and motivates the antithetic
-and conditional-MC couplings on the roadmap.
+(cost ratio ≈ 0.6×). That negative result motivated the **P2 estimator
+programme** — now concluded (decisions D20–D23). Its verdict: the antithetic
+coupling is **refuted** (β unchanged, ~10% costlier at matched accuracy), while
+**conditional Monte Carlo wins as single-grid "turbocharging," not multilevel**
+(the κ-invariant ratio std-MC / conditional-MLMC = 0.41–0.45 < 1), with exact
+near-cell integration (κ=1) sharpening it ~1.3–1.5× without changing β. The
+honest headline: for rough-Bergomi Asian options, **MLMC does not earn its
+place** — conditional standard MC on the κ=1 variance path is the method of
+choice.
 
 ![Measured beta vs Hurst exponent](layer1b_beta_vs_H.png)
 
@@ -162,6 +190,29 @@ isolation is the simulated Rung 5 in `layer1c_roughness_audit.py`.
 
 ---
 
+## Execution alpha — Layer 3 (Phase 0–1: the kill-switch)
+
+Can the rough structure be *traded*? The execution arc asks whether a
+reinforcement-learning agent could time its liquidation to the rough vol path
+and beat the classical **Almgren–Chriss** schedule. **Phase 0**
+(`execution_alpha.py`) builds the rough-Bergomi execution environment with
+Almgren–Chriss and naive baselines, validated by gate **G-X1**: in the Markovian
+limit the simulated AC frontier matches the closed-form optimum to **0.7%**, so
+the environment can be trusted to evaluate a policy. **Phase 1**
+(`execution_alpha_phase1.py`) is a cheap causal vol-reactive heuristic — the
+kill-switch. On the matched-risk efficient frontier it is **~5 s.e. worse** than
+Almgren–Chriss (gap −0.025, sign-stable across seeds), with no edge that grows
+with roughness. **Verdict: under linear impact, rough-volatility structure
+offers no executable execution edge** — so deep RL is not pursued. The probe's
+first run produced a look-ahead artifact (a spurious "edge" *larger* in the
+Markovian limit); it was caught by the H-sanity gate and corrected to a causal
+schedule, with the precondition `E[inv_pnl] ≈ 0` proven before re-reading the
+result. Spec and verdicts: [`docs/gate_checks/`](docs/gate_checks/).
+
+![Execution-alpha audit dashboard](roughvollab_alpha_audit.png)
+
+---
+
 ## Key references
 
 Papers whose methods are implemented in the current code:
@@ -170,6 +221,7 @@ Papers whose methods are implemented in the current code:
 - Bayer, Friz & Gatheral (2016). *Pricing under rough volatility.* Quantitative Finance. — the rough Bergomi model priced in Layer 1b.
 - Bennedsen, Lunde & Pakkanen (2017). *Hybrid scheme for Brownian semistationary processes.* Finance and Stochastics. — the κ=0 hybrid scheme in `roughvol_core.py`.
 - Giles (2008). *Multilevel Monte Carlo path simulation.* Operations Research. — the MLMC method underpinning Layer 1b.
+- Almgren & Chriss (2001). *Optimal execution of portfolio transactions.* Journal of Risk. — the optimal-liquidation baseline in the Layer-3 execution arc.
 - Cont & Das (2024). *Rough volatility: fact or artefact?* Sankhya B. — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
 
 Planned layers (not yet implemented — listed to indicate direction):
