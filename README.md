@@ -19,7 +19,7 @@ Roughness is measured through a noisy, discretely-sampled proxy of latent volati
 Pricing options under the rough model needs large Monte Carlo simulations, and Multilevel Monte Carlo (MLMC) is the celebrated cost-cutting technique. **Does it pay here?** **Finding:** for arithmetic-Asian options under rough Bergomi, **MLMC does not earn its place.** A conditional ("turbocharged") *standard* Monte Carlo estimator is the method of choice — and conditioning works best as single-grid standard MC, *not* bolted onto the multilevel machinery (the decisive κ-invariant ratio std-MC / conditional-MLMC = 0.41–0.45 < 1). Exact near-cell integration (κ=1) sharpens the winner further (~1.3–1.5× cheaper) without changing the convergence rate. *(Layer 1b / P2, below.)*
 
 **3. Can the structure be traded? — *No.***
-If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artifact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 3 execution arc, below.)*
+If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artifact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 2 execution arc, below.)*
 
 ### The discipline
 
@@ -38,7 +38,7 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 | `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption ladder Rungs 1–5: RV-proxy mirage + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample; calendar/day-of-week seasonality) | ✅ estimators + full ladder |
 | `identifiability_map.py` | Layer 1c capstone — identifiability map over (η, Δ): classifier, phase diagram, per-asset η-calibration & placement (the P3 deliverable) | ✅ 15 tests pass |
 | `paper_outputs.py` | Reproducibility script — one command regenerates the P3 figures (bias curves + identifiability map with asset overlay) and prints every paper number | ✅ reuses tested modules |
-| `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2/3): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
+| `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 Still ahead — needs spec before code |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
@@ -189,7 +189,7 @@ isolation is the simulated Rung 5 in `layer1c_roughness_audit.py`.
 
 ---
 
-## Execution alpha — Layer 3 (Phase 0–1: the kill-switch)
+## Execution alpha — Layer 2 (Phase 0–1: the kill-switch)
 
 Can the rough structure be *traded*? The execution arc asks whether a
 reinforcement-learning agent could time its liquidation to the rough vol path
@@ -220,12 +220,12 @@ Papers whose methods are implemented in the current code:
 - Bayer, Friz & Gatheral (2016). *Pricing under rough volatility.* Quantitative Finance. — the rough Bergomi model priced in Layer 1b.
 - Bennedsen, Lunde & Pakkanen (2017). *Hybrid scheme for Brownian semistationary processes.* Finance and Stochastics. — the κ=0 hybrid scheme in `roughvol_core.py`.
 - Giles (2008). *Multilevel Monte Carlo path simulation.* Operations Research. — the MLMC method underpinning Layer 1b.
-- Almgren & Chriss (2001). *Optimal execution of portfolio transactions.* Journal of Risk. — the optimal-liquidation baseline in the Layer-3 execution arc.
+- Almgren & Chriss (2001). *Optimal execution of portfolio transactions.* Journal of Risk. — the optimal-liquidation baseline in the Layer-2 execution arc.
 - Cont & Das (2024). *Rough volatility: fact or artefact?* Sankhya B. — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
 
 Planned layers (not yet implemented — listed to indicate direction):
 
-- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — basis for the RL hedging engine (Layer 3).
+- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — basis for the planned Layer-3 RL hedging engine (still unbuilt; distinct from the Layer-2 execution arc above).
 - El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance. — for rough Heston pricing and calibration (Layer 4).
 
 ---
