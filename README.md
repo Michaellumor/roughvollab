@@ -41,7 +41,7 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 | `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out |
 | `layer3_deep_hedging.py` | Deep-hedging engine — path signatures, actor–critic, CVaR objective (distinct from the Layer 2 execution arc) | 📋 Planned — still unbuilt; spec in `ROADMAP.md` |
-| `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 Still ahead — needs spec before code |
+| `layer4_convergence.py` | Convergence study (weak order) + SPX calibration + diagnostics — two planned modules: `layer4_convergence.py` + `rough_heston.py` (native rough-Heston simulator + CF reference) | 🔜 spec ready — `docs/gate_checks/layer4_convergence_gate_check.md` |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
 | `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
 | `equity_data.py` | Equity arm: free daily OHLC → range-based log-variance (Rung-5 gap leg) | ✅ 6 tests; run on SPX |
