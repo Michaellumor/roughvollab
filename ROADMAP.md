@@ -44,7 +44,7 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `execution_alpha_phase1.py` | Execution kill-switch probe — causal vol-reactive heuristic | ✅ Phase 1 — kill-switch fired (negative) | 2026-06-24 |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out | 2026-06-24 |
 | `layer3_deep_hedging.py` | Deep-hedging engine (path signatures / actor–critic / CVaR; distinct from Layer-2 execution) | 📋 Planned — still unbuilt | — |
-| `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 Still ahead — needs spec before code | — |
+| `layer4_convergence.py` | Convergence study (weak order) + SPX calibration + diagnostics — two planned modules: `layer4_convergence.py` + `rough_heston.py` (native rough-Heston simulator + CF reference) | 🔜 spec ready — `docs/gate_checks/layer4_convergence_gate_check.md` | 2026-06-27 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
 
