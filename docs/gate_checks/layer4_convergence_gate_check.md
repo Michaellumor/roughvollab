@@ -42,6 +42,15 @@ The study refines Δt (n = 2^k steps) and measures how fast the *priced* bias de
 
 ## 2. The non-circularity problem and its solution (load-bearing)
 
+> **Status — BUILT & CERTIFIED (2026-06-27, `rough_heston_cf.py`).** The CF reference exists:
+> El Euch–Rosenbaum fractional Riccati (Diethelm–Ford–Freed FABM) + Gil-Pelaez inversion, with an
+> Albrecher little-trap classical-Heston CF as the independent anchor. Two-stage validated (inverter
+> vs Black–Scholes to 1e-13; H=½ pipeline == closed-form Heston to ~1e-6). **Certified** at the
+> rough regime (H=0.10, ν=0.20): convergence **order ≈ 1.60 = 1+H+½**, `err ≈ 0.68·(T/N_riccati)^1.60`;
+> to reach reference error ≤ X use N_riccati ≥ {1e-5: 1040, 1e-6: 4370, 1e-7: 18400}. Cost O(N²) per
+> CF-set (fine at ν≤0.20; sum-of-exp acceleration needed only for ≤1e-7 refs or calibration loops).
+> See ROADMAP **D30**.
+
 Weak error requires a **known true price** to measure bias against. A "convergence study" that
 compares coarse simulations against a *fine simulation* is **circular** — it measures
 self-consistency, not convergence to truth. This study therefore measures bias against a
