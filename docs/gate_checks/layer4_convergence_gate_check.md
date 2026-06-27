@@ -1,6 +1,6 @@
 # Gate-check spec — Layer 4: weak convergence of the κ=0 hybrid scheme
 
-**Status:** spec (not yet built) · **Module:** `layer4_convergence.py` + `rough_heston.py` (both planned)
+**Status:** `rough_heston.py` simulator **built & validated for ν ≤ 0.20** (QE positivity; β=2H gate PASS, 2026-06-27) · `layer4_convergence.py` (weak-order study) planned · **Module:** `layer4_convergence.py` + `rough_heston.py`
 **Date:** 2026-06-27 · **Depends on:** `roughvol_core.py` (κ=0 Volterra machinery, reused) · builds a native rough-Heston simulator + CF reference
 
 > Format follows the project gate-check discipline: **state the mechanism → commit a
@@ -101,6 +101,11 @@ a **directional** claim rather than inventing a number:
 of the hybrid scheme; if a sourced value exists, replace the directional claim with the precise
 predicted α (the strong order was pinned to BLP this way — the weak order deserves the same).
 
+**Validated regime (2026-06-27).** α is measured for **ν ≤ 0.20** — the range where the
+rough-Heston simulator is validated (β=2H holds; the priced bias is scheme-independent). At
+ν ≳ 0.25 the explicit scheme degrades on *both* axes (§5; §8 boundary finding), so α is **not**
+claimed there; that regime needs the multifactor-lift extension.
+
 ---
 
 ## 4. Method
@@ -118,15 +123,22 @@ predicted α (the strong order was pinned to BLP this way — the weak order des
 
 ---
 
-## 5. SPX calibration (relevance, not a separate exercise)
+## 5. SPX calibration — in-range validation + an explicit out-of-range EXTENSION
 
-Calibrate rough-Heston (H, ξ₀, η, ρ) to an **SPX option surface** via the CF, then **run the
-convergence study at the calibrated parameters** — answering *"does the scheme converge at the
-predicted weak rate in the regime real markets actually occupy?"* This connects Layer 4 to the
-identifiability finding: SPX calibration forces **high vol-of-vol** (η large), which is plausibly
-where the weak rate is **slowest** and the bias constant **largest**. So the SPX run is not a
-formality — it tests the scheme in the hardest, most realistic regime, and an honest caveat
-(calibration mixes real risk-premia/term-structure effects) is recorded.
+**Measured boundary (2026-06-27).** The explicit hybrid Volterra–Euler simulator is validated only
+for **ν ≤ 0.20** (`rough_heston.py`; §8 boundary finding). Real rough-Heston **SPX/index calibration
+forces high vol-of-vol (ν ≈ 0.3–0.4)** — *above* that ceiling — where (i) the β-coupling breaks and
+(ii) the priced bias becomes scheme- and n-dependent (2.4–5.3% at ν=0.4). So the SPX run **cannot**
+be done with this simulator without contaminating the weak-order measurement. This splits §5 in two:
+
+- **In range (ν ≤ 0.20):** the weak-order study runs and α is a legitimate **method-validation**
+  result in a stylised / moderate-vol-of-vol regime. This is what Layer 4's first brick delivers.
+- **Out of range (high-ν SPX) — explicit Layer 4 EXTENSION:** the **market-relevant** SPX-calibrated
+  weak-order claim requires a **multifactor Markovian-lift simulator** (Abi Jaber–El Euch: rough
+  kernel ≈ sum of exponentials → Markovian factors + per-factor QE/Alfonsi), which holds positivity
+  *and* the coupling at high ν. It is **its own brick with its own build-validation gate** — scoped
+  here as a first-class extension, NOT a silent caveat. The honest framing: until that extension
+  exists, the market-relevant claim is open.
 
 ---
 
@@ -147,10 +159,11 @@ formality — it tests the scheme in the hardest, most realistic regime, and an 
 
 ## 7. Gate-check bar (PASS/FAIL committed before any measurement)
 
-> **PASS** iff: (i) the H = ½ case matches the closed-form Heston reference within MC error;
-> (ii) the fit region is bias-dominated (b_n ≫ MC s.e.); (iii) the measured weak order α is
-> significantly **> H** across the H-sweep; and (iv) α is consistent with the stated expectation
-> (≈ 1, or the sourced value if §3 verification supplies one).
+> **Scope:** measured at **ν ≤ 0.20** (the validated simulator range; the high-ν SPX-calibrated
+> regime is a separate multifactor-lift extension, §5). **PASS** iff: (i) the H = ½ case matches the
+> closed-form Heston reference within MC error; (ii) the fit region is bias-dominated (b_n ≫ MC
+> s.e.); (iii) the measured weak order α is significantly **> H** across the H-sweep; and (iv) α is
+> consistent with the stated expectation (≈ 1, or the sourced value if §3 verification supplies one).
 > **FAIL** → α ≈ H (no weak speed-up) or α inconsistent with prediction. **A FAIL is a result**,
 > not a defect: it would establish that roughness bottlenecks the weak rate of the hybrid scheme —
 > a publishable characterisation of the scheme under roughness.
@@ -162,11 +175,21 @@ formality — it tests the scheme in the hardest, most realistic regime, and an 
 - Measures the **κ=0** scheme. κ=1 (`layer1b_kappa1.py`) improves the error *constant*, not the
   rate (β = 2H either way), so the *order* result is κ-invariant; a κ=1 run would sharpen the
   constant only.
-- Layer 4 is **two deliverables**: a native **rough-Heston simulator** (reusing `roughvol_core.py`'s
-  κ=0 Volterra machinery, adding rough-Heston variance/price dynamics) and the convergence study
-  built on it. The simulator carries a **build-validation gate**: re-measure β on it and confirm
-  β = 2H (the shared κ=0 discretisation should reproduce the established strong order) *before*
-  trusting it for the weak-order study. Same model on both sides → **no carry-over assumption**.
+- Layer 4 is **two deliverables**: a native **rough-Heston simulator** (`rough_heston.py`, reusing
+  `roughvol_core.py`'s κ=0 Volterra machinery, adding rough-Heston variance/price dynamics) and the
+  convergence study built on it. The simulator's **build-validation gate** (re-measure β, confirm
+  β = 2H) is **PASSED with the QE positivity scheme for ν ≤ 0.20** (`rh_beta_gate.py`, 2026-06-27):
+  β = 0.070 / 0.167 / 0.384 / 0.737 across H ∈ {.05,.10,.20,.35}, max|β−2H| = 0.037, consistent with
+  the layer1b reference (0.13/0.23/0.42/0.72). Same model on both sides → **no carry-over assumption**.
+- **Boundary finding (2026-06-27, a result in its own right).** The explicit hybrid Volterra–Euler
+  scheme's strong-order *coupling* (β) and weak-order *priced bias* **both** degrade as V→0 events
+  exceed ~10% of samples (ν ≳ 0.25): β collapses (the V=0 clip/branch fires at *different* times on
+  the fine vs coarse MLMC grids → the coupling breaks) **and** the priced bias becomes scheme- and
+  n-dependent (qe vs truncation 2.4–5.3% at ν=0.4, halving as n doubles; <0.5% at ν=0.15). The
+  scheme is **validated for ν ≤ 0.20**; high-ν needs the multifactor lift (§5). Three positivity
+  schemes were compared on evidence — **QE** (chosen, smallest E[V] bias +4%, best β), full
+  **truncation** (β collapses, E[V] +13%), **reflection** (rejected: E[V] +158%, β worst). This
+  characterises where the method stops being trustworthy — a genuine property, not a config limit.
 - Weak order is measured for a **smooth** payoff first; non-smooth payoffs (digitals, barriers)
   typically degrade the weak rate and are a deliberate **later** extension, not part of the
   first falsifiable claim (no fishing across payoffs to find a flattering α).
