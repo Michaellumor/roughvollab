@@ -50,37 +50,10 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
 
-The architecture is a layered stack — a shared core, the simulation layer, the
-three research arcs, then the two layers still ahead — with current build status:
+Each layer is mapped to the undergraduate and postgraduate mathematics it
+draws on, with current build status:
 
-```mermaid
-flowchart TB
-    CORE["roughvol core — rough-Bergomi engine<br/>✅"]
-    L1["Layer 1 — Simulation<br/>fBm, hybrid scheme, Hurst estimation<br/>✅ complete"]
-
-    subgraph ARCS["The three research arcs — complete · two of three negative"]
-        direction LR
-        L1B["Layer 1b · Arc 2 — Pricing<br/>“Can we price it cheaply?”<br/>✅ MLMC doesn't pay; conditional MC wins"]
-        L1C["Layer 1c · Arc 1 — Identifiability<br/>“Is the roughness real?”<br/>✅ Non-identified for real assets (BTC/ETH/SPX)"]
-        L2["Layer 2 · Arc 3 — Execution<br/>“Can we trade it?”<br/>✅ No execution edge — kill-switch fired"]
-    end
-
-    L3["Layer 3 — Deep-hedging engine<br/>path signatures, actor–critic, CVaR<br/>📋 planned · still unbuilt"]
-    L4["Layer 4 — Convergence and calibration<br/>convergence study, SPX calibration, diagnostics<br/>🔜 spec in progress"]
-
-    CORE --> L1
-    L1 --> ARCS
-    ARCS --> L3
-    L3 --> L4
-
-    classDef done fill:#eef7f2,stroke:#1D9E75;
-    classDef spec fill:#fbf3e6,stroke:#BA7517;
-    classDef planned fill:#f4f4f2,stroke:#9a9994,stroke-dasharray: 5 5;
-
-    class CORE,L1,L1B,L1C,L2 done;
-    class L3 planned;
-    class L4 spec;
-```
+![RoughVolLab module-to-layer map](roughvollab_module_map.png)
 
 ---
 
