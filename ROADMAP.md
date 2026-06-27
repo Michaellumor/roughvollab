@@ -287,24 +287,41 @@ D10.
 
 ---
 
-## Layer 2 — Market frictions (spec)
+## Layer 2 — Market frictions (execution baseline built; rough-friction spec)
 
-**Goal:** non-linear execution frictions under rough vol; demonstrate the
-breakdown of Markovian dynamic programming.
+**Status — execution arc built (negative result).** The Almgren–Chriss
+execution baseline is **built and validated** in `execution_alpha.py`: gate
+**G-X1** reproduces the analytic AC frontier to **0.7%** in the Markovian limit
+(the environment's "BS anchor"). A cheap causal vol-reactive execution probe
+(`execution_alpha_phase1.py`) was then run as a kill-switch: on the matched-risk
+efficient frontier it is **~5 s.e. worse** than AC with no edge that grows with
+roughness → **no executable execution edge under linear impact; deep RL not
+pursued.** See decisions **D24–D26** (including the look-ahead artifact caught
+and corrected en route). This is the **execution** arc — distinct from the
+Layer 3 deep-hedging engine below.
 
-**Contents:** Almgren–Chriss temporary/permanent impact with closed-form
-classical solutions as anchors; rough execution slippage (impact driven by
-the rough variance path); empirical demonstration that conditioning on path
-history changes the conditional law (non-Markovianity) — this motivates
-Layer 3's signature features.
+**Goal (remaining):** non-linear execution frictions under rough vol; demonstrate
+the breakdown of Markovian dynamic programming.
 
-**Validation criteria:** reproduce Almgren–Chriss optimal trajectories
-analytically in the classical limit; quantify Markov-projection error vs a
-path-dependent benchmark.
+**Contents (remaining):** rough execution slippage (impact driven by the rough
+variance path); empirical demonstration that conditioning on path history changes
+the conditional law (non-Markovianity) — this motivates Layer 3's signature
+features. (Almgren–Chriss closed-form anchors: done, above.)
+
+**Validation criteria:** ✅ reproduce Almgren–Chriss optimal trajectories
+analytically in the classical limit (G-X1, 0.7%); ⬜ quantify Markov-projection
+error vs a path-dependent benchmark.
 
 **Key refs:** Almgren & Chriss (2001); Gatheral, Jaisson & Rosenbaum (2018).
 
-## Layer 3 — RL hedging engine (spec)
+## Layer 3 — RL hedging engine (spec — still unbuilt)
+
+> **Note — not the execution work.** This is the deep-**hedging** engine
+> (risk-aware RL hedging of a derivative position via path signatures), **still
+> unbuilt** and **distinct from the Layer 2 execution arc** above (Almgren–Chriss
+> liquidation + the execution-alpha probe, which is done → kill-switch fired,
+> D24–D26). Layer 2 = *executing/liquidating* a position; Layer 3 = *hedging* a
+> derivative. Do not re-conflate the two.
 
 **Goal:** risk-aware deep hedging on the non-Markovian state via path
 signatures.
