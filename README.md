@@ -40,6 +40,7 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 | `paper_outputs.py` | Reproducibility script — one command regenerates the P3 figures (bias curves + identifiability map with asset overlay) and prints every paper number | ✅ reuses tested modules |
 | `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out |
+| `layer3_deep_hedging.py` | Deep-hedging engine — path signatures, actor–critic, CVaR objective (distinct from the Layer 2 execution arc) | 📋 Planned — still unbuilt; spec in `ROADMAP.md` |
 | `layer4_convergence.py` | Convergence theorems, SPX calibration, diagnostics | 🔜 Still ahead — needs spec before code |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
 | `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
@@ -49,10 +50,37 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 Project memory — layer specs, conventions, the dated decisions log, and all
 measured results — lives in [`ROADMAP.md`](ROADMAP.md). Read it first.
 
-Each layer is mapped to the undergraduate and postgraduate mathematics it
-draws on, with current build status:
+The architecture is a layered stack — a shared core, the simulation layer, the
+three research arcs, then the two layers still ahead — with current build status:
 
-![RoughVolLab module-to-layer map](roughvollab_module_map.png)
+```mermaid
+flowchart TB
+    CORE["roughvol core — rough-Bergomi engine<br/>✅"]
+    L1["Layer 1 — Simulation<br/>fBm, hybrid scheme, Hurst estimation<br/>✅ complete"]
+
+    subgraph ARCS["The three research arcs — complete · two of three negative"]
+        direction LR
+        L1B["Layer 1b · Arc 2 — Pricing<br/>“Can we price it cheaply?”<br/>✅ MLMC doesn't pay; conditional MC wins"]
+        L1C["Layer 1c · Arc 1 — Identifiability<br/>“Is the roughness real?”<br/>✅ Non-identified for real assets (BTC/ETH/SPX)"]
+        L2["Layer 2 · Arc 3 — Execution<br/>“Can we trade it?”<br/>✅ No execution edge — kill-switch fired"]
+    end
+
+    L3["Layer 3 — Deep-hedging engine<br/>path signatures, actor–critic, CVaR<br/>📋 planned · still unbuilt"]
+    L4["Layer 4 — Convergence and calibration<br/>convergence study, SPX calibration, diagnostics<br/>🔜 spec in progress"]
+
+    CORE --> L1
+    L1 --> ARCS
+    ARCS --> L3
+    L3 --> L4
+
+    classDef done fill:#eef7f2,stroke:#1D9E75;
+    classDef spec fill:#fbf3e6,stroke:#BA7517;
+    classDef planned fill:#f4f4f2,stroke:#9a9994,stroke-dasharray: 5 5;
+
+    class CORE,L1,L1B,L1C,L2 done;
+    class L3 planned;
+    class L4 spec;
+```
 
 ---
 
