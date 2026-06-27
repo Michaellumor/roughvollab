@@ -21,6 +21,9 @@ by a run that actually happened.
 **Author:** Michael Lumor, Department of Mathematics, University of Salford
 (independent research programme; ORCID 0009-0000-0326-3891).
 
+**Research arcs (README framing) ↔ layers:** Arc 1 — identifiability (Layer 1c) ·
+Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
+
 ---
 
 ## Status board
@@ -40,9 +43,10 @@ by a run that actually happened.
 | `execution_alpha.py` | Execution env (rough-Bergomi) + Almgren–Chriss + naive baselines (G-X1) | ✅ Phase 0 validated | 2026-06-24 |
 | `execution_alpha_phase1.py` | Execution kill-switch probe — causal vol-reactive heuristic | ✅ Phase 1 — kill-switch fired (negative) | 2026-06-24 |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out | 2026-06-24 |
+| `layer3_deep_hedging.py` | Deep-hedging engine (path signatures / actor–critic / CVaR; distinct from Layer-2 execution) | 📋 Planned — still unbuilt | — |
 | `layer4_convergence.py` | Convergence study, SPX calibration, diagnostics | 🔜 Still ahead — needs spec before code | — |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
-| `ROADMAP.md` | This file — project memory | living document | 2026-06-12 |
+| `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
 
 ---
 
@@ -135,7 +139,7 @@ real-world regime).
 
 ---
 
-## Layer 1c — Roughness-estimator audit (specced 2026-06-13, not started)
+## Layer 1c — Roughness-estimator audit (Phase A + B complete; P3 drafted)
 
 **File:** `layer1c_roughness_audit.py` (house style: sections, `--section`,
 `--no-show`, `--quick`; figures to `output/`).
@@ -314,7 +318,7 @@ error vs a path-dependent benchmark.
 
 **Key refs:** Almgren & Chriss (2001); Gatheral, Jaisson & Rosenbaum (2018).
 
-## Layer 3 — RL hedging engine (spec — still unbuilt)
+## Layer 3 — Deep-hedging engine (risk-aware RL; spec — still unbuilt)
 
 > **Note — not the execution work.** This is the deep-**hedging** engine
 > (risk-aware RL hedging of a derivative position via path signatures), **still
@@ -322,6 +326,8 @@ error vs a path-dependent benchmark.
 > liquidation + the execution-alpha probe, which is done → kill-switch fired,
 > D24–D26). Layer 2 = *executing/liquidating* a position; Layer 3 = *hedging* a
 > derivative. Do not re-conflate the two.
+
+**File:** `layer3_deep_hedging.py` (planned — not yet built).
 
 **Goal:** risk-aware deep hedging on the non-Markovian state via path
 signatures.
@@ -729,17 +735,31 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
 
 **2026-06-26 — Audit trail (D27)**
 - **D27** *(2026-06-26)* **Audit trail committed and reconciled.** PR #1 (docs/gate-checks index, `754a390`), PR #2 (antithetic + conditional estimators + κ=1 module, `d778074`), PR #3 (execution-RL Phase 0/1 — env, baselines, kill-switch negative result, `9284a0d`) all **merged**. Local `main` reconciled to `origin/main` (`06d4c09`); **remote branches deleted (local copies remain)**. P3 `identifiability_map.py` edit parked in `stash@{0}` for its own session.
+
+**2026-06-27 — Documentation reconciliation (D28)**
+- **D28** *(2026-06-27)* **Docs caught up to the three-arc state; one misstep made and corrected — recorded honestly.** A run of documentation-only PRs brought README + ROADMAP into line with the three-research-arc framing and fixed stale layer labels:
+  - **PR #4** — README/ROADMAP rewritten around the three arcs (identifiability / pricing / execution).
+  - **PR #5** — removed stale planned-layer rows from the status tables (dropped the redundant `layer3_rl_hedging.py` row; marked Layer 2 done).
+  - **PR #6** — **corrected the execution work to Layer 2** (it had been mislabelled "Layer 3" in the README); kept the deep-hedging engine as the distinct, still-unbuilt Layer 3.
+  - **PR #7 — MISSTEP:** replaced the flagship `roughvollab_module_map.png` (the maths-to-layer map the course tutors prefer) with a native Mermaid architecture diagram, and added a Layer 3 Structure-table row. The Mermaid swap was the wrong call — it discarded the tutor-facing flagship to gain editability.
+  - **PR #8 — CORRECTION:** reverted the Mermaid swap, restoring the original PNG embed byte-identical from history (`7c889d1^`); **kept** the (good, independent) Layer 3 row.
+  - **PR #9 — the durable fix:** added `module_map.py`, a regenerable matplotlib generator for the flagship, and regenerated `roughvollab_module_map.png` from it with CURRENT statuses (Layer 2 execution built/negative, L1c complete, L3 unbuilt, L4 spec next; "161 pytest tests + gate-checks"). The flagship is now both tutor-facing AND version-controlled. **Lesson from the #7→#8 round-trip: don't replace a flagship asset to make it editable — make the asset regenerable instead.**
+  - **This entry** sits in a final ROADMAP↔README reconciliation: fixed the stale `## Layer 1c` "not started" header (→ Phase A + B complete), added the missing `layer3_deep_hedging.py` status-board row + named the file in the `## Layer 3` spec + renamed that header to "Deep-hedging engine", corrected the Publication-seeds P1/P2 entries to match D23 (P1 absorbed into P2; P2 = "turbocharged versus multilevel", concluded), and added an arc↔layer crosswalk to the Programme. All D1–D27, layer specs, gate-check records, and Phase-A/B detail preserved.
 ---
 
 ## Publication seeds
 
-- **P1 (ready to draft):** *"Is the pathwise bound tight? Naive multilevel
-  Monte Carlo under rough Bergomi."* Empirical note: β ≈ 2H across
-  H ∈ [0.05, 0.35] with exact κ=0 coupling; cost comparison showing naive
-  MLMC ≤ standard MC in the practical regime; why the Asian average fails
-  to smooth the Volterra error. Figures already exist (§2, §3, §4).
-- **P2:** improved estimators — antithetic and conditional-MC couplings
-  (extensions 1–2), benchmarked against P1's baseline.
+- **P1 (absorbed into P2, per D23):** the naive-MLMC pathwise-bound result
+  (β ≈ 2H across H ∈ [0.05, 0.35] with exact κ=0 coupling; naive MLMC ≤
+  standard MC in the practical regime; why the Asian average fails to smooth
+  the Volterra error) is **not published standalone** — it became the baseline
+  section of P2 rather than its own note. Figures exist (§2, §3, §4).
+- **P2 (concluded, D20–D23):** *"Turbocharged versus multilevel Monte Carlo
+  for rough-volatility Asian options."* Verdict: for arithmetic-Asian options
+  under rough Bergomi, **MLMC does not earn its place** — conditioning pays as
+  single-grid "turbocharging," not multilevel (κ-invariant std-MC /
+  conditional-MLMC = 0.41–0.45 < 1), with κ=1 sharpening the winner ~1.3–1.5×;
+  antithetic coupling refuted. Absorbs P1's baseline.
 - **P3 (drafted 2026-06-21):** *"When is volatility roughness identifiable?
   A simulation-grounded audit of Hurst estimation from realized variance,
   with application to cryptocurrency."* Content-complete draft (markdown +
