@@ -169,6 +169,18 @@ be done with this simulator without contaminating the weak-order measurement. Th
   here as a first-class extension, NOT a silent caveat. The honest framing: until that extension
   exists, the market-relevant claim is open.
 
+**STATUS UPDATE (2026-06-28, D32) — the lift's kernel foundation is BUILT (brick 4a).**
+`rough_kernel_soe.py` delivers the sum-of-exponentials kernel approximation K(t) ≈ Σ wᵢ e^(−γᵢ t)
+that underpins the Markovian lift, with both literature constructions source-pinned (AJ–EE
+arXiv:1801.10359; Bayer–Breneis arXiv:2108.05048) and **selected on evidence** via Gate A (closed-form
+L² kernel error, simulation-free): AJ–EE realizes its pinned rate n^(−4H/5) *exactly* but the uniform
+mesh is impractical; **Bayer–Breneis (superpolynomial exp(−c√N)) is SELECTED.** Conservative
+**N_factors(rel-L² ≤ 1e-3) ≈ 130 (H=0.20), 250–520 (H=0.10), 512–1024 (H=0.05)** (global α=1.6, not
+per-H tuned → per-H §4.2 tuning only improves it). Economic justification: the lift is **O(N·n)** vs
+the Volterra **O(n²)** ⇒ it wins when N<n, i.e. at the fine grids (n ≳ 256–1024) needed to resolve
+brick-3's borderline H=0.10. **Still open:** the lifted *simulator* (4b) + its β=2H/H=½ build gates
+and high-ν positivity (4b/4c). See ROADMAP **D32**.
+
 ---
 
 ## 6. Diagnostics
@@ -225,7 +237,8 @@ be done with this simulator without contaminating the weak-order measurement. Th
   exceed ~10% of samples (ν ≳ 0.25): β collapses (the V=0 clip/branch fires at *different* times on
   the fine vs coarse MLMC grids → the coupling breaks) **and** the priced bias becomes scheme- and
   n-dependent (qe vs truncation 2.4–5.3% at ν=0.4, halving as n doubles; <0.5% at ν=0.15). The
-  scheme is **validated for ν ≤ 0.20**; high-ν needs the multifactor lift (§5). Three positivity
+  scheme is **validated for ν ≤ 0.20**; high-ν needs the multifactor lift (§5; its kernel foundation
+  is now BUILT — `rough_kernel_soe.py`, D32). Three positivity
   schemes were compared on evidence — **QE** (chosen, smallest E[V] bias +4%, best β), full
   **truncation** (β collapses, E[V] +13%), **reflection** (rejected: E[V] +158%, β worst). This
   characterises where the method stops being trustworthy — a genuine property, not a config limit.
