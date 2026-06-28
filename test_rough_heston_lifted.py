@@ -70,3 +70,31 @@ def test_reconstruction_mean_near_theta():
     t, S, V = rough_heston_lifted_paths(128, 0.10, 20000, N=100,
                                         rng=np.random.default_rng(0))
     assert abs(V[:, -1].mean() - 0.04) < 0.005
+
+
+# ---- Gate D (high-nu, brick 4c) smoke tests ----
+def test_cf_price_guarded_highnu():
+    """The brick-2 CF is usable as a high-nu reference: finite at the operating point
+    (N_riccati=2000), and the guard returns NaN (not an exception) when the fractional
+    Riccati overflows at too-low N_riccati (small H + high nu)."""
+    from rough_heston_lifted import _cf_price_guarded
+    p = dict(PARAMS, nu=0.40)
+    ok = _cf_price_guarded(0.10, p, 100.0, 2000)
+    assert np.isfinite(ok) and ok > 0
+    guarded = _cf_price_guarded(0.05, p, 100.0, 300)     # overflow regime -> must not raise
+    assert np.isnan(guarded) or np.isfinite(guarded)
+
+
+def test_gate_d_highnu_qe_beats_trunc_on_price():
+    """High-nu smoke (nu=0.40, H=0.10): lifted qe price is CLOSER to the CF known-answer
+    than trunc (the lift's positivity win) and within a few % of CF."""
+    from rough_heston_lifted import _cf_price_guarded
+    p = dict(PARAMS, nu=0.40); K = 100.0; M = 20000
+    P_cf = _cf_price_guarded(0.10, p, K, 2000)
+    _, Sq, _ = rough_heston_lifted_paths(64, 0.10, M, 150, rng=np.random.default_rng(7),
+                                         positivity="qe", nu=0.40)
+    _, St, _ = rough_heston_lifted_paths(64, 0.10, M, 150, rng=np.random.default_rng(7),
+                                         positivity="trunc", nu=0.40)
+    eq = abs(np.maximum(Sq[:, -1] - K, 0).mean() - P_cf) / P_cf
+    et = abs(np.maximum(St[:, -1] - K, 0).mean() - P_cf) / P_cf
+    assert eq < et and eq < 0.06, f"qe err {eq:.3f} not < trunc {et:.3f} (& <6%)"
