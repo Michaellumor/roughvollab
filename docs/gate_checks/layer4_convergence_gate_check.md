@@ -262,6 +262,21 @@ put-wing/ATM skew calibration is VIABLE**; the OTM call wing needs exclusion or 
 (it grows with ν; tested ν=0.30–0.40 — the real SPX-implied ν sets the caveat's size). This validates the
 lift's OTM-smile pricing at H≈0.10/high-ν — the gate that precedes any SPX calibration. See ROADMAP **D36**.
 
+**STATUS UPDATE (2026-06-28, D37) — SPX calibration engine built + validated; H unidentifiable from one smile.**
+`layer4_calibrate.py` fits θ=[H,ν,ρ,ξ₀] to an IV smile via least_squares (TRF, IV space) against the CF
+(ξ₀→V0=θ, kappa fixed — single maturity can't pin mean-reversion). Validated against synthetic CF
+known-answers (real-market SPX is a later step on the user's machine). Four experiments: **(1) CF→CF gate —
+EXACT** recovery (0.00%, IV-RMSE 0.0000, both grids); **(2) identifiability** — ξ₀/ρ/ν IDENTIFIED, **H WEAK**
+(flat JᵀJ direction; H~ν degenerate −0.82/−0.92; cond 6.2e5 full / 2.4e7 put — worse); **(3) noise-robustness**
+— ξ₀/ρ rock-solid, ν stable, **H blows up** (62% spread at 0.1pp noise → 153% at 0.5pp); **(4) lift→CF** — the
+lift's ~1pp call-wing bias is **absorbed into H** (+166% full), ν/ρ/ξ₀ stay CLEAN on the FULL grid (~5%,
+RMSE 0.018pp); the put-wing-only is WORSE (ν+18%, ρ+12%) — conditioning beats wing-cleanliness for
+calibration. **Unifying finding:** H is the weak parameter everywhere (both noise and the lift's bias corrupt
+H, the flat eigen-direction) — the calibration-context echo of the project's H-identifiability theme.
+**SPX guidance:** calibrate with the CF (exact); from one maturity trust ξ₀/ρ/ν not H (fix it / add
+maturities → **multi-maturity surface is the motivated next step**); if the lift must be used, calibrate
+ν/ρ/ξ₀ on the full grid (bias quarantined in H), don't restrict to the put wing. See ROADMAP **D37**.
+
 ---
 
 ## 6. Diagnostics
