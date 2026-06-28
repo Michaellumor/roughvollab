@@ -229,6 +229,27 @@ harness at feasible memory** — a streaming harness is the prerequisite to even
 the `sim`-callback generalization of the weak-order harness — any simulator now plugs in.) See
 ROADMAP **D35**.
 
+**STATUS UPDATE (2026-06-28) — H=0.05/ν=0.40 corner residual is a REAL SCHEME FLOOR, strike-amplified (sharpens D34's open caveat).**
+D34 left it ambiguous ("partly discretization plus a small real residual"). An **n=512 price-vs-CF probe
+(conditional MC + CRN, M=50k; run by name this session)** resolves it — a **real scheme floor, not
+finite-n** (CF verified reliable at this corner: U_max=200==400; K=100→6.42733, K=110→1.96676):
+- **ATM (K=100):** qe−CF = **2.81 / 2.53 / 2.19%** at n=128/256/512 — drops only **~10–13%/doubling**
+  (pure discretization at α≈0.74 would give ~40%/doubling: 2.81→1.7→1.0); CRN n→2n change −0.29 / −0.34%.
+  A **~2% floor**, not vanishing.
+- **OTM (K=110): far larger** — **26.1 / 23.2 / 20.75%** at n=128/256/512 (~2.5%/doubling). The lift
+  **mis-prices the OTM tail by ~20%** at this corner (CF reliable, conditional MC bias-preserving → real).
+- **Mechanism:** the price-level fingerprint of D35's envelope perturbation — the QE/shared-ΔW envelope
+  perturbs the variance dynamics; **negligible at H=0.10** (4c: ATM bias → 0.48% at n=256), **material at
+  H=0.05 ATM** (~2%), **amplified in the tail-sensitive OTM price** (~20%). One mechanism, strike-dependent
+  magnitude.
+- **Feasibility:** n=512 was reachable (M=50k, ~1.3 GB) because this is a **price-LEVEL** check — unlike
+  D35's weak-order slope-fit, which OOM'd at the same n (the price-vs-slope distinction).
+- **Open question this surfaces (for SPX):** 4c validated only **ATM** pricing (clean to ν=0.40 at H≥0.10).
+  The **OTM tail at high ν is untested at H≥0.10** — does the tail-amplification affect only the H=0.05
+  extreme, or also the **SPX-relevant H≥0.10 OTM wings** at high ν? Matters for smile calibration.
+
+See ROADMAP **D34**.
+
 ---
 
 ## 6. Diagnostics
