@@ -192,6 +192,19 @@ reconstruct the QE'd V). The β over-steepening was diagnosed as a *truncation a
 QE). Rate needs only ~tens of factors. **Still open:** high-ν (ν≈0.3–0.4, GATE D), the weak-order
 re-run on the lift (resolving H=0.10), SPX calibration — brick 4c+. See ROADMAP **D33**.
 
+**STATUS UPDATE (2026-06-28, D34) — high-ν GATE D done (brick 4c): (B) PARTIAL, a SPLIT boundary.**
+Ran Gate D at ν∈{0.25,0.30,0.40}, H∈{0.05,0.10,0.20} with the brick-2 CF as a *high-ν known-answer*
+(exact at any ν — verified). **PRICING WIN (headline):** lifted-qe prices converge to the CF —
+**<0.5% at H≥0.10 to ν=0.40** (qe−CF→0 as n grows; H=0.10: 1.57→0.92→0.48%) — vs the explicit
+scheme's 2.4–5.3% scheme-dependent bias; **truncation diverges 2–9%** (plateaus, not converging),
+confirming QE is the fix. The high-ν SPX-relevant **pricing boundary is broken to ν≈0.40** (one
+caveat: a ~2% residual remains at the extreme H=0.05/ν=0.40 corner — drops 3.44→2.03% with n but
+flattens). **β-RATE BOUNDARY:** the MLMC variance-rate β=2H is clean to **ν≤0.30** (max|β−2H| 0.052/
+0.056), degrades at ν=0.40 (H=0.20 dev 0.095) under 16–34% near-0; qe still vastly beats trunc (which
+collapses to 0.016). **The split (the finding):** price-boundary ν≈0.40, β-rate-boundary ν≤0.30 —
+moved *differently*, not forced to (A)/(C). **Still open (4d+):** the H=0.05/ν=0.40 price residual,
+the weak-order α re-run on the lift (resolving H=0.10), SPX calibration. See ROADMAP **D34**.
+
 ---
 
 ## 6. Diagnostics

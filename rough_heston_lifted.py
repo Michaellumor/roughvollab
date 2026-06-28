@@ -227,6 +227,82 @@ def gate_b_nfactors(H=0.10, N_list=(25, 50, 100, 200), n0=16, levels=(1, 2, 3, 4
               f"{abs(r['beta']-2*H):>8.3f} {str(r['monotone']):>5}")
 
 
+def _cf_price_guarded(H, p, K, N_riccati=4000):
+    """High-nu CF price with NaN-guard: small-H + high-nu + low N_riccati can overflow
+    the fractional Riccati psi^2 term -> NaN (probed). Pin N_riccati=4000, U_max=200."""
+    from layer4_convergence import cf_reference
+    try:
+        val = float(cf_reference(H, p, K, N_riccati))
+        return val if np.isfinite(val) else np.nan
+    except Exception:
+        return np.nan
+
+
+def gate_d(nu_list=(0.25, 0.30, 0.40), H_list=(0.05, 0.10, 0.20), N=150, n0=16,
+           levels=(1, 2, 3, 4, 5), M_beta=20000, M_price=100000, n_price=256,
+           K=100.0, N_riccati=4000, seed=7):
+    """GATE D -- high-nu validation: does the lifted simulator hold where the explicit
+    scheme broke? (1) beta-coupling vs the nu-independent anchor 2H (qe vs trunc control);
+    (2) price vs the CF known-answer (correctness) + qe-vs-trunc (scheme-stability)."""
+    print(f"{'='*74}\nGATE D -- HIGH-nu VALIDATION | nu in {nu_list}, H in {H_list}\n{'='*74}")
+
+    print("\n[CHECK 1] beta-coupling: lifted qe beta vs 2H (nu-independent anchor) | trunc = control")
+    print(f"  {'nu':>5} {'H':>5} {'2H':>5} {'qe_b':>7} {'±se':>6} {'|b-2H|':>7} {'tr_b':>7} {'near0_qe':>9} {'v':>4}")
+    beta_ok = {}
+    for nu in nu_list:
+        p = dict(PARAMS, nu=nu); bq_list = []
+        for H in H_list:
+            rq = measure_beta_lifted(H, p, n0, levels, M_beta, N, np.random.default_rng(seed), positivity="qe")
+            rt = measure_beta_lifted(H, p, n0, levels, M_beta, N, np.random.default_rng(seed), positivity="trunc")
+            _, _, V = rough_heston_lifted_paths(128, H, 4000, N=N, rng=np.random.default_rng(1), positivity="qe", nu=nu)
+            dev = abs(rq["beta"] - 2 * H); bq_list.append(rq["beta"])
+            vd = "OK" if (dev <= 0.06 and rq["monotone"]) else "OFF"
+            print(f"  {nu:>5.2f} {H:>5.2f} {2*H:>5.2f} {rq['beta']:>7.3f} {rq['beta_se']:>6.3f} "
+                  f"{dev:>7.3f} {rt['beta']:>7.3f} {(V<1e-6).mean():>9.1%} {vd:>4}")
+        mono = bool(np.all(np.diff(bq_list) > 0))
+        devmax = max(abs(b - 2 * H) for b, H in zip(bq_list, H_list))
+        beta_ok[nu] = bool(devmax <= 0.06 and mono)
+        print(f"     -> nu={nu:.2f}: max|b-2H|={devmax:.3f} monotone={mono} => beta "
+              f"{'TRACKS 2H' if beta_ok[nu] else 'OFF'}")
+
+    print(f"\n[CHECK 2] price vs CF (correctness) + qe-vs-trunc (scheme-stab) | K={K} n={n_price} "
+          f"M={M_price} N_ric={N_riccati}")
+    print(f"  {'nu':>5} {'H':>5} {'CF':>9} {'qe_px':>9} {'qe-CF%':>8} {'tr-CF%':>8} {'qe-tr%':>8} {'CI%':>6}")
+    price_ok = {}
+    for nu in nu_list:
+        p = dict(PARAMS, nu=nu); oks = []
+        for H in H_list:
+            P_cf = _cf_price_guarded(H, p, K, N_riccati)
+            _, Sq, _ = rough_heston_lifted_paths(n_price, H, M_price, N, rng=np.random.default_rng(seed), positivity="qe", nu=nu)
+            _, St, _ = rough_heston_lifted_paths(n_price, H, M_price, N, rng=np.random.default_rng(seed), positivity="trunc", nu=nu)
+            mq = np.maximum(Sq[:, -1] - K, 0.0); mt = np.maximum(St[:, -1] - K, 0.0).mean()
+            se = mq.std(ddof=1) / np.sqrt(M_price); mq = mq.mean()
+            bq = (mq - P_cf) / P_cf * 100 if np.isfinite(P_cf) else np.nan
+            oks.append(bool(np.isfinite(bq) and abs(bq) <= 2.0))
+            print(f"  {nu:>5.2f} {H:>5.2f} {P_cf:>9.4f} {mq:>9.4f} {bq:>+8.2f} "
+                  f"{(mt-P_cf)/P_cf*100:>+8.2f} {(mq-mt)/P_cf*100:>+8.2f} {1.96*se/P_cf*100:>5.2f}")
+        price_ok[nu] = all(oks)
+        print(f"     -> nu={nu:.2f}: price vs CF {'OK (<2%)' if price_ok[nu] else 'OFF'}")
+
+    print(f"\n[CHECK 2b] price convergence vs n at nu=0.40, H=0.10 (does qe -> CF as n grows?)")
+    p = dict(PARAMS, nu=0.40); P_cf = _cf_price_guarded(0.10, p, K, N_riccati)
+    print(f"  CF={P_cf:.4f}  {'n':>5} {'qe-CF%':>8} {'tr-CF%':>8} {'qe-tr%':>8}")
+    for n in (64, 128, 256):
+        _, Sq, _ = rough_heston_lifted_paths(n, 0.10, M_price, N, rng=np.random.default_rng(seed), positivity="qe", nu=0.40)
+        _, St, _ = rough_heston_lifted_paths(n, 0.10, M_price, N, rng=np.random.default_rng(seed), positivity="trunc", nu=0.40)
+        mq = np.maximum(Sq[:, -1] - K, 0.0).mean(); mt = np.maximum(St[:, -1] - K, 0.0).mean()
+        print(f"        {n:>5} {(mq-P_cf)/P_cf*100:>+8.2f} {(mt-P_cf)/P_cf*100:>+8.2f} {(mq-mt)/P_cf*100:>+8.2f}")
+
+    holds = lambda nu: beta_ok.get(nu, False) and price_ok.get(nu, False)
+    cls = ("(A) HOLDS at nu=0.40 -- lift delivers; explicit boundary broken; SPX unlocked"
+           if holds(0.40) else
+           "(B) PARTIAL -- holds to nu=0.30, degrades by 0.40; new validated boundary nu<=0.30"
+           if holds(0.30) else
+           "(C) BREAKS -- beta collapses or price diverges at nu=0.40; high-nu intrinsically hard")
+    print(f"\n{'='*74}\nGATE D CLASSIFICATION: {cls}\n{'='*74}")
+    return dict(beta_ok=beta_ok, price_ok=price_ok)
+
+
 if __name__ == "__main__":
     import sys, argparse
     try:
@@ -237,9 +313,16 @@ if __name__ == "__main__":
     ap.add_argument("--sanity", action="store_true")
     ap.add_argument("--gate-c", action="store_true")
     ap.add_argument("--gate-b", action="store_true")
+    ap.add_argument("--gate-d", action="store_true")
     ap.add_argument("--nfactors", action="store_true")
     ap.add_argument("--quick", action="store_true")
     a = ap.parse_args()
+    if a.gate_d:
+        if a.quick:
+            gate_d(nu_list=(0.40,), H_list=(0.05, 0.10), levels=(1, 2, 3),
+                   M_beta=4000, M_price=20000, n_price=128)
+        else:
+            gate_d()
     if a.sanity:
         reconstruction_sanity()
     if a.gate_c:
@@ -251,5 +334,5 @@ if __name__ == "__main__":
             gate_b()
     if a.nfactors:
         gate_b_nfactors(M=4000 if a.quick else 20000)
-    if not any((a.sanity, a.gate_c, a.gate_b, a.nfactors)):
+    if not any((a.sanity, a.gate_c, a.gate_b, a.gate_d, a.nfactors)):
         reconstruction_sanity()
