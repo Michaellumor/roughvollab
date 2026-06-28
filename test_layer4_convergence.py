@@ -69,3 +69,25 @@ def test_classify_cases():
     assert classify(1.00, 0.05, 0.10).startswith("PASS")
     assert classify(0.10, 0.02, 0.10).startswith("FAIL")
     assert classify(0.55, 0.05, 0.10).startswith("PARTIAL")
+
+
+# ---- sim-callback generalization (any simulator can plug into the harness) ----
+def test_sim_callback_default_matches_explicit():
+    """sim=None must reproduce the explicit brick-1 core exactly (back-compat)."""
+    from rough_heston import _rough_heston_from_increments
+    p = dict(RH)
+    r0 = mc_call_levels(0.10, p, 4, 2, 5000, np.random.default_rng(0), 110.0)
+    sim = lambda dWV, dWp, n: _rough_heston_from_increments(dWV, dWp, n, 0.10, p, positivity="qe")
+    r1 = mc_call_levels(0.10, p, 4, 2, 5000, np.random.default_rng(0), 110.0, sim=sim)
+    assert np.allclose(r0["cv_mean"], r1["cv_mean"]) and np.allclose(r0["dmean"], r1["dmean"])
+
+
+def test_lifted_sim_plugs_into_harness():
+    """A lifted closure runs through the weak-order harness and yields finite biases
+    (the reusable infrastructure — the value beyond D35's negative result)."""
+    from rough_heston_lifted import _lifted_from_increments, lifted_setup
+    p = dict(RH); H = 0.10
+    g, w = lifted_setup(H, 40)
+    sim = lambda dWV, dWp, n: _lifted_from_increments(dWV, dWp, n, H, p, g, w, "qe")
+    r = mc_call_levels(H, p, 4, 2, 5000, np.random.default_rng(0), 110.0, conditional=True, sim=sim)
+    assert np.all(np.isfinite(r["cv_mean"])) and np.all(np.isfinite(r["dmean"]))

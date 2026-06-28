@@ -53,14 +53,23 @@ def _agg(dW, n_target):
     return dW.reshape(M, n_target, g).sum(axis=2)
 
 
-def mc_call_levels(H, p, n0, L, M, rng, K, positivity="qe", sigma_cv=None, conditional=False):
+def mc_call_levels(H, p, n0, L, M, rng, K, positivity="qe", sigma_cv=None, conditional=False,
+                   sim=None):
     """CRN-coupled MC European-call across levels l=0..L (n_l = n0·2^l), all driven
     by ONE finest Brownian path (coarse = aggregated fine), with a BS-price control
     variate built from the (grid-independent) total asset BM W_S(T).
 
+    `sim(dWV, dWp, n) -> (S, V)` is the path generator; default is the explicit
+    brick-1 core. Pass a lifted closure (rough_heston_lifted._lifted_from_increments
+    with bound grid-independent gammas/weights) to run the study on the lift — the
+    coupled differences then also cancel the SOE kernel bias exactly.
+
     Returns dict: ns, cv_mean[L+1], cv_se[L+1] (CV-corrected E[P_n]),
                   dmean[L], dse[L] (coupled E[P_l−P_{l-1}] and its s.e.),
                   cv_var_ratio (Var reduction from the control variate)."""
+    if sim is None:
+        sim = lambda dWV_, dWp_, n_: _rough_heston_from_increments(dWV_, dWp_, n_, H, p,
+                                                                   positivity=positivity)
     T, S0, r, rho = p["T"], p["S0"], p["r"], p["rho"]
     n_max = n0 * 2 ** L
     dt_f = T / n_max
@@ -78,7 +87,7 @@ def mc_call_levels(H, p, n0, L, M, rng, K, positivity="qe", sigma_cv=None, condi
     for l in range(L + 1):
         n_l = n0 * 2 ** l
         dWV_l, dWp_l = _agg(dWV, n_l), _agg(dWp, n_l)
-        S, V = _rough_heston_from_increments(dWV_l, dWp_l, n_l, H, p, positivity=positivity)
+        S, V = sim(dWV_l, dWp_l, n_l)
         if conditional:
             # Romano–Touzi: integrate out the orthogonal asset BM analytically.
             # Conditional on (V-path, W^V): call = BS(S_eff, K, T, 0, sig_eff),
@@ -166,9 +175,10 @@ def _combine(a1, se1, a2, se2):
     return a, float(1.0 / np.sqrt(w.sum()))
 
 
-def measure_alpha(H, p, n0, L, M, K, N_riccati, seed, positivity="qe", conditional=False):
+def measure_alpha(H, p, n0, L, M, K, N_riccati, seed, positivity="qe", conditional=False, sim=None):
     rng = np.random.default_rng(seed)
-    res = mc_call_levels(H, p, n0, L, M, rng, K, positivity=positivity, conditional=conditional)
+    res = mc_call_levels(H, p, n0, L, M, rng, K, positivity=positivity, conditional=conditional,
+                         sim=sim)
     P_CF = cf_reference(H, p, K, N_riccati)
     ns, dt = res["ns"], p["T"] / res["ns"]
     b = np.abs(res["cv_mean"] - P_CF)                    # absolute bias vs known-truth
