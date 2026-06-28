@@ -216,8 +216,18 @@ validated 4b/4c), but it **perturbs the weak ORDER** (a finer quantity), N-indep
 the lift's O(N·n) cost win *is* the envelope, which is exactly what perturbs the rate — an exact-noise
 lift (O(N²)) might preserve it but forfeits the cost win. **So the cheap lift cannot measure the weak
 order; brick-3's H=0.10 borderline REMAINS OPEN** — resolving it needs the **explicit sim at finer n**
-(O(n²)) or an **exact-noise lift** (O(N²)), neither cheap. (Banked: the `sim`-callback generalization
-of the weak-order harness — any simulator now plugs in.) See ROADMAP **D35**.
+(O(n²)) or an **exact-noise lift** (O(N²)), neither cheap. **Explicit path feasibility-probed
+(2026-06-28, run-by-name this session):** at n=256 it hits a **memory-vs-SNR vise** — the M×n_max
+increment/recursion allocation is **~2–4 GB at M=150k**, where the **n=256 level is noise-dominated**
+(absolute b/se≈4.3 → excluded from the fit; coupled Y/se≈2; the two estimators disagree **0.58 vs
+1.30** → α **unresolved**), and the **M≳1M** needed to resolve it **exceeds memory (M=300k OOMs)** —
+the SAME wall brick-3 hit at n≤128, now confirmed at n=256. So the explicit path needs a
+**streaming/chunked harness** (batch paths, accumulate the bias estimators, free per-batch) to break
+the M×n_max ceiling and reach M≳1M — a bounded refactor, **not done**; and even then whether α
+converges or keeps drifting is unknown. **H=0.10 is therefore unresolvable by the current explicit
+harness at feasible memory** — a streaming harness is the prerequisite to even attempt it. (Banked:
+the `sim`-callback generalization of the weak-order harness — any simulator now plugs in.) See
+ROADMAP **D35**.
 
 ---
 
