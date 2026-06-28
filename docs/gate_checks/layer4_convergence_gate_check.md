@@ -250,6 +250,18 @@ finite-n** (CF verified reliable at this corner: U_max=200==400; K=100→6.42733
 
 See ROADMAP **D34**.
 
+**STATUS UPDATE (2026-06-28, D36) — OTM-smile gate: lift's high-ν OTM smile validated, SPX-viable on the put wing.**
+The OTM-smile gate (SPX prerequisite) compared the lifted vs CF **implied-vol smile** at H≈0.10, ν∈{0.30,0.40}
+(one conditional-MC run → analytic BS across strikes; vega-reliability mask). **(B) WING DIVERGENCE,
+ASYMMETRIC:** ATM + the entire OTM **put wing are CLEAN** (lifted−CF ≤ ~0.2pp; ATM confirms 4c), while the
+OTM **call wing is over-priced ~0.8pp (ν=0.30) → ~1.2pp (ν=0.40)**, peaking vu≈1–1.5 then easing (not a
+deep-OTM cliff). So thread-2's tail-amplification reaches H=0.10 **mildly, call-wing only** (the
+low-integrated-variance tail where D35's envelope perturbation shows). **SPX viability:** equity skew lives
+in the **put wing** (the CF's steep downside skew, ~28% vs ~13% IV) — the lift is clean there + ATM → **SPX
+put-wing/ATM skew calibration is VIABLE**; the OTM call wing needs exclusion or a documented ~1pp caveat
+(it grows with ν; tested ν=0.30–0.40 — the real SPX-implied ν sets the caveat's size). This validates the
+lift's OTM-smile pricing at H≈0.10/high-ν — the gate that precedes any SPX calibration. See ROADMAP **D36**.
+
 ---
 
 ## 6. Diagnostics
