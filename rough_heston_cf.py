@@ -32,7 +32,7 @@ from numpy.polynomial.legendre import leggauss
 from scipy.special import ndtr, gamma
 from scipy.integrate import quad
 
-__all__ = ["bs_call", "bs_cf", "heston_cf", "gil_pelaez_call"]
+__all__ = ["bs_call", "bs_put", "bs_vega", "bs_iv", "bs_cf", "heston_cf", "gil_pelaez_call"]
 
 
 # --------------------------------------------------------------------------- #
@@ -45,6 +45,45 @@ def bs_call(S0, K, T, r, sigma):
     d1 = (np.log(S0 / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
     d2 = d1 - sigma * np.sqrt(T)
     return S0 * ndtr(d1) - K * np.exp(-r * T) * ndtr(d2)
+
+
+def bs_put(S0, K, T, r, sigma):
+    """Black–Scholes European put (analytic)."""
+    if sigma * np.sqrt(T) == 0.0:
+        return max(K * np.exp(-r * T) - S0, 0.0)
+    d1 = (np.log(S0 / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+    d2 = d1 - sigma * np.sqrt(T)
+    return K * np.exp(-r * T) * ndtr(-d2) - S0 * ndtr(-d1)
+
+
+def bs_vega(S0, K, T, r, sigma):
+    """Black–Scholes vega = ∂price/∂σ (same for call and put)."""
+    srt = sigma * np.sqrt(T)
+    if srt == 0.0:
+        return 0.0
+    d1 = (np.log(S0 / K) + (r + 0.5 * sigma ** 2) * T) / srt
+    return S0 * np.exp(-0.5 * d1 ** 2) / np.sqrt(2.0 * np.pi) * np.sqrt(T)
+
+
+def bs_iv(price, S0, K, T, r=0.0, otm=True):
+    """Implied vol from an option price (Brent on [1e-6, 5]). With otm=True the
+    OTM option is inverted (put-via-parity for K<forward, call for K>=forward) —
+    both small + time-value-dominated, so well-conditioned in the wings; `price`
+    is the CALL price. Returns nan if below intrinsic / inversion fails."""
+    from scipy.optimize import brentq
+    fwd = S0 * np.exp(r * T)
+    if otm and K < fwd:
+        opt = price - S0 + K * np.exp(-r * T)          # put-call parity: call -> put
+        f = lambda s: bs_put(S0, K, T, r, s) - opt
+    else:
+        opt = price
+        f = lambda s: bs_call(S0, K, T, r, s) - opt
+    if not np.isfinite(opt) or opt <= 1e-12:
+        return np.nan
+    try:
+        return brentq(f, 1e-6, 5.0, xtol=1e-10, maxiter=200)
+    except Exception:
+        return np.nan
 
 
 def bs_cf(u, T, sigma, r=0.0):
