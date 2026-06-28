@@ -181,6 +181,17 @@ the Volterra **O(n²)** ⇒ it wins when N<n, i.e. at the fine grids (n ≳ 256�
 brick-3's borderline H=0.10. **Still open:** the lifted *simulator* (4b) + its β=2H/H=½ build gates
 and high-ν positivity (4b/4c). See ROADMAP **D32**.
 
+**STATUS UPDATE (2026-06-28, D33) — the lifted SIMULATOR is BUILT & GATED (brick 4b).**
+`rough_heston_lifted.py` (N OU factors, O(N·n) per path) passes **both** brick-1 gates at ν≤0.20:
+GATE C (H=½ price = CF, unbiased) and **GATE B (β=2H): 0.066/0.175/0.397/0.699, max|β−2H|=0.034,
+monotone** — reproducing brick-1's own rough-Heston QE β (0.070/0.167/0.384/0.737, D29). Positivity
+was selected on evidence (the brick-1 discipline): truncation **collapses** β at H≤0.10/ν=0.20 (near-0
+13%/9%), implicit-drift ≈ truncation, naive-Alfonsi is GATE-C-biased — the validated scheme is
+**brick-1 Andersen QE *ported* to the aggregate** (with an effective increment so the factors still
+reconstruct the QE'd V). The β over-steepening was diagnosed as a *truncation artifact* (gone under
+QE). Rate needs only ~tens of factors. **Still open:** high-ν (ν≈0.3–0.4, GATE D), the weak-order
+re-run on the lift (resolving H=0.10), SPX calibration — brick 4c+. See ROADMAP **D33**.
+
 ---
 
 ## 6. Diagnostics
