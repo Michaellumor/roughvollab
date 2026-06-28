@@ -205,6 +205,20 @@ collapses to 0.016). **The split (the finding):** price-boundary ν≈0.40, β-r
 moved *differently*, not forced to (A)/(C). **Still open (4d+):** the H=0.05/ν=0.40 price residual,
 the weak-order α re-run on the lift (resolving H=0.10), SPX calibration. See ROADMAP **D34**.
 
+**STATUS UPDATE (2026-06-28, D35) — the lift does NOT preserve the WEAK ORDER (§4/§6); H=0.10 stays open.**
+Attempting to resolve brick-3's borderline H=0.10 by re-running the weak-order (α) study on the lift
+hit a **known-answer-gate STOP**: Gate 1 (H=½ anchor) passed (lifted a_cpl=1.000), but **Gate 2 FAILED**
+— the lifted α is systematically *below* brick-3's explicit α at the resolved cells (H=0.20: 0.74 vs
+1.01; H=0.05: 0.40 vs 0.74, coupled-confirmed). An N-sweep shows a_cpl **flat at 0.854 across
+N=150→300→600** → the perturbation is **NOT** the SOE-kernel truncation but **intrinsic to the
+shared-ΔW noise envelope** (the O(N·n) approximation): fine for β=2H (a rate) and prices (a level,
+validated 4b/4c), but it **perturbs the weak ORDER** (a finer quantity), N-independently. Corollary:
+the lift's O(N·n) cost win *is* the envelope, which is exactly what perturbs the rate — an exact-noise
+lift (O(N²)) might preserve it but forfeits the cost win. **So the cheap lift cannot measure the weak
+order; brick-3's H=0.10 borderline REMAINS OPEN** — resolving it needs the **explicit sim at finer n**
+(O(n²)) or an **exact-noise lift** (O(N²)), neither cheap. (Banked: the `sim`-callback generalization
+of the weak-order harness — any simulator now plugs in.) See ROADMAP **D35**.
+
 ---
 
 ## 6. Diagnostics
