@@ -6,11 +6,11 @@
 
 **An open-source research programme on rough stochastic volatility — built on the principle of honest measurement over confident numbers.**
 
-RoughVolLab interrogates the rough-volatility paradigm rather than assuming it. The paradigm holds that log-volatility behaves as a fractional process with a small Hurst exponent (H ≈ 0.1). This project asks **three questions** about that claim and reports the honest answer to each — two of which are negative, and deliberately so. It is an independent research programme by a mathematics undergraduate at the University of Salford, built to publication standard, where every numerical claim is backed by a committed, reproducible run.
+RoughVolLab interrogates the rough-volatility paradigm rather than assuming it. The paradigm holds that log-volatility behaves as a fractional process with a small Hurst exponent (H ≈ 0.1). This project asks **four questions** about that claim and reports the honest answer to each — three of which are negative, and deliberately so. It is an independent research programme by a mathematics undergraduate at the University of Salford, built to publication standard, where every numerical claim is backed by a committed, reproducible run.
 
 > The unifying question: *is what we're seeing real, or an artefact of how we looked?*
 
-### Three questions, three honest answers
+### Four questions, four honest answers
 
 **1. Is the roughness identifiable from data? — *Often, no.***
 Roughness is measured through a noisy, discretely-sampled proxy of latent volatility. Rather than adjudicating whether measured roughness is genuine, RoughVolLab asks a prior question: *for what region of vol-of-vol and sampling parameters is the Hurst exponent identifiable at all?* Using a verified rough-Bergomi simulator, three roughness estimators (structure-function regression, a model-free *p*-variation index, and multifractal DFA) are characterised across the parameter space and formalised into an *identifiability map*. **Finding:** an identifiable region exists, but it is narrow: even multifractal DFA — the most favourable of the three estimators — recovers roughness across only ~30% of the parameter grid (concentrated at fine sampling), and the regime real assets occupy (BTC, ETH, S&P 500, whose calibration forces high vol-of-vol) falls **outside** it, where the inversion is non-identified. This reframes the "rough vs artefact" debate as a question of what the data can support. *(Layer 1c + Phase B, below.)*
@@ -21,9 +21,12 @@ Pricing options under the rough model needs large Monte Carlo simulations, and M
 **3. Can the structure be traded? — *No.***
 If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artifact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 2 execution arc, below.)*
 
+**4. Can the roughness be identified from an option surface? — *No (independently).***
+A rough model leaves its fingerprint on the implied-volatility smile, so the roughness should in principle be recoverable by *calibration* — a second route to Question 1, on prices rather than realized variance. **Finding:** it is not. Calibrating rough-Heston (via its El Euch–Rosenbaum characteristic function) to an IV surface, a **single smile cannot identify H** (the Hurst exponent is the flat direction of the inverse problem, cond ≈ 6×10⁵); a **multi-maturity surface helps but does not cure it** (≈order-of-magnitude tightening at clean data — H-spread 106%→10% — degrading under noise); and on a **live Deribit BTC surface H is non-identifiable outright** (it rails to the boundary, |flat[H]|=0.99, with cross-run instability) — while ξ₀/ρ/ν recover plausibly and the model fits the gross smile to ~0.9 vol-points. This **confirms Question 1's answer from a second independent angle**: the option-calibration route agrees with the realized-variance route that H-roughness resists identification in the regime real markets occupy. A distinct model-level finding falls out — rough-Heston **under-produces crypto's crash-fear put tail** even at maximal roughness (motivating jumps / steeper kernels). *(Layer 4, below.)*
+
 ### The discipline
 
-Every claim follows the same gate-check: **state the mechanism → commit a falsifiable prediction → build/run → verify against a known answer.** Comparisons are pinned to matched accuracy / matched risk so no method wins by being sloppy, and nothing is declared "tested" without a test that names it. **Negative results are first-class outcomes** — two of the three headline findings are negative, and the value is in having earned them rather than assumed otherwise. The full prediction-and-result history lives in [`ROADMAP.md`](ROADMAP.md); the gate-check specs and recorded verdicts live in [`docs/gate_checks/`](docs/gate_checks/).
+Every claim follows the same gate-check: **state the mechanism → commit a falsifiable prediction → build/run → verify against a known answer.** Comparisons are pinned to matched accuracy / matched risk so no method wins by being sloppy, and nothing is declared "tested" without a test that names it. **Negative results are first-class outcomes** — three of the four headline findings are negative, and the value is in having earned them rather than assumed otherwise. The full prediction-and-result history lives in [`ROADMAP.md`](ROADMAP.md); the gate-check specs and recorded verdicts live in [`docs/gate_checks/`](docs/gate_checks/).
 
 ---
 
@@ -41,7 +44,12 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 | `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out |
 | `layer3_deep_hedging.py` | Deep-hedging engine — path signatures, actor–critic, CVaR objective (distinct from the Layer 2 execution arc) | 📋 Planned — still unbuilt; spec in `ROADMAP.md` |
-| `layer4_convergence.py` | Convergence study (weak order) + SPX calibration + diagnostics — two planned modules: `layer4_convergence.py` + `rough_heston.py` (native rough-Heston simulator + CF reference) | 🔜 spec ready — `docs/gate_checks/layer4_convergence_gate_check.md` |
+| `rough_heston.py` · `rough_heston_cf.py` | Layer 4 — native rough-Heston simulator (κ=0 Volterra) + characteristic-function reference & BS-IV inverter (El Euch–Rosenbaum) | ✅ 8 + 23 tests pass |
+| `rough_kernel_soe.py` · `rough_heston_lifted.py` | Layer 4 — sum-of-exponentials kernel (Gate A) + multifactor Markovian-lift simulator (Gates B/C/D), O(N·n) vs O(n²) Volterra | ✅ 7 + 9 tests pass |
+| `layer4_convergence.py` | Layer 4 — weak-order (α) convergence study vs the CF reference (D31, D35) | ✅ 8 tests pass |
+| `layer4_smile_gate.py` | Layer 4 — OTM implied-vol smile gate (lift vs CF) | ✅ 5 tests pass |
+| `layer4_calibrate.py` · `layer4_calibrate_surface.py` | Layer 4 — single-smile + multi-maturity surface calibration engines | ✅ 9 + 7 tests pass |
+| `deribit_surface.py` · `calibrate_btc.py` | Layer 4 — live Deribit BTC fetch/clean + calibration driver (D39) | ✅ 8 tests pass |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
 | `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
 | `equity_data.py` | Equity arm: free daily OHLC → range-based log-variance (Rung-5 gap leg) | ✅ 6 tests; run on SPX |
@@ -213,6 +221,54 @@ result. Spec and verdicts: [`docs/gate_checks/`](docs/gate_checks/).
 
 ---
 
+## Layer 4 — rough-Heston: convergence, the Markovian lift, and calibration
+
+Layer 4 is a rough-volatility **convergence-and-calibration** arc — simulation accuracy and the
+inverse problem, measured honestly. No deep hedging, no RL: it builds the rough-Heston model
+(El Euch–Rosenbaum) from a native O(n²) Volterra simulator and a characteristic-function reference,
+then a faster **multifactor Markovian lift**, and uses both to ask whether roughness can be
+*calibrated* out of an option surface (Question 4 above). The arc is decisions **D31–D39** in
+[`ROADMAP.md`](ROADMAP.md).
+
+**Convergence (D31, D35).** The weak order α of the κ=0 hybrid scheme, measured against the CF, is
+**far better than the strong order** (α ≫ H) — the strong-order H-pessimism does *not* carry to
+pricing, with a real penalty only at the rough end. An attempt to resolve the borderline H=0.10 weak
+rate on the lift was **stopped by a known-answer gate**: the lift does **not** preserve the weak
+order (a clean negative; H=0.10 left open).
+
+**The Markovian lift (D32–D34).** A sum-of-exponentials approximation of the rough kernel
+(`rough_kernel_soe.py`; the Bayer–Breneis construction selected on evidence) turns each exponential
+into an OU factor, so the rough variance is reconstructed by **N Markovian factors at O(N·n) cost
+instead of the O(n²) Volterra convolution** (`rough_heston_lifted.py`, source-pinned to Abi Jaber's
+lift). At high vol-of-vol the lift **breaks the explicit scheme's pricing boundary** — delivering
+SPX-relevant pricing to ν≈0.40, while the MLMC β-rate extends only to ν≤0.30 (a precisely-characterized
+split boundary).
+
+**Calibration — the four-questions answer (D36–D39).** An OTM-smile gate (D36) validated the lift's
+high-ν smile against the CF (put-wing/ATM clean ~0.2pp; a ~1pp call-wing caveat). The calibration
+engine then fits θ=[H,ν,ρ,ξ₀] in implied-vol space against the CF:
+
+- **A single smile identifies ξ₀/ρ/ν but not H** (D37) — H is the flat direction of the inverse
+  problem (cond ≈ 6×10⁵).
+- **A multi-maturity surface tightens H by ~100× in conditioning** (8.97×10⁵ → 8.5×10³) **and ~10× in
+  spread** (106% → 10% at clean data) **but does not cure the H~ν degeneracy** (D38).
+- On a **live Deribit BTC surface** (D39) — 63 cleaned points across 5 maturities (11 days → 6 months),
+  calibrated against the CF — the model **fits the gross smile to 0.888 vol-points** with **ν=0.636,
+  ρ=−0.371, ξ₀=0.230 plausible**, but **H is non-identifiable**: it rails to the lower bound (0.0201),
+  |flat[H]|=0.99, with cross-run instability.
+
+This is the **option-calibration confirmation of Question 1**: the realized-variance and option-surface
+routes independently agree that H-roughness resists identification in the regime real markets occupy.
+The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
+tail** even at maximal roughness (motivating jumps / steeper kernels for future work).
+
+Two papers seed from this arc: a **weak-order note** (α ≫ H — weak convergence faster than strong; the
+lift cannot resolve the H=0.10 borderline) and a **calibration paper** — *"Identifying roughness from an
+option surface: from a single smile to a live crypto market"* (the D37→D39 arc and both findings; the
+option-calibration companion to the realized-variance P3).
+
+---
+
 ## Key references
 
 Papers whose methods are implemented in the current code:
@@ -223,11 +279,12 @@ Papers whose methods are implemented in the current code:
 - Giles (2008). *Multilevel Monte Carlo path simulation.* Operations Research. — the MLMC method underpinning Layer 1b.
 - Almgren & Chriss (2001). *Optimal execution of portfolio transactions.* Journal of Risk. — the optimal-liquidation baseline in the Layer-2 execution arc.
 - Cont & Das (2024). *Rough volatility: fact or artefact?* Sankhya B. — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
+- El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance. — the rough-Heston CF reference (`rough_heston_cf.py`) and the calibration target audited in Layer 4.
+- Abi Jaber (2019). *Lifting the Heston model.* Quantitative Finance. — the multifactor Markovian lift (`rough_heston_lifted.py`), O(N·n) vs the O(n²) Volterra convolution.
 
 Planned layers (not yet implemented — listed to indicate direction):
 
 - Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — basis for the planned Layer-3 RL hedging engine (still unbuilt; distinct from the Layer-2 execution arc above).
-- El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance. — for rough Heston pricing and calibration (Layer 4).
 
 ---
 
