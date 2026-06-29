@@ -277,6 +277,25 @@ H, the flat eigen-direction) — the calibration-context echo of the project's H
 maturities → **multi-maturity surface is the motivated next step**); if the lift must be used, calibrate
 ν/ρ/ξ₀ on the full grid (bias quarantined in H), don't restrict to the put wing. See ROADMAP **D37**.
 
+**STATUS UPDATE (2026-06-29, D38) — multi-maturity surface: the term structure makes H usable at low-noise data.**
+`layer4_calibrate_surface.py` extends D37 to a joint IV surface across maturities (imports D37's
+calibrate/residuals/IdentReport; adds T-parameterised smiles, √T-scaled per-T strike grids, a stacked
+residual, a dimension-agnostic identifiability report). Tests whether the term structure identifies H, which
+a single smile structurally cannot (D37: H flat, cond 6e5, H~ν −0.84). **Verdict: (B) IMPROVES STRONGLY,
+PARTIAL.** Surface CF→CF recovers H exactly (noise-free); cond improves **~100×** (8.97e5→8.5e3) but H stays
+the flat direction (|flat[H]|≈0.89, H~ν −0.85 — not structurally broken). **Noise-robustness (the payoff,
+matched knobs):** H-spread ~106%→~10% at σ=0.1pp (~10×), ~190%→~29% at 0.3pp, ~194%→~48% at 0.5pp; ν/ρ/ξ₀
+tight throughout. So the surface makes **H usable at clean data (~H±0.01)** — vs hopeless from one smile —
+but the gain SHRINKS under noise because the soft H~ν direction persists (mitigates, doesn't cure → (B) not
+(A)). **κ: keep fixed** (freeing it inflates cond 550×, |flat[κ]|=0.96 — degenerate; with flat ξ₀ the drift
+cancels in expectation). **Real-market guidance (span sweep):** use **≥5 maturities incl. a short (~1-month)
+tenor** (the short end gives the biggest cond jump — the T^(H−1/2) signal); more/wider keeps tightening; keep
+κ fixed. **Caveats:** the single-smile baseline is knob/ensemble-sensitive (62/96/106% across runs) so the
+comparison uses this run's matched-knob baseline; 10-draw spreads are APPROXIMATE (sampling error) — the
+order-of-magnitude tightening is robust, the exact factors are not. (Infra: the noise-ensemble first stalled
+2h+ on BLAS pool-oversubscription — NOT convergence; fixed by pinning BLAS=1/worker + pool=physical-cores,
+baked into the module.) See ROADMAP **D38**.
+
 ---
 
 ## 6. Diagnostics
