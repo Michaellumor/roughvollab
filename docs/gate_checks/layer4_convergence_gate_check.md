@@ -296,6 +296,25 @@ order-of-magnitude tightening is robust, the exact factors are not. (Infra: the 
 2h+ on BLAS pool-oversubscription — NOT convergence; fixed by pinning BLAS=1/worker + pool=physical-cores,
 baked into the module.) See ROADMAP **D38**.
 
+**STATUS UPDATE (2026-06-29, D39) — real-market run: the engine calibrated to LIVE Deribit BTC options.**
+`deribit_surface.py` (fetch+clean) + `calibrate_btc.py` (driver) calibrate the D38 engine to a live BTC
+option surface (63 pts / 5 maturities, 11d→6mo, put-wing+ATM, forward-normalised, snapshotted). Conventions
+pinned from the live API (IV in %, moneyness via the forward, inverse settlement irrelevant in IV space).
+**Fit:** H=0.0201 (railed to LB), ν=0.636, ρ=−0.371, ξ₀=0.230, **IV-RMSE 0.888pp** — rough-Heston fits the
+gross smile, ξ₀/ρ/ν plausible (ν high = D34 regime, ρ put-skew, ξ₀≈ATM-var). **Finding 1 — H NON-IDENTIFIED**
+(3 diagnostics: Jacobian |flat[H]|=0.99 / cond 5.2e4 / corr(H,ν)=−0.96; H at-LB in 100% of bootstrap draws;
+cross-run ν/ρ instability at equal RMSE) — the **option-calibration angle confirms the observational-
+equivalence wall** (Phase B Ĥ≈0.08, D37/D38), now from two independent angles. **Finding 2 — the model
+UNDER-PRODUCES crypto's extreme put-tail** (undershoots the deep-put wing + long-tenor curvature even at
+maximal roughness; real crypto's left tail is steeper than rough-Heston → jumps/steeper-kernel motivation),
+which COMPOUNDS Finding 1 (H rails to the bound straining for a tail it can't reach). **Caveats:** the
+warm-start bootstrap's H-std≈0 is "railed to the boundary", NOT tight identification (the jacobian is the
+evidence); the reduced ≤6mo surface (the 1yr tenor overflows the CF even at N=4000) drops H-span and
+compounds the non-identification (open: does full span via per-maturity N_riccati tighten H?); ξ₀ is the one
+robustly-identified parameter. **Infra:** a 13× Riccati-cache (memoise the strike-independent CF per
+maturity — bit-identical IVs) made it tractable. SPX = the unchanged-engine transfer for later; ETH = the
+comparison follow-up. See ROADMAP **D39**.
+
 ---
 
 ## 6. Diagnostics
