@@ -9,14 +9,16 @@
 
 ## Programme
 
-**Title:** Reinforcement Learning as a Numerical Approach to Stochastic
-Optimal Control under Market Frictions.
+**Title:** RoughVolLab — interrogating rough volatility: is it identifiable,
+priceable, tradeable, and hedgeable? A rough-stochastic-volatility research
+programme.
 
 **Mission:** a unified, pedagogically structured, publication-grade Python
-platform for rough stochastic volatility — simulation, multilevel Monte
-Carlo pricing, market frictions, and risk-aware RL hedging. Every module is
-individually citable; every numerical claim in code or docs must be backed
-by a run that actually happened.
+platform for rough stochastic volatility — covering simulation, convergence
+analysis, multilevel Monte Carlo pricing, identifiability and calibration,
+market frictions, and (as an exploratory extension) risk-aware deep hedging.
+Every module is individually citable; every numerical claim in code or docs
+must be backed by a run that actually happened.
 
 **Author:** Michael Lumor, Department of Mathematics, University of Salford
 (independent research programme; ORCID 0009-0000-0326-3891).
