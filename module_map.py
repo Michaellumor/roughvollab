@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """RoughVolLab x BSc Mathematics (Salford) -- module-to-layer map.
-Faithful-reproduction pass: encodes the CURRENT content to verify the generator
-matches the original flagship PNG before status updates are applied.
+Regenerable flagship: encodes the CURRENT build statuses (all layers built --
+Layer 3 = D40 deep hedging, Layer 4 = D31-D39 convergence + calibration).
+Regenerate after status changes: `python module_map.py` -> roughvollab_module_map.png.
 """
 import matplotlib
 matplotlib.use("Agg")
@@ -104,18 +105,18 @@ LAYERS = [
      [("Mathematical Methods 2","y2"),("Dynamical Systems","y2"),
       ("Operational Research","y3"),("Programming & Optimisation","y3")]),
     ("Layer 3 — Deep-hedging engine",
-     "deep hedging, path-signature features, CVaR objective (distinct from Layer 2)",
-     "planned — unbuilt", "spec",
+     "Buehler-style direct policy opt + CVaR + signatures — no roughness edge beyond frictions",
+     "built — D40", "done",
      [("Programming & Optimisation","y3"),("Operational Research","y3"),
       ("Mathematical Statistics","y3"),("ML + rough paths (self-study)","g")]),
     ("Layer 4 — Convergence & calibration",
-     "weak/strong rates, SPX smile calibration, reproducibility harness",
-     "spec next", "spec",
+     "Markovian lift (O(N·n)), high-ν pricing, weak-order study, calibration → live Deribit BTC",
+     "built — D31–D39", "done",
      [("Mathematical Methods 3","y3"),("Mathematical Statistics","y3"),
       ("Statistics","y2"),("Final-year Project","y3")]),
 ]
 OUTPUTS = [
-    ("Tested, validated code", "161 pytest tests + gate-checks"),
+    ("Tested, validated code", "252 pytest tests + gate-checks"),
     ("arXiv notes (P2, P3)", "+ Zenodo DOI at v0.2"),
     ("JOSS software paper", "peer-reviewed, citable"),
     ("PhD applications", "Oxford · Imperial · Manchester"),
