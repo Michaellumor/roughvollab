@@ -332,6 +332,8 @@ the Markovian state at ~2.5× cost, providing no advantage rather than being "wo
 hedging beats delta under frictions as expected; roughness adds little hedging edge beyond it — the fourth
 "is roughness useful?" answered NO, consistent across all four layers. See ROADMAP **D40**.
 
+**STATUS UPDATE (2026-06-30, D41) — Layer-4 (2b): the reduced-span caveat DISSOLVES.** Per-maturity constant-step N (`N(T)=clip(round(T/h),800,8000)`, h=1.23e-4 → N=8000 at the 1-year tenor) makes the full 6-maturity span computable — D39's "1-year tenor overflows" was a UNIFORM-N artifact (a resolution limit: nan at N=6000 → finite + converged at N=8000, stable to N=14000), not a wall. **Validity confirmed:** NaN-at-solution = 0/69 at the converged θ̂ (was 6/69), so the 1-year tenor is genuinely PRESENT where H lands. The jacobian comparison (full vs 1-year-dropped, same θ̂ — only the rows differ) shows **|flat[H]| changes by −0.001** (cond ×0.97; corr(H,ν) −0.876 vs −0.911) → H non-identification is INTRINSIC (an H↔ν degeneracy), NOT the dropped span. The per-maturity H-sensitivity ||∂IV/∂H|| decays monotonically from 64.5 (1-month) to 5.2 (1-year) — the long tenor is the LEAST H-informative, overturning the "long tenor carries the H-signal" premise: H lives at the short end. So the D39 open caveat ("does full span via per-maturity N_riccati tighten H?") is answered NO — the span was not the cause. The cache stayed active (3 solves/maturity); one full-span calibration ≈72 min at N=8000; the ~6h dispersed bootstrap was not needed (the jacobian settled it). Figure: `output/layer4_h_sensitivity.png`. See ROADMAP **D41**.
+
 ---
 
 ## 6. Diagnostics

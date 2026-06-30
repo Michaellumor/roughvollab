@@ -52,6 +52,23 @@ def _cached_cf(T, cfp, H, N_riccati):
     return cf
 
 
+# --------------------------------------------------------------------------- #
+# Per-maturity N_riccati (D41) — constant Riccati STEP h = T/N across maturities,
+# so SHORT maturities stay cheap (small N) while the LONG tenor (T≈1) gets enough
+# N to stay finite, WITHOUT the uniform-N overflow that forced dropping it in D39.
+# Phase-0 probe: H=0.02 (the LB where H rails) OVERFLOWS at N=6000 but is finite +
+# converged + inverting at N=8000, stable to N=14000 — a RESOLUTION limit, not a wall.
+# So h=1.23e-4 -> N(0.99)=8000 keeps the 1-yr tenor IN at the railed solution (0 NaN),
+# which is what makes the full-span identifiability test VALID. Cache is active (3
+# Riccati solves/maturity, strike-shared); the N=8000 cost is the genuine O(N²) Adams.
+# --------------------------------------------------------------------------- #
+H_STEP, N_MIN, N_MAX = 1.23e-4, 800, 8000
+
+
+def n_riccati_of_T(T, h=H_STEP, N_min=N_MIN, N_max=N_MAX):
+    return int(np.clip(round(T / h), N_min, N_max))
+
+
 def _smile_cached(theta, Ks, T, *, n_params=4, N_riccati=2000, n_nodes=96):
     H, cfp = theta_to_cfparams_s(theta, n_params)
     cf = _cached_cf(T, cfp, H, N_riccati)
@@ -66,15 +83,20 @@ def _smile_cached(theta, Ks, T, *, n_params=4, N_riccati=2000, n_nodes=96):
     return out
 
 
-def make_cached_surface_model(grids_by_T, n_params=4):
+def make_cached_surface_model(grids_by_T, n_params=4, *, n_of_T=n_riccati_of_T):
+    """Per-maturity N_riccati (D41): N = n_of_T(T) per maturity OVERRIDES any global
+    N_riccati in cf_kw, so the full surface (incl. the 1-yr tenor) is computable. Every
+    downstream caller (calibrate_surface_weighted, cached_jacobian, assess, estimate,
+    _boot_worker) goes through this closure and inherits per-maturity N for free."""
     Ts = sorted(grids_by_T)
     def _m(theta, _ks_ignored, **cf_kw):
-        return np.concatenate([_smile_cached(theta, grids_by_T[T], T, n_params=n_params, **cf_kw)
-                               for T in Ts])
+        cf_kw = {k: v for k, v in cf_kw.items() if k != "N_riccati"}      # the schedule wins
+        return np.concatenate([_smile_cached(theta, grids_by_T[T], T, n_params=n_params,
+                                             N_riccati=n_of_T(T), **cf_kw) for T in Ts])
     return _m
 
 RHO0, XI0_0 = -0.50, 0.185                              # crypto-corner defaults (ξ₀≈ATM-IV²≈0.44²)
-CORNERS = ((0.03, 0.60), (0.05, 0.50), (0.08, 0.40))   # (H,ν) the optimizer may visit
+CORNERS = ((0.02, 0.63), (0.03, 0.60), (0.05, 0.50), (0.08, 0.40))  # incl. the railed corner (H=0.02,ν=0.63)
 NS = (1500, 2000, 3000, 4000)
 
 
@@ -103,38 +125,40 @@ def calibrate_surface_weighted(target, grids_by_T, *, weights=None, n_params=4,
 # --------------------------------------------------------------------------- #
 # STEP 1 — N_riccati pre-check at the crypto corner
 # --------------------------------------------------------------------------- #
-def precheck(grids_by_T, *, corners=CORNERS, Ns=NS, n_nodes=160, atol=2e-3):
-    Ts = sorted(grids_by_T); Tmin, Tmax = Ts[0], Ts[-1]
-    keys = [(H, nu, T) for (H, nu) in corners for T in (Tmin, Tmax)]
-    print(f"\n=== STEP 1: N_riccati pre-check (crypto corner) ===")
-    print(f"  corners (H,ν) at ρ={RHO0} ξ₀={XI0_0}; ATM CF IV at T∈[{Tmin:.3f},{Tmax:.3f}] (nan=overflow):")
-    tab = {}
-    for N in Ns:
-        row = {}
-        for (H, nu, T) in keys:
-            iv = S.model_smile_cf_T([H, nu, RHO0, XI0_0], np.array([100.0]), T,
-                                    N_riccati=N, n_nodes=n_nodes)[0]
-            row[(H, nu, T)] = iv
-        tab[N] = row
-        finite = sum(np.isfinite(v) for v in row.values())
-        print(f"  N={N:5d}: finite {finite}/{len(keys)}  " +
-              " ".join(f"H{H}ν{nu}T{T:.2f}={(v*100 if np.isfinite(v) else float('nan')):.1f}"
-                       for (H, nu, T), v in row.items()))
-    ref = tab[Ns[-1]]
-    def converged(row):
-        return all(np.isfinite(row[k]) and np.isfinite(ref[k]) and abs(row[k] - ref[k]) < atol for k in ref)
-    Nstar = next((N for N in Ns if all(np.isfinite(v) for v in tab[N].values()) and converged(tab[N])), Ns[-1])
-    # inversion check at Nstar on the REAL strikes (worst corner = lowest H, highest ν)
-    Hc, nuc = corners[0]
-    cf_kw = dict(N_riccati=Nstar, n_nodes=n_nodes)
-    fin_by_T = {}
+def precheck(grids_by_T, *, corners=CORNERS, n_nodes=160, atol=2e-3, n_of_T=n_riccati_of_T):
+    """Phase-0 stability gate (PER-MATURITY N): verify every maturity's CF is finite AND
+    converged at its OWN N(T) — vs a higher-N reference — across the crypto fit-region
+    corners (incl. the 1-yr tenor that overflowed at uniform N in D39), then check the IV
+    inversion on the real strikes. Returns cf_kw WITHOUT a global N_riccati (the cached
+    model supplies N(T) per maturity)."""
+    Ts = sorted(grids_by_T)
+    print(f"\n=== STEP 1: per-maturity N_riccati pre-check (constant step h={H_STEP:.2e}) ===", flush=True)
+    print(f"  N(T)=clip(round(T/h),{N_MIN},{N_MAX}); corners (H,ν) at ρ={RHO0} ξ₀={XI0_0}; "
+          f"ATM CF IV% vs higher-N ref (✗=nan or not converged @atol={atol}):", flush=True)
+    conv_ok = True
     for T in Ts:
-        iv = S.model_smile_cf_T([Hc, nuc, RHO0, XI0_0], grids_by_T[T], T, **cf_kw)
-        fin_by_T[T] = (int(np.isfinite(iv).sum()), len(iv))
-    print(f"  -> chosen N_riccati={Nstar} (n_nodes={n_nodes}); inversion at worst corner "
-          f"(H={Hc},ν={nuc}) finite/strike per T: " +
-          " ".join(f"{T:.2f}:{f}/{n}" for T, (f, n) in fin_by_T.items()))
-    return cf_kw
+        N = n_of_T(T); Nref = N + 2000
+        cells = []
+        for (H, nu) in corners:
+            iv  = S.model_smile_cf_T([H, nu, RHO0, XI0_0], np.array([100.0]), T, N_riccati=N,    n_nodes=n_nodes)[0]
+            ivr = S.model_smile_cf_T([H, nu, RHO0, XI0_0], np.array([100.0]), T, N_riccati=Nref, n_nodes=n_nodes)[0]
+            ok = bool(np.isfinite(iv) and np.isfinite(ivr) and abs(iv - ivr) < atol)
+            conv_ok &= ok
+            cells.append(f"H{H}ν{nu}={('%.1f' % (iv*100)) if np.isfinite(iv) else 'nan'}{'' if ok else '✗'}")
+        print(f"  T={T:.3f} N={N:5d} (ref {Nref}): " + "  ".join(cells), flush=True)
+    # inversion on the REAL strikes at the worst corner (lowest H, highest ν), per maturity
+    Hc, nuc = corners[0]
+    fin = {}
+    for T in Ts:
+        iv = S.model_smile_cf_T([Hc, nuc, RHO0, XI0_0], grids_by_T[T], T, N_riccati=n_of_T(T), n_nodes=n_nodes)
+        fin[T] = (int(np.isfinite(iv).sum()), len(iv))
+    inv_ok = all(f == n for f, n in fin.values())
+    print(f"  inversion at worst corner (H={Hc},ν={nuc}) finite/strike per T: "
+          + " ".join(f"{T:.2f}:{f}/{n}" for T, (f, n) in fin.items()), flush=True)
+    print(f"  -> per-maturity schedule "
+          + ("STABLE + inverts across the fit region ✓" if (conv_ok and inv_ok)
+             else "UNSTABLE — raise N_MAX / lower h ✗"), flush=True)
+    return dict(n_nodes=n_nodes)
 
 
 # --------------------------------------------------------------------------- #
@@ -158,6 +182,11 @@ def estimate(target, grids_by_T, weights, cf_kw, *, theta0, n_boot=24, pool=4):
           f"success={res.success} ({res.message[:34]})  -> "
           + "  ".join(f"{n}={v:+.4f}" for n, v in zip(S.PN[4], res.theta_hat))
           + f"  IV-RMSE={res.iv_rmse*100:.3f}pp", flush=True)
+    iv_sol = base_model(res.theta_hat, None, **cf_kw)            # ★ validity check
+    nan_sol = int(np.isnan(iv_sol).sum())
+    print(f"  ★ NaN-at-solution: {nan_sol}/{len(iv_sol)}  "
+          + ("(0 -> the 1-yr tenor stays IN where H lands: full-span test VALID)" if nan_sol == 0
+             else "(tenor still dropping out at the solution -> NOT yet valid: raise N further)"), flush=True)
     boot = t_cal * np.ceil(n_boot / pool)
     print(f"  H-bootstrap: {n_boot} draws ÷ {pool} workers × {t_cal:.0f}s ≈ {boot/60:.1f} min", flush=True)
     print(f"  ESTIMATED TOTAL (1 calib + {n_boot}-draw bootstrap) ≈ {(t_cal + boot)/60:.1f} min", flush=True)
@@ -276,6 +305,8 @@ if __name__ == "__main__":
     ap.add_argument("--max-T", type=float, default=None, help="drop maturities with T > this (the long tenor is the overflow driver)")
     ap.add_argument("--n-nodes", type=int, default=160)
     ap.add_argument("--calibrate", action="store_true", help="run the full calibration + assess (Step 3-4)")
+    ap.add_argument("--pool", type=int, default=max(1, (os.cpu_count() or 8) // 2), help="bootstrap workers (default: physical cores)")
+    ap.add_argument("--n-boot", type=int, default=16, help="bootstrap / multi-start draws")
     a = ap.parse_args()
     snap = a.snapshot or latest_snapshot(a.currency)
     print(f"[calibrate_btc] snapshot = {snap}", flush=True)
@@ -303,7 +334,7 @@ if __name__ == "__main__":
         print(f"  calibrated in {time.time()-t0:.0f}s  nfev={res.nfev}  success={res.success}: "
               + "  ".join(f"{n}={v:+.4f}" for n, v in zip(S.PN[4], res.theta_hat))
               + f"  IV-RMSE={res.iv_rmse*100:.3f}pp", flush=True)
-        assess(res, grids, target_by_T, weights_by_T, cf_kw, meta, n_boot=24)
+        assess(res, grids, target_by_T, weights_by_T, cf_kw, meta, n_boot=a.n_boot, pool=a.pool)
     else:
-        estimate(target, grids, weights, cf_kw, theta0=theta0)
+        estimate(target, grids, weights, cf_kw, theta0=theta0, n_boot=a.n_boot, pool=a.pool)
         print("\n[HOLD] Steps 1-2 done. Re-run with --calibrate to proceed to Step 3-4.")
