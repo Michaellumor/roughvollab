@@ -164,7 +164,8 @@ def precheck(grids_by_T, *, corners=CORNERS, n_nodes=160, atol=2e-3, n_of_T=n_ri
 # --------------------------------------------------------------------------- #
 # STEP 2 — runtime estimate (time one calibration, scale to the bootstrap)
 # --------------------------------------------------------------------------- #
-def estimate(target, grids_by_T, weights, cf_kw, *, theta0, n_boot=24, pool=4):
+def estimate(target, grids_by_T, weights, cf_kw, *, theta0, n_boot=24, pool=4, bounds=None):
+    bounds = bounds if bounds is not None else (S.LB[4], S.UB[4])
     print(f"\n=== STEP 2: runtime estimate (BLAS=1, pool={pool}, cf_kw={cf_kw}) ===", flush=True)
     base_model = make_cached_surface_model(grids_by_T, 4)
     cnt = [0]; tlast = [time.time()]
@@ -175,7 +176,7 @@ def estimate(target, grids_by_T, weights, cf_kw, *, theta0, n_boot=24, pool=4):
         tlast[0] = now
         return v
     t0 = time.time()
-    res = calibrate(target, Ks=None, theta0=theta0, bounds=(S.LB[4], S.UB[4]),
+    res = calibrate(target, Ks=None, theta0=theta0, bounds=bounds,
                     model=counting_model, weights=weights, cf_kw=cf_kw, max_nfev=200)
     t_cal = time.time() - t0
     print(f"  one full calibration: {t_cal:.0f}s  nfev={res.nfev} ({cnt[0]} model evals) "
@@ -217,7 +218,7 @@ def cached_jacobian(theta, grids_by_T, cf_kw, *, rel=0.01, abs_=1e-4):
 def _boot_worker(args):
     """Nonparametric bootstrap: resample the cleaned points (with replacement) per
     maturity, recalibrate from θ̂. Module-level for ProcessPool picklability."""
-    seed, grids_by_T, target_by_T, weights_by_T, cf_kw, theta0 = args
+    seed, grids_by_T, target_by_T, weights_by_T, cf_kw, theta0, bounds = args
     rng = np.random.default_rng(seed)
     g2, t2, w2 = {}, {}, {}
     for T in grids_by_T:
@@ -225,10 +226,10 @@ def _boot_worker(args):
         g2[T] = grids_by_T[T][idx]; t2[T] = target_by_T[T][idx]; w2[T] = weights_by_T[T][idx]
     tgt = np.concatenate([t2[T] for T in sorted(g2)])
     wts = np.concatenate([w2[T] for T in sorted(g2)])
-    return calibrate_surface_weighted(tgt, g2, weights=wts, theta0=theta0, cf_kw=cf_kw).theta_hat
+    return calibrate_surface_weighted(tgt, g2, weights=wts, theta0=theta0, bounds=bounds, cf_kw=cf_kw).theta_hat
 
 
-def assess(res, grids_by_T, target_by_T, weights_by_T, cf_kw, meta, *, n_boot=24, pool=4, seed=20260629):
+def assess(res, grids_by_T, target_by_T, weights_by_T, cf_kw, meta, *, n_boot=24, pool=4, seed=20260629, bounds=None):
     th = res.theta_hat; Ts = sorted(grids_by_T)
     iv_m = _split_by_maturity(make_cached_surface_model(grids_by_T, 4)(th, None, **cf_kw), grids_by_T)
     print("\n=== STEP 4: ASSESSMENT ===", flush=True)
@@ -256,7 +257,7 @@ def assess(res, grids_by_T, target_by_T, weights_by_T, cf_kw, meta, *, n_boot=24
     except Exception as e:
         print(f"    jacobian ident skipped ({e})", flush=True)
     print(f"    bootstrap: {n_boot} resamples ÷ {pool} workers (init=θ̂)...", flush=True)
-    args = [(seed + d, grids_by_T, target_by_T, weights_by_T, cf_kw, th) for d in range(n_boot)]
+    args = [(seed + d, grids_by_T, target_by_T, weights_by_T, cf_kw, th, bounds) for d in range(n_boot)]
     from concurrent.futures import ProcessPoolExecutor
     recs = []
     with ProcessPoolExecutor(max_workers=pool) as ex:
@@ -324,17 +325,24 @@ if __name__ == "__main__":
     assert len(target) == sum(len(grids[T]) for T in grids) == len(weights), "stacking length mismatch"
     # init: ξ₀ from ATM var, ρ negative, H low, ν high
     atm = float(np.mean(list(meta["atm_iv_by_T"].values())))
+    # data-driven ξ₀ upper bound (scale-invariant, like the forward-scaled vega floor): the engine's
+    # absolute 0.25 cap (≈50% vol) is BTC/SPX-tuned and is exceeded by a higher-vol market (ETH ATM-var
+    # ~0.34). max(0.25, 1.2·max_ATM_var) keeps BTC EXACTLY 0.25 (its max ATM-var 0.20 → floor binds →
+    # D39/D41 bit-identical) and gives ETH headroom. Cross-market calibration needs scale-invariant bounds.
+    max_atm_var = max(v ** 2 for v in meta["atm_iv_by_T"].values())
+    ub = S.UB[4].copy(); ub[3] = max(ub[3], 1.2 * max_atm_var)
+    bounds = (S.LB[4], ub)
     theta0 = np.array([0.08, 0.50, RHO0, atm ** 2])
-    print(f"  surface: {len(target)} points, {len(grids)} maturities; init θ0={theta0}", flush=True)
+    print(f"  surface: {len(target)} points, {len(grids)} maturities; init θ0={theta0}; ξ₀ bound={ub[3]:.3f}", flush=True)
     cf_kw = precheck(grids, n_nodes=a.n_nodes)
     if a.calibrate:
         print("\n=== STEP 3: CALIBRATE (weighted, BLAS=1) ===", flush=True)
         t0 = time.time()
-        res = calibrate_surface_weighted(target, grids, weights=weights, theta0=theta0, cf_kw=cf_kw)
+        res = calibrate_surface_weighted(target, grids, weights=weights, theta0=theta0, bounds=bounds, cf_kw=cf_kw)
         print(f"  calibrated in {time.time()-t0:.0f}s  nfev={res.nfev}  success={res.success}: "
               + "  ".join(f"{n}={v:+.4f}" for n, v in zip(S.PN[4], res.theta_hat))
               + f"  IV-RMSE={res.iv_rmse*100:.3f}pp", flush=True)
-        assess(res, grids, target_by_T, weights_by_T, cf_kw, meta, n_boot=a.n_boot, pool=a.pool)
+        assess(res, grids, target_by_T, weights_by_T, cf_kw, meta, n_boot=a.n_boot, pool=a.pool, bounds=bounds)
     else:
-        estimate(target, grids, weights, cf_kw, theta0=theta0, n_boot=a.n_boot, pool=a.pool)
+        estimate(target, grids, weights, cf_kw, theta0=theta0, n_boot=a.n_boot, pool=a.pool, bounds=bounds)
         print("\n[HOLD] Steps 1-2 done. Re-run with --calibrate to proceed to Step 3-4.")

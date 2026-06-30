@@ -70,6 +70,11 @@ OI_MIN = 5.0
 SPREAD_PTS_MAX = 5.0                                 # ask_iv - bid_iv, vol points
 SPREAD_FRAC_MAX = 0.15                               # ... or fraction of mark_iv
 VEGA_MIN = 5.0
+FORWARD_REF = 60924.19                               # BTC reference forward (the D39/D41 snapshot median).
+# The vega floor scales UNIFORMLY per snapshot by median_forward/FORWARD_REF: vega ∝ the underlying
+# price, so a FIXED absolute floor is currency-specific — BTC (~$61k) vs ETH (~$1.6k) — and silently
+# discards a cheaper market's entire short end. BTC's median == FORWARD_REF → ×1 (bit-identical);
+# ETH → ~0.026 (floor ~0.13). Cross-market calibration requires scale-invariant cleaning (D42).
 MONEYNESS_PREFILTER = (0.50, 1.20)                   # generous K/forward band before ticker calls
 
 
@@ -210,6 +215,15 @@ def clean(quotes: list, *, oi_min=OI_MIN, spread_pts_max=SPREAD_PTS_MAX,
     def drop(q, reason):
         drops[reason] = drops.get(reason, 0) + 1
 
+    # UNIFORM forward-scaled vega floor (see FORWARD_REF): scale the absolute floor by the chain's
+    # median forward / FORWARD_REF, applied to every quote in the snapshot (uniform → no per-expiry
+    # variation, so BTC's median == FORWARD_REF gives ×1, bit-identical). vega ∝ underlying price;
+    # a fixed floor silently drops a cheaper market's short end. Cross-market cleaning must be
+    # scale-invariant (D42).
+    import statistics
+    _fwds = [q.forward for q in quotes if q.forward and q.forward > 0]
+    vega_floor = vega_min * (statistics.median(_fwds) / FORWARD_REF) if _fwds else vega_min
+
     stage1 = []
     for q in quotes:
         if not (_is_finite(q.mark_iv) and 5.0 <= q.mark_iv <= 200.0):
@@ -221,7 +235,9 @@ def clean(quotes: list, *, oi_min=OI_MIN, spread_pts_max=SPREAD_PTS_MAX,
         sp = q.ask_iv - q.bid_iv
         if sp > spread_pts_max or sp > spread_frac_max * q.mark_iv:
             drop(q, "wide_spread"); continue
-        if not (_is_finite(q.vega) and abs(q.vega) >= vega_min):
+        if q.forward <= 0:                                 # checked before the vega floor (forward-scaled)
+            drop(q, "no_forward"); continue
+        if not (_is_finite(q.vega) and abs(q.vega) >= vega_floor):
             drop(q, "low_vega"); continue
         if not _is_finite(q.delta):
             drop(q, "no_delta"); continue
@@ -230,8 +246,6 @@ def clean(quotes: list, *, oi_min=OI_MIN, spread_pts_max=SPREAD_PTS_MAX,
         in_atm = (atm_abs[0] <= abs(d) <= atm_abs[1])
         if not (in_put or in_atm):
             drop(q, "outside_region"); continue
-        if q.forward <= 0:
-            drop(q, "no_forward"); continue
         q.K_norm = 100.0 * q.strike / q.forward
         stage1.append(q)
 
