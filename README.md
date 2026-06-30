@@ -43,7 +43,7 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 | `paper_outputs.py` | Reproducibility script — one command regenerates the P3 figures (bias curves + identifiability map with asset overlay) and prints every paper number | ✅ reuses tested modules |
 | `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out |
-| `layer3_deep_hedging.py` | Deep-hedging engine — path signatures, actor–critic, CVaR objective (distinct from the Layer 2 execution arc) | 📋 Planned — still unbuilt; spec in `ROADMAP.md` |
+| `layer3_deep_hedging.py` | Layer 3 — deep-hedging engine (Buehler-style direct policy optimization, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf). Finds: deep beats delta under frictions, but roughness adds no hedging edge beyond it (D40) | ✅ 7 tests (isolated venv); core stays torch-free |
 | `rough_heston.py` · `rough_heston_cf.py` | Layer 4 — native rough-Heston simulator (κ=0 Volterra) + characteristic-function reference & BS-IV inverter (El Euch–Rosenbaum) | ✅ 8 + 23 tests pass |
 | `rough_kernel_soe.py` · `rough_heston_lifted.py` | Layer 4 — sum-of-exponentials kernel (Gate A) + multifactor Markovian-lift simulator (Gates B/C/D), O(N·n) vs O(n²) Volterra | ✅ 7 + 9 tests pass |
 | `layer4_convergence.py` | Layer 4 — weak-order (α) convergence study vs the CF reference (D31, D35) | ✅ 8 tests pass |
@@ -281,10 +281,7 @@ Papers whose methods are implemented in the current code:
 - Cont & Das (2024). *Rough volatility: fact or artefact?* Sankhya B. — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
 - El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance. — the rough-Heston CF reference (`rough_heston_cf.py`) and the calibration target audited in Layer 4.
 - Abi Jaber (2019). *Lifting the Heston model.* Quantitative Finance. — the multifactor Markovian lift (`rough_heston_lifted.py`), O(N·n) vs the O(n²) Volterra convolution.
-
-Planned layers (not yet implemented — listed to indicate direction):
-
-- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — basis for the planned Layer-3 RL hedging engine (still unbuilt; distinct from the Layer-2 execution arc above).
+- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — the deep-hedging objective (CVaR direct policy optimization) in the Layer-3 engine (`layer3_deep_hedging.py`), distinct from the Layer-2 execution arc.
 
 ---
 
