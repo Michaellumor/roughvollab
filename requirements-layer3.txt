@@ -1,0 +1,17 @@
+# Layer 3 (deep hedging) ONLY — the repo's first ML dependency, kept ISOLATED.
+# The core (Layers 1/1b/1c/2/4, Phase B) does NOT need these; its environment stays
+# numpy/scipy-only and its CI never imports torch. The .venv-layer3 venv is NOT committed
+# (gitignored) — recreate it locally:
+#
+#   python -m venv .venv-layer3
+#   .venv-layer3/Scripts/python -m pip install -r requirements-layer3.txt      # Windows
+#   .venv-layer3/Scripts/python layer3_deep_hedging.py            # Phase-0 verification
+#   .venv-layer3/Scripts/python layer3_deep_hedging.py --gate1    # recover BS-delta
+#   .venv-layer3/Scripts/python layer3_deep_hedging.py --gate2    # friction edge + contrast
+#   .venv-layer3/Scripts/python -m pytest test_layer3_deep_hedging.py
+#
+# Deletion-safe: delete layer3_deep_hedging.py + nuke .venv-layer3 → the core is untouched.
+numpy
+scipy
+torch>=2.12
+pytest

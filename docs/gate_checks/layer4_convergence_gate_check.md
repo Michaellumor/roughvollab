@@ -315,6 +315,23 @@ robustly-identified parameter. **Infra:** a 13× Riccati-cache (memoise the stri
 maturity — bit-identical IVs) made it tractable. SPX = the unchanged-engine transfer for later; ETH = the
 comparison follow-up. See ROADMAP **D39**.
 
+**STATUS UPDATE (2026-06-30, D40) — Layer 3 deep-hedging engine: roughness adds no hedging edge beyond frictions.**
+`layer3_deep_hedging.py` (+ separate suite `test_layer3_deep_hedging.py`): a strictly-isolated, deletion-safe
+deep-hedging leaf (Buehler-style direct CVaR policy optimisation; torch only in `.venv-layer3`, core stays
+numpy/scipy-only, CI torch-free). The on-theme question — does the ROUGH structure give a hedging edge
+beyond the generic frictions effect? — tested as a CONTRAST (rough H=0.10 vs smooth H=0.5 control, identical
+generator). **Phase 0:** self-computed signature verified vs four known answers; torch autograd sanity.
+**Gate 1:** recovers BS-delta in the frictionless GBM limit (mean|δ−Φ(d₁)|≈0.017, P&L-std ratio ≈1.03 —
+matches, doesn't beat; causality guard CAUSAL + a look-ahead policy fires it). **Gate 2 + contrast** (c=0.01,
+8 seeds, simple features): deep beats delta **+1.14 ROUGH / +1.08 SMOOTH (8/8)** — the Buehler frictions edge
+— but the **roughness increment is +0.060 ± 0.044 (z=1.4) → MODEST/ABSENT** (predicted). Two scrutiny stories
+recorded: a false-positive (the sig-feature increment z=2.2 dissolved under the simple-feature control — the
+sig net trained unevenly) and an over-claimed-negative avoided (the matched-budget sig underperformance was a
+TRAINING ARTIFACT — at a fair budget the sig net catches up to +1.03 ≈ simple +1.14, so signatures *match*
+the Markovian state at ~2.5× cost, providing no advantage rather than being "worse"). **Verdict:** deep
+hedging beats delta under frictions as expected; roughness adds little hedging edge beyond it — the fourth
+"is roughness useful?" answered NO, consistent across all four layers. See ROADMAP **D40**.
+
 ---
 
 ## 6. Diagnostics
