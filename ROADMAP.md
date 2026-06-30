@@ -45,8 +45,8 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `execution_alpha.py` | Execution env (rough-Bergomi) + Almgren–Chriss + naive baselines (G-X1) | ✅ Phase 0 validated | 2026-06-24 |
 | `execution_alpha_phase1.py` | Execution kill-switch probe — causal vol-reactive heuristic | ✅ Phase 1 — kill-switch fired (negative) | 2026-06-24 |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out | 2026-06-24 |
-| `layer3_deep_hedging.py` | Deep-hedging engine (path signatures / actor–critic / CVaR; distinct from Layer-2 execution) | 📋 Planned — still unbuilt | — |
-| `layer4_convergence.py` | Convergence study (weak order) + SPX calibration + diagnostics — two planned modules: `layer4_convergence.py` + `rough_heston.py` (native rough-Heston simulator + CF reference) | 🔜 spec ready — `docs/gate_checks/layer4_convergence_gate_check.md` | 2026-06-27 |
+| `layer3_deep_hedging.py` | Deep-hedging engine — Buehler-style direct policy optimization, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf. Finds: deep beats delta under frictions, roughness adds no hedging edge beyond it | ✅ built (7 tests, isolated venv; core torch-free) | 2026-06-30 |
+| `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
 
@@ -320,27 +320,28 @@ error vs a path-dependent benchmark.
 
 **Key refs:** Almgren & Chriss (2001); Gatheral, Jaisson & Rosenbaum (2018).
 
-## Layer 3 — Deep-hedging engine (risk-aware RL; spec — still unbuilt)
+## Layer 3 — Deep-hedging engine (built — D40)
 
 > **Note — not the execution work.** This is the deep-**hedging** engine
-> (risk-aware RL hedging of a derivative position via path signatures), **still
-> unbuilt** and **distinct from the Layer 2 execution arc** above (Almgren–Chriss
+> (risk-aware deep hedging of a derivative position via path signatures), **built (D40)** and **distinct from the Layer 2 execution arc** above (Almgren–Chriss
 > liquidation + the execution-alpha probe, which is done → kill-switch fired,
 > D24–D26). Layer 2 = *executing/liquidating* a position; Layer 3 = *hedging* a
 > derivative. Do not re-conflate the two.
 
-**File:** `layer3_deep_hedging.py` (planned — not yet built).
+**File:** `layer3_deep_hedging.py` (built — D40). Separate suite `test_layer3_deep_hedging.py`; torch isolated in `.venv-layer3` (the core stays torch-free).
 
 **Goal:** risk-aware deep hedging on the non-Markovian state via path
 signatures.
 
 **Contents:** truncated signature features of (t, S, realised-var) path;
-actor–critic with CVaR-sensitive objective; baselines: BS delta,
+direct policy optimization (Buehler-style) with a CVaR objective; baselines: BS delta,
 delta-vega, and the Layer 2 friction-aware strategies.
 
 **Validation criteria:** recover BS delta (η→0, frictionless) within
 tolerance; beat delta hedging on CVaR of terminal P&L under frictions with
 statistical significance across seeds.
+
+**Result (D40):** Gate 1 recovers BS-delta (frictionless); under frictions deep hedging beats delta (+1.1 CVaR, 8/8 seeds — the generic Buehler edge), but the roughness-specific increment is modest/absent (+0.06 ± 0.04, z=1.4) — roughness adds no hedging edge beyond frictions.
 
 **Key refs:** Buehler et al. (2019); signature methods (Lyons; Kidger &
 Lyons for ML practice).
