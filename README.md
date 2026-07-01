@@ -277,10 +277,6 @@ This is the **option-calibration confirmation of Question 1**: the realized-vari
 routes independently agree that H-roughness resists identification in the regime real markets occupy.
 The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
 tail** even at maximal roughness, on both markets (motivating jumps / steeper kernels for future work).
-This is the **option-calibration confirmation of Question 1**: the realized-variance and option-surface
-routes independently agree that H-roughness resists identification in the regime real markets occupy.
-The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
-tail** even at maximal roughness (motivating jumps / steeper kernels for future work).
 
 Two papers seed from this arc: a **weak-order note** (α ≫ H — weak convergence faster than strong; the
 lift cannot resolve the H=0.10 borderline) and a **calibration paper** — *"Identifying roughness from an
