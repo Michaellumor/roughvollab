@@ -249,19 +249,34 @@ lift). At high vol-of-vol the lift **breaks the explicit scheme's pricing bounda
 SPX-relevant pricing to ν≈0.40, while the MLMC β-rate extends only to ν≤0.30 (a precisely-characterized
 split boundary).
 
-**Calibration — the four-questions answer (D36–D39).** An OTM-smile gate (D36) validated the lift's
+**Calibration — the four-questions answer (D36–D42).** An OTM-smile gate (D36) validated the lift's
 high-ν smile against the CF (put-wing/ATM clean ~0.2pp; a ~1pp call-wing caveat). The calibration
 engine then fits θ=[H,ν,ρ,ξ₀] in implied-vol space against the CF:
 
 - **A single smile identifies ξ₀/ρ/ν but not H** (D37) — H is the flat direction of the inverse
   problem (cond ≈ 6×10⁵).
-- **A multi-maturity surface tightens H by ~100× in conditioning** (8.97×10⁵ → 8.5×10³) **and ~10× in
+- **A multi-maturity surface tightens H by ~100× in conditioning** (9.0×10⁵ → 8.5×10³) **and ~10× in
   spread** (106% → 10% at clean data) **but does not cure the H~ν degeneracy** (D38).
-- On a **live Deribit BTC surface** (D39) — 63 cleaned points across 5 maturities (11 days → 6 months),
-  calibrated against the CF — the model **fits the gross smile to 0.888 vol-points** with **ν=0.636,
-  ρ=−0.371, ξ₀=0.230 plausible**, but **H is non-identifiable**: it rails to the lower bound (0.0201),
-  |flat[H]|=0.99, with cross-run instability.
+- On a **live Deribit BTC surface** (D39, D41) — 69 cleaned points across 6 maturities (11 days → 1 year),
+  calibrated against the CF — the model **fits the gross smile to ~1.1 vol-points** with **ν=0.714,
+  ρ=−0.306, ξ₀=0.236 plausible** (ATM vol ≈ 48%), but **H is non-identifiable**: it rails to the lower
+  bound (0.0200), |flat[H]|=0.118, with cross-run instability.
+- **The non-identification is intrinsic, not a span artefact** (D41). Making the full one-year span
+  computable (a per-maturity Riccati schedule keeps the CF finite at the long tenor) leaves H's
+  identifiability essentially unchanged (Δ|flat[H]| = −0.001), and a per-maturity sensitivity analysis
+  shows the long tenor is the **least** H-informative, not the most (sensitivity decays ~64.5 → ~5.2
+  from the short to the one-year tenor). H's signal lives at the short end, where it trades off against ν.
+- **The finding replicates on Ethereum** (D42): a second live surface rails H to its bound with the same
+  H~ν degeneracy (corr −0.86 to −0.88 across both markets), the same short-to-long sensitivity decay, and
+  the same crash-tail undershoot — establishing the non-identifiability as a cross-market structural
+  feature of crypto surfaces, not a Bitcoin quirk. (A methodological by-product: cross-market calibration
+  requires scale-invariant surface cleaning — an absolute vega floor tuned to BTC silently collapses the
+  ETH surface.)
 
+This is the **option-calibration confirmation of Question 1**: the realized-variance and option-surface
+routes independently agree that H-roughness resists identification in the regime real markets occupy.
+The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
+tail** even at maximal roughness, on both markets (motivating jumps / steeper kernels for future work).
 This is the **option-calibration confirmation of Question 1**: the realized-variance and option-surface
 routes independently agree that H-roughness resists identification in the regime real markets occupy.
 The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
@@ -269,7 +284,7 @@ tail** even at maximal roughness (motivating jumps / steeper kernels for future 
 
 Two papers seed from this arc: a **weak-order note** (α ≫ H — weak convergence faster than strong; the
 lift cannot resolve the H=0.10 borderline) and a **calibration paper** — *"Identifying roughness from an
-option surface: from a single smile to a live crypto market"* (the D37→D39 arc and both findings; the
+option surface: from a single smile to a live crypto market"* (the D37→D42 arc and both findings; the
 option-calibration companion to the realized-variance P3).
 
 ---
