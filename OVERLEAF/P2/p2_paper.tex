@@ -88,8 +88,9 @@ a volatility driver of low H\"older regularity --- is also its computational dif
 the model is non-Markovian, has no simple affine structure, and the dominant pricing
 tool is therefore Monte Carlo simulation~\cite{bfg2016,mccrickerd2018}.
 
-Monte Carlo cost is the target of the multilevel method of Giles~\cite{giles2008}, whose
-efficiency is governed by three rates: the weak rate $\alpha$, the variance-decay rate
+Monte Carlo cost is the target of the multilevel method of Giles~\cite{giles2008}; 
+its efficiency is governed by three rates (see~\cite{giles2015} for a full account):
+the weak rate $\alpha$, the variance-decay rate
 $\beta$ of the level corrections, and the cost-growth rate $\gamma$. The method attains
 the optimal $\mathcal{O}(\varepsilon^{-2})$ complexity when $\beta>\gamma$ and fails to
 when $\beta<\gamma$. For diffusions driven by fractional or Gaussian noise the variance
@@ -114,7 +115,8 @@ simulator refinement (exact near-cell integration) then sharpens that winner fur
 \paragraph{What is, and is not, new.} That MLMC underperforms for rough volatility is
 known, as is the $\beta=2\times(\text{strong rate})$ theory~\cite{bfrs2016}; the baseline
 of Sections~\ref{sec:model}--\ref{sec:baseline} confirms this cleanly for a payoff not
-previously isolated. Antithetic multilevel estimation~\cite{gilesszpruch2014} and
+previously isolated. Our negative result is therefore not a limitation of the multilevel method but an instance of its own complexity theory: with β<γ\beta<\gamma
+β<γ, Giles's framework~\cite{giles2008,giles2015} itself predicts that refinement will not pay, and we confirm this concretely for a payoff where one might have hoped a better coupling would rescue it. Antithetic multilevel estimation~\cite{gilesszpruch2014} and
 conditional (``turbocharging'') variance reduction for rough Bergomi~\cite{mccrickerd2018}
 are both established. The contribution here is to evaluate both, bias-free, on the
 multilevel coupling of this payoff and to report what they actually do: a negative result
@@ -568,6 +570,9 @@ arXiv:2105.05356.
 
 \bibitem{giles2008} Giles, M.~B. (2008). Multilevel Monte Carlo path simulation.
 \textit{Operations Research} 56(3), 607--617.
+
+\bibitem{giles2015} Giles, M.~B. (2015). Multilevel Monte Carlo methods.
+\textit{Acta Numerica} 24, 259--328.
 
 \bibitem{gilesszpruch2014} Giles, M.~B., Szpruch, L. (2014). Antithetic multilevel Monte
 Carlo estimation for multidimensional SDEs without L\'evy area simulation. \textit{Annals of
