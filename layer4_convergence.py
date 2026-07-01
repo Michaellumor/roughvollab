@@ -259,6 +259,42 @@ def plot_weak_order(results, path="output/layer4_weak_order.png"):
     print(f"  figure -> {path}")
 
 
+def plot_alpha_only(results, path="output/layer4_weak_order_alpha.png"):
+    """Single-panel α(H) — the RIGHT panel of plot_weak_order (measured α with the α=H
+    strong-order and α=1 classical reference lines), matching the weak-order paper's
+    Figure 1 caption (a clean α-vs-H panel). Same style/colours as plot_weak_order."""
+    import os
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    Hs = sorted(results)
+    fig, ax = plt.subplots(figsize=(6.6, 4.6))
+    Harr = np.array(Hs)
+    acomb = np.array([results[H]["a_comb"] for H in Hs])
+    aerr = np.array([1.96 * np.nan_to_num(results[H]["a_comb_se"]) for H in Hs])
+    ax.errorbar(Harr, acomb, yerr=aerr, fmt="s-", color="C3", capsize=4,
+                label="measured α (prec-weighted)")
+    xs = np.linspace(0, max(Hs) * 1.1, 50)
+    ax.plot(xs, xs, "k--", lw=1, label="α = H  (strong order)")
+    ax.axhline(1.0, color="gray", ls=":", lw=1, label="α = 1  (classical weak)")
+    ax.set_xlabel("H (Hurst)"); ax.set_ylabel("weak order α")
+    ax.set_title("α(H): measured weak order vs Hurst  (OTM call, ν=0.20)")
+    ax.set_ylim(0, 1.3); ax.legend(fontsize=8); ax.grid(True, alpha=0.2)
+    fig.tight_layout(); fig.savefig(path, dpi=130)
+    print(f"  single-panel figure -> {path}")
+
+
+def _save_sweep_json(results, path="output/layer4_weak_order_results.json"):
+    """Persist the scalar α(H) results so the figure is reproducible from data."""
+    import json, os
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    keys = ("P_CF", "a_dir", "a_dir_se", "a_cpl", "a_cpl_se", "a_comb", "a_comb_se")
+    out = {str(H): {k: float(results[H][k]) for k in keys} for H in sorted(results)}
+    json.dump(out, open(path, "w"), indent=2)
+    print(f"  results -> {path}")
+
+
 if __name__ == "__main__":
     import sys, argparse
     try:
@@ -283,6 +319,8 @@ if __name__ == "__main__":
             _report(r, f"SWEEP — H={H} OTM K=110 (conditional MC)")
             results[H] = r
         plot_weak_order(results)
+        plot_alpha_only(results)
+        _save_sweep_json(results)
     elif a.pilot:
         r = measure_alpha(0.5, p, n0=4, L=5, M=120000, K=100.0, N_riccati=2000, seed=7)
         _report(r, "PILOT — H=1/2 anchor (coarse-n, bias-resolving)")

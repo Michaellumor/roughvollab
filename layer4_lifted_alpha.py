@@ -110,13 +110,87 @@ def classify_alpha(a):
     return "(iii) still borderline (0.85-0.95)"
 
 
+# --------------------------------------------------------------------------- #
+# N-SWEEP (weak-order paper Figure 2, D35): the lifted weak order alpha vs the
+# number of SOE factors N at H=0.20 — the DISAMBIGUATION that the perturbation is
+# the shared-ΔW noise envelope (N-independent), NOT SOE kernel truncation (which
+# more factors would fix). Coarse grids n<=n0*2^L (the gate-2 window). The coupled
+# estimator (a_cpl) is the SOE-floor-immune anchor. Saves the results as JSON so the
+# figure is reproducible (D35 ran this but never saved the data).
+# --------------------------------------------------------------------------- #
+def nsweep(H=0.20, Ns=(150, 300, 600), M=200000, seed=7, n0=4, L=4, N_riccati=4000,
+           K=110.0, json_path="output/layer4_lifted_nsweep.json"):
+    import json, os
+    p = dict(PARAMS)
+    truth = BRICK3[H]
+    print(f"N-SWEEP — lifted weak order vs N | H={H} M={M} n<={n0 * 2 ** L} (coarse gate-2 grids) "
+          f"| explicit-scheme truth a~{truth}", flush=True)
+    print(f"  {'N':>5} {'factors':>8} {'a_cpl':>8} {'a_cpl_se':>9} {'a_dir':>7} {'a_comb':>7}", flush=True)
+    rows = []
+    for N in Ns:
+        sim, nfac = lifted_sim(H, p, N)
+        r = measure_alpha(H, p, n0, L, M, K, N_riccati, seed, conditional=True, sim=sim)
+        rows.append(dict(N=int(N), nfac=int(nfac),
+                         a_cpl=float(r["a_cpl"]), a_cpl_se=float(r["a_cpl_se"]),
+                         a_dir=float(r["a_dir"]), a_dir_se=float(r["a_dir_se"]),
+                         a_comb=float(r["a_comb"]), a_comb_se=float(r["a_comb_se"])))
+        print(f"  {N:>5} {nfac:>8} {r['a_cpl']:>8.3f} {r['a_cpl_se']:>9.3f} "
+              f"{r['a_dir']:>7.3f} {r['a_comb']:>7.3f}", flush=True)
+    out = dict(H=float(H), truth=float(truth), M=int(M), n_max=int(n0 * 2 ** L), seed=int(seed), rows=rows)
+    os.makedirs(os.path.dirname(json_path) or ".", exist_ok=True)
+    json.dump(out, open(json_path, "w"), indent=2)
+    cpl = [r["a_cpl"] for r in rows]
+    print(f"  -> a_cpl across N: {[f'{x:.3f}' for x in cpl]}  (spread={max(cpl) - min(cpl):.3f}; "
+          f"flat ⇒ N-independent); mean gap to truth = {truth - sum(cpl) / len(cpl):+.3f}", flush=True)
+    print(f"  results -> {json_path}", flush=True)
+    return out
+
+
+def plot_nsweep(res, path="output/layer4_lifted_nsweep.png"):
+    """alpha_coupled vs N with the explicit-scheme truth line (matches plot_weak_order
+    style: Agg, C3 squares, dpi=130). Shows the lifted estimate flat + BELOW the truth."""
+    import os
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    rows = res["rows"]; truth = res["truth"]; H = res["H"]
+    Ns = np.array([r["N"] for r in rows])
+    acpl = np.array([r["a_cpl"] for r in rows])
+    aerr = np.array([1.96 * np.nan_to_num(r["a_cpl_se"]) for r in rows])
+    fig, ax = plt.subplots(figsize=(6.6, 4.6))
+    ax.axhline(truth, color="k", ls="--", lw=1.2, label=f"explicit scheme (truth)  α≈{truth}")
+    ax.errorbar(Ns, acpl, yerr=aerr, fmt="s-", color="C3", capsize=4,
+                label="lifted α (coupled, SOE-immune)")
+    ax.set_xlabel("number of SOE factors N"); ax.set_ylabel("weak order α")
+    ax.set_title(f"Lifted weak order vs factor count  (H={H}, OTM call, ν=0.20)")
+    ax.set_ylim(0, max(1.3, truth * 1.15)); ax.set_xticks(Ns)
+    ax.legend(fontsize=8); ax.grid(True, alpha=0.2)
+    fig.tight_layout(); fig.savefig(path, dpi=130)
+    print(f"  figure -> {path}", flush=True)
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--quick", action="store_true")
     ap.add_argument("--anchor-gate", action="store_true", help="ladder 1+2 only")
+    ap.add_argument("--nsweep", action="store_true", help="Fig 2 (D35): lifted α vs N at H=0.20 + plot")
+    ap.add_argument("--time1", action="store_true", help="time ONE N=150 α measurement (cost estimate)")
     a = ap.parse_args()
-    if a.quick:
+    if a.time1:
+        import time
+        p = dict(PARAMS); sim, nfac = lifted_sim(0.20, p, 150)
+        t0 = time.time()
+        r = measure_alpha(0.20, p, 4, 4, 200000, 110.0, 4000, 7, conditional=True, sim=sim)
+        dt = time.time() - t0
+        print(f"ONE measure_alpha (H=0.20, N=150, factors={nfac}, n<=64, M=200000): {dt:.0f}s  "
+              f"a_cpl={r['a_cpl']:.3f}")
+        print(f"N-sweep estimate — cost ∝ N: (150+300+600)/150 = 7× one point ≈ {7 * dt / 60:.1f} min")
+    elif a.nsweep:
+        res = nsweep()
+        plot_nsweep(res)
+    elif a.quick:
         run(N=80, M=40000, L_fine=5, do_fine=True)
     elif a.anchor_gate:
         run(N=150, M=200000, do_fine=False)
