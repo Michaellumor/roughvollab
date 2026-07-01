@@ -270,9 +270,11 @@ def _make_policy(fdim, hidden=32):
 
 
 def train_policy(feats, S, *, premium, K, cost_c, alpha=0.95, epochs=300, lr=1e-3,
-                 batch=4096, seed=0, hidden=32, verbose=True):
+                 batch=4096, seed=0, hidden=32, verbose=True, lr_schedule=None):
     """Direct CVaR (Rockafellar–Uryasev) minimisation of terminal hedging P&L. Features are
-    z-scored on the TRAIN set. Returns (policy, (mean,std,fdim))."""
+    z-scored on the TRAIN set. Returns (policy, (mean,std,fdim)). lr_schedule='cosine' anneals
+    lr→0 over the run (forces a plateau — needed for convergence at HIGH friction, where the
+    fixed-lr/500-ep budget under-trains; default None = the D40-reproducible fixed-lr path)."""
     require_torch()
     torch.manual_seed(seed)
     b, N, fdim = feats.shape
@@ -282,6 +284,8 @@ def train_policy(feats, S, *, premium, K, cost_c, alpha=0.95, epochs=300, lr=1e-
     policy = _make_policy(fdim, hidden)
     w = torch.zeros(1, requires_grad=True)
     opt = torch.optim.Adam(list(policy.parameters()) + [w], lr=lr)
+    sched = (torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=epochs)
+             if lr_schedule == "cosine" else None)
     for ep in range(epochs):
         perm = torch.randperm(b)
         for i in range(0, b, batch):
@@ -290,6 +294,8 @@ def train_policy(feats, S, *, premium, K, cost_c, alpha=0.95, epochs=300, lr=1e-
             pnl = pnl_from_deltas(deltas, St[idx], premium=premium, K=K, cost_c=cost_c)
             loss = cvar_loss(pnl, alpha, w)
             opt.zero_grad(); loss.backward(); opt.step()
+        if sched is not None:
+            sched.step()
         if verbose and (ep + 1) % max(1, epochs // 8) == 0:
             with torch.no_grad():
                 pnl = pnl_from_deltas(policy(F).squeeze(-1), St, premium=premium, K=K, cost_c=cost_c)
@@ -357,7 +363,7 @@ def gate1_recover_delta(mode="sig", depth=3, n_train=20000, n_test=20000, N=20,
 # contrast (the on-theme question: roughness-edge = rough-edge − smooth-edge)
 # --------------------------------------------------------------------------- #
 def hedge_edge(H, eta, seed, *, cost_c, alpha=0.95, mode="sig", depth=3,
-               n_train=15000, n_test=20000, N=20, epochs=150, hidden=32):
+               n_train=15000, n_test=20000, N=20, epochs=150, hidden=32, lr_schedule=None):
     """Train the deep policy on the (H, eta) market WITH frictions; return test-set
     CVaR(deep) vs CVaR(delta-baseline σ=√ξ₀). edge = CVaR(delta) − CVaR(deep) (>0 = deep wins)."""
     from rough_heston_cf import bs_call
@@ -365,27 +371,29 @@ def hedge_edge(H, eta, seed, *, cost_c, alpha=0.95, mode="sig", depth=3,
     t, S, V = simulate_market(H, eta, n_train, N, seed=seed)
     feats = build_features(t, S, V, mode=mode, depth=depth, N=N)
     policy, norm = train_policy(feats, S, premium=premium, K=K_, cost_c=cost_c,
-                                alpha=alpha, epochs=epochs, seed=seed, hidden=hidden, verbose=False)
+                                alpha=alpha, epochs=epochs, seed=seed, hidden=hidden, verbose=False,
+                                lr_schedule=lr_schedule)
     tt, St, Vt = simulate_market(H, eta, n_test, N, seed=seed + 777)
     dl = policy_deltas(policy, build_features(tt, St, Vt, mode=mode, depth=depth, N=N), norm)
     bsd = np.stack([bs_delta(St[:, k], K_, T_ - tt[k], sigma0) for k in range(N)], axis=1)
     pnl_deep = pnl_from_deltas(dl, St, premium=premium, K=K_, cost_c=cost_c)
     pnl_delta = pnl_from_deltas(bsd, St, premium=premium, K=K_, cost_c=cost_c)
     cvd, cvb = cvar_np(pnl_deep, alpha), cvar_np(pnl_delta, alpha)
-    return dict(cv_deep=cvd, cv_delta=cvb, edge=cvb - cvd)
+    _, zc = assert_causal(dl, St, label="deep", verbose=False)   # guard stays active (r=0 → S a martingale)
+    return dict(cv_deep=cvd, cv_delta=cvb, edge=cvb - cvd, causal_z=zc)
 
 
 def gate2_contrast(seeds, *, eta=1.0, cost_c=0.005, alpha=0.95, mode="sig", depth=3,
-                   n_train=15000, n_test=20000, N=20, epochs=150):
+                   n_train=15000, n_test=20000, N=20, epochs=150, lr_schedule=None):
     print(f"=== GATE 2 + CONTRAST: deep vs delta CVaR{int(alpha*100)} under frictions "
-          f"(c={cost_c}, eta={eta}, mode={mode}, {len(seeds)} seeds) ===", flush=True)
+          f"(c={cost_c}, eta={eta}, mode={mode}, {len(seeds)} seeds, epochs={epochs}, lr_sched={lr_schedule}) ===", flush=True)
     print(f"  edge = CVaR(delta) − CVaR(deep)  (>0 = deep wins); roughness-edge = rough − smooth", flush=True)
     re, se_, incr = [], [], []
     for s in seeds:
         r = hedge_edge(0.10, eta, s, cost_c=cost_c, alpha=alpha, mode=mode, depth=depth,
-                       n_train=n_train, n_test=n_test, N=N, epochs=epochs)
+                       n_train=n_train, n_test=n_test, N=N, epochs=epochs, lr_schedule=lr_schedule)
         m = hedge_edge(0.50, eta, s, cost_c=cost_c, alpha=alpha, mode=mode, depth=depth,
-                       n_train=n_train, n_test=n_test, N=N, epochs=epochs)
+                       n_train=n_train, n_test=n_test, N=N, epochs=epochs, lr_schedule=lr_schedule)
         re.append(r["edge"]); se_.append(m["edge"]); incr.append(r["edge"] - m["edge"])
         print(f"  seed {s:3d}: ROUGH deep={r['cv_deep']:.3f} delta={r['cv_delta']:.3f} edge={r['edge']:+.3f} "
               f"| SMOOTH deep={m['cv_deep']:.3f} delta={m['cv_delta']:.3f} edge={m['edge']:+.3f} "
@@ -404,11 +412,110 @@ def gate2_contrast(seeds, *, eta=1.0, cost_c=0.005, alpha=0.95, mode="sig", dept
     return dict(rough=re, smooth=se_, incr=incr)
 
 
+# --------------------------------------------------------------------------- #
+# FRICTION SWEEP — does D40's roughness-null hold across transaction-cost levels,
+# or does the roughness increment EMERGE at some c? (robustness check; D43)
+# --------------------------------------------------------------------------- #
+def friction_sweep(costs, seeds, *, eta=1.0, alpha=0.95, mode="simple",
+                   n_train=20000, n_test=20000, N=20, epochs=500, hidden=32,
+                   checkpoint="output/layer3_friction_sweep.json", lr_schedule=None):
+    """Run the D40 rough-vs-smooth contrast at EACH friction level c; report the roughness
+    increment(c) trend. mode='simple' = D40's well-trained Markovian (t,S,√V) net. The generic
+    Buehler edge grows with c (backdrop); the ROUGHNESS INCREMENT (rough−smooth) across c is the
+    result. Per-c checkpoint JSON (resumable). Same seed list across c → paired underlying paths."""
+    import json, os, time
+    print(f"=== FRICTION SWEEP: roughness increment vs transaction cost (mode={mode}, "
+          f"{len(seeds)} seeds, epochs={epochs}, n_train={n_train}, costs={list(costs)}) ===", flush=True)
+    done = {}
+    if checkpoint and os.path.exists(checkpoint):
+        done = json.load(open(checkpoint))
+        print(f"  resuming: {len(done)} cost(s) cached {sorted(done)}", flush=True)
+    rows = []
+    for c in costs:
+        key = f"{c:.5f}"
+        if key in done:
+            r = done[key]
+            print(f"  [c={c}] cached: increment={r['incr_mean']:+.3f} ± {r['incr_se']:.3f} (z={r['z']:.1f})", flush=True)
+            rows.append(r); continue
+        t0 = time.time()
+        res = gate2_contrast(seeds, eta=eta, cost_c=c, alpha=alpha, mode=mode,
+                             n_train=n_train, n_test=n_test, N=N, epochs=epochs, lr_schedule=lr_schedule)
+        re, se_, incr = res["rough"], res["smooth"], res["incr"]
+        def st(x): return float(x.mean()), float(x.std(ddof=1) / math.sqrt(len(x)))
+        rm, rse = st(re); sm, sse = st(se_); im, ise = st(incr)
+        r = dict(c=float(c), rough_mean=rm, rough_se=rse, smooth_mean=sm, smooth_se=sse,
+                 incr_mean=im, incr_se=ise, z=abs(im) / max(ise, 1e-9),
+                 sign=int((incr > 0).sum()), nseed=len(seeds), dt=round(time.time() - t0, 1),
+                 incr_seeds=[float(x) for x in incr])
+        rows.append(r); done[key] = r
+        if checkpoint:
+            os.makedirs(os.path.dirname(checkpoint) or ".", exist_ok=True)
+            json.dump(done, open(checkpoint, "w"), indent=2)
+            print(f"  [c={c}] done in {r['dt']:.0f}s -> checkpoint {checkpoint}", flush=True)
+    rows = sorted(rows, key=lambda r: r["c"])
+    print("\n  === ROUGHNESS INCREMENT vs FRICTION (the result) ===", flush=True)
+    print(f"  {'c':>8} | {'rough edge':>15} | {'smooth edge':>15} | {'increment':>16} |  z  | sign", flush=True)
+    for r in rows:
+        print(f"  {r['c']:>8.4f} | {r['rough_mean']:+.3f} ± {r['rough_se']:.3f} | "
+              f"{r['smooth_mean']:+.3f} ± {r['smooth_se']:.3f} | {r['incr_mean']:+.3f} ± {r['incr_se']:.3f} "
+              f"| {r['z']:>3.1f} | {r['sign']}/{r['nseed']}", flush=True)
+    maxz = max(r["z"] for r in rows)
+    emerge = [r["c"] for r in rows if r["z"] >= 2.0 and r["incr_mean"] > 0.1]
+    verdict = ("FLAT NULL across c — roughness adds NO hedging edge beyond frictions at any cost level "
+               "(ROBUST; the D40 null is not a c=0.01 artifact)" if not emerge else
+               f"INCREMENT EMERGES at c={emerge} — SCRUTINISE (training artifact? re-run at higher/fair "
+               "budget, inspect per-seed) BEFORE believing")
+    print(f"\n  => VERDICT: {verdict}\n     (max |z| over c = {maxz:.1f}; the generic edge grows with c — the "
+          f"Buehler backdrop, NOT the result)", flush=True)
+    _sweep_figure(rows)
+    return rows
+
+
+def _sweep_figure(rows, path="output/layer3_friction_sweep.png"):
+    """increment(c) ± se with a zero line (the result) + the generic edges(c) growing with c (the
+    Buehler backdrop). Guards matplotlib (absent in .venv-layer3 → skipped; regenerate in the
+    core env: `python layer3_deep_hedging.py --figure output/layer3_friction_sweep.json`)."""
+    try:
+        import os, matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
+    except Exception as e:
+        print(f"  (figure skipped: matplotlib absent — regenerate in core env via --figure; {e})", flush=True)
+        return
+    import os
+    os.makedirs("output", exist_ok=True)
+    rows = sorted(rows, key=lambda r: r["c"]); cs = [r["c"] for r in rows]
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.4))
+    ax1.errorbar(cs, [r["rough_mean"] for r in rows], yerr=[r["rough_se"] for r in rows],
+                 fmt="o-", color="#D85A30", capsize=3, label="rough (H=0.10)")
+    ax1.errorbar(cs, [r["smooth_mean"] for r in rows], yerr=[r["smooth_se"] for r in rows],
+                 fmt="s-", color="#7F77DD", capsize=3, label="smooth (H=0.5)")
+    ax1.axhline(0, color="#888", lw=0.8); ax1.set_xscale("log")
+    ax1.set_xlabel("transaction cost c (log)"); ax1.set_ylabel("deep − delta CVaR edge")
+    ax1.set_title("Generic Buehler edge grows with c\n(deep beats delta, both markets)")
+    ax1.legend(fontsize=8); ax1.grid(alpha=0.3)
+    ax2.errorbar(cs, [r["incr_mean"] for r in rows], yerr=[r["incr_se"] for r in rows],
+                 fmt="D-", color="#1D9E75", capsize=4)
+    ax2.axhline(0, color="#333", lw=1.0)
+    for r in rows:
+        ax2.annotate(f"z={r['z']:.1f}", (r["c"], r["incr_mean"]), textcoords="offset points",
+                     xytext=(0, 9), ha="center", fontsize=8, color="#555")
+    ax2.set_xscale("log"); ax2.set_xlabel("transaction cost c (log)")
+    ax2.set_ylabel("roughness increment (rough − smooth)")
+    ax2.set_title("Roughness-specific increment vs c\n(does it stay flat at 0?)"); ax2.grid(alpha=0.3)
+    fig.suptitle("Layer-3 friction sweep — does the roughness hedging null hold across costs? (D43)", fontsize=11)
+    fig.tight_layout(); fig.savefig(path, dpi=140); print(f"  figure -> {path}", flush=True)
+
+
 if __name__ == "__main__":
     import argparse, time
     ap = argparse.ArgumentParser()
     ap.add_argument("--gate1", action="store_true")
     ap.add_argument("--gate2", action="store_true")
+    ap.add_argument("--sweep", action="store_true", help="friction sweep: roughness increment vs cost (D43)")
+    ap.add_argument("--costs", default="0.005,0.01,0.02,0.05", help="comma cost grid for --sweep")
+    ap.add_argument("--lr-schedule", dest="lr_schedule", default="none", choices=["none", "cosine"],
+                    help="lr schedule for training (cosine = anneal lr→0 for high-friction convergence)")
+    ap.add_argument("--checkpoint", default="output/layer3_friction_sweep.json", help="sweep checkpoint JSON")
+    ap.add_argument("--figure", default=None, help="regenerate the sweep figure from a checkpoint JSON (core env)")
     ap.add_argument("--time1", action="store_true", help="time ONE training (runtime estimate)")
     ap.add_argument("--mode", default="sig", choices=["sig", "simple"])
     ap.add_argument("--epochs", type=int, default=300)
@@ -416,7 +523,15 @@ if __name__ == "__main__":
     ap.add_argument("--seeds", type=int, default=8)
     ap.add_argument("--cost", type=float, default=0.01)
     a = ap.parse_args()
-    if a.time1:
+    if a.figure:
+        import json
+        _sweep_figure(list(json.load(open(a.figure)).values()))
+    elif a.sweep:
+        costs = [float(x) for x in a.costs.split(",")]
+        sched = None if a.lr_schedule == "none" else a.lr_schedule
+        friction_sweep(costs, list(range(a.seeds)), mode=a.mode, epochs=a.epochs, n_train=a.n,
+                       lr_schedule=sched, checkpoint=a.checkpoint)
+    elif a.time1:
         t0 = time.time()
         r = hedge_edge(0.10, 1.0, 0, cost_c=0.005, mode=a.mode, epochs=a.epochs,
                        n_train=a.n, n_test=20000)
