@@ -26,6 +26,16 @@ def main():
     import matplotlib.pyplot as plt
 
     b, e = load("btc"), load("eth")
+    # Honesty guard: a zero/non-finite ||dIV/dH|| at any tenor means that maturity NaN'd
+    # (CF overflow) and dropped out — refuse to plot it as a real 0 (would misrepresent a
+    # silent 5-maturity fallback as the full 6-maturity span).
+    for name, d in (("BTC", b), ("ETH", e)):
+        bad = [round(m, 2) for m, s in zip(d["months"], d["sens"]) if not (s > 0)]
+        if bad:
+            raise ValueError(
+                f"{name} has non-positive H-sensitivity at months {bad} (sens={d['sens']}) — "
+                "a NaN/overflow tenor upstream. Re-run the jacobian with sufficient Riccati N; "
+                "refusing to plot a misleading figure.")
     fig, ax = plt.subplots(figsize=(7.2, 4.4))
     ax.plot(b["months"], b["sens"], "o-", color="#D85A30", lw=2.2, ms=8, label="BTC")
     ax.plot(e["months"], e["sens"], "s--", color="#7F77DD", lw=2.2, ms=8, label="ETH")

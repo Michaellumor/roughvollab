@@ -307,7 +307,7 @@ market. The model fits the gross shape of the smile to about a volatility point.
 \caption{The calibrated rough Heston smile (red) against the live Deribit Bitcoin market smile
 (black) at each maturity. The model captures the gross put skew at every tenor and fits to about a
 volatility point overall, but systematically under-produces the steep deep-put (left) wing---the
-market's crash-fear tail sits above the model at every maturity---and the longer-maturity convexity.
+market's crash-fear tail sits above the model, most strongly at the long tenors---and the longer-maturity convexity.
 This undershoot persists even with $H$ at its floor (maximal roughness).}
 \label{fig:btcfit}
 \end{figure}
@@ -319,8 +319,8 @@ data does not pull it to an interior optimum at all.
 
 That $H$ sits at its bound is established as genuine non-identification, not a fitted value, by three
 independent diagnostics. The Gauss--Newton curvature at the optimum makes $H$ almost entirely the flat
-direction, $|{\rm flat}[H]|=0.118$ within a poorly-conditioned problem ($\mathrm{cond}=9.8\times
-10^{3}$) with $H$--$\nu$ correlation $-0.88$---the same diagnostic as the synthetic sections.
+direction, $|{\rm flat}[H]|=0.118$ within a poorly-conditioned problem ($\mathrm{cond}=1.0\times
+10^{4}$) with $H$--$\nu$ correlation $-0.88$---the same diagnostic as the synthetic sections.
 Resampling the surface, $H$ rails to the bound in every one of the bootstrap draws. And, most
 directly, two calibrations of the same data under identical settings land at different parameters at
 the same fit quality, with the level $\xi_0$ stable across both while the valley-coupled parameters
@@ -373,7 +373,7 @@ model at these parameters, because $H$'s signal lives at the short end where the
 there it is entangled with the volatility-of-volatility.
 
 The non-identification is therefore \emph{intrinsic}: a structural degeneracy between $H$ and the
-volatility-of-volatility (their correlation is $-0.88$ to $-0.91$), not a consequence of a truncated
+volatility-of-volatility (their correlation is $-0.86$ to $-0.88$), not a consequence of a truncated
 span. The short maturities carry $H$'s signal, but there $H$ trades off against the
 volatility-of-volatility, and the long tenor---being flat in $H$---does not break the tie. $H$ rails
 to its bound compensated by a higher volatility-of-volatility, with the long tenor present and
@@ -394,7 +394,7 @@ is cross-market.}
 The fit also carries a distinct, model-level finding, which the residuals make plain and which should
 not be folded into the identifiability story. The rough Heston model captures the gross put skew at
 every maturity, but it \emph{systematically under-produces the steep deep-put wing}: the market's
-left-tail implied volatilities sit above the model's at every tenor, and the longer-maturity smiles
+left-tail implied volatilities sit above the model's, most strongly at the long tenors, and the longer-maturity smiles
 show a convexity the skew-only model does not generate. This undershoot persists even though $H$ has
 gone to its floor---that is, even at the maximal roughness the model allows, it cannot reproduce the
 steepness of the crypto crash-fear tail. The two findings compound: the optimiser drives $H$ to its

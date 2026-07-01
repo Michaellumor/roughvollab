@@ -56,13 +56,17 @@ def _cached_cf(T, cfp, H, N_riccati):
 # Per-maturity N_riccati (D41) — constant Riccati STEP h = T/N across maturities,
 # so SHORT maturities stay cheap (small N) while the LONG tenor (T≈1) gets enough
 # N to stay finite, WITHOUT the uniform-N overflow that forced dropping it in D39.
-# Phase-0 probe: H=0.02 (the LB where H rails) OVERFLOWS at N=6000 but is finite +
-# converged + inverting at N=8000, stable to N=14000 — a RESOLUTION limit, not a wall.
-# So h=1.23e-4 -> N(0.99)=8000 keeps the 1-yr tenor IN at the railed solution (0 NaN),
-# which is what makes the full-span identifiability test VALID. Cache is active (3
-# Riccati solves/maturity, strike-shared); the N=8000 cost is the genuine O(N²) Adams.
+# Phase-0 probe: H=0.02 (the LB where H rails) OVERFLOWS at low N but is finite +
+# converged + inverting at higher N — a RESOLUTION limit, not a wall.
+# Once T is PINNED to the snapshot capture time (the reproducibility fix), the 1-yr tenor
+# is T≈0.989 (≈1 day longer than the run-clock value D41 used) and OVERFLOWS at N=8000;
+# a probe at the railed θ̂ shows it finite + BIT-CONVERGED (identical through N=18000) for
+# N≥8200. So h=1.10e-4 -> N(0.989)≈8990 (margin over the 8200 threshold), N_MAX=10000 for
+# headroom, keeps the 1-yr tenor IN at the railed solution (0 NaN) — what makes the
+# full-span identifiability test VALID. Cache active (3 solves/maturity, strike-shared);
+# the cost is the genuine O(N²) fractional-Adams Riccati.
 # --------------------------------------------------------------------------- #
-H_STEP, N_MIN, N_MAX = 1.23e-4, 800, 8000
+H_STEP, N_MIN, N_MAX = 1.10e-4, 800, 10000
 
 
 def n_riccati_of_T(T, h=H_STEP, N_min=N_MIN, N_max=N_MAX):

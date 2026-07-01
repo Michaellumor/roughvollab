@@ -110,3 +110,36 @@ def test_snapshot_round_trip(tmp_path):
     path = D.save_snapshot("BTC", insts, tickers, out_dir=str(tmp_path))
     i2, t2, meta = D.load_snapshot(path)
     assert i2 == insts and t2 == tickers and meta["currency"] == "BTC"
+
+
+# ---- T pinned to the snapshot capture time (reproducibility, not the run clock) ----
+def test_clean_from_snapshot_pins_T_to_fetched_utc(tmp_path, monkeypatch):
+    """T must be measured from the snapshot's fetched_utc, NOT the run clock, so a saved
+    surface re-cleans to identical maturities on any later date."""
+    cap = "20260101T000000Z"
+    cap_ms = D._parse_stamp_ms(cap)
+    exp_ms = cap_ms + 30 * 86400 * 1000                          # expiry exactly 30 days after capture
+    inst = {"instrument_name": "BTC-31JAN26-60000-P", "strike": 60000.0,
+            "option_type": "put", "expiration_timestamp": exp_ms}
+    snap = tmp_path / "BTC_20260101T000000Z.json"
+    snap.write_text(json.dumps({"fetched_utc": cap, "currency": "BTC",
+                                "instruments": [inst], "tickers": {inst["instrument_name"]: _ob(delta=-0.40)}}))
+    monkeypatch.setattr(D.time, "time", lambda: 9_999_999_999.0)  # far-future run clock must NOT affect T
+    grids, target, weights, meta = D.clean_from_snapshot(str(snap), want_expiries=("31JAN26",), verbose=False)
+    assert len(grids) == 1
+    T = next(iter(grids))
+    assert abs(T - 30.0 / 365.0) < 1e-9                          # pinned to capture, not drifted by the clock
+
+
+def test_clean_from_snapshot_requires_fetched_utc(tmp_path):
+    """A snapshot with no capture stamp must RAISE, not silently fall back to the run clock."""
+    inst = {"instrument_name": "BTC-31JAN26-60000-P", "strike": 60000.0,
+            "option_type": "put", "expiration_timestamp": 1_800_000_000_000}
+    snap = tmp_path / "BTC_nostamp.json"
+    snap.write_text(json.dumps({"currency": "BTC", "instruments": [inst],
+                                "tickers": {inst["instrument_name"]: _ob()}}))
+    try:
+        D.clean_from_snapshot(str(snap), want_expiries=("31JAN26",), verbose=False)
+        assert False, "should raise when fetched_utc is missing"
+    except ValueError:
+        pass
