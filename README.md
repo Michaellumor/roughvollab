@@ -1,5 +1,7 @@
 # RoughVolLab
 
+![RoughVolLab — the five questions](docs/guide/roughvollab_map_v2.png)
+
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
