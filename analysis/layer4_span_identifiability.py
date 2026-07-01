@@ -100,6 +100,15 @@ def main():
     print(f"    → OVERALL deep-put signed residual = {overall_sdp:+.2f} vol-pts "
           f"({'UNDER-produces the crash tail' if overall_sdp < -0.2 else 'no systematic undershoot'})")
 
+    import json as _json
+    _hs = os.path.join(os.path.dirname(__file__), "..", "output", f"{cur.lower()}_hsens.json")
+    with open(_hs, "w") as _f:
+        _json.dump({"currency": cur, "theta": [float(x) for x in theta],
+                    "months": [T * 12 for T in Ts], "sens": [sens[T] for T in Ts],
+                    "flatH": float(abs(rep.flat[iH])), "corrHnu": float(rep.corr[iH, inu]),
+                    "deep_put_signed": float(overall_sdp)}, _f, indent=2)
+    print(f"  hsens data → {os.path.normpath(_hs)}")
+
     _fig_hsens(cur, Ts, sens, rep, iH, inu)
     _fig_fit(cur, Ts, grids, target_by_T, iv_m, theta)
 
