@@ -348,6 +348,18 @@ def load_snapshot(path) -> tuple:
     return d["instruments"], d["tickers"], {"fetched_utc": d.get("fetched_utc"), "currency": d.get("currency")}
 
 
+def _parse_stamp_ms(stamp) -> Optional[int]:
+    """Snapshot capture stamp '20260629T121952Z' -> Unix epoch ms (UTC); None if unparseable.
+    Used to PIN time-to-expiry to the moment the surface was CAPTURED, not the run clock, so a
+    calibration is bit-reproducible on any later date (the maturities never drift on re-run)."""
+    from datetime import datetime, timezone
+    try:
+        dt = datetime.strptime(str(stamp), "%Y%m%dT%H%M%SZ").replace(tzinfo=timezone.utc)
+        return int(dt.timestamp() * 1000)
+    except (ValueError, TypeError):
+        return None
+
+
 # --------------------------------------------------------------------------- #
 # orchestration
 # --------------------------------------------------------------------------- #
@@ -390,21 +402,35 @@ def fetch_and_clean(currency: str = "BTC", *, want_expiries=WANT_EXPIRIES,
     names = [c["instrument_name"] for c in cands]
     tickers_list = _paced_map(lambda nm: fetch_order_book(nm, fetcher=fetcher), names, progress=verbose)
     tickers = {nm: tk for nm, tk in zip(names, tickers_list)}
+    stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())     # capture time == the as-of for T
     if save:
-        path = save_snapshot(currency, cands, tickers)
+        path = save_snapshot(currency, cands, tickers, fetched_utc=stamp)
         if verbose:
             print(f"[deribit] snapshot saved -> {path}", flush=True)
-    return _assemble(cands, tickers, want_expiries=want_expiries, verbose=verbose, **clean_kw)
+    return _assemble(cands, tickers, want_expiries=want_expiries, verbose=verbose,
+                     as_of_ms=_parse_stamp_ms(stamp), **clean_kw)
 
 
 def clean_from_snapshot(path, *, want_expiries=WANT_EXPIRIES, verbose=True, **clean_kw):
     instruments, tickers, meta = load_snapshot(path)
+    as_of_ms = _parse_stamp_ms(meta.get("fetched_utc"))
+    if as_of_ms is None:
+        raise ValueError(
+            f"snapshot {path} has no parseable 'fetched_utc' (got {meta.get('fetched_utc')!r}); "
+            "cannot PIN time-to-expiry to the capture time. Falling back to the run clock would "
+            "make T drift on every re-run — refusing rather than silently drifting.")
+    if verbose:
+        print(f"[deribit] as-of (snapshot capture) = {meta['fetched_utc']} -> T pinned, no run-clock drift",
+              flush=True)
     return _assemble(instruments, tickers, want_expiries=want_expiries, verbose=verbose,
-                     snapshot=str(path), **clean_kw)
+                     snapshot=str(path), as_of_ms=as_of_ms, **clean_kw)
 
 
-def _assemble(instruments, tickers, *, want_expiries, verbose=True, snapshot=None, **clean_kw):
-    now_ms = int(time.time() * 1000)
+def _assemble(instruments, tickers, *, want_expiries, verbose=True, snapshot=None, as_of_ms=None, **clean_kw):
+    # T is measured from the surface's CAPTURE time (as_of_ms), not the run clock, so a saved
+    # snapshot re-cleans to identical maturities on any date. Online fetch passes its own stamp;
+    # only a bare in-memory call (no snapshot) falls back to now.
+    now_ms = as_of_ms if as_of_ms is not None else int(time.time() * 1000)
     quotes = []
     for inst in instruments:
         tk = tickers.get(inst["instrument_name"])

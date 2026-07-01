@@ -1,0 +1,590 @@
+% =====================================================================
+%  PAPER 2 (reframed). The former "make MLMC pay" thesis is inverted by
+%  the evidence: both standard accelerations were built and run, and the
+%  honest finding is that MLMC does NOT pay for this payoff -- the variance
+%  route that pays is CONDITIONING, as single-grid turbocharging, sharpened
+%  by exact near-cell (kappa=1) integration. The paper is a positive result
+%  (the right method) wrapped around a clean negative one (MLMC's limits).
+%
+%  Status: ALL sections built; numbers are production-run results. Baseline
+%  (3-5) regenerated on the reference machine (seeds 1/2/7/11/23); accelerations
+%  (6-7) from production runs (seeds 5/11/23). Compiles with pdflatex (no .bib).
+% =====================================================================
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\definecolor{linkblue}{rgb}{0.10,0.30,0.55}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,allcolors=linkblue}
+\setlength{\emergencystretch}{3em}
+
+% ----- baseline numbers (regenerated on the reference machine, seeds 1/2/7/11/23) -----
+\newcommand{\VarWe}{0.8532}
+\newcommand{\VarWd}{0.8529}
+\newcommand{\fwdv}{0.0213}
+\newcommand{\fwdn}{0.0175}
+\newcommand{\eurMC}{7.9977}
+\newcommand{\eurSE}{0.0415}
+\newcommand{\eurBS}{7.9656}
+\newcommand{\zbs}{0.77}
+\newcommand{\telcons}{0.386}
+\newcommand{\bA}{0.120}
+\newcommand{\bB}{0.219}
+\newcommand{\bBmain}{0.202}
+\newcommand{\bC}{0.418}
+\newcommand{\bD}{0.726}
+\newcommand{\gammaval}{1.063}
+\newcommand{\costratio}{0.63}
+\newcommand{\asianpx}{4.2143}
+
+\title{Turbocharged versus multilevel Monte Carlo for\\
+rough-volatility Asian options}
+
+\author{Michael Lumor\thanks{Independent research programme; University of
+Salford. ORCID: \href{https://orcid.org/0009-0000-0326-3891}{0009-0000-0326-3891}.
+Code: \url{https://github.com/Michaellumor/roughvollab}.}}
+
+\date{Draft --- June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Multilevel Monte Carlo (MLMC) reduces the cost of pricing by simulation, but for
+rough-volatility models its efficiency is curtailed by the low strong-convergence rate
+of the volatility driver. We study arithmetic Asian options in the rough Bergomi model
+and ask which acceleration, if any, makes simulation cheaper. We first establish a
+baseline: an exact, bias-free multilevel coupling gives a variance-decay rate
+$\beta\approx2H$ across the roughness spectrum --- the pathwise bound is tight --- so
+naive MLMC does not beat standard Monte Carlo (the cost ratio is $\approx\costratio\times$
+at a root-mean-square error of $2.5\times10^{-2}$). We then evaluate, on the same
+engine, the two standard accelerations. An \emph{antithetic} coupling leaves the rate
+unchanged and is $\approx$10\% more expensive at matched accuracy. A \emph{conditional}
+(turbocharging) estimator reduces variance several-fold, but concentrates the reduction
+in the single-level estimator rather than the multilevel corrections, so conditional
+MLMC does not beat conditional standard Monte Carlo: across tolerances and seeds, plain
+conditional standard Monte Carlo at the finest grid is the cheapest of the four
+estimators. We further show that integrating the most singular Volterra cell exactly
+(the $\kappa=1$ hybrid) sharpens this winner --- because it is bias-limited, a smaller
+weak-error constant buys a coarser grid --- for a further $\approx1.3$--$1.5\times$
+saving. The recommendation for this payoff is turbocharged standard Monte Carlo on the
+$\kappa=1$ variance path; multilevel Monte Carlo does not earn its place. Every result
+is validated against analytic limits and regenerates from a single command.
+\end{abstract}
+
+\section{Introduction}
+
+The rough-volatility paradigm models log-volatility as a fractional process with a
+small Hurst exponent, $H\approx0.1$, reproducing the steep short-maturity
+implied-volatility skew and the persistence of realised variance better than classical
+Markovian stochastic-volatility models~\cite{gjr2018,bfg2016}. Its defining feature ---
+a volatility driver of low H\"older regularity --- is also its computational difficulty:
+the model is non-Markovian, has no simple affine structure, and the dominant pricing
+tool is therefore Monte Carlo simulation~\cite{bfg2016,mccrickerd2018}.
+
+Monte Carlo cost is the target of the multilevel method of Giles~\cite{giles2008}, whose
+efficiency is governed by three rates: the weak rate $\alpha$, the variance-decay rate
+$\beta$ of the level corrections, and the cost-growth rate $\gamma$. The method attains
+the optimal $\mathcal{O}(\varepsilon^{-2})$ complexity when $\beta>\gamma$ and fails to
+when $\beta<\gamma$. For diffusions driven by fractional or Gaussian noise the variance
+rate is pinned to the strong rate: $\beta$ equals twice the strong convergence
+rate~\cite{bfrs2016}. Rough volatility, with its low strong rate, therefore sits in the
+regime where MLMC is least helpful --- unless an acceleration can change the picture.
+
+This paper asks, for one demanding payoff --- the arithmetic Asian option, whose value
+depends on the time-average of the \emph{underlying} --- which acceleration pays. We
+proceed in two movements. The first establishes a clean baseline: with an exact coupling
+and no hybrid-scheme correction, $\beta\approx2H$ is tight and naive MLMC is
+uncompetitive with standard Monte Carlo, because the arithmetic average preserves rather
+than cancels the slowly-decaying Volterra strong error. The second evaluates the two
+standard accelerations on the same engine and reports, honestly, where each leads. The
+answer is not the one the construction was built to find: neither acceleration makes
+MLMC pay. The antithetic coupling does not change the rate; the conditional estimator
+reduces variance substantially but does so more in the single-level estimator than in
+the multilevel corrections, so the winner is plain conditional standard Monte Carlo at
+the finest grid --- turbocharging, outside the multilevel framework. A separate
+simulator refinement (exact near-cell integration) then sharpens that winner further.
+
+\paragraph{What is, and is not, new.} That MLMC underperforms for rough volatility is
+known, as is the $\beta=2\times(\text{strong rate})$ theory~\cite{bfrs2016}; the baseline
+of Sections~\ref{sec:model}--\ref{sec:baseline} confirms this cleanly for a payoff not
+previously isolated. Antithetic multilevel estimation~\cite{gilesszpruch2014} and
+conditional (``turbocharging'') variance reduction for rough Bergomi~\cite{mccrickerd2018}
+are both established. The contribution here is to evaluate both, bias-free, on the
+multilevel coupling of this payoff and to report what they actually do: a negative result
+for multilevel Monte Carlo --- it does not earn its place even with the best couplings ---
+and a positive one identifying the method that does, turbocharged standard Monte Carlo,
+which a further refinement makes cheaper still. The value is a clear, reproducible
+recommendation for a payoff where the obvious expectation (improve the coupling to rescue
+MLMC) turns out to be wrong.
+
+\paragraph{Contributions.}
+\begin{enumerate}
+\item An exact, bias-free multilevel coupling for rough Bergomi, validated against four
+analytic limits (Sections~\ref{sec:model}--\ref{sec:validation}).
+\item A clean baseline: $\beta\approx2H$ is tight, naive MLMC does not beat standard
+Monte Carlo, and the mechanism is identified (Section~\ref{sec:baseline}).
+\item An evaluation of both standard accelerations (Section~\ref{sec:couplings}): the
+antithetic coupling leaves $\beta$ unchanged and is net more expensive; the conditional
+estimator's variance reduction is concentrated in the single-level estimator, so
+conditional MLMC does not beat conditional standard Monte Carlo.
+\item The resulting recommendation, with a four-way matched-accuracy cost comparison
+(Section~\ref{sec:results}): turbocharged standard Monte Carlo at the finest grid, on the
+$\kappa=1$ variance path, is the method of choice; MLMC does not pay for this payoff.
+\end{enumerate}
+
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Simulation of rough Bergomi.}
+Exact Cholesky sampling of the Volterra process is $\mathcal{O}(n^2)$; the hybrid scheme
+of Bennedsen, Lunde and Pakkanen~\cite{blp2017} is the standard fast simulator. McCrickerd
+and Pakkanen~\cite{mccrickerd2018} add antithetic and conditional (``turbocharging'')
+variance reduction for vanilla rough Bergomi pricing --- the two ideas this paper evaluates
+in the multilevel, Asian setting; Zhu et al.~\cite{zhu2021} pursue a Markovian
+approximation. Our baseline uses the pure $\kappa=0$ Volterra discretisation with a
+discrete compensator, which admits an exact multilevel coupling and keeps the
+forward-variance identity exact on every grid; Section~\ref{sec:kappa1} additionally adopts
+the $\kappa=1$ hybrid for the recommended estimator.
+
+\paragraph{MLMC for rough volatility.}
+Bourgey and De Marco~\cite{bourgey2021} apply MLMC to \emph{VIX} options in rough Bergomi
+and recover $\mathcal{O}(\varepsilon^{-2})$ with a trapezoidal scheme. Bayer, Ben Hammouda
+and Tempone~\cite{bht2020} price vanilla rough Bergomi options and show MLMC performance
+``is very sensitive to the values of $H$'' because of low strong-convergence rates, with
+\emph{numerical smoothing} restoring the optimal variance decay. Jeng and
+Kili\c{c}man~\cite{jk2021} combine MLMC with a control variate for rough Heston. The
+general theory is Bayer, Friz, Riedel and Schoenmakers~\cite{bfrs2016}:
+$\beta=2\times(\text{strong rate})$ for Gaussian-driven SDEs. Our finding is complementary
+to numerical smoothing: rather than restoring MLMC's rate, we find that for the
+arithmetic-Asian payoff the single-grid turbocharged estimator is both cheaper than MLMC
+and avoids the multilevel machinery.
+
+\paragraph{Positioning.}
+The arithmetic-Asian-on-the-underlying payoff is not separately treated in the works above
+(their focus is VIX options or European vanillas). We isolate it, show that multilevel
+Monte Carlo does not pay for it even with the two standard accelerations, and identify the
+method that does.
+
+\section{The rough Bergomi model and an exact multilevel coupling}
+\label{sec:model}
+
+\paragraph{Model.}
+The rough Bergomi model~\cite{bfg2016} specifies the instantaneous variance through the
+Riemann--Liouville (Volterra) process
+\begin{equation}
+\widetilde{W}_t \;=\; \sqrt{2H}\int_0^t (t-s)^{H-1/2}\,dW_s,
+\qquad \operatorname{Var}(\widetilde{W}_t)=t^{2H},
+\end{equation}
+with Hurst exponent $H\in(0,\tfrac12)$ and standard Brownian motion $W$. The variance and
+asset processes are
+\begin{equation}
+V_t = \xi_0\,\exp\!\Big(\eta\,\widetilde{W}_t-\tfrac12\eta^2 t^{2H}\Big),
+\qquad
+\frac{dS_t}{S_t} = \sqrt{V_t}\,dB_t,
+\quad B=\rho W+\sqrt{1-\rho^2}\,W^{\perp},
+\end{equation}
+with flat initial forward variance $\xi_0$, volatility-of-volatility $\eta>0$, and
+spot--vol correlation $\rho\in[-1,1]$; the compensator makes $\mathbb{E}[V_t]=\xi_0$. We
+price the fixed-strike arithmetic Asian call,
+$\big(\tfrac1T\!\int_0^T S_t\,dt-K\big)^{+}$.
+
+\paragraph{Discretisation.}
+On a uniform grid $t_i=iT/n$ the Volterra process is approximated by the left-point
+($\kappa=0$) rule
+\begin{equation}
+\widetilde{W}^{(n)}_{t_i}
+=\sqrt{2H}\sum_{j=0}^{i-1} (t_i-t_j)^{H-1/2}\,\Delta W_j,
+\qquad \Delta W_j = W_{t_{j+1}}-W_{t_j},
+\label{eq:conv}
+\end{equation}
+a discrete convolution evaluated in $\mathcal{O}(n\log n)$ by fast Fourier transform.
+Compensating with the \emph{discrete} variance
+$v_n=\operatorname{Var}(\widetilde{W}^{(n)}_{t_n})$ rather than $t_n^{2H}$ makes
+$\mathbb{E}[V^{(n)}_{t_i}]=\xi_0$ hold exactly on every grid.
+
+\paragraph{Exact coupling.}
+The multilevel estimator telescopes the price across grids of $n_\ell=n_0 2^{\ell}$ steps,
+with level difference $Y_\ell=P^{(\ell)}-P^{(\ell-1)}$ computed on a single Brownian path
+shared between the fine grid ($n_\ell$ steps) and the coarse grid ($n_{\ell-1}=n_\ell/2$
+steps). The coupling is exact: the coarse increments are the pairwise sums of the fine
+increments, $\Delta W^{(c)}_k=\Delta W^{(f)}_{2k}+\Delta W^{(f)}_{2k+1}$, an identity for
+Brownian motion. No hybrid-scheme correction enters the coupling, so the level variance
+reflects the intrinsic strong error of the scheme and nothing else --- which makes it a
+clean reference for the accelerations of Section~\ref{sec:couplings}.
+
+\section{Engine validation}
+\label{sec:validation}
+
+The engine is checked against four limits with known answers.
+\begin{enumerate}
+\item \textbf{Volterra variance.} The empirical variance of $\widetilde{W}^{(n)}_{T}$
+matches its discrete analytic value ($\VarWe$ against $\VarWd$; continuum $T^{2H}=1$, the
+$\sim15\%$ gap being the expected slow convergence of the rough kernel ---
+Section~\ref{sec:kappa1} closes it).
+\item \textbf{Forward-variance identity.} With the discrete compensator,
+$\max_t|\mathbb{E}[V_t]/\xi_0-1|=\fwdv$, comparable to the Monte-Carlo band
+($\approx\fwdn$); the identity $\mathbb{E}[V_t]=\xi_0$ holds exactly by construction, the
+small excess being the maximum taken over correlated grid points.
+\item \textbf{Black--Scholes limit.} At $\eta=0$ the European price agrees with the closed
+form ($\eurMC\pm\eurSE$ against $\eurBS$, $z=\zbs$).
+\item \textbf{Telescoping identity.} The normalised consistency check is $\telcons$ in the
+main run and stays below $0.51$ in every configuration.
+\end{enumerate}
+
+\section{The naive baseline: a tight bound and an uncompetitive cost}
+\label{sec:baseline}
+
+\subsection{The variance rate is tight}
+The level statistics are estimated from $N$ coupled paths per level, with the rates fitted
+by regressing $\log_2\operatorname{Var}(Y_\ell)$, $\log_2|\mathbb{E}[Y_\ell]|$ and
+$\log_2 C_\ell$ against $\ell$: $\operatorname{Var}(Y_\ell)\sim 2^{-\beta\ell}$,
+$|\mathbb{E}[Y_\ell]|\sim 2^{-\alpha\ell}$, $C_\ell\sim 2^{\gamma\ell}$; for the
+$\mathcal{O}(n\log n)$ construction $\gamma\approx\gammaval$. Sweeping $H$
+(Table~\ref{tab:betaH}) shows $\beta\approx2H$ throughout: the pathwise bound is tight, the
+direct empirical counterpart of $\beta=2\times(\text{strong rate})$~\cite{bfrs2016}. The
+$N=20{,}000$ run at $H=0.10$ returns $\beta=\bBmain$, consistent with the sweep. The weak
+rate $\alpha$ is noise-dominated at these sample sizes (level biases fall below twice their
+standard error) and is not reported as a measurement; the conclusions rest on $\beta$ and
+$\gamma$.
+
+\begin{table}[t]
+\centering
+\caption{Baseline variance-decay rate $\beta$ against the bound $2H$ (production run, seeds
+7/11/23).}
+\label{tab:betaH}
+\begin{tabular}{cccc}
+\toprule
+$H$ & measured $\beta$ & bound $2H$ & regime \\
+\midrule
+0.05 & \bA & 0.10 & $\beta<\gamma$ \\
+0.10 & \bB & 0.20 & $\beta<\gamma$ \\
+0.20 & \bC & 0.40 & $\beta<\gamma$ \\
+0.35 & \bD & 0.70 & $\beta<\gamma$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Naive MLMC does not pay}
+Running the adaptive algorithm of Giles~\cite{giles2008} to a target error $\varepsilon$
+and comparing total cost with standard Monte Carlo gives Table~\ref{tab:cost}: at the
+tightest tolerance the cost ratio (standard Monte Carlo over MLMC) is $\approx\costratio$
+--- naive coupled MLMC costs \emph{more} than plain Monte Carlo. With $\beta=2H$ and
+$\gamma\approx1$ the Giles complexity for $\beta<\gamma$ is
+$\mathcal{O}(\varepsilon^{-2-(\gamma-\beta)/\alpha})$, strictly worse than
+$\mathcal{O}(\varepsilon^{-2})$.
+
+\begin{table}[t]
+\centering
+\caption{Baseline MLMC cost at fixed convergence rates (production run, seed 11). The finest
+level $L$ is monotone in $\varepsilon$, and the cost ratio (standard Monte Carlo over MLMC)
+stays below one throughout --- naive MLMC never beats standard Monte Carlo.}
+\label{tab:cost}
+\begin{tabular}{ccccc}
+\toprule
+$\varepsilon$ & finest level $L$ & total cost & std MC / MLMC & price \\
+\midrule
+$2.0\times10^{-1}$ & 2 & $7.06\times10^{5}$ & $0.28$ & $4.1695$ \\
+$1.0\times10^{-1}$ & 3 & $3.02\times10^{6}$ & $0.52$ & $4.1996$ \\
+$5.0\times10^{-2}$ & 5 & $4.53\times10^{7}$ & $0.55$ & $4.1985$ \\
+$2.5\times10^{-2}$ & 7 & $6.32\times10^{8}$ & $0.63$ & $4.2143$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The obstacle: the uncancelled Volterra error}
+\label{sec:mechanism}
+The level difference $Y_\ell$ is driven by
+$\widetilde{W}^{(n_\ell)}-\widetilde{W}^{(n_{\ell-1})}$, whose size is the strong error (of
+order $n_\ell^{-H}$) and which is strongly correlated \emph{along the path}: the same
+coarse-grid misrepresentation of the volatility trajectory shifts $S_t$ in the same
+direction at nearby times. The arithmetic average $\tfrac1T\int_0^T S_t\,dt$ therefore does
+not average the error away; it preserves the common component, so
+$\operatorname{Var}(Y_\ell)$ inherits the single-point rate $2H$. This is the obstacle the
+accelerations target: each acts on the integrand \emph{before} averaging, with the aim of
+cancelling or removing the common error.
+
+\section{Evaluating two accelerations}
+\label{sec:couplings}
+
+Both accelerations preserve the bias-free property ($\mathbb{E}[V_t]=\xi_0$ on every grid,
+exact increment summation across levels), so the telescoping identity of
+Section~\ref{sec:validation} still holds and each estimator is unbiased by construction. We
+measure each against the baseline, and --- crucially --- compare costs at matched accuracy
+(the methodological reason is in Section~\ref{sec:antithetic}).
+
+\subsection{Antithetic coupling}
+\label{sec:antithetic}
+Following the antithetic multilevel construction of Giles and
+Szpruch~\cite{gilesszpruch2014}, the coarse-level estimator is replaced by the average of
+two coupled fine paths: the standard fine path and an antithetic path in which the two fine
+Brownian increments within each coarse step are swapped,
+$(\Delta W^{(f)}_{2k},\Delta W^{(f)}_{2k+1})\mapsto(\Delta W^{(f)}_{2k+1},\Delta
+W^{(f)}_{2k})$ for both drivers. The coarse increment is unchanged (the sum is invariant),
+so the coupling stays exact. For a classical diffusion this cancels the leading strong
+error and lifts $\beta$; for the rough Volterra process it does not. The swap leaves the
+leading linear kernel error symmetric, so it is not cancelled, and the variance rate is
+unchanged: across $H$, $\beta_{\text{anti}}$ equals the naive $\beta$ to two decimals,
+tracking $2H$ and nowhere near $4H$ (Table~\ref{tab:betaH}, each row reproduced by the
+antithetic estimator). The variance is reduced by a constant factor only --- a mean of
+$1.44\times$ (range $1.37$--$1.49\times$ over $H$). At matched accuracy this does not pay:
+the antithetic path adds a second fine-grid evaluation per coupled level, and the
+$\approx1.44\times$ variance reduction falls short of that cost increase, leaving the
+estimator $\approx9$--$11\%$ more expensive (efficiency $\approx0.91\times$ at the matched
+finest level, across tolerances).
+
+\paragraph{A note on cost comparison.} Comparing two estimators with identical bias requires
+holding the finest level fixed. An adaptive selector chooses the finest level from the
+measured variances, and because the antithetic estimator has lower per-level variance it
+stops at a coarser level than the naive one --- manufacturing an apparent advantage that has
+nothing to do with efficiency at matched accuracy. We observed this directly: the
+free-running antithetic/naive cost ratio swung from $0.13\times$ to $1.10\times$ across
+tolerances purely through level selection (the estimators choosing $L=2$ versus $L=5$ at one
+tolerance), while the bias at the coarser level was measurably larger. The effect flips sign
+across random seeds, confirming it is an artifact. We therefore pin the finest level for all
+estimator comparisons, here and in Section~\ref{sec:results}; the cost figures are
+matched-accuracy throughout.
+
+% ===================== conditional subsection (cited results) =====================
+\subsection{Conditional Monte Carlo}
+\label{sec:conditional}
+
+The second acceleration conditions on the variance path to remove the orthogonal driving
+noise. Given the path of $W$ (hence of $V$), the log-asset is Gaussian, so the geometric
+average $G=\exp\!\big(\sum_i w_i\log S_{t_i}\big)$ is conditionally lognormal and the
+geometric-Asian value $\mathbb{E}[(G-K)^+\mid W]$ is available in closed form. We use it as
+a control variate with unit coefficient,
+\begin{equation}
+P_{\mathrm{cond}} \;=\; (\bar A-K)^+ \;-\;
+\big[(G-K)^+ - \mathbb{E}[(G-K)^+\mid W]\big],
+\label{eq:condcv}
+\end{equation}
+applied on each grid; $\bar A$ and $G$ share the trapezoidal weights of the engine, and the
+conditional mean and variance of $\log G$ are deterministic functions of the simulated
+variance path. The estimator is unbiased by construction, and we confirm it reproduces the
+baseline price to Monte-Carlo precision.
+
+Conditioning removes a large but \emph{non-uniform} share of the variance. Paired and
+seed-averaged, it reduces the single-level payoff variance by $4.16\times$ (mean over
+levels; $4.21\times$ at the finest grids) but the level-difference variance
+$\operatorname{Var}(Y_\ell)$ by only $3.19\times$ ($3.30\times$ at the finest). The
+single-level reduction holds flat at $4.1$--$4.25\times$ across $\ell=0,\dots,6$, while the
+level-difference reduction climbs from $2.9$ to $3.3\times$. The single-level estimator is
+reduced more than the level difference because the orthogonal-driver variance that
+conditioning eliminates is precisely the part the level difference has \emph{already} partly
+cancelled; what remains in $Y_\ell$ still decays at the rough rate $\beta\approx2H\ll\gamma$.
+Conditioning lowers the constant but does not touch the pathology, so multilevel still cannot
+repay refinement.
+
+The cost comparison makes this concrete. We pin the finest level $L^{\*}$ at each tolerance
+and compare the optimal multilevel cost
+$(2/\varepsilon^2)\big(\sum_\ell\sqrt{V_\ell C_\ell}\big)^2$ against the single-level cost
+$(2/\varepsilon^2)\operatorname{Var}(P_{L^{\*}})\,C_{L^{\*}}$, each with and without
+conditioning. With a measured per-path conditioning overhead $\kappa=1.275$, the
+matched-accuracy work (units of fine-step evaluations, seed-averaged) is:
+
+\begin{table}[h]
+\centering
+\caption{Matched-accuracy cost of the four estimators (pinned $L^{\*}$, seed-averaged,
+$\kappa=1.275$). Conditional standard Monte Carlo is cheapest at both tolerances and on every
+seed.}
+\label{tab:fourway}
+\begin{tabular}{cccccc}
+\toprule
+$\varepsilon$ & $L^{\*}$ & naive ML & cond.\ ML & naive std & cond.\ std \\
+\midrule
+$0.10$ & 2 & $1.40\times10^{6}$ & $5.31\times10^{5}$ & $7.81\times10^{5}$ & $\mathbf{2.38\times10^{5}}$ \\
+$0.05$ & 5 & $4.64\times10^{7}$ & $1.80\times10^{7}$ & $2.46\times10^{7}$ & $\mathbf{7.50\times10^{6}}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At both tolerances and across every seed the ordering is identical: conditional standard
+Monte Carlo is the cheapest of the four, conditional multilevel next, then naive standard,
+then naive multilevel. Conditional standard MC is about $3.3\times$ cheaper than naive
+standard MC --- the factor $\kappa/4.16\approx0.30$ --- and several times cheaper than any
+multilevel variant. Most pointedly, the ratio of conditional-standard to
+conditional-multilevel cost is $0.41$--$0.45$ across all seeds: \emph{conditional multilevel
+Monte Carlo does not beat conditional standard Monte Carlo}. This ratio is invariant to
+$\kappa$, since both estimators pay the same per-path overhead, so the conclusion is robust
+to how the conditioning work is costed.
+
+The verdict for this payoff is therefore unambiguous. Of the two variance routes, the one
+that pays is conditioning, not multilevel; and once one conditions, the residual
+level-difference variance decays too slowly ($\beta\approx2H$) for refinement to be
+worthwhile. Conditional (turbocharged) standard Monte Carlo at the finest grid is the method
+of choice, and multilevel Monte Carlo does not earn its place.
+
+% ===================== kappa=1 refinement (cited results) =====================
+\subsection{Exact near-cell integration sharpens the recommended estimator}
+\label{sec:kappa1}
+
+The recommendation above can be sharpened by improving the simulator rather than the
+estimator. The hybrid scheme used so far approximates the whole Volterra kernel by an
+optimally weighted Riemann sum; integrating the nearest, most singular cell exactly instead
+(the $\kappa=1$ hybrid) closes essentially all of the discrete variance error --- the
+simulated $\operatorname{Var}(\widetilde W_T)$ rises from $0.853$ to $0.9996$ against the
+continuum $T^{2H}=1$, the near-cell singularity having accounted for the entire gap.
+Crucially this is a smaller \emph{bias} constant, not a faster rate: the strong rate, and
+with it $\beta\approx2H$, are unchanged.
+
+A smaller bias constant helps precisely when the estimator is bias-limited, and conditional
+standard Monte Carlo is. Conditioning removes enough sampling variance (\S\ref{sec:conditional})
+that the finest grid is set by the weak-error requirement, not the sample budget: at target
+RMSE $\varepsilon$ the bias-determined grid is $n^{\*}=32$ ($\varepsilon=0.05$) and
+$n^{\*}=64$ ($\varepsilon=0.025$), and the next-coarser grid violates the bias budget
+regardless of how many paths are drawn. The $\kappa=1$ scheme cuts the discretisation bias to
+$\approx0.59\times$, which clears the same budget one grid coarser --- $n^{\*}\!:32\to16$ and
+$64\to32$ --- at a cost of only a $\approx1.13\times$ larger single-level variance and a
+measured $1.03$--$1.12\times$ per-path overhead (the extra per-cell Gaussian is cheap beside
+the FFT). The grid halving more than repays both:
+
+\begin{table}[h]
+\centering
+\caption{Matched-accuracy cost of conditional standard MC on the $\kappa=0$ vs $\kappa=1$
+variance path (bias-determined grid $n^{\*}$, seed-averaged). The $\kappa=1$ saving widens as
+$\varepsilon$ tightens.}
+\label{tab:kappa1cost}
+\begin{tabular}{cccc}
+\toprule
+$\varepsilon$ & $n^{\*}$ ($\kappa{=}0$) & $n^{\*}$ ($\kappa{=}1$) & cost ratio $\kappa{=}1/\kappa{=}0$ \\
+\midrule
+$0.05$  & 32 & 16 & $0.79$ \\
+$0.025$ & 64 & 32 & $0.68$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The matched-accuracy cost ratio is $0.79$ at $\varepsilon=0.05$ and $0.68$ at
+$\varepsilon=0.025$ --- a $1.3$--$1.5\times$ saving that widens as the tolerance tightens,
+and stable across seeds. We stress the scope: the $\kappa=1$ refinement does \emph{not} help
+multilevel Monte Carlo, where it raises the per-level variance at unchanged rate and is
+strictly unfavourable; its value is confined to the single-grid estimator that the
+rough-volatility cost structure already selected. It is a constant-factor improvement to the
+method of choice, not a change to the ranking of methods.
+
+\section{Synthesis and recommendation}
+\label{sec:results}
+
+The three evaluations converge on a single picture, governed by one rate. Naive multilevel
+Monte Carlo loses because $\beta\approx2H<\gamma$ (Section~\ref{sec:baseline}). The antithetic
+coupling does not change $\beta$ and is net more expensive (Section~\ref{sec:antithetic}). The
+conditional estimator reduces variance several-fold, but concentrates the reduction in the
+single-level estimator rather than the multilevel corrections, so conditional MLMC does not
+beat conditional standard Monte Carlo (Section~\ref{sec:conditional}). Exact near-cell
+integration then sharpens the single-grid winner (Section~\ref{sec:kappa1}). The four-way
+comparison of Table~\ref{tab:fourway} is decisive at every tolerance and seed: conditional
+standard Monte Carlo at the finest grid is the cheapest estimator, and the $\kappa=1$ variance
+path makes it cheaper still.
+
+The recommendation for arithmetic Asian options under rough Bergomi is therefore turbocharged
+standard Monte Carlo on the $\kappa=1$ variance path. Multilevel Monte Carlo does not earn its
+place for this payoff --- not because the coupling is poor (it is exact and tight) but because
+the rate $\beta\approx2H$ is intrinsic to the rough kernel and neither acceleration changes it.
+This is consistent with, and complementary to, the numerical-smoothing route of
+Bayer--Ben~Hammouda--Tempone~\cite{bht2020}, which restores MLMC's rate by smoothing the
+integrand; we find that for this payoff the simpler single-grid turbocharged estimator is both
+cheaper and avoids the multilevel machinery entirely.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{What this establishes.} For arithmetic Asian options in rough Bergomi, the pathwise
+variance bound $\beta\approx2H$ is tight, and neither of the two standard accelerations lifts
+it. The variance reduction that pays --- conditioning --- benefits the single-grid estimator
+more than the multilevel one, because the orthogonal noise it removes is concentrated in the
+single-level variance. The practical consequence is a clear recommendation (turbocharged
+standard Monte Carlo, on the $\kappa=1$ variance path) and a clean negative result (multilevel
+Monte Carlo does not pay here), both measured at matched accuracy and stable across seeds.
+
+\paragraph{Limitations.} The weak rate $\alpha$ is noise-dominated and not reported as a
+measurement; the study fixes a single regime, payoff, and coarsest grid. The cost comparisons
+are at matched accuracy with the finest level pinned, which we argue is the only honest basis
+for comparing equal-bias estimators; the free-running adaptive figures are reported only to
+illustrate the artifact. The FFT-based construction makes the numbers reproducible to
+Monte-Carlo precision with documented seeds, not bitwise across environments.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We set out to determine whether multilevel Monte Carlo could be made to pay for the arithmetic
+Asian option in rough Bergomi, and found, on the evidence of both standard accelerations built
+and run on an exact coupling, that it cannot: the variance rate $\beta\approx2H$ is intrinsic
+and neither antithetic nor conditional coupling changes it. The acceleration that does pay is
+conditioning, but as single-grid turbocharging rather than multilevel --- conditional standard
+Monte Carlo at the finest grid is the cheapest estimator across tolerances and seeds, and
+exact near-cell integration sharpens it by a further $1.3$--$1.5\times$. The recommendation is
+specific and reproducible, and the negative result for multilevel Monte Carlo is, for this
+payoff, as informative as the positive one.
+
+\section*{Reproducibility statement}
+
+All numerical results are produced by \texttt{layer1b\_mlmc\_asian.py} in the public
+repository (\url{https://github.com/Michaellumor/roughvollab}), authored by the named author
+(ORCID 0009-0000-0326-3891). The simulator is unit-tested against the analytic limits of
+Section~\ref{sec:validation}; sections run from a single entry point with documented random
+seeds (7/11/23 for the baseline and antithetic gates, 5/11/23 for the conditional and
+$\kappa=1$ comparisons). Because the Volterra process is built by FFT convolution, results
+reproduce to Monte-Carlo precision with those seeds rather than bitwise across environments;
+the adaptive selector is additionally noise-sensitive at intermediate tolerances, which is why
+all estimator comparisons pin the finest level. Baseline numbers are to be regenerated on the
+author's reference machine; the acceleration results are from production runs on that engine.
+
+\section*{Use of generative AI}
+
+This work was produced with substantial assistance from an AI assistant (Anthropic's Claude),
+used for writing and refactoring code, drafting and editing prose, and suggesting analyses and
+checks. The research direction, the modelling and implementation decisions, the interpretation
+of results, and the responsibility for their correctness are the author's own.
+
+\begin{thebibliography}{99}
+
+\bibitem{bht2020} Bayer, C., Ben Hammouda, C., Tempone, R. (2020). Hierarchical adaptive
+sparse grids and quasi-Monte Carlo for option pricing under the rough Bergomi model.
+\textit{Quantitative Finance} 20(9), 1457--1473.
+
+\bibitem{bfg2016} Bayer, C., Friz, P., Gatheral, J. (2016). Pricing under rough volatility.
+\textit{Quantitative Finance} 16(6), 887--904.
+
+\bibitem{bfrs2016} Bayer, C., Friz, P.~K., Riedel, S., Schoenmakers, J. (2016). From rough
+path estimates to multilevel Monte Carlo. \textit{SIAM Journal on Numerical Analysis} 54(3),
+1449--1483.
+
+\bibitem{blp2017} Bennedsen, M., Lunde, A., Pakkanen, M.~S. (2017). Hybrid scheme for
+Brownian semistationary processes. \textit{Finance and Stochastics} 21(4), 931--965.
+
+\bibitem{bourgey2021} Bourgey, F., De Marco, S. (2021). Multilevel Monte Carlo simulation for
+VIX options in the rough Bergomi model. \textit{Journal of Computational Finance};
+arXiv:2105.05356.
+
+\bibitem{gjr2018} Gatheral, J., Jaisson, T., Rosenbaum, M. (2018). Volatility is rough.
+\textit{Quantitative Finance} 18(6), 933--949.
+
+\bibitem{giles2008} Giles, M.~B. (2008). Multilevel Monte Carlo path simulation.
+\textit{Operations Research} 56(3), 607--617.
+
+\bibitem{gilesszpruch2014} Giles, M.~B., Szpruch, L. (2014). Antithetic multilevel Monte
+Carlo estimation for multidimensional SDEs without L\'evy area simulation. \textit{Annals of
+Applied Probability} 24(4), 1585--1620.
+
+\bibitem{jk2021} Jeng, S.~W., Kili\c{c}man, A. (2021). On multilevel and control variate
+Monte Carlo methods for option pricing under the rough Heston model. \textit{Mathematics}
+9(22), 2930.
+
+\bibitem{mccrickerd2018} McCrickerd, R., Pakkanen, M.~S. (2018). Turbocharging Monte Carlo
+pricing for the rough Bergomi model. \textit{Quantitative Finance} 18(11), 1877--1886;
+arXiv:1708.02563.
+
+\bibitem{zhu2021} Zhu, Q., Loeper, G., Chen, W., Langren\'e, N. (2021). Markovian
+approximation of the rough Bergomi model for Monte Carlo option pricing. \textit{Mathematics}
+9(5), 528.
+
+\end{thebibliography}
+
+\end{document}
