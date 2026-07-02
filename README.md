@@ -21,10 +21,10 @@ Roughness is measured through a noisy, discretely-sampled proxy of latent volati
 Pricing options under the rough model needs large Monte Carlo simulations, and Multilevel Monte Carlo (MLMC) is the celebrated cost-cutting technique. **Does it pay here?** **Finding:** for arithmetic-Asian options under rough Bergomi, **MLMC does not earn its place.** A conditional ("turbocharged") *standard* Monte Carlo estimator is the method of choice — and conditioning works best as single-grid standard MC, *not* bolted onto the multilevel machinery (the decisive κ-invariant ratio std-MC / conditional-MLMC = 0.41–0.45 < 1). Exact near-cell integration (κ=1) sharpens the winner further (~1.3–1.5× cheaper) without changing the convergence rate. *(Layer 1b / P2, below.)*
 
 **3. Can the structure be traded? — *No.***
-If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artifact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 2 execution arc, below.)*
+If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artefact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 2 execution arc, below.)*
 
 **4. Can the roughness be identified from an option surface? — *No (independently).***
-A rough model leaves its fingerprint on the implied-volatility smile, so the roughness should in principle be recoverable by *calibration* — a second route to Question 1, on prices rather than realized variance. **Finding:** it is not. Calibrating rough-Heston (via its El Euch–Rosenbaum characteristic function) to an IV surface, a **single smile cannot identify H** (the Hurst exponent is the flat direction of the inverse problem, cond ≈ 6×10⁵); a **multi-maturity surface helps but does not cure it** (≈order-of-magnitude tightening at clean data — H-spread 106%→10% — degrading under noise); and on a **live Deribit BTC surface H is non-identifiable outright** (it rails to the boundary, |flat[H]|=0.99, with cross-run instability) — while ξ₀/ρ/ν recover plausibly and the model fits the gross smile to ~0.9 vol-points. This **confirms Question 1's answer from a second independent angle**: the option-calibration route agrees with the realized-variance route that H-roughness resists identification in the regime real markets occupy. A distinct model-level finding falls out — rough-Heston **under-produces crypto's crash-fear put tail** even at maximal roughness (motivating jumps / steeper kernels). *(Layer 4, below.)*
+A rough model leaves its fingerprint on the implied-volatility smile, so the roughness should in principle be recoverable by *calibration* — a second route to Question 1, on prices rather than realised variance. **Finding:** it is not. Calibrating rough-Heston (via its El Euch–Rosenbaum characteristic function) to an IV surface, a **single smile cannot identify H** (the Hurst exponent is the flat direction of the inverse problem, cond ≈ 6×10⁵); a **multi-maturity surface helps but does not cure it** (≈order-of-magnitude tightening at clean data — H-spread 106%→10% — degrading under noise); and on a **live Deribit BTC surface H is non-identifiable outright** (it rails to the boundary, |flat[H]|=0.118, with cross-run instability) — while ξ₀/ρ/ν recover plausibly and the model fits the gross smile to ~0.9 vol-points. This **confirms Question 1's answer from a second independent angle**: the option-calibration route agrees with the realised-variance route that H-roughness resists identification in the regime real markets occupy. A distinct model-level finding falls out — rough-Heston **under-produces crypto's crash-fear put tail** even at maximal roughness (motivating jumps / steeper kernels). *(Layer 4, below.)*
 
 **5. Can roughness be hedged better than classical methods? — *No — not beyond the generic frictions effect.***
 Under transaction costs, deep hedging beats delta-hedging in *any* model (a generic frictions effect, not a roughness story) — so the sharp question is whether the *rough structure* adds a hedging edge *beyond* that. RoughVolLab tests it as a contrast: the deep-vs-delta CVaR edge on a rough market (H = 0.10) vs the same edge on a smooth Markovian control (H = 0.5, identical generator, only H differs). **Finding:** deep hedging does beat delta under frictions, robustly (+1.1 CVaR, 8/8 seeds, both markets — the generic Buehler edge); but the **roughness-specific increment is modest/absent** (+0.06 ± 0.04, z = 1.4, not significant), and path-signature features add no advantage over the instantaneous Markovian state. Deep hedging works — the rough texture just isn't what makes it work. *(Layer 3 / D40.)*
@@ -79,7 +79,7 @@ per-layer sections below and the reproducibility script `paper_outputs.py`.
 | `paper_outputs.py` | Reproducibility script — one command regenerates the P3 figures (bias curves + identifiability map with asset overlay) and prints every paper number | ✅ reuses tested modules |
 | `execution_alpha.py` · `execution_alpha_phase1.py` | Execution-alpha arc (Layer 2): rough-Bergomi execution env + Almgren–Chriss + naive + causal vol-heuristic kill-switch probe | ✅ Phase 0–1 (kill-switch fired) |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out |
-| `layer3_deep_hedging.py` | Layer 3 — deep-hedging engine (Buehler-style direct policy optimization, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf). Finds: deep beats delta under frictions, but roughness adds no hedging edge beyond it (D40) | ✅ 7 tests (isolated venv); core stays torch-free |
+| `layer3_deep_hedging.py` | Layer 3 — deep-hedging engine (Buehler-style direct policy optimisation, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf). Finds: deep beats delta under frictions, but roughness adds no hedging edge beyond it (D40) | ✅ 7 tests (isolated venv); core stays torch-free |
 | `rough_heston.py` · `rough_heston_cf.py` | Layer 4 — native rough-Heston simulator (κ=0 Volterra) + characteristic-function reference & BS-IV inverter (El Euch–Rosenbaum) | ✅ 8 + 23 tests pass |
 | `rough_kernel_soe.py` · `rough_heston_lifted.py` | Layer 4 — sum-of-exponentials kernel (Gate A) + multifactor Markovian-lift simulator (Gates B/C/D), O(N·n) vs O(n²) Volterra | ✅ 7 + 9 tests pass |
 | `layer4_convergence.py` | Layer 4 — weak-order (α) convergence study vs the CF reference (D31, D35) | ✅ 8 tests pass |
@@ -160,9 +160,9 @@ perfect data, before any market microstructure noise enters — is concrete
 evidence that small-H roughness measurements are estimator-dependent, which
 speaks directly to the "fact or artefact?" debate.
 
-The first corruption-ladder rung (the realized-volatility proxy) makes this
+The first corruption-ladder rung (the realised-volatility proxy) makes this
 sharper still. Spot volatility is unobservable, so in practice it is
-estimated from high-frequency price returns as realized variance over
+estimated from high-frequency price returns as realised variance over
 windows. Feeding a **genuinely smooth** process (true H = 0.5) through that
 proxy, all three estimators report **rough** H (≈ 0.05–0.16 at a 32-return
 window — the empirical H ≈ 0.1 signature) — even though the underlying
@@ -248,7 +248,7 @@ kill-switch. On the matched-risk efficient frontier it is **~5 s.e. worse** than
 Almgren–Chriss (gap −0.025, sign-stable across seeds), with no edge that grows
 with roughness. **Verdict: under linear impact, rough-volatility structure
 offers no executable execution edge** — so deep RL is not pursued. The probe's
-first run produced a look-ahead artifact (a spurious "edge" *larger* in the
+first run produced a look-ahead artefact (a spurious "edge" *larger* in the
 Markovian limit); it was caught by the H-sanity gate and corrected to a causal
 schedule, with the precondition `E[inv_pnl] ≈ 0` proven before re-reading the
 result. Spec and verdicts: [`docs/gate_checks/`](docs/gate_checks/).
@@ -332,7 +332,7 @@ engine then fits θ=[H,ν,ρ,ξ₀] in implied-vol space against the CF:
   requires scale-invariant surface cleaning — an absolute vega floor tuned to BTC silently collapses the
   ETH surface.)
 
-This is the **option-calibration confirmation of Question 1**: the realized-variance and option-surface
+This is the **option-calibration confirmation of Question 1**: the realised-variance and option-surface
 routes independently agree that H-roughness resists identification in the regime real markets occupy.
 The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
 tail** even at maximal roughness, on both markets (motivating jumps / steeper kernels for future work).
@@ -357,7 +357,7 @@ Papers whose methods are implemented in the current code:
 - Cont & Das (2024). *Rough volatility: fact or artefact?* Sankhya B. — the normalised p-variation estimator and the "spurious roughness" critique that Layer 1c audits.
 - El Euch & Rosenbaum (2019). *The characteristic function of rough Heston models.* Mathematical Finance. — the rough-Heston CF reference (`rough_heston_cf.py`) and the calibration target audited in Layer 4.
 - Abi Jaber (2019). *Lifting the Heston model.* Quantitative Finance. — the multifactor Markovian lift (`rough_heston_lifted.py`), O(N·n) vs the O(n²) Volterra convolution.
-- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — the deep-hedging objective (CVaR direct policy optimization) in the Layer-3 engine (`layer3_deep_hedging.py`), distinct from the Layer-2 execution arc.
+- Buehler, Gonon, Teichmann & Wood (2019). *Deep hedging.* Quantitative Finance. — the deep-hedging objective (CVaR direct policy optimisation) in the Layer-3 engine (`layer3_deep_hedging.py`), distinct from the Layer-2 execution arc.
 
 ---
 

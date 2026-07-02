@@ -45,7 +45,7 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `execution_alpha.py` | Execution env (rough-Bergomi) + Almgren–Chriss + naive baselines (G-X1) | ✅ Phase 0 validated | 2026-06-24 |
 | `execution_alpha_phase1.py` | Execution kill-switch probe — causal vol-reactive heuristic | ✅ Phase 1 — kill-switch fired (negative) | 2026-06-24 |
 | `layer2_frictions.py` | Almgren–Chriss + rough-market execution (spec: `layer2_piece1_gate_check.md`) | ✅ AC baseline built & validated in `execution_alpha.py` (G-X1, 0.7%) — dedicated `layer2_frictions.py` module not yet split out | 2026-06-24 |
-| `layer3_deep_hedging.py` | Deep-hedging engine — Buehler-style direct policy optimization, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf. Finds: deep beats delta under frictions, roughness adds no hedging edge beyond it | ✅ built (7 tests, isolated venv; core torch-free) | 2026-06-30 |
+| `layer3_deep_hedging.py` | Deep-hedging engine — Buehler-style direct policy optimisation, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf. Finds: deep beats delta under frictions, roughness adds no hedging edge beyond it | ✅ built (7 tests, isolated venv; core torch-free) | 2026-06-30 |
 | `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
@@ -151,7 +151,7 @@ real-world regime).
 `--no-show`, `--quick`; figures to `output/`).
 
 **Goal:** quantify how reliably the Hurst exponent can be estimated from
-realized-volatility data, using Layer 1b's *verified* simulator as ground
+realised-volatility data, using Layer 1b's *verified* simulator as ground
 truth — then apply only the audited, bias-corrected estimators to real
 crypto and equity data, with honest uncertainty. This joins the live
 methodological debate (Gatheral–Jaisson–Rosenbaum's H ≈ 0.1 vs the
@@ -306,7 +306,7 @@ execution baseline is **built and validated** in `execution_alpha.py`: gate
 (`execution_alpha_phase1.py`) was then run as a kill-switch: on the matched-risk
 efficient frontier it is **~5 s.e. worse** than AC with no edge that grows with
 roughness → **no executable execution edge under linear impact; deep RL not
-pursued.** See decisions **D24–D26** (including the look-ahead artifact caught
+pursued.** See decisions **D24–D26** (including the look-ahead artefact caught
 and corrected en route). This is the **execution** arc — distinct from the
 Layer 3 deep-hedging engine below.
 
@@ -338,7 +338,7 @@ error vs a path-dependent benchmark.
 signatures.
 
 **Contents:** truncated signature features of (t, S, realised-var) path;
-direct policy optimization (Buehler-style) with a CVaR objective; baselines: BS delta,
+direct policy optimisation (Buehler-style) with a CVaR objective; baselines: BS delta,
 delta-vega, and the Layer 2 friction-aware strategies.
 
 **Validation criteria:** recover BS delta (η→0, frictionless) within
