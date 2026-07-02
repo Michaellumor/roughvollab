@@ -35,6 +35,37 @@ Every claim follows the same gate-check: **state the mechanism → commit a fals
 
 ---
 
+## Papers
+
+The programme has produced four Overleaf-ready papers (`OVERLEAF/P1`–`P4`). The
+identification question is split across two independent routes — from option prices
+(P1) and from realised variance (P3):
+
+- **P1 — *Identifying roughness from an option surface: from a single smile to a live
+  crypto market.*** Calibrating rough-Heston to an IV surface, H is the flat direction
+  of the inverse problem; a single smile cannot identify it, a multi-maturity surface
+  tightens but does not cure it, and on live Deribit BTC/ETH H rails to its bound.
+  The option-price answer to Question 4. *(Layer 4 calibration.)*
+- **P2 — *Turbocharged versus multilevel Monte Carlo for rough-volatility Asian
+  options.*** For arithmetic-Asian options under rough Bergomi, MLMC does not earn its
+  place; conditioning pays as single-grid "turbocharging" (κ-invariant ratio 0.41–0.45),
+  with κ=1 sharpening it ~1.3–1.5×. Confirms — does not challenge — Giles's complexity
+  theory. The answer to Question 2. *(Layer 1b.)*
+- **P3 — *When is volatility roughness identifiable? A simulation-grounded audit of
+  Hurst estimation from realised variance, with application to cryptocurrency.*** An
+  identifiability map over (η, Δ); three estimators with intrinsic small-H biases; real
+  assets (BTC/ETH/SPX) all non-identified. The realised-variance answer to Question 1.
+  *(Layer 1c + Phase B.)*
+- **P4 — *Weak convergence is faster than strong: measuring the weak order of a hybrid
+  scheme.*** The weak order of the Bennedsen–Lunde–Pakkanen scheme outpaces its
+  throttled strong rate (H) — the convergence result that makes single-grid pricing
+  viable and underpins P2. *(Layer 4 convergence.)*
+
+Each paper's methods are implemented by tested modules in this repository; see the
+per-layer sections below and the reproducibility script `paper_outputs.py`.
+
+---
+
 ## Structure
 
 | File | Layer | Status |
@@ -226,6 +257,34 @@ result. Spec and verdicts: [`docs/gate_checks/`](docs/gate_checks/).
 
 ---
 
+## Layer 3 — deep hedging: does roughness add a hedging edge?
+
+Layer 3 asks Question 5: under transaction costs, does the *rough structure* of
+volatility give a hedging advantage **beyond** the generic benefit deep hedging
+already has over delta-hedging in any model? The engine (`layer3_deep_hedging.py`)
+is a Buehler-style direct policy optimiser with a CVaR objective and self-computed
+path signatures, in an isolated torch venv with a deletion-safe leaf (the core
+repository stays torch-free). The work is decision **D40** in [`ROADMAP.md`](ROADMAP.md).
+
+The test is deliberately a **contrast**, not a single number: the deep-vs-delta CVaR
+edge on a rough market (H = 0.10) against the *same* edge on a smooth Markovian
+control (H = 0.5, identical generator — only H differs), so any roughness-specific
+gain is isolated from the generic frictions effect.
+
+- **Deep hedging beats delta under frictions — robustly.** +1.1 CVaR, 8/8 seeds, on
+  *both* markets. This is the generic Buehler edge, and it reproduces cleanly.
+- **But the roughness-specific increment is modest/absent.** The extra edge from
+  roughness *beyond* the generic effect is **+0.06 ± 0.04 (z = 1.4, not significant)**,
+  and path-signature features add no advantage over the instantaneous Markovian state.
+
+So deep hedging works — the rough texture just isn't what makes it work. This is a
+first-class negative for Question 5: the honest answer is that roughness does not
+earn a hedging premium here, and it was established by a matched contrast rather than
+assumed. *(No standalone paper seeds from Layer 3; the result is recorded here and in
+the ROADMAP.)*
+
+---
+
 ## Layer 4 — rough-Heston: convergence, the Markovian lift, and calibration
 
 Layer 4 is a rough-volatility **convergence-and-calibration** arc — simulation accuracy and the
@@ -278,10 +337,11 @@ routes independently agree that H-roughness resists identification in the regime
 The arc also surfaced a distinct model limit — rough-Heston **under-produces crypto's crash-fear put
 tail** even at maximal roughness, on both markets (motivating jumps / steeper kernels for future work).
 
-Two papers seed from this arc: a **weak-order note** (α ≫ H — weak convergence faster than strong; the
-lift cannot resolve the H=0.10 borderline) and a **calibration paper** — *"Identifying roughness from an
-option surface: from a single smile to a live crypto market"* (the D37→D42 arc and both findings; the
-option-calibration companion to the realized-variance P3).
+Two papers seed from this arc: a **weak-order note (P4)** — *"Weak convergence is faster
+than strong"* (α ≫ H — weak convergence faster than strong; the lift cannot resolve the
+H=0.10 borderline) — and a **calibration paper (P1)** — *"Identifying roughness from an
+option surface: from a single smile to a live crypto market"* (the D37→D42 arc and both
+findings; the option-calibration companion to the realised-variance P3).
 
 ---
 

@@ -49,6 +49,10 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
+| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ Overleaf-ready; positioned & compiled | 2026-07-02 |
+| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ Overleaf-ready; Giles positioning added | 2026-07-02 |
+| `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ Overleaf-ready (figures inserted) | 2026-07-02 |
+| `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H); underpins P2's single-grid conclusion | ✅ Overleaf-ready | 2026-07-02 |
 
 ---
 
@@ -899,30 +903,54 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **RECONCILIATION WITH D35.** The reproducible 0.80 MATCHES D35's own gate-2 record (line 810, a_cpl ≈ 0.80). D35's line-811 N-sweep value of **0.854** came from a window/config that was never saved and does NOT reproduce under the documented gate-2 setup (n≤64, seed=7, M=200000). So the discrepancy is D35-INTERNAL (its gate-2 0.80 vs its N-sweep 0.854), resolved in favour of the reproducible 0.80.
   - **RESOLUTION.** The figure plots the reproducible 0.80 (NOT fudged to 0.854); the paper text (`OVERLEAF/P4/weakorder_paper_clean.tex`) was corrected 0.854 → ≈0.80 so text and figure agree. Separately, `fig_alpha_H.png` (Figure 1) had been the WRONG figure — a Layer-2 execution-alpha audit — and was replaced with the real single-panel α(H) from `layer4_convergence.py --sweep` (α = 0.75 / 0.86 / 1.01 at H = 0.05 / 0.10 / 0.20, matching the caption).
   - **REPRODUCIBILITY GAP CLOSED.** The N-sweep now has a committed driver (`--nsweep` + `plot_nsweep`) + data (`output/layer4_lifted_nsweep.json`) + figure — it was run in D35 but never saved. Runtime measured before launch (D41/D42 discipline): `--sweep` ≈10 min, `--nsweep` ≈9.5 min (coarse gate-2 grids, no OOM — the fine-grid H=0.10 regime was the expensive one). Core stays torch-free.
+- **D45 (2026-07-02): Publication structure finalised at four papers.** The seeds
+  are updated from the original three-paper plan (P1-absorbed / P2-pricing /
+  P3-identifiability) to the shipped four: P1 option-surface identification, P2
+  pricing, P3 realised-variance identification, P4 weak-order convergence. The
+  "P1" label is repurposed (absorbed-baseline → option-surface paper); the naive-MLMC
+  baseline remains inside P2 per D23. Seeds section updated in place (current-plan,
+  not append-only log); this entry records the change.
 ---
 
 ## Publication seeds
 
-- **P1 (absorbed into P2, per D23):** the naive-MLMC pathwise-bound result
-  (β ≈ 2H across H ∈ [0.05, 0.35] with exact κ=0 coupling; naive MLMC ≤
-  standard MC in the practical regime; why the Asian average fails to smooth
-  the Volterra error) is **not published standalone** — it became the baseline
-  section of P2 rather than its own note. Figures exist (§2, §3, §4).
-- **P2 (concluded, D20–D23):** *"Turbocharged versus multilevel Monte Carlo
-  for rough-volatility Asian options."* Verdict: for arithmetic-Asian options
-  under rough Bergomi, **MLMC does not earn its place** — conditioning pays as
-  single-grid "turbocharging," not multilevel (κ-invariant std-MC /
-  conditional-MLMC = 0.41–0.45 < 1), with κ=1 sharpening the winner ~1.3–1.5×;
-  antithetic coupling refuted. Absorbs P1's baseline.
-- **P3 (drafted 2026-06-21):** *"When is volatility roughness identifiable?
-  A simulation-grounded audit of Hurst estimation from realized variance,
-  with application to cryptocurrency."* Content-complete draft (markdown +
-  Overleaf-ready LaTeX, 10pp): identifiability map + real-asset placement
-  (BTC/ETH/SPX all non-identified at calibrated η̂); 2 figures, 2 tables,
-  16 verified refs, AI-use statement. Remaining: insert the 2 figures.
-  Target: arXiv q-fin.ST, then SIURO.
-- Long-range: MLMC for market-risk measures (nested estimation) — aligns
-  with the PhD direction.
+Four papers, Overleaf-ready (`OVERLEAF/P1`–`P4`). The identification question is
+deliberately split across two independent routes (P1 from option prices, P3 from
+realised variance); P2 prices; P4 supplies the convergence foundation.
+
+- **P1 — "Identifying roughness from an option surface: from a single smile to a
+  live crypto market."** Calibrates rough-Heston (El Euch–Rosenbaum CF) to an IV
+  surface and asks whether *H* is identifiable from the object one actually fits.
+  Verdict: a single smile cannot identify *H* (flat direction, cond ≈ 6×10⁵); a
+  multi-maturity surface tightens but does not cure it (H-spread 106%→10% at clean
+  data, degrading under noise); on a live Deribit BTC surface *H* is non-identifiable
+  outright (rails to boundary, |flat[H]| = 0.118). Model-level corollary: rough-Heston
+  under-produces crypto's crash-fear put tail even at maximal roughness. Target:
+  arXiv q-fin.PR/ST → SIURO. *(Q4; Layer 4 calibration.)*
+- **P2 — "Turbocharged versus multilevel Monte Carlo for rough-volatility Asian
+  options."** For arithmetic-Asian options under rough Bergomi, **MLMC does not earn
+  its place** — conditioning pays as single-grid "turbocharging," not multilevel
+  (κ-invariant std-MC / conditional-MLMC = 0.41–0.45 < 1), with κ=1 sharpening the
+  winner ~1.3–1.5×; antithetic coupling refuted. Positioned as *confirming* Giles's
+  complexity theory (β ≈ 2H < γ lands in the regime the theory itself flags as
+  unfavourable), not competing with it. Absorbs the former standalone P1 baseline
+  (naive-MLMC pathwise bound, β ≈ 2H across H ∈ [0.05, 0.35]), per D23. Target:
+  arXiv q-fin.CP → JCF. *(Q2; Layer 1b.)*
+- **P3 — "When is volatility roughness identifiable? A simulation-grounded audit of
+  Hurst estimation from realised variance, with application to cryptocurrency."**
+  Identifiability map over (η, Δ) + real-asset placement (BTC/ETH/SPX all
+  non-identified at calibrated η̂); three estimators with intrinsic small-H biases
+  (GJR & Cont–Das up, MF-DFA down). Content-complete (LaTeX, ~10pp, 2 figures,
+  2 tables, 16 verified refs, AI-use statement). Target: arXiv q-fin.ST → SIURO.
+  *(Q1; Layer 1c + Phase B.)*
+- **P4 — "Weak convergence is faster than strong: measuring the weak order of a
+  hybrid scheme."** Measures the *weak* order of the Bennedsen–Lunde–Pakkanen
+  hybrid scheme, showing weak convergence outpaces the throttled strong rate (H) —
+  the result that makes single-grid pricing viable and underpins P2's conclusion.
+  Target: arXiv q-fin.CP / math.NA. *(Foundational; Layer 4 convergence.)*
+
+- Long-range: MLMC for market-risk measures (nested estimation) — aligns with the
+  PhD direction.
 
 ---
 
