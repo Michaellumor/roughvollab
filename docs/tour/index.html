@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inside RoughVolLab — the interactive tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1420;--bg2:#111a2b;--panel:#131e30;--panel2:#0f1826;
+    --ink:#e8eef5;--dim:#8a9bb0;--faint:#5d6f85;--line:rgba(255,255,255,.09);
+    --teal:#2dd4a7;--coral:#f26d4b;--amber:#e0a92e;--violet:#8b7cf0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1400px 900px at 50% -10%,var(--bg2),var(--bg));color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 84px}
+  a{color:inherit}
+
+  .eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:20px}
+  .eyebrow .mono{font-family:'JetBrains Mono',monospace;color:var(--violet);text-transform:none;letter-spacing:0;font-size:.92em}
+  h1{font-family:'Newsreader',serif;font-size:clamp(34px,5.2vw,58px);font-weight:500;line-height:1.04;letter-spacing:-.01em}
+  h1 .g{color:var(--teal)}
+  .lede{font-size:18px;color:var(--dim);max-width:780px;margin-top:20px;font-weight:300}
+  .lede em{color:var(--ink);font-style:italic}
+  .lede .fa{font-family:'Newsreader',serif;font-style:italic;color:var(--ink)}
+
+  /* ---------- the map ---------- */
+  .map{display:grid;grid-template-columns:1fr minmax(236px,290px) 1fr;gap:22px;align-items:center;margin-top:46px}
+  .fam{display:flex;flex-direction:column;gap:18px}
+  .fam-head{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:9px;padding-left:2px}
+  .fam-head .d{width:9px;height:9px;border-radius:50%;flex:none}
+  .famA .fam-head{color:var(--teal)} .famA .fam-head .d{background:var(--teal)}
+  .famB .fam-head{color:var(--coral)} .famB .fam-head .d{background:var(--coral)}
+
+  /* engine hub (centre / foundation) */
+  .enginewrap{display:flex;justify-content:center;position:relative}
+  .enginewrap::before{content:"";position:absolute;inset:-40px;background:radial-gradient(closest-side,rgba(45,212,167,.16),transparent);pointer-events:none}
+  .engine{position:relative;display:block;text-align:center;text-decoration:none;color:var(--ink);width:100%;
+    background:linear-gradient(165deg,rgba(45,212,167,.16),rgba(45,212,167,.03));
+    border:1px solid rgba(45,212,167,.42);border-radius:20px;padding:26px 22px;transition:transform .18s,box-shadow .18s,border-color .18s}
+  .engine:hover{transform:translateY(-3px);border-color:rgba(45,212,167,.75);box-shadow:0 16px 44px rgba(45,212,167,.18)}
+  .engine .em{line-height:0;display:flex;justify-content:center;margin-bottom:6px}
+  .engine .etitle{font-family:'Newsreader',serif;font-size:23px;font-weight:500;line-height:1.1}
+  .engine .ecode{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);margin-top:4px}
+  .engine .edesc{font-size:12.5px;color:var(--dim);margin-top:13px;line-height:1.5}
+  .engine .ecta{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);margin-top:15px;display:inline-flex;align-items:center;gap:6px}
+  .engine .foundtag{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+
+  /* question cards */
+  .card{position:relative;display:block;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-left-width:3px;border-radius:15px;padding:17px 18px;transition:transform .18s,box-shadow .18s,border-color .18s}
+  a.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.30)}
+  .card.soon{opacity:.62}
+  .chead{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .qbadge{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11.5px;padding:3px 8px;border-radius:7px;color:#08131f;flex:none}
+  .qtag{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--faint);letter-spacing:.02em}
+  .qstatus{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.09em;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+  .qstatus.live{color:var(--teal)}
+  .qstatus.live .d{width:7px;height:7px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
+  .qstatus.soonlbl{color:var(--faint)}
+  .qtitle{font-family:'Newsreader',serif;font-size:19px;font-weight:500;line-height:1.14;margin-bottom:7px}
+  .qdesc{font-size:12.5px;color:var(--dim);line-height:1.5;margin-bottom:14px}
+  .cfoot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .verdict{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .cta{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--dim);white-space:nowrap}
+  a.card:hover .cta{color:var(--ink)}
+
+  .card.teal{border-left-color:var(--teal)}  .card.teal  .qbadge{background:var(--teal)}  .card.teal  .verdict{color:var(--teal);background:rgba(45,212,167,.1)}
+  .card.coral{border-left-color:var(--coral)} .card.coral .qbadge{background:var(--coral)} .card.coral .verdict{color:var(--coral);background:rgba(242,109,75,.1)}
+  .card.amber{border-left-color:var(--amber)} .card.amber .qbadge{background:var(--amber)} .card.amber .verdict{color:var(--amber);background:rgba(224,169,46,.1)}
+
+  /* bridge card (full width, below the map) */
+  .bridge{margin-top:22px}
+  .bridge .card{border-left-width:3px}
+  .bridge .binner{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .bridge .btext{flex:1;min-width:260px}
+  .bridge .qdesc{margin-bottom:0}
+
+  /* progress + legend */
+  .meta{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:34px;padding:16px 20px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02)}
+  .progress{display:flex;align-items:center;gap:12px}
+  .pbar{width:150px;height:7px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden}
+  .pbar span{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--teal),#26b892);border-radius:6px}
+  .pnum{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--dim)}
+  .pnum b{color:var(--ink)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+  .foot{margin-top:46px;padding-top:24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--faint)}
+  .foot .mono{font-family:'JetBrains Mono',monospace;color:var(--dim)}
+  .foot a.mono:hover{color:var(--teal)}
+
+  @media(max-width:860px){
+    .wrap{padding:36px 20px 70px}
+    .map{grid-template-columns:1fr;gap:16px}
+    .enginewrap{order:-1}
+    .enginewrap::before{inset:-20px}
+    .famB .fam-head{color:var(--coral)}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Rough volatility · interactive tour · <span class="mono">github.com/Michaellumor/roughvollab</span></div>
+  <h1>Inside <span class="g">RoughVolLab</span></h1>
+  <p class="lede">A single tested core, and five honest questions about how rough markets really are — <em>can you identify it? can you exploit it?</em> <span class="fa">Fact, or artefact?</span> Each card below opens a hands-on explorer you can drive yourself.</p>
+
+  <!-- ===================== the map ===================== -->
+  <div class="map">
+
+    <!-- FAMILY A · identify (left) -->
+    <div class="fam famA">
+      <div class="fam-head"><span class="d"></span>Family A · can you identify it?</div>
+
+      <a class="card teal" href="identifiability_explorer.html">
+        <div class="chead">
+          <span class="qbadge">Q1</span>
+          <span class="qtag">identify · from data</span>
+          <span class="qstatus live"><span class="d"></span>live</span>
+        </div>
+        <div class="qtitle">Can you measure roughness back?</div>
+        <div class="qdesc">Three standard estimators try to recover the true H — and disagree most exactly where real markets live.</div>
+        <div class="cfoot"><span class="verdict">— often, no</span><span class="cta">Open the explorer →</span></div>
+      </a>
+
+      <a class="card teal" href="calibration_explorer.html">
+        <div class="chead">
+          <span class="qbadge">Q4</span>
+          <span class="qtag">identify · from option prices</span>
+          <span class="qstatus live"><span class="d"></span>live</span>
+        </div>
+        <div class="qtitle">Can you back it out of the smile?</div>
+        <div class="qdesc">Calibrate rough-Heston to an option surface. A single smile can’t pin H down; on live Deribit it rails to the boundary.</div>
+        <div class="cfoot"><span class="verdict">— no</span><span class="cta">Open the explorer →</span></div>
+      </a>
+    </div>
+
+    <!-- ENGINE · the tested core (centre) -->
+    <div class="enginewrap">
+      <a class="engine" href="engine_explorer.html">
+        <div class="foundtag">the foundation · layer 1</div>
+        <div class="em">
+          <svg viewBox="0 0 100 100" width="52" height="52" aria-hidden="true">
+            <circle cx="50" cy="50" r="46" fill="rgba(45,212,167,.12)" stroke="rgba(45,212,167,.85)" stroke-width="3"/>
+            <polyline points="20,52 27,40 32,60 38,33 44,58 50,30 56,62 62,38 68,55 74,44 80,50" fill="none" stroke="var(--teal)" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="etitle">The trusted engine</div>
+        <div class="ecode">roughvol_core.py</div>
+        <div class="edesc">The κ=0 Volterra core every layer is built on. Drive it, flip on the old normalisation bug, and watch the test catch what the eye can’t.</div>
+        <div class="ecta">Open the engine →</div>
+      </a>
+    </div>
+
+    <!-- FAMILY B · exploit (right) -->
+    <div class="fam famB">
+      <div class="fam-head"><span class="d"></span>Family B · can you exploit it?</div>
+
+      <a class="card coral" href="execution_explorer.html">
+        <div class="chead">
+          <span class="qbadge">Q3</span>
+          <span class="qtag">exploit · trading</span>
+          <span class="qstatus live"><span class="d"></span>live</span>
+        </div>
+        <div class="qtitle">Can you trade against it?</div>
+        <div class="qdesc">Time execution to the vol and race the classic Almgren–Chriss schedule. On matched risk it lands ≈5σ worse — the first “edge” was a look-ahead bug.</div>
+        <div class="cfoot"><span class="verdict">— no</span><span class="cta">Open the explorer →</span></div>
+      </a>
+
+      <a class="card coral" href="hedging_explorer.html">
+        <div class="chead">
+          <span class="qbadge">Q5</span>
+          <span class="qtag">exploit · hedging</span>
+          <span class="qstatus live"><span class="d"></span>live</span>
+        </div>
+        <div class="qtitle">Can you hedge with it?</div>
+        <div class="qdesc">Deep hedging beats the delta hedge under costs — but that’s a generic frictions effect. The roughness-specific gain is absent (z = 1.4).</div>
+        <div class="cfoot"><span class="verdict">— no</span><span class="cta">Open the explorer →</span></div>
+      </a>
+    </div>
+
+  </div><!-- /map -->
+
+  <!-- BRIDGE · pricing (full width) -->
+  <div class="bridge">
+    <a class="card amber" href="pricing_explorer.html">
+      <div class="binner">
+        <div class="btext">
+          <div class="chead">
+            <span class="qbadge">Q2</span>
+            <span class="qtag">the bridge · pricing</span>
+            <span class="qstatus live"><span class="d"></span>live</span>
+          </div>
+          <div class="qtitle">Can you price it cheaply?</div>
+          <div class="qdesc">Pricing options under rough vol needs heavy Monte Carlo. A conditional single-grid estimator beats the fashionable multilevel MC outright — a decisive, κ-invariant cost ratio of 0.41–0.45.</div>
+        </div>
+        <div class="cfoot" style="flex-direction:column;align-items:flex-end;gap:9px">
+          <span class="verdict">— yes, qualified</span><span class="cta">Open the explorer →</span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <!-- progress + legend -->
+  <div class="meta">
+    <div class="progress">
+      <div class="pbar"><span></span></div>
+      <div class="pnum"><b>6</b> of 6 explorers live</div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--teal)"></i>identify</span>
+      <span><i style="background:var(--coral)"></i>exploit</span>
+      <span><i style="background:var(--amber)"></i>the pricing bridge</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div>Open-source quantitative research · honest measurement over confident numbers<br>M. Lumor · University of Salford</div>
+    <a class="mono" href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Trusted Engine — roughvol_core.py, and why it's tested</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap');
+
+:root{
+  --bg:#0d1420; --bg2:#111a2b; --panel:#131e30; --panel2:#0f1826;
+  --ink:#e8eef5; --dim:#8a9bb0; --faint:#5d6f85;
+  --teal:#2dd4a7; --coral:#f26d4b; --amber:#e0a92e; --violet:#8b7cf0;
+  --green:#2dd4a7; --red:#f26d4b;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:radial-gradient(1400px 900px at 50% -10%, var(--bg2), var(--bg));
+  color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 28px 90px}
+
+/* header */
+.masthead{margin-bottom:34px}
+.eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:18px}
+.eyebrow .mono{font-family:'JetBrains Mono',monospace;color:var(--teal);text-transform:none;letter-spacing:0}
+h1{font-family:'Newsreader',serif;font-size:clamp(32px,4.6vw,52px);font-weight:500;line-height:1.06;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--teal)}
+.lede{font-size:18px;color:var(--dim);max-width:720px;margin-top:20px;font-weight:300}
+.lede strong{color:var(--ink);font-weight:500}
+.lede code{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--teal);background:rgba(45,212,167,.08);padding:1px 6px;border-radius:5px}
+
+/* guided intro */
+.guide{margin:32px 0;border:1px solid rgba(45,212,167,.28);border-radius:16px;background:linear-gradient(180deg,rgba(45,212,167,.06),rgba(45,212,167,.02));overflow:hidden}
+.guide-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.guide-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.guide-head h2{font-size:16px;font-weight:600;flex:1}
+.guide-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.guide-body{padding:0 26px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--teal);font-weight:600;margin-bottom:8px}
+.step h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.step p{font-size:14px;color:var(--dim);line-height:1.5}
+.step code{font-family:'JetBrains Mono',monospace;font-size:.85em;color:var(--amber)}
+@media(max-width:760px){.guide-body{grid-template-columns:1fr;gap:18px}}
+
+/* explorer */
+.explorer{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:900px){.explorer{grid-template-columns:1fr}}
+.plotcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px}
+.plot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.plot-title{font-size:14px;font-weight:600}
+.plot-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+.plot-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:600;margin:14px 0 6px}
+canvas{width:100%;display:block;border-radius:10px;background:rgba(0,0,0,.18)}
+.axis-note{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-top:6px}
+
+/* controls */
+.controls{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px;position:sticky;top:24px}
+.ctl-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:16px}
+.param{margin-bottom:18px}
+.param-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.param-name{font-size:14px;font-weight:500}
+.param-name .sym{font-family:'JetBrains Mono',monospace;color:var(--dim);font-size:13px;margin-left:5px}
+.param-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--teal)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:999px;background:rgba(255,255,255,.14);outline:none;margin:4px 0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer}
+#hSlider{background:linear-gradient(90deg,var(--coral),var(--amber) 50%,var(--teal))}
+.param-hint{font-size:11px;color:var(--faint);margin-top:3px}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.row .rl{font-size:14px;font-weight:500}
+.row .rd{font-size:12px;color:var(--faint);margin-top:2px}
+.switch{position:relative;width:46px;height:26px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.slider-t{position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:999px;cursor:pointer;transition:.2s}
+.slider-t:before{content:'';position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked + .slider-t{background:var(--teal)}
+.switch input:checked + .slider-t:before{transform:translateX(20px)}
+.btn{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.08);border-color:var(--dim)}
+.btn.primary{background:rgba(45,212,167,.14);border-color:rgba(45,212,167,.4);color:var(--teal)}
+.btn.primary:hover{background:rgba(45,212,167,.2)}
+
+/* ADVANCED — the correct-vs-buggy testing panel */
+.advanced{margin-top:28px;border:1px solid rgba(139,124,240,.35);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel2))}
+.adv-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.adv-head .dot{width:9px;height:9px;border-radius:50%;background:var(--violet);box-shadow:0 0 12px var(--violet)}
+.adv-head h2{font-size:16px;font-weight:600;flex:1}
+.adv-head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--violet);border:1px solid rgba(139,124,240,.35);padding:3px 9px;border-radius:6px}
+.adv-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.adv-body{padding:0 26px 28px}
+.adv-intro{font-size:15px;color:var(--dim);max-width:760px;margin-bottom:22px;line-height:1.6}
+.adv-intro b{color:var(--ink);font-weight:600}
+.adv-intro code{font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--violet)}
+
+.bugbar{display:flex;align-items:center;gap:18px;padding:16px 20px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line2);margin-bottom:22px}
+.bugbar .bl{flex:1}
+.bugbar .bl .bt{font-size:15px;font-weight:600}
+.bugbar .bl .bd{font-size:13px;color:var(--dim);margin-top:3px}
+
+.testgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+@media(max-width:700px){.testgrid{grid-template-columns:1fr}}
+.tcard{border-radius:14px;padding:22px;border:1px solid var(--line2);background:rgba(255,255,255,.03)}
+.tcard .tl{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:12px}
+.tcard .tv{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:600;line-height:1}
+.tcard .tsub{font-size:13px;color:var(--dim);margin-top:8px;font-family:'JetBrains Mono',monospace}
+
+.testresult{padding:18px 22px;border-radius:12px;font-size:15px;line-height:1.55;display:flex;gap:16px;align-items:flex-start}
+.testresult.pass{background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.35)}
+.testresult.fail{background:rgba(242,109,75,.08);border:1px solid rgba(242,109,75,.35)}
+.testresult.warn{background:rgba(224,169,46,.09);border:1px solid rgba(224,169,46,.38)}
+.testresult .ico{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;flex:none;margin-top:1px}
+.testresult.pass .ico{color:var(--green)}
+.testresult.fail .ico{color:var(--red)}
+.testresult.warn .ico{color:var(--amber)}
+.testresult .tx b{color:var(--ink)}
+.testresult .tx .mono{font-family:'JetBrains Mono',monospace;font-size:.9em}
+.adv-actions{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.adv-actions .btn{width:auto;flex:1;min-width:180px}
+.punchline{margin-top:22px;padding:18px 22px;border-radius:12px;background:rgba(139,124,240,.06);border:1px solid rgba(139,124,240,.25);font-size:14px;color:var(--dim);line-height:1.6}
+.punchline b{color:var(--ink)} .punchline .em{color:var(--violet);font-weight:600}
+
+.foot{margin-top:52px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot .fl{font-size:13px;color:var(--faint)}
+.foot .fr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+.foot a{color:var(--teal);text-decoration:none}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Rough volatility · teaching module · <span class="mono">roughvol_core.py</span></div>
+    <h1>The <em>trusted</em> engine —<br>and why we test it.</h1>
+    <p class="lede">Every result in RoughVolLab is built on one path generator: <code>roughvol_core.py</code>, the κ=0 Volterra engine. It exists because an <strong>earlier engine had a silent bug</strong> — its variance was normalised wrong, so any analysis built on it would measure the bug, not the market. This tool lets you drive the real engine, and see the bug it was built to prevent.</p>
+  </div>
+
+  <!-- GUIDED INTRO -->
+  <div class="guide">
+    <div class="guide-head" onclick="tg('guideBody','guideToggle')">
+      <span class="dot"></span><h2>Start here — a two-minute guided tour</h2>
+      <span class="toggle" id="guideToggle">hide ▲</span>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <div class="step">
+        <div class="n">01 · the engine</div>
+        <h3>Two paths, one model</h3>
+        <p>The engine produces a <b>variance</b> path (how choppy the market is) and the <b>asset price</b> it drives. Roughness in the variance is what shapes the price. Watch both react as you move the dials.</p>
+      </div>
+      <div class="step">
+        <div class="n">02 · the dials</div>
+        <h3>Feel each parameter</h3>
+        <p>Drag <code>H</code> for roughness, <code>η</code> for how violent the vol swings are, <code>ρ</code> for the leverage effect (down moves raising vol), <code>ξ₀</code> for the baseline variance level.</p>
+      </div>
+      <div class="step">
+        <div class="n">03 · the point</div>
+        <h3>Open the Advanced panel</h3>
+        <p>There you can flip on the <b>old bug</b> and run the engine's own <b>test</b>. The paths look the same — but the test tells you the truth. That's why the module exists.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLORER -->
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top">
+        <span class="plot-title">rough Bergomi — full simulation</span>
+        <span class="plot-sub" id="plotSub">H=0.10 · η=1.0 · ρ=−0.70</span>
+      </div>
+
+      <div class="plot-lbl" style="color:var(--amber)">Variance V(t) — the market's choppiness</div>
+      <canvas id="varCanvas" width="1600" height="380"></canvas>
+
+      <div class="plot-lbl" style="color:var(--teal)">Asset price S(t) — driven by that variance</div>
+      <canvas id="priceCanvas" width="1600" height="440"></canvas>
+      <div class="axis-note"><span>t = 0</span><span>time →</span><span>t = T</span></div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-label">The engine's parameters</div>
+
+      <div class="param">
+        <div class="param-top"><span class="param-name">Roughness<span class="sym">H</span></span><span class="param-val" id="hVal">0.10</span></div>
+        <input type="range" id="hSlider" min="5" max="95" value="10" step="1">
+        <div class="param-hint">low = rough vol · 0.5 = ordinary · high = smooth</div>
+      </div>
+      <div class="param">
+        <div class="param-top"><span class="param-name">Vol of vol<span class="sym">η</span></span><span class="param-val" id="etaVal">1.00</span></div>
+        <input type="range" id="etaSlider" min="10" max="300" value="100" step="5">
+        <div class="param-hint">how violently the variance swings</div>
+      </div>
+      <div class="param">
+        <div class="param-top"><span class="param-name">Correlation<span class="sym">ρ</span></span><span class="param-val" id="rhoVal">−0.70</span></div>
+        <input type="range" id="rhoSlider" min="-95" max="0" value="-70" step="5">
+        <div class="param-hint">the leverage effect (negative = down→more vol)</div>
+      </div>
+      <div class="param">
+        <div class="param-top"><span class="param-name">Base variance<span class="sym">ξ₀</span></span><span class="param-val" id="xiVal">0.040</span></div>
+        <input type="range" id="xiSlider" min="10" max="120" value="40" step="2">
+        <div class="param-hint">the long-run variance level</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="row">
+        <div><div class="rl">Same noise</div><div class="rd">Isolate each dial's effect</div></div>
+        <label class="switch"><input type="checkbox" id="sameSeed" checked><span class="slider-t"></span></label>
+      </div>
+      <button class="btn primary" id="newPathBtn">↻ New random draw</button>
+    </div>
+  </div>
+
+  <!-- ADVANCED: correct vs buggy + the test -->
+  <div class="advanced">
+    <div class="adv-head" onclick="tg('advBody','advToggle')">
+      <span class="dot"></span><h2>Advanced — the bug, and the test that catches it</h2>
+      <span class="tag">WHY IT'S TESTED</span>
+      <span class="toggle" id="advToggle">show ▼</span>
+    </div>
+    <div class="adv-body hidden" id="advBody">
+      <p class="adv-intro">The Volterra process has a variance that grows over time. The <b>correct</b> way to normalise the model uses the <b>discrete</b> variance the scheme actually produces — call it <code>v_i</code>. An earlier engine used the <b>continuum</b> formula <code>t^(2H)</code> instead, which is subtly wrong for a discretised path: it assumes the process has unit variance, when the discretised path’s true variance is smaller — around 15% smaller at H=0.10 — a gap that quietly biases everything built on it. The paths still <b>looked</b> fine. Flip the bug on below, and run the test.</p>
+
+      <div class="bugbar">
+        <div class="bl">
+          <div class="bt" id="bugTitle">Normalisation: correct (discrete v<sub>i</sub>)</div>
+          <div class="bd" id="bugDesc">The engine uses the discrete variance — E[V] = ξ₀ holds exactly.</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="bugToggle"><span class="slider-t" style="--x"></span></label>
+      </div>
+
+      <div class="testgrid">
+        <div class="tcard">
+          <div class="tl" id="assumedLbl">What Var(W̃_T) should be</div>
+          <div class="tv" id="assumedVar" style="color:var(--dim)">—</div>
+          <div class="tsub" id="assumedSub">the discrete formula v<sub>n</sub> — the true value the engine targets</div>
+        </div>
+        <div class="tcard">
+          <div class="tl">Variance actually produced</div>
+          <div class="tv" id="measuredVar" style="color:var(--violet)">—</div>
+          <div class="tsub" id="measuredSub">press “Run the test” to measure it</div>
+        </div>
+      </div>
+
+      <div class="testresult pass" id="testResult" style="display:none">
+        <span class="ico" id="testIco">✓</span>
+        <span class="tx" id="testText"></span>
+      </div>
+
+      <div class="adv-actions">
+        <button class="btn primary" id="runTestBtn">Run the test — measure Var(W̃_T)</button>
+      </div>
+
+      <div class="punchline">
+        This is the actual test in <code style="color:var(--violet);font-family:'JetBrains Mono',monospace">test_roughvol_core.py</code> — <span class="em">test_volterra_variance_matches_discrete_formula</span>. It draws thousands of paths and checks the empirical variance against the discrete formula, failing if they diverge. <b>With the bug on, the paths look normal but the test fails</b> — which is exactly the point: the error is invisible to the eye, and only checking against the known answer catches it. That is why the whole library imports from this one tested module, and never from the engine with the bug.
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="fl">κ=0 Volterra scheme · faithful port of <span style="font-family:'JetBrains Mono',monospace">roughvol_core.py</span> · runs entirely in your browser</div>
+    <div class="fr">RoughVolLab · <a href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Faithful browser port of roughvol_core.py (κ=0 Volterra engine)
+//  volterra_weights: BLP optimal points b_m, kernel g, discrete var v
+//  rough_bergomi_paths: variance V (exact compensator) + asset S
+//  The "bug" = normalising by continuum t^{2H} instead of discrete v_i,
+//  reproducing the Layer-1 L1-1 normalisation bug (true discrete Var ~0.85 at H=0.1, not the assumed 1.0).
+// ============================================================
+const N = 500;
+
+// --- seeded RNG ---
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function gauss(n,seed){const r=mulberry32(seed);const o=new Float64Array(n);for(let i=0;i<n;i++){let u=0,v=0;while(u===0)u=r();while(v===0)v=r();o[i]=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}return o;}
+
+// --- volterra_weights (exact port) ---
+function volterraWeights(n,H,T){
+  const a=H-0.5, dt=T/n;
+  const g=new Float64Array(n), v=new Float64Array(n);
+  if(Math.abs(a)<1e-12){ for(let i=0;i<n;i++)g[i]=1.0; }
+  else{
+    for(let mm=1;mm<=n;mm++){
+      const b=Math.pow((Math.pow(mm,a+1)-Math.pow(mm-1,a+1))/(a+1), 1.0/a);
+      g[mm-1]=Math.pow(b*dt, a);
+    }
+  }
+  let cs=0; for(let i=0;i<n;i++){ cs+=g[i]*g[i]; v[i]=2.0*H*dt*cs; }
+  return {g,v};
+}
+
+// --- volterra process W̃ (causal convolution of dW with g, * sqrt(2H)) ---
+function volterraProcess(dW,g,H){
+  const n=dW.length; const W=new Float64Array(n); const c=Math.sqrt(2*H);
+  for(let i=0;i<n;i++){ let s=0; for(let j=0;j<=i;j++){ s+=g[i-j]*dW[j]; } W[i]=c*s; }
+  return W;
+}
+
+// --- full rough Bergomi: returns {V, S} ; buggy toggles the compensator ---
+function roughBergomi(H,eta,rho,xi0,dW1,dW2,buggy){
+  const n=dW1.length, dt=1/n;
+  const {g,v}=volterraWeights(n,H,1.0);
+  const W=volterraProcess(dW1,g,H);
+  const V=new Float64Array(n+1); V[0]=xi0;
+  for(let i=0;i<n;i++){
+    // correct: compensate with discrete v[i]; buggy: with continuum t^{2H}
+    const comp = buggy ? Math.pow((i+1)*dt, 2*H) : v[i];
+    V[i+1]=xi0*Math.exp(eta*W[i]-0.5*eta*eta*comp);
+  }
+  // asset (log-Euler)
+  const S=new Float64Array(n+1); S[0]=100.0; let logS=0;
+  for(let i=0;i<n;i++){
+    const Vl=V[i];
+    const dWS=rho*dW1[i]+Math.sqrt(1-rho*rho)*dW2[i];
+    logS += (-0.5*Vl)*dt + Math.sqrt(Math.max(Vl,0))*dWS;
+    S[i+1]=100.0*Math.exp(logS);
+  }
+  return {V,S,v};
+}
+
+// ---- canvas draw helper ----
+function drawSeries(cv, arr, col, zeroBase){
+  const ctx=cv.getContext('2d'), W=cv.width, H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  const n=arr.length; let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<n;i++){ if(arr[i]<mn)mn=arr[i]; if(arr[i]>mx)mx=arr[i]; }
+  if(zeroBase && mn>0) mn=0;
+  const pad=(mx-mn)*0.12||1; mn-=pad*0.4; mx+=pad;
+  const pL=6,pR=6,pT=12,pB=12, xw=W-pL-pR, yh=H-pT-pB;
+  const X=i=>pL+(i/(n-1))*xw, Y=val=>pT+(1-(val-mn)/(mx-mn))*yh;
+  // baseline
+  if(zeroBase){ ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pL,Y(0)); ctx.lineTo(W-pR,Y(0)); ctx.stroke(); }
+  ctx.strokeStyle=col; ctx.lineWidth=2.2; ctx.lineJoin='round';
+  ctx.shadowColor=col; ctx.shadowBlur=7;
+  ctx.beginPath(); ctx.moveTo(X(0),Y(arr[0]));
+  for(let i=1;i<n;i++) ctx.lineTo(X(i),Y(arr[i]));
+  ctx.stroke(); ctx.shadowBlur=0;
+}
+
+// ---------- UI ----------
+const els={
+  h:document.getElementById('hSlider'), eta:document.getElementById('etaSlider'),
+  rho:document.getElementById('rhoSlider'), xi:document.getElementById('xiSlider'),
+  hVal:document.getElementById('hVal'), etaVal:document.getElementById('etaVal'),
+  rhoVal:document.getElementById('rhoVal'), xiVal:document.getElementById('xiVal'),
+  same:document.getElementById('sameSeed'), plotSub:document.getElementById('plotSub'),
+  bug:document.getElementById('bugToggle'),
+};
+let seed=777, dW1=null, dW2=null;
+function drawNoise(){ const s=seed; dW1=gauss(N,s); dW2=gauss(N,s^0x9e3779b9); const sd=Math.sqrt(1/N); for(let i=0;i<N;i++){dW1[i]*=sd; dW2[i]*=sd;} }
+function P(){ return { H:els.h.value/100, eta:els.eta.value/100, rho:els.rho.value/100, xi:els.xi.value/1000 }; }
+
+function render(){
+  const p=P();
+  els.hVal.textContent=p.H.toFixed(2);
+  els.etaVal.textContent=p.eta.toFixed(2);
+  els.rhoVal.textContent=(p.rho<0?'−':'')+Math.abs(p.rho).toFixed(2);
+  els.xiVal.textContent=p.xi.toFixed(3);
+  els.plotSub.textContent=`H=${p.H.toFixed(2)} · η=${p.eta.toFixed(2)} · ρ=${p.rho<0?'−':''}${Math.abs(p.rho).toFixed(2)}`;
+  const buggy=els.bug.checked;
+  const {V,S}=roughBergomi(p.H,p.eta,p.rho,p.xi,dW1,dW2,buggy);
+  drawSeries(document.getElementById('varCanvas'), V, buggy?'#f26d4b':'#e0a92e', true);
+  drawSeries(document.getElementById('priceCanvas'), S, '#2dd4a7', false);
+}
+function updateTarget(){
+  const p=P(); const buggy=els.bug.checked;
+  const {v}=volterraWeights(N,p.H,1.0); const disc=v[N-1];
+  const lbl=document.getElementById('assumedLbl');
+  const av=document.getElementById('assumedVar'), as=document.getElementById('assumedSub');
+  if(buggy){
+    const gap=(1.0-disc)*100;
+    lbl.textContent='What the bug assumes';
+    av.textContent='1.0000'; av.style.color='var(--red)';
+    as.innerHTML=`continuum t<sup>2H</sup>=1 — wrong by ${gap.toFixed(1)}%; the true value is ${disc.toFixed(4)}`;
+  } else {
+    lbl.textContent='What Var(W̃_T) should be';
+    av.textContent=disc.toFixed(4); av.style.color='var(--dim)';
+    as.innerHTML='the discrete formula v<sub>n</sub> — the true value the engine targets';
+  }
+}
+drawNoise(); render(); updateTarget();
+
+[els.h,els.eta,els.rho,els.xi].forEach(s=>s.addEventListener('input',()=>{
+  if(!els.same.checked){ seed=Math.floor(Math.random()*1e9); drawNoise(); }
+  render(); updateTarget();
+}));
+els.same.addEventListener('change',()=>{ if(!els.same.checked){seed=Math.floor(Math.random()*1e9);drawNoise();render();} });
+document.getElementById('newPathBtn').addEventListener('click',()=>{ seed=Math.floor(Math.random()*1e9); drawNoise(); render(); });
+
+// toggles
+function tg(bodyId,togId){const b=document.getElementById(bodyId),t=document.getElementById(togId);const hid=b.classList.toggle('hidden');t.textContent=hid?'show ▼':'hide ▲';}
+// guide starts open
+document.getElementById('guideBody').classList.remove('hidden');
+
+// bug toggle updates labels + re-renders (paths look ~same, that's the point)
+els.bug.addEventListener('change',()=>{
+  const buggy=els.bug.checked;
+  document.getElementById('bugTitle').innerHTML = buggy
+    ? 'Normalisation: <span style="color:var(--red)">BUGGY (continuum t^2H)</span>'
+    : 'Normalisation: correct (discrete v<sub>i</sub>)';
+  document.getElementById('bugDesc').textContent = buggy
+    ? 'The old Layer-1 bug — variance drifts off ξ₀; the paths still look plausible.'
+    : 'The engine uses the discrete variance — E[V] = ξ₀ holds exactly.';
+  render(); updateTarget();
+  // clear stale test
+  document.getElementById('testResult').style.display='none';
+  document.getElementById('measuredVar').textContent='—';
+  document.getElementById('measuredVar').style.color='var(--violet)';
+  document.getElementById('measuredSub').textContent='press “Run the test” to measure it';
+});
+
+// THE TEST: measure empirical Var(W̃_T) over many paths, compare to the discrete formula (the known answer)
+document.getElementById('runTestBtn').addEventListener('click',()=>{
+  const p=P(); const buggy=els.bug.checked;
+  const K=4000, n=N; const {g}=volterraWeights(n,p.H,1.0);
+  // empirical variance of W̃_T across K fresh paths
+  let sum=0,sum2=0; const sd=Math.sqrt(1/n);
+  for(let k=0;k<K;k++){
+    const nz=gauss(n, Math.floor(Math.random()*1e9)); for(let i=0;i<n;i++)nz[i]*=sd;
+    const W=volterraProcess(nz,g,p.H);
+    const wt=W[n-1]; sum+=wt; sum2+=wt*wt;
+  }
+  const mean=sum/K, varEmp=sum2/K-mean*mean;
+  // The empirical Var(W̃_T) matches the DISCRETE formula v_n (~0.85 at H=0.1; →1 only as H→0.5),
+  // NOT the continuum t^{2H}=1. The correct engine compensates with v_n, so it "assumes" v_n and is
+  // self-consistent; the buggy engine compensates with t^{2H}=1, so it assumes 1.0 — wrong by ~15%
+  // in the rough regime. The test asks: does the measured variance match what the engine assumed?
+  const {v}=volterraWeights(n,p.H,1.0);
+  const discreteTarget=v[n-1];            // the true value (~0.85 at H=0.1)
+  const shown = varEmp;                   // empirical Var(W̃_T)
+  const assumed = buggy ? 1.0 : discreteTarget;   // what the (buggy/correct) compensator assumes
+
+  const mv=document.getElementById('measuredVar');
+  const ms=document.getElementById('measuredSub');
+  const res=document.getElementById('testResult');
+  const ico=document.getElementById('testIco');
+  const txt=document.getElementById('testText');
+
+  mv.textContent=shown.toFixed(4);
+  ms.textContent=`empirical, over ${K.toLocaleString()} paths`;
+
+  // pass/fail is decided by whether the MEASURED variance matches what the engine ASSUMED —
+  // not by the bug flag directly: at H≈0.5 the discrete and continuum values coincide, so even the
+  // buggy compensator is momentarily correct. The bug only bites for rough paths (H<0.5).
+  const ratio = shown/assumed;
+  const ok = Math.abs(ratio-1.0) < 0.05;
+  const gapPct = (ratio-1.0)*100;
+  res.style.display='flex';
+  if(!ok){
+    mv.style.color='var(--red)';
+    res.className='testresult fail';
+    ico.textContent='✗';
+    txt.innerHTML=`<b>TEST FAILED.</b> The engine actually produces Var(W̃_T)=<span class="mono">${shown.toFixed(4)}</span>, but the buggy compensator assumes <span class="mono">${assumed.toFixed(4)}</span> — a ${Math.abs(gapPct).toFixed(1)}% gap. <b>The paths above looked completely normal</b>, yet the model is normalising against the wrong variance, so every price built on them would be biased. This is the bug the module was written to prevent — caught only because the test checks the measured variance against the known discrete answer.`;
+  } else if(buggy){
+    mv.style.color='var(--amber)';
+    res.className='testresult warn';
+    ico.textContent='!';
+    txt.innerHTML=`<b>TEST PASSED — but only by coincidence.</b> At H=<span class="mono">${p.H.toFixed(2)}</span> the discrete variance and the continuum t<sup>2H</sup> nearly coincide (<span class="mono">${discreteTarget.toFixed(4)}</span> vs <span class="mono">1.0000</span>), so the bug can’t show itself here. It is still real — it just doesn’t bite for smooth paths. Slide <b>H down toward 0.10</b> (the rough regime the whole project lives in) and run again: that’s where it fails.`;
+  } else {
+    mv.style.color='var(--green)';
+    res.className='testresult pass';
+    ico.textContent='✓';
+    txt.innerHTML=`<b>TEST PASSED.</b> The engine produces Var(W̃_T)=<span class="mono">${shown.toFixed(4)}</span>, matching the discrete formula <span class="mono">v_n=${discreteTarget.toFixed(4)}</span> it compensates with (within Monte-Carlo error). The model is self-consistent — E[V]=ξ₀ holds — so results built on it measure the science, not an artefact. This is the property <span class="mono">test_roughvol_core.py</span> pins on every run.`;
+  }
+});
+</script>
+</body>
+</html>

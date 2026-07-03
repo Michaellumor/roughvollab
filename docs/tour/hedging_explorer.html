@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does rough vol help you hedge? — deep hedging and the null roughness edge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap');
+:root{
+  --bg:#0d1420; --bg2:#111a2b; --panel:#131e30; --panel2:#0f1826;
+  --ink:#e8eef5; --dim:#8a9bb0; --faint:#5d6f85;
+  --teal:#2dd4a7; --coral:#f26d4b; --amber:#e0a92e; --violet:#8b7cf0;
+  --gjr:#f26d4b; --cd:#e0a92e; --mfdfa:#8b7cf0; --truth:#2dd4a7;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1400px 900px at 50% -10%,var(--bg2),var(--bg));color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 28px 90px}
+.masthead{margin-bottom:34px}
+.eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:18px}
+.eyebrow .mono{font-family:'JetBrains Mono',monospace;color:var(--violet);text-transform:none;letter-spacing:0}
+h1{font-family:'Newsreader',serif;font-size:clamp(32px,4.6vw,52px);font-weight:500;line-height:1.06;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--violet)}
+.lede{font-size:18px;color:var(--dim);max-width:730px;margin-top:20px;font-weight:300}
+.lede strong{color:var(--ink);font-weight:500}
+.lede code{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet);background:rgba(139,124,240,.08);padding:1px 6px;border-radius:5px}
+
+.guide{margin:32px 0;border:1px solid rgba(139,124,240,.28);border-radius:16px;background:linear-gradient(180deg,rgba(139,124,240,.06),rgba(139,124,240,.02));overflow:hidden}
+.guide-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.guide-head .dot{width:9px;height:9px;border-radius:50%;background:var(--violet);box-shadow:0 0 12px var(--violet)}
+.guide-head h2{font-size:16px;font-weight:600;flex:1}
+.guide-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.guide-body{padding:0 26px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--violet);font-weight:600;margin-bottom:8px}
+.step h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.step p{font-size:14px;color:var(--dim);line-height:1.5}
+@media(max-width:760px){.guide-body{grid-template-columns:1fr;gap:18px}}
+
+.explorer{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:900px){.explorer{grid-template-columns:1fr}}
+.plotcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px}
+.plot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.plot-title{font-size:14px;font-weight:600}
+.plot-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+/* the estimate dial-face: a horizontal H axis with markers */
+.hbar-wrap{margin:8px 0 4px}
+.hbar{position:relative;height:120px;border-radius:12px;background:linear-gradient(90deg,rgba(242,109,75,.10),rgba(224,169,46,.06) 50%,rgba(45,212,167,.10));border:1px solid var(--line2)}
+.hbar .brownian{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.28);transform:translateX(-1px)}
+.hbar .brownian .bl{position:absolute;top:6px;left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.hbar .regionlbl{position:absolute;bottom:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.hbar .rough-lbl{left:12px} .hbar .smooth-lbl{right:12px}
+.marker{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;transition:left .25s ease}
+.marker .stem{width:2px;height:34px;background:currentColor;opacity:.5}
+.marker .dot{width:16px;height:16px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;border:2px solid var(--bg)}
+.marker .tag{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap;background:var(--bg);padding:1px 5px;border-radius:4px}
+.marker.up .tag{top:-22px} .marker.down .tag{bottom:-22px}
+.marker.truth{color:var(--truth)} .marker.truth .dot{width:20px;height:20px}
+.marker.gjr{color:var(--gjr)} .marker.cd{color:var(--cd)} .marker.mfdfa{color:var(--mfdfa)}
+.axis-ticks{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-top:8px;padding:0 2px}
+
+/* estimate readouts */
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.ro{border-radius:12px;padding:16px;border:1px solid var(--line2);background:rgba(255,255,255,.03);text-align:center}
+.ro .rn{font-size:12px;font-weight:600;letter-spacing:.04em;margin-bottom:8px}
+.ro.truth .rn{color:var(--truth)} .ro.gjr .rn{color:var(--gjr)} .ro.cd .rn{color:var(--cd)} .ro.mfdfa .rn{color:var(--mfdfa)}
+.ro .rv{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1}
+.ro .rd{font-size:11px;color:var(--faint);margin-top:6px}
+
+/* verdict */
+.verdict{margin-top:20px;padding:18px 20px;border-radius:12px;display:flex;gap:16px;align-items:flex-start}
+.verdict.identified{background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.35)}
+.verdict.ambiguous{background:rgba(242,109,75,.08);border:1px solid rgba(242,109,75,.35)}
+.verdict .ico{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;flex:none;margin-top:1px}
+.verdict.identified .ico{color:var(--teal)} .verdict.ambiguous .ico{color:var(--coral)}
+.verdict .vt{font-size:14px;line-height:1.55;color:var(--dim)}
+.verdict .vt b{color:var(--ink)}
+
+.controls{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px;position:sticky;top:24px}
+.ctl-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:16px}
+.hval{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.hval .h{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:600;line-height:1;color:var(--truth)}
+.hval .hl{font-size:14px;color:var(--dim)}
+.regime{font-size:13px;font-weight:600;margin-bottom:16px;font-family:'JetBrains Mono',monospace;color:var(--dim)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--coral),var(--amber) 50%,var(--teal));outline:none;margin:6px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer}
+.rng-ends{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-bottom:20px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--violet);color:var(--ink)}
+.chip.active{background:rgba(139,124,240,.12);border-color:var(--violet);color:var(--violet)}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.param{margin-bottom:16px}
+.param-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.param-name{font-size:14px;font-weight:500}
+.param-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--violet)}
+.param-hint{font-size:11px;color:var(--faint);margin-top:3px}
+.btn{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.08);border-color:var(--dim)}
+.btn.primary{background:rgba(139,124,240,.14);border-color:rgba(139,124,240,.4);color:var(--violet)}
+.btn.primary:hover{background:rgba(139,124,240,.2)}
+
+.advanced{margin-top:28px;border:1px solid rgba(45,212,167,.3);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel2))}
+.adv-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.adv-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.adv-head h2{font-size:16px;font-weight:600;flex:1}
+.adv-head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--teal);border:1px solid rgba(45,212,167,.35);padding:3px 9px;border-radius:6px}
+.adv-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.adv-body{padding:0 26px 28px}
+.adv-intro{font-size:15px;color:var(--dim);max-width:760px;margin-bottom:20px;line-height:1.6}
+.adv-intro b{color:var(--ink)} .adv-intro code{font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--teal)}
+.mapcard{border-radius:14px;padding:20px;border:1px solid var(--line2);background:rgba(255,255,255,.03);margin-bottom:20px}
+.mapcard .ml{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:14px}
+canvas{width:100%;display:block;border-radius:8px}
+.assetrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.assetchip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px;border-radius:8px;background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.3);color:var(--teal);cursor:pointer}
+.assetchip:hover{background:rgba(45,212,167,.15)}
+.punchline{margin-top:20px;padding:18px 22px;border-radius:12px;background:rgba(139,124,240,.06);border:1px solid rgba(139,124,240,.25);font-size:14px;color:var(--dim);line-height:1.6}
+.punchline b{color:var(--ink)} .punchline .em{color:var(--violet);font-weight:600}
+
+.foot{margin-top:52px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot .fl{font-size:13px;color:var(--faint)} .foot .fr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)} .foot a{color:var(--violet);text-decoration:none}
+.hidden{display:none}
+
+  /* --- pricing explorer additions --- */
+  .canvas-wrap{margin:6px 0 2px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.015)}
+  #decayCanvas{width:100%;height:auto;display:block}
+  .readouts.three{grid-template-columns:repeat(3,1fr)}
+  .ro.beta .rn{color:var(--teal)} .ro.beta .rv{color:var(--teal)}
+  .ro.gamma .rn{color:var(--violet)} .ro.gamma .rv{color:var(--violet)}
+  .ro.ratio .rn{color:var(--dim)}
+  .verdict.warn{background:rgba(224,169,46,.09);border:1px solid rgba(224,169,46,.38)}
+  .verdict.warn .ico{color:var(--amber)}
+  .costbars{margin:18px 0 6px;display:flex;flex-direction:column;gap:12px}
+  .cbar-row{display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center}
+  .cbar-lab{font-size:13.5px;color:var(--ink);text-align:right;line-height:1.3}
+  .cbar-win{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+  .cbar-track{background:rgba(255,255,255,.04);border-radius:8px;height:36px;overflow:hidden}
+  .cbar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#08131f;min-width:46px;transition:width .5s}
+  .cbar-fill.teal{background:linear-gradient(90deg,#1a9e78,#2dd4a7)}
+  .cbar-fill.amber{background:linear-gradient(90deg,#b3841f,#e0a92e)}
+  .cbar-fill.dim{background:linear-gradient(90deg,#3a4a5e,#5d6f85);color:#e8eef5}
+  .cbar-fill.coral{background:linear-gradient(90deg,#c24e30,#f26d4b)}
+  .ratio-callout{display:flex;gap:20px;align-items:center;margin:22px 0;padding:20px 22px;border:1px solid rgba(45,212,167,.3);border-radius:14px;background:linear-gradient(180deg,rgba(45,212,167,.07),rgba(45,212,167,.02))}
+  .rc-num{font-family:'JetBrains Mono',monospace;font-size:33px;font-weight:700;color:var(--teal);flex:none;line-height:1}
+  .rc-txt{font-size:14px;color:var(--dim);line-height:1.5}
+  .rc-txt .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--ink)}
+  .adv-note{font-size:14px;color:var(--dim);line-height:1.6;margin:18px 0;padding-left:16px;border-left:2px solid rgba(139,124,240,.4)}
+  .adv-note .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet)}
+  .adv-note em{color:var(--ink);font-style:italic}
+
+  /* --- execution explorer additions --- */
+  #edgeCanvas{width:100%;height:auto;display:block}
+  @media(max-width:560px){.readouts{grid-template-columns:repeat(2,1fr)}}
+  .ro.th .rn{color:var(--dim)}
+  .ro.edge .rn{color:var(--coral)} .ro.edge .rv{color:var(--coral)}
+  .ro.best .rn{color:var(--teal)} .ro.best .rv{color:var(--teal);font-size:18px}
+  .ro.rsk .rn{color:var(--dim)}
+  .latoggle{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);cursor:pointer;font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace;transition:all .15s}
+  .latoggle:hover{border-color:rgba(255,255,255,.22)}
+  .latoggle.active{background:rgba(224,169,46,.12);border-color:rgba(224,169,46,.55);color:var(--amber)}
+  .ctl-note{font-size:12.5px;color:var(--dim);line-height:1.55}
+  .senslist{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 4px}
+  .senschip{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-weight:600;color:var(--ink)}
+
+  /* --- hedging explorer additions --- */
+  #hedgeCanvas{width:100%;height:auto;display:block}
+  .ro.cc .rn{color:var(--dim)}
+  .ro.gain .rn{color:var(--teal)} .ro.gain .rv{color:var(--teal)}
+  .ro.incr .rn{color:var(--coral)} .ro.incr .rv{color:var(--coral)}
+  .ro.sig .rn{color:var(--dim)} .ro.sig .rv{font-size:16px}
+  .hlegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--dim)}
+  .hlegend span{display:inline-flex;align-items:center;gap:7px}
+  .hlegend .sw{width:18px;border-top-width:3px;border-top-style:solid;display:inline-block;height:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Rough volatility · teaching module · <span class="mono">Layer 3 — hedging (Q5)</span></div>
+    <h1>Does it help you<br><em>hedge?</em></h1>
+    <p class="lede">Sell an option and you must hedge it — trade the underlying to cancel the risk. Under transaction costs the textbook delta-hedge bleeds money, and modern <strong>deep hedging</strong> learns a policy that beats it. That gain is real. The only question is whether the market's <strong>roughness</strong> adds anything on top — or whether it's all just the frictions.</p>
+  </div>
+
+  <div class="guide">
+    <div class="guide-head" onclick="tg('guideBody','guideToggle')">
+      <span class="dot"></span><h2>Start here — a two-minute guided tour</h2>
+      <span class="toggle" id="guideToggle">hide ▲</span>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <div class="step"><div class="n">01 · the frictions edge</div><h3>Deep hedging beats delta</h3><p>Under costs, both curves climb above the flat delta-hedging baseline — deep hedging clearly wins (about <b>+1.1</b> in CVaR, 8/8 seeds). That's the generic Buehler effect, real and worth having.</p></div>
+      <div class="step"><div class="n">02 · rough vs smooth</div><h3>Same edge, two markets</h3><p>The two curves are the <em>same</em> deep-hedging edge — one on a <b>rough</b> market (H=0.10), one on a <b>smooth</b> control (H=0.5, identical otherwise). They sit right on top of each other. The roughness effect is the tiny gap between them.</p></div>
+      <div class="step"><div class="n">03 · no edge</div><h3>The gap is zero</h3><p>That gap is <b>+0.06 ± 0.04</b> — statistically nothing (z = 1.4), and it stays nothing at every friction level. Roughness adds no hedging edge beyond frictions. Flip <b>&ldquo;undertrained&rdquo;</b> to meet the artifact that nearly said otherwise.</p></div>
+    </div>
+  </div>
+
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top">
+        <span class="plot-title">Is the edge frictions, or roughness?</span>
+        <span class="plot-sub" id="plotSub">c = 0.010 · deep &minus; delta = +1.14 · roughness increment = +0.06</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="hedgeCanvas" width="760" height="320"></canvas>
+      </div>
+
+      <div class="hlegend">
+        <span><span class="sw" style="border-top-color:#2dd4a7"></span>deep hedging · rough vol (H=0.10)</span>
+        <span><span class="sw" style="border-top-color:#8b7cf0"></span>deep hedging · smooth vol (H=0.5)</span>
+        <span><span class="sw" style="border-top-color:#5d6f85;border-top-style:dashed"></span>delta-hedging (baseline)</span>
+      </div>
+
+      <div class="readouts">
+        <div class="ro cc"><div class="rn">c · transaction cost</div><div class="rv" id="roC">0.010</div><div class="rd">the friction level</div></div>
+        <div class="ro gain"><div class="rn">deep &minus; delta</div><div class="rv" id="roGain">+1.14</div><div class="rd">CVaR gain — the Buehler edge</div></div>
+        <div class="ro incr"><div class="rn">roughness increment</div><div class="rv" id="roIncr">+0.06</div><div class="rd">rough edge &minus; smooth edge</div></div>
+        <div class="ro sig"><div class="rn">roughness edge?</div><div class="rv" id="roSig">none · z=1.4</div><div class="rd">within the noise</div></div>
+      </div>
+
+      <div class="verdict ambiguous" id="verdict">
+        <span class="ico" id="vIco">&#10007;</span>
+        <span class="vt" id="vText">Deep hedging beats delta — but rough and smooth match within noise. Roughness adds no hedging edge.</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-label">Set the transaction cost</div>
+      <div class="hval"><span class="h" id="cDisplay">0.010</span><span class="hl">c</span></div>
+      <div class="regime" id="regimeLabel">— the level where the contrast was measured</div>
+      <input type="range" id="cSlider" min="0" max="50" value="10" step="1">
+      <div class="rng-ends"><span>0 · frictionless</span><span>0.05 · heavy costs</span></div>
+      <div class="chips" id="chips">
+        <div class="chip" data-c="0">0</div><div class="chip" data-c="5">0.005</div>
+        <div class="chip active" data-c="10">0.01</div><div class="chip" data-c="20">0.02</div><div class="chip" data-c="50">0.05</div>
+      </div>
+      <div class="divider"></div>
+      <div class="latoggle" id="utToggle"><span>&#9881;</span><span id="utText">training budget: converged</span></div>
+      <div class="ctl-note" style="margin-top:12px">Undertrain the policy and a <b>+0.36</b> roughness &ldquo;edge&rdquo; appears at c = 0.02 — z = 5.6, and it survives almost every check. More training dissolves it. The Advanced panel tells that story.</div>
+    </div>
+  </div>
+
+  <div class="advanced">
+    <div class="adv-head" onclick="tg('advBody','advToggle')">
+      <span class="dot"></span><h2>Advanced — the edge that kept not being there</h2>
+      <span class="tag">THE FINDING</span>
+      <span class="toggle" id="advToggle">show ▼</span>
+    </div>
+    <div class="adv-body hidden" id="advBody">
+      <p class="adv-intro">Two effects are tangled here, and the whole point is to separate them. Deep hedging beating delta is a <b>generic frictions effect</b> — it happens in any model. The roughness question is only the <b>increment</b>: does the rough market beat its own smooth control? Every honest check said no — and the checks were the hard part.</p>
+
+      <div class="ratio-callout" style="border-color:rgba(242,109,75,.35);background:linear-gradient(180deg,rgba(242,109,75,.07),rgba(242,109,75,.02))">
+        <div class="rc-num" style="color:var(--coral);font-size:27px">z = 5.6 → artifact</div>
+        <div class="rc-txt">At c = 0.02 an apparent roughness edge of <b>+0.362 (z = 5.6)</b> emerged. It survived significance, <b>8/8</b> seed-consistency, two-budget reproducibility, an edge-convergence fix, and a baseline decomposition — and was <em>still</em> a residual-convergence artifact. A finer 3000-epoch check dissolved it to <b>+0.033 (z = 0.7)</b> while the untrained control held exactly constant. The hardest-won false-positive catch in the project.</div>
+      </div>
+
+      <p class="adv-note"><b>Two guardrails behind the null.</b> &nbsp;<u>Frictionless anchor (GATE 1):</u> with no costs the trained policy recovers Black–Scholes delta (mean|δ&minus;Φ(d₁)| = <span class="mono">0.016</span>, P&amp;L-std ratio <span class="mono">1.03&ndash;1.04</span>) and a look-ahead policy trips the causality guard — the framework is sound before any edge is claimed. &nbsp;<u>Signatures:</u> giving the hedger the whole path history (path-signatures) <b>matches</b> the simple Markovian (t, S, √V) state but never beats it, at ~2.5× the training cost — and an early signature &ldquo;edge&rdquo; of +0.167 (z = 2.2) was unmasked as uneven training (rough +0.146, smooth &minus;0.021), not roughness.</p>
+
+      <div class="senslist">
+        <span class="senschip" style="color:#2dd4a7">frictions edge: +1.14 vs delta (8/8 seeds)</span>
+        <span class="senschip" style="color:#f26d4b">roughness increment: +0.06 ± 0.04 (z = 1.4)</span>
+        <span style="font-size:12px;color:var(--faint)">← the edge is real; the roughness part isn't — and it stays null across c ∈ [0, 0.05]</span>
+      </div>
+
+      <div class="punchline">
+        This is the last of the five questions, and it closes the loop. Across the whole audit, roughness is hard to identify from price history (Q1) and from option surfaces (Q4), it isn't cheaply priceable by multilevel Monte Carlo (Q2), it gives no execution edge (Q3), and here it gives <b>no hedging edge beyond frictions</b> (Q5). <span class="em">Five routes, one answer: whether or not the roughness is real, you cannot turn it into an advantage.</span> And every &ldquo;no&rdquo; was defended against the false positive that would have made a better headline — which is exactly why the verdict can be trusted.
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="fl">Buehler deep hedging over the rough-Bergomi engine (D40, D43): the frictions edge, the null roughness increment, the friction sweep · CVaR-vs-c curves illustrative, the +1.14 edge / +0.06 (z=1.4) increment / +0.362&rarr;+0.033 catch are the project’s measured values · runs in your browser</div>
+    <div class="fr">RoughVolLab · <a href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Hedging explorer (Layer 3 / Q5)
+//  Finding (D40, D43): deep hedging beats delta under frictions (generic Buehler
+//  edge, +1.1 CVaR, 8/8 seeds; frictionless it recovers BS-delta, GATE 1). Does
+//  ROUGH vol add a hedging edge beyond that? Contrast the deep-vs-delta edge on
+//  rough (H=0.10, +1.143) vs smooth (H=0.5, +1.083); increment = +0.060 +/- 0.044
+//  (z=1.4) -> NULL, and robust-null across c in [0,0.05] (D43). Path-signatures
+//  match but don't beat the Markovian (t,S,sqrtV) state. Two false positives were
+//  caught: an early sig edge +0.167 (z=2.2, uneven training) and a c=0.02
+//  +0.362 (z=5.6) that survived many checks but dissolved to +0.033 (z=0.7) under
+//  finer convergence -- the hardest-won catch in the project.
+//  The CVaR-vs-c curves are illustrative of the measured behaviour; the reported
+//  numbers (+1.14 edge, +0.06 increment/z, the +0.362->+0.033 catch, GATE 1) are
+//  the project's measured values.
+// ============================================================
+let UT=false;  // undertrained toggle
+function edgeSmooth(c){ return c<=0 ? 0 : 1.083*Math.sqrt(c/0.01); }
+function increment(c){
+  if(c<=0) return 0;
+  let base=0.06;
+  if(UT) base += 0.302*Math.exp(-Math.pow((c-0.02)/0.006,2));   // D43: spurious +0.36 bump at c=0.02
+  return base;
+}
+function edgeRough(c){ return edgeSmooth(c)+increment(c); }
+const els={c:document.getElementById('cSlider'),
+  cDisplay:document.getElementById('cDisplay'),regime:document.getElementById('regimeLabel'),plotSub:document.getElementById('plotSub')};
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+function drawHedge(){
+  const cv=document.getElementById('hedgeCanvas'), ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const Wc=cv.clientWidth||760, Hc=Math.max(240,Math.min(360,Wc*0.42));
+  const nw=Math.round(Wc*dpr), nh=Math.round(Hc*dpr);
+  if(cv.width!==nw||cv.height!==nh){cv.width=nw;cv.height=nh;}
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,Wc,Hc);
+  const cc=els.c.value/1000;
+  const pL=48,pR=18,pT=22,pB=42, xw=Wc-pL-pR, yh=Hc-pT-pB;
+  const CLO=0,CHI=0.05, YLO=-0.12,YHI=2.7;
+  const X=c=>pL+((c-CLO)/(CHI-CLO))*xw, Y=v=>pT+((YHI-v)/(YHI-YLO))*yh;
+  const BAND=0.13;  // ~3 s.e. envelope: inside => indistinguishable from the smooth control
+  // frame
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,pT+yh);ctx.lineTo(pL+xw,pT+yh);ctx.stroke();
+  // y gridlines + labels
+  ctx.font='11px JetBrains Mono,monospace';ctx.textAlign='right';
+  for(let v=0;v<=2.5+1e-9;v+=0.5){const y=Y(v);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+xw,y);ctx.stroke();
+    ctx.fillStyle='#5d6f85';ctx.fillText('+'+v.toFixed(1),pL-8,y+4);}
+  // x ticks
+  ctx.textAlign='center';
+  [0,0.01,0.02,0.03,0.04,0.05].forEach(c=>{ctx.fillStyle='#5d6f85';ctx.fillText(c.toFixed(2),X(c),pT+yh+18);});
+  ctx.fillStyle='#8a9bb0';ctx.font='12px JetBrains Mono,monospace';ctx.fillText('transaction cost  c',pL+xw/2,Hc-9);
+  ctx.save();ctx.translate(13,pT+yh/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle='#8a9bb0';ctx.font='11px JetBrains Mono,monospace';ctx.fillText('CVaR gain over delta',0,0);ctx.restore();
+  // +-band around the smooth edge (indistinguishable region)
+  ctx.beginPath();let started=false;
+  for(let c=CLO;c<=CHI+1e-9;c+=0.001){const y=Y(edgeSmooth(c)+BAND);started?ctx.lineTo(X(c),y):ctx.moveTo(X(c),y);started=true;}
+  for(let c=CHI;c>=CLO-1e-9;c-=0.001){ctx.lineTo(X(c),Y(edgeSmooth(c)-BAND));}
+  ctx.closePath();ctx.fillStyle='rgba(139,124,240,.10)';ctx.fill();
+  // delta baseline (y=0)
+  ctx.strokeStyle='rgba(93,111,133,.9)';ctx.lineWidth=2;ctx.setLineDash([6,5]);
+  ctx.beginPath();ctx.moveTo(pL,Y(0));ctx.lineTo(pL+xw,Y(0));ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#8a9bb0';ctx.textAlign='left';ctx.font='700 11px JetBrains Mono,monospace';ctx.fillText('delta-hedging (baseline)',pL+8,Y(0)-7);
+  // smooth line (violet)
+  ctx.strokeStyle='#8b7cf0';ctx.lineWidth=3;ctx.lineJoin='round';
+  ctx.beginPath();started=false;for(let c=CLO;c<=CHI+1e-9;c+=0.0007){const y=Y(edgeSmooth(c));started?ctx.lineTo(X(c),y):ctx.moveTo(X(c),y);started=true;}ctx.stroke();
+  // rough line (teal)
+  ctx.strokeStyle='#2dd4a7';ctx.lineWidth=3;
+  ctx.beginPath();started=false;for(let c=CLO;c<=CHI+1e-9;c+=0.0007){const y=Y(edgeRough(c));started?ctx.lineTo(X(c),y):ctx.moveTo(X(c),y);started=true;}ctx.stroke();
+  // frictionless anchor
+  ctx.fillStyle='#8a9bb0';ctx.beginPath();ctx.arc(X(0),Y(0),4,0,7);ctx.fill();
+  // undertrained bump callout
+  if(UT){
+    ctx.strokeStyle='rgba(224,169,46,.8)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+    ctx.beginPath();ctx.moveTo(X(0.02),Y(edgeRough(0.02)));ctx.lineTo(X(0.02),Y(edgeRough(0.02))-2);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#e0a92e';ctx.textAlign='center';ctx.font='700 11.5px JetBrains Mono,monospace';
+    ctx.fillText('+0.36 "edge" (z=5.6)',X(0.02),Y(edgeRough(0.02))-10);
+    ctx.fillStyle='#8a9bb0';ctx.font='10.5px JetBrains Mono,monospace';
+    ctx.fillText('artifact — dissolves with training',X(0.02),Y(edgeRough(0.02))-25);
+  }
+  // current-c markers
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(X(cc),pT);ctx.lineTo(X(cc),pT+yh);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#8b7cf0';ctx.beginPath();ctx.arc(X(cc),Y(edgeSmooth(cc)),5,0,7);ctx.fill();
+  ctx.fillStyle='#2dd4a7';ctx.beginPath();ctx.arc(X(cc),Y(edgeRough(cc)),5,0,7);ctx.fill();
+  // tag
+  ctx.textAlign='left';ctx.font='700 13px JetBrains Mono,monospace';ctx.fillStyle='#2dd4a7';
+  ctx.fillText('rough ≈ smooth — roughness adds nothing',pL+8,pT+15);
+}
+
+function render(){
+  const cc=els.c.value/1000, inc=increment(cc), gain=edgeRough(cc);
+  const bump = UT && Math.abs(cc-0.02)<0.004;
+  els.cDisplay.textContent=cc.toFixed(3);
+  els.plotSub.textContent='c = '+cc.toFixed(3)+' · deep − delta = '+(cc<=0?'0.00':'+'+gain.toFixed(2))+' · roughness increment = '+(cc<=0?'0.00':'+'+inc.toFixed(2));
+  els.regime.textContent = cc<=0 ? '— frictionless: deep hedging = Black–Scholes delta' : (bump ? '— the friction level where the artifact appeared' : '— the level where the contrast was measured');
+  els.regime.style.color = cc<=0 ? cssv('--dim') : (bump ? cssv('--amber') : cssv('--dim'));
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.c)===parseInt(els.c.value)));
+  document.getElementById('roC').textContent=cc.toFixed(3);
+  document.getElementById('roGain').textContent = cc<=0 ? '0.00' : '+'+gain.toFixed(2);
+  document.getElementById('roIncr').textContent = cc<=0 ? '0.00' : '+'+inc.toFixed(2);
+  const roSig=document.getElementById('roSig');
+  roSig.textContent = cc<=0 ? '—' : (bump ? 'z=5.6 · artifact' : 'none · z=1.4');
+  roSig.style.color = bump ? cssv('--amber') : cssv('--ink');
+  const v=document.getElementById('verdict'),ico=document.getElementById('vIco'),txt=document.getElementById('vText');
+  if(cc<=0){
+    v.className='verdict warn';ico.textContent='!';
+    txt.innerHTML='Frictionless — deep hedging just recovers <b>Black–Scholes delta</b> (GATE 1). With no costs there is no edge for anyone, rough or smooth.';
+  } else if(bump){
+    v.className='verdict warn';ico.textContent='⚠';
+    txt.innerHTML='An <b>undertrained</b> policy shows a <b>+0.36 roughness &ldquo;edge&rdquo; (z = 5.6)</b> here — and it survives almost every check. But more training dissolves it to <b>+0.03 (z = 0.7)</b>: a convergence artifact, not roughness. The hardest-won catch in the project.';
+  } else {
+    v.className='verdict ambiguous';ico.textContent='✗';
+    txt.innerHTML='Deep hedging beats delta by <b>+'+gain.toFixed(2)+'</b> (the frictions edge, 8/8 seeds) — but rough and smooth match within noise: increment <b>+'+inc.toFixed(2)+'</b> (z = 1.4). <b>Roughness adds no hedging edge.</b>';
+  }
+  drawHedge();
+}
+els.c.addEventListener('input',render);
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{els.c.value=c.dataset.c;render();}));
+document.getElementById('utToggle').addEventListener('click',function(){
+  UT=!UT; this.classList.toggle('active',UT);
+  document.getElementById('utText').textContent='training budget: '+(UT?'undertrained':'converged');
+  render();
+});
+window.addEventListener('resize',drawHedge);
+function tg(bodyId,togId){const b=document.getElementById(bodyId),t=document.getElementById(togId);const hid=b.classList.toggle('hidden');t.textContent=hid?'show ▼':'hide ▲';}
+document.getElementById('guideBody').classList.remove('hidden');
+render();
+</script>
+</body>
+</html>

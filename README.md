@@ -1,6 +1,10 @@
 # RoughVolLab
 
-![RoughVolLab — the five questions](docs/guide/roughvollab_map_v2.png)
+### ▶ [Try the interactive tour](https://michaellumor.github.io/roughvollab/tour/)
+
+One tested engine and five honest questions about how rough markets really are — each a hands-on explorer you can drive in the browser. No install.
+
+[![RoughVolLab — the five questions](docs/guide/roughvollab_map_v2.png)](https://michaellumor.github.io/roughvollab/tour/)
 
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)

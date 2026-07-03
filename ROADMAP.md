@@ -910,6 +910,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   "P1" label is repurposed (absorbed-baseline → option-surface paper); the naive-MLMC
   baseline remains inside P2 per D23. Seeds section updated in place (current-plan,
   not append-only log); this entry records the change.
+- **D46** *(2026-07-03)* **Public interactive tour shipped + wired into the README.** The six browser explorers (engine + Q1–Q5) and their hub are published via GitHub Pages from `docs/tour/` (hub = `index.html`), live at `https://michaellumor.github.io/roughvollab/tour/`. README now leads with a tour link and the five-questions poster is a clickable entry point. Each explorer runs client-side with no build step or dependencies beyond web fonts; every reported number is traced to its decision (D20–D23 pricing, D24–D26 execution, D37–D39/D41 calibration, D40/D43 hedging, Q1 estimators), and the illustrative visuals are labelled as such. Docs/infra only — no core code touched; `.nojekyll` added, Pages source = `/docs` on `main`.
 ---
 
 ## Publication seeds

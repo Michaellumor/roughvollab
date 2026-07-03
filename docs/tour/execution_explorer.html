@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does rough vol give a trading edge? — execution vs Almgren–Chriss</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap');
+:root{
+  --bg:#0d1420; --bg2:#111a2b; --panel:#131e30; --panel2:#0f1826;
+  --ink:#e8eef5; --dim:#8a9bb0; --faint:#5d6f85;
+  --teal:#2dd4a7; --coral:#f26d4b; --amber:#e0a92e; --violet:#8b7cf0;
+  --gjr:#f26d4b; --cd:#e0a92e; --mfdfa:#8b7cf0; --truth:#2dd4a7;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1400px 900px at 50% -10%,var(--bg2),var(--bg));color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 28px 90px}
+.masthead{margin-bottom:34px}
+.eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:18px}
+.eyebrow .mono{font-family:'JetBrains Mono',monospace;color:var(--violet);text-transform:none;letter-spacing:0}
+h1{font-family:'Newsreader',serif;font-size:clamp(32px,4.6vw,52px);font-weight:500;line-height:1.06;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--violet)}
+.lede{font-size:18px;color:var(--dim);max-width:730px;margin-top:20px;font-weight:300}
+.lede strong{color:var(--ink);font-weight:500}
+.lede code{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet);background:rgba(139,124,240,.08);padding:1px 6px;border-radius:5px}
+
+.guide{margin:32px 0;border:1px solid rgba(139,124,240,.28);border-radius:16px;background:linear-gradient(180deg,rgba(139,124,240,.06),rgba(139,124,240,.02));overflow:hidden}
+.guide-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.guide-head .dot{width:9px;height:9px;border-radius:50%;background:var(--violet);box-shadow:0 0 12px var(--violet)}
+.guide-head h2{font-size:16px;font-weight:600;flex:1}
+.guide-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.guide-body{padding:0 26px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--violet);font-weight:600;margin-bottom:8px}
+.step h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.step p{font-size:14px;color:var(--dim);line-height:1.5}
+@media(max-width:760px){.guide-body{grid-template-columns:1fr;gap:18px}}
+
+.explorer{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:900px){.explorer{grid-template-columns:1fr}}
+.plotcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px}
+.plot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.plot-title{font-size:14px;font-weight:600}
+.plot-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+/* the estimate dial-face: a horizontal H axis with markers */
+.hbar-wrap{margin:8px 0 4px}
+.hbar{position:relative;height:120px;border-radius:12px;background:linear-gradient(90deg,rgba(242,109,75,.10),rgba(224,169,46,.06) 50%,rgba(45,212,167,.10));border:1px solid var(--line2)}
+.hbar .brownian{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.28);transform:translateX(-1px)}
+.hbar .brownian .bl{position:absolute;top:6px;left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.hbar .regionlbl{position:absolute;bottom:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.hbar .rough-lbl{left:12px} .hbar .smooth-lbl{right:12px}
+.marker{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;transition:left .25s ease}
+.marker .stem{width:2px;height:34px;background:currentColor;opacity:.5}
+.marker .dot{width:16px;height:16px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;border:2px solid var(--bg)}
+.marker .tag{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap;background:var(--bg);padding:1px 5px;border-radius:4px}
+.marker.up .tag{top:-22px} .marker.down .tag{bottom:-22px}
+.marker.truth{color:var(--truth)} .marker.truth .dot{width:20px;height:20px}
+.marker.gjr{color:var(--gjr)} .marker.cd{color:var(--cd)} .marker.mfdfa{color:var(--mfdfa)}
+.axis-ticks{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-top:8px;padding:0 2px}
+
+/* estimate readouts */
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.ro{border-radius:12px;padding:16px;border:1px solid var(--line2);background:rgba(255,255,255,.03);text-align:center}
+.ro .rn{font-size:12px;font-weight:600;letter-spacing:.04em;margin-bottom:8px}
+.ro.truth .rn{color:var(--truth)} .ro.gjr .rn{color:var(--gjr)} .ro.cd .rn{color:var(--cd)} .ro.mfdfa .rn{color:var(--mfdfa)}
+.ro .rv{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1}
+.ro .rd{font-size:11px;color:var(--faint);margin-top:6px}
+
+/* verdict */
+.verdict{margin-top:20px;padding:18px 20px;border-radius:12px;display:flex;gap:16px;align-items:flex-start}
+.verdict.identified{background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.35)}
+.verdict.ambiguous{background:rgba(242,109,75,.08);border:1px solid rgba(242,109,75,.35)}
+.verdict .ico{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;flex:none;margin-top:1px}
+.verdict.identified .ico{color:var(--teal)} .verdict.ambiguous .ico{color:var(--coral)}
+.verdict .vt{font-size:14px;line-height:1.55;color:var(--dim)}
+.verdict .vt b{color:var(--ink)}
+
+.controls{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px;position:sticky;top:24px}
+.ctl-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:16px}
+.hval{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.hval .h{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:600;line-height:1;color:var(--truth)}
+.hval .hl{font-size:14px;color:var(--dim)}
+.regime{font-size:13px;font-weight:600;margin-bottom:16px;font-family:'JetBrains Mono',monospace;color:var(--dim)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--coral),var(--amber) 50%,var(--teal));outline:none;margin:6px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer}
+.rng-ends{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-bottom:20px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--violet);color:var(--ink)}
+.chip.active{background:rgba(139,124,240,.12);border-color:var(--violet);color:var(--violet)}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.param{margin-bottom:16px}
+.param-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.param-name{font-size:14px;font-weight:500}
+.param-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--violet)}
+.param-hint{font-size:11px;color:var(--faint);margin-top:3px}
+.btn{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.08);border-color:var(--dim)}
+.btn.primary{background:rgba(139,124,240,.14);border-color:rgba(139,124,240,.4);color:var(--violet)}
+.btn.primary:hover{background:rgba(139,124,240,.2)}
+
+.advanced{margin-top:28px;border:1px solid rgba(45,212,167,.3);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel2))}
+.adv-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.adv-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.adv-head h2{font-size:16px;font-weight:600;flex:1}
+.adv-head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--teal);border:1px solid rgba(45,212,167,.35);padding:3px 9px;border-radius:6px}
+.adv-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.adv-body{padding:0 26px 28px}
+.adv-intro{font-size:15px;color:var(--dim);max-width:760px;margin-bottom:20px;line-height:1.6}
+.adv-intro b{color:var(--ink)} .adv-intro code{font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--teal)}
+.mapcard{border-radius:14px;padding:20px;border:1px solid var(--line2);background:rgba(255,255,255,.03);margin-bottom:20px}
+.mapcard .ml{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:14px}
+canvas{width:100%;display:block;border-radius:8px}
+.assetrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.assetchip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px;border-radius:8px;background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.3);color:var(--teal);cursor:pointer}
+.assetchip:hover{background:rgba(45,212,167,.15)}
+.punchline{margin-top:20px;padding:18px 22px;border-radius:12px;background:rgba(139,124,240,.06);border:1px solid rgba(139,124,240,.25);font-size:14px;color:var(--dim);line-height:1.6}
+.punchline b{color:var(--ink)} .punchline .em{color:var(--violet);font-weight:600}
+
+.foot{margin-top:52px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot .fl{font-size:13px;color:var(--faint)} .foot .fr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)} .foot a{color:var(--violet);text-decoration:none}
+.hidden{display:none}
+
+  /* --- pricing explorer additions --- */
+  .canvas-wrap{margin:6px 0 2px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.015)}
+  #decayCanvas{width:100%;height:auto;display:block}
+  .readouts.three{grid-template-columns:repeat(3,1fr)}
+  .ro.beta .rn{color:var(--teal)} .ro.beta .rv{color:var(--teal)}
+  .ro.gamma .rn{color:var(--violet)} .ro.gamma .rv{color:var(--violet)}
+  .ro.ratio .rn{color:var(--dim)}
+  .verdict.warn{background:rgba(224,169,46,.09);border:1px solid rgba(224,169,46,.38)}
+  .verdict.warn .ico{color:var(--amber)}
+  .costbars{margin:18px 0 6px;display:flex;flex-direction:column;gap:12px}
+  .cbar-row{display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center}
+  .cbar-lab{font-size:13.5px;color:var(--ink);text-align:right;line-height:1.3}
+  .cbar-win{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+  .cbar-track{background:rgba(255,255,255,.04);border-radius:8px;height:36px;overflow:hidden}
+  .cbar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#08131f;min-width:46px;transition:width .5s}
+  .cbar-fill.teal{background:linear-gradient(90deg,#1a9e78,#2dd4a7)}
+  .cbar-fill.amber{background:linear-gradient(90deg,#b3841f,#e0a92e)}
+  .cbar-fill.dim{background:linear-gradient(90deg,#3a4a5e,#5d6f85);color:#e8eef5}
+  .cbar-fill.coral{background:linear-gradient(90deg,#c24e30,#f26d4b)}
+  .ratio-callout{display:flex;gap:20px;align-items:center;margin:22px 0;padding:20px 22px;border:1px solid rgba(45,212,167,.3);border-radius:14px;background:linear-gradient(180deg,rgba(45,212,167,.07),rgba(45,212,167,.02))}
+  .rc-num{font-family:'JetBrains Mono',monospace;font-size:33px;font-weight:700;color:var(--teal);flex:none;line-height:1}
+  .rc-txt{font-size:14px;color:var(--dim);line-height:1.5}
+  .rc-txt .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--ink)}
+  .adv-note{font-size:14px;color:var(--dim);line-height:1.6;margin:18px 0;padding-left:16px;border-left:2px solid rgba(139,124,240,.4)}
+  .adv-note .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet)}
+  .adv-note em{color:var(--ink);font-style:italic}
+
+  /* --- execution explorer additions --- */
+  #edgeCanvas{width:100%;height:auto;display:block}
+  @media(max-width:560px){.readouts{grid-template-columns:repeat(2,1fr)}}
+  .ro.th .rn{color:var(--dim)}
+  .ro.edge .rn{color:var(--coral)} .ro.edge .rv{color:var(--coral)}
+  .ro.best .rn{color:var(--teal)} .ro.best .rv{color:var(--teal);font-size:18px}
+  .ro.rsk .rn{color:var(--dim)}
+  .latoggle{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.03);cursor:pointer;font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace;transition:all .15s}
+  .latoggle:hover{border-color:rgba(255,255,255,.22)}
+  .latoggle.active{background:rgba(224,169,46,.12);border-color:rgba(224,169,46,.55);color:var(--amber)}
+  .ctl-note{font-size:12.5px;color:var(--dim);line-height:1.55}
+  .senslist{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 4px}
+  .senschip{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-weight:600;color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Rough volatility · teaching module · <span class="mono">Layer 2 — execution (Q3)</span></div>
+    <h1>Does it give you<br>a trading <em>edge?</em></h1>
+    <p class="lede">To unwind a large position you trade it out over time — too fast and you pay market impact, too slow and you're exposed to price swings. The classical optimum for that trade-off is <strong>Almgren–Chriss</strong>. Rough volatility has memory, so maybe you can time your selling to the vol and beat it. Turn up the vol-reactivity below and watch.</p>
+  </div>
+
+  <div class="guide">
+    <div class="guide-head" onclick="tg('guideBody','guideToggle')">
+      <span class="dot"></span><h2>Start here — a two-minute guided tour</h2>
+      <span class="toggle" id="guideToggle">hide ▲</span>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <div class="step"><div class="n">01 · the benchmark</div><h3>Almgren–Chriss is the bar</h3><p>The horizontal teal line is the Almgren–Chriss optimum — the schedule that best trades impact cost against timing risk. Anything <b>above</b> the line beats it; anything <b>below</b> is worse. The line is the bar.</p></div>
+      <div class="step"><div class="n">02 · add vol-timing</div><h3>React to the volatility</h3><p>θ makes the schedule speed up when vol is high (θ &gt; 0) or slow down (θ &lt; 0). Slide it away from zero and the curve <b>drops below the line</b> — the vol-timing makes execution <b>worse</b>, not better.</p></div>
+      <div class="step"><div class="n">03 · no edge</div><h3>Nothing beats the optimum</h3><p>Every θ lands below Almgren–Chriss — about <b>5 s.e. worse</b> at the tested strength, with no edge that grows as the market gets rougher. Rough structure buys nothing at the desk. <b>And</b> beware the look-ahead trap — flip it on, then read the Advanced panel.</p></div>
+    </div>
+  </div>
+
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top">
+        <span class="plot-title">Can you beat Almgren–Chriss?</span>
+        <span class="plot-sub" id="plotSub">θ = 1.00 · edge over AC = &minus;5.0 s.e.</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="edgeCanvas" width="760" height="320"></canvas>
+      </div>
+
+      <div class="readouts">
+        <div class="ro th"><div class="rn">θ · vol-reactivity</div><div class="rv" id="roTh">1.00</div><div class="rd">how hard you time the vol</div></div>
+        <div class="ro edge"><div class="rn">edge over AC</div><div class="rv" id="roEdge">&minus;5.0</div><div class="rd">s.e. — below 0 means worse</div></div>
+        <div class="ro best"><div class="rn">best policy found</div><div class="rv" id="roBest">θ = 0 (= AC)</div><div class="rd">vol-timing never helps</div></div>
+        <div class="ro rsk"><div class="rn">roughness → risk</div><div class="rv" id="roRisk">0.95&times;</div><div class="rd">barely moves total risk</div></div>
+      </div>
+
+      <div class="verdict ambiguous" id="verdict">
+        <span class="ico" id="vIco">&#10007;</span>
+        <span class="vt" id="vText">Vol-timing lands below Almgren–Chriss — worse, not better. Roughness gives no execution edge.</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-label">Set the vol-reactivity</div>
+      <div class="hval"><span class="h" id="thDisplay">1.00</span><span class="hl">θ</span></div>
+      <div class="regime" id="regimeLabel">— trade faster when volatility is high</div>
+      <input type="range" id="thSlider" min="-200" max="200" value="100" step="5">
+      <div class="rng-ends"><span>&minus;2 · slower in high vol</span><span>+2 · faster in high vol</span></div>
+      <div class="chips" id="chips">
+        <div class="chip" data-th="-200">&minus;2</div><div class="chip" data-th="-100">&minus;1</div>
+        <div class="chip" data-th="0">0 · AC</div><div class="chip active" data-th="100">1</div><div class="chip" data-th="200">2</div>
+      </div>
+      <div class="divider"></div>
+      <div class="latoggle" id="laToggle"><span>&#128065;</span><span id="laText">let the policy see the future: off</span></div>
+      <div class="ctl-note" style="margin-top:12px">Flip that on and it suddenly &ldquo;beats&rdquo; AC — a tempting <b>+1.52</b> edge. It's fake. The Advanced panel shows how it was caught.</div>
+    </div>
+  </div>
+
+  <div class="advanced">
+    <div class="adv-head" onclick="tg('advBody','advToggle')">
+      <span class="dot"></span><h2>Advanced — the edge that wasn't</h2>
+      <span class="tag">THE FINDING</span>
+      <span class="toggle" id="advToggle">show ▼</span>
+    </div>
+    <div class="adv-body hidden" id="advBody">
+      <p class="adv-intro">A vol-timing policy has one honest job here: beat Almgren–Chriss on the <b>matched-risk</b> frontier. It doesn't. But the story of <em>how that was established</em> is the point — because the very first run said the opposite.</p>
+
+      <div class="ratio-callout" style="border-color:rgba(242,109,75,.35);background:linear-gradient(180deg,rgba(242,109,75,.07),rgba(242,109,75,.02))">
+        <div class="rc-num" style="color:var(--coral);font-size:29px">+1.52 → fake</div>
+        <div class="rc-txt">Phase 1's first run flashed a <b>+1.52 &ldquo;edge&rdquo;</b> at H = 0.10. Two tells exposed it: it was <b>+2.21 at H = 0.49</b> — <em>bigger</em> when the market is smooth, so it cannot be a roughness effect — and it was ~60&times; the entire trading cost, impossible for a matched-risk saving. Cause: a global renormalisation that, through the ρ = &minus;0.70 leverage, let the schedule covertly peek at future price moves. The fix — <b>causal, per-step</b> renormalisation — removed it.</div>
+      </div>
+
+      <p class="adv-note"><b>The bar was committed before any numbers.</b> Beat AC only if: (i) the matched-risk front sits below AC by more than the seed s.e. at several risk levels; (ii) the winning θ is clearly nonzero; (iii) the edge is sign-stable across seeds {5, 11, 23}; (iv) SANITY — it must <em>not</em> beat AC at H = 0.49. With look-ahead removed, the honest gap is <span class="mono">&minus;0.025</span> — per-seed <span class="mono">[&minus;0.034, &minus;0.017, &minus;0.023]</span>, about <b>5 s.e. worse</b>, with no edge growing with roughness. Kill-switch fired: deep RL was <b>not pursued</b>.</p>
+
+      <div class="senslist">
+        <span class="senschip" style="color:#2dd4a7">G-X1: simulated AC = analytic AC to 0.7%</span>
+        <span class="senschip">roughness moves aggregate risk only 0.95&times;</span>
+        <span style="font-size:12px;color:var(--faint)">← so any edge had to come from path-dependent vol-timing, not a different risk level — and it isn't there</span>
+      </div>
+
+      <div class="punchline">
+        Optimal execution is the <b>exploit</b> side of the question, and the answer matches the rest of the audit: roughness is hard to identify from price history (Q1) and from option surfaces (Q4), it isn't cheaply priceable by multilevel Monte Carlo (Q2), and here it gives <b>no tradeable execution edge</b> — a simple vol-aware policy cannot beat classical Almgren–Chriss, and the one time it seemed to, the discipline caught the artifact. <span class="em">Rough or not, you can't turn it into money at the desk.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="fl">Almgren–Chriss execution over the rough-Bergomi engine (D24&ndash;D26): the matched-risk gap, the look-ahead artifact, the committed kill-switch bar · edge-vs-θ curve illustrative, the &minus;0.025 gap / per-seed / 0.7% / 0.95&times; are the project’s measured values · runs in your browser</div>
+    <div class="fr">RoughVolLab · <a href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Execution explorer (Layer 2 / Q3)
+//  Finding (D24-D26): can a vol-timing policy beat Almgren-Chriss (the Markovian
+//  optimum) in a rough market? No. A causal vol-reactive heuristic (strength th,
+//  signal z=(V-xi0)/xi0) is ~5 s.e. WORSE than AC on the matched-risk frontier
+//  (gap -0.025; per-seed [-0.034,-0.017,-0.023]), with no edge growing with
+//  roughness, and it does NOT beat AC at H=0.49 (Markovian sanity). The first run
+//  flashed a fake +1.52 edge (bigger, +2.21, at H=0.49; ~60x the trading cost) =
+//  a look-ahead artifact from global renormalisation + rho=-0.70 leverage; a
+//  causal per-step fix removed it.
+//  The edge-vs-th curve here is illustrative of the swept behaviour (no th beats
+//  AC); the reported numbers (-0.025 gap, per-seed, 0.7% G-X1, 0.95x) are the
+//  project's measured values.
+// ============================================================
+let LOOK=false;
+function edgeSE(th){return -5.0*th*th;}          // illustrative: 0 at th=0, worse away, ~-5 s.e. at |th|=1
+const els={th:document.getElementById('thSlider'),
+  thDisplay:document.getElementById('thDisplay'),regime:document.getElementById('regimeLabel'),plotSub:document.getElementById('plotSub')};
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+
+function drawEdge(){
+  const cv=document.getElementById('edgeCanvas'), ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const Wc=cv.clientWidth||760, Hc=Math.max(240,Math.min(360,Wc*0.42));
+  const nw=Math.round(Wc*dpr), nh=Math.round(Hc*dpr);
+  if(cv.width!==nw||cv.height!==nh){cv.width=nw;cv.height=nh;}
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,Wc,Hc);
+  const th=els.th.value/100, e=edgeSE(th);
+  const pL=54,pR=18,pT=22,pB=42, xw=Wc-pL-pR, yh=Hc-pT-pB;
+  const TLO=-2,THI=2, ELO=-20,EHI=2;
+  const X=t=>pL+((t-TLO)/(THI-TLO))*xw, Y=v=>pT+((EHI-v)/(EHI-ELO))*yh;
+  // "worse than AC" region (e<0) faint red
+  ctx.fillStyle='rgba(242,109,75,.06)';ctx.fillRect(pL,Y(0),xw,Y(ELO)-Y(0));
+  // +-1 s.e. band (indistinguishable from AC)
+  ctx.fillStyle='rgba(255,255,255,.05)';ctx.fillRect(pL,Y(1),xw,Y(-1)-Y(1));
+  // frame
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,pT+yh);ctx.lineTo(pL+xw,pT+yh);ctx.stroke();
+  // x gridlines + theta ticks
+  ctx.font='11px JetBrains Mono,monospace';ctx.textAlign='center';
+  for(let t=-2;t<=2;t++){const x=X(t);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.moveTo(x,pT);ctx.lineTo(x,pT+yh);ctx.stroke();
+    ctx.fillStyle='#5d6f85';ctx.fillText(t,x,pT+yh+18);}
+  ctx.fillStyle='#8a9bb0';ctx.font='12px JetBrains Mono,monospace';ctx.fillText('vol-reactivity  θ',pL+xw/2,Hc-9);
+  // y ticks
+  ctx.textAlign='right';ctx.font='11px JetBrains Mono,monospace';
+  [0,-5,-10,-15,-20].forEach(v=>{ctx.fillStyle='#5d6f85';ctx.fillText(v,pL-8,Y(v)+4);});
+  ctx.save();ctx.translate(14,pT+yh/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle='#8a9bb0';ctx.font='11px JetBrains Mono,monospace';ctx.fillText('edge over Almgren–Chriss  (s.e.)',0,0);ctx.restore();
+  // AC line (e=0)
+  ctx.strokeStyle='#2dd4a7';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(pL,Y(0));ctx.lineTo(pL+xw,Y(0));ctx.stroke();
+  ctx.fillStyle='#2dd4a7';ctx.textAlign='left';ctx.font='700 12px JetBrains Mono,monospace';ctx.fillText('Almgren–Chriss — the optimum',pL+8,Y(0)-8);
+  // causal edge curve
+  ctx.strokeStyle='#f26d4b';ctx.lineWidth=3;ctx.lineJoin='round';
+  ctx.beginPath();let st=false;for(let t=TLO;t<=THI+1e-9;t+=0.04){const y=Y(Math.max(ELO,edgeSE(t)));st?ctx.lineTo(X(t),y):ctx.moveTo(X(t),y);st=true;}ctx.stroke();
+  // th=0 marker (= AC)
+  ctx.fillStyle='#2dd4a7';ctx.beginPath();ctx.arc(X(0),Y(0),5,0,7);ctx.fill();
+  // current th marker + drop line
+  const yc=Y(Math.max(ELO,e));
+  ctx.strokeStyle='rgba(242,109,75,.4)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(X(th),yc);ctx.lineTo(X(th),pT+yh);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#f26d4b';ctx.beginPath();ctx.arc(X(th),yc,6,0,7);ctx.fill();ctx.fillStyle='#0d1420';ctx.beginPath();ctx.arc(X(th),yc,2.5,0,7);ctx.fill();
+  ctx.fillStyle='#f26d4b';ctx.textAlign='center';ctx.font='700 12px JetBrains Mono,monospace';
+  if(Math.abs(th)>0.05) ctx.fillText(e.toFixed(1)+' s.e.',X(th),yc+ (yc<pT+30? 20 : -12));
+  // look-ahead overlay
+  if(LOOK){
+    ctx.fillStyle='rgba(13,20,32,.9)';ctx.fillRect(pL+6,pT+6,xw-12,yh-12);
+    ctx.strokeStyle='rgba(224,169,46,.55)';ctx.lineWidth=1.5;ctx.strokeRect(pL+6,pT+6,xw-12,yh-12);
+    ctx.textAlign='left';
+    ctx.fillStyle='#e0a92e';ctx.font='700 15px JetBrains Mono,monospace';
+    ctx.fillText('⚠  look-ahead ON — apparent edge +1.52',pL+22,pT+38);
+    ctx.fillStyle='#e8eef5';ctx.font='12.5px JetBrains Mono,monospace';
+    const lines=['…but +2.21 at H = 0.49 — bigger when the market is','SMOOTH, so it can\'t be a roughness edge, and it is','~60× the whole trading cost. Impossible.','','This is the look-ahead artifact. The causal fix removes it.'];
+    lines.forEach((L,k)=>{ctx.fillStyle = k===4?'#8a9bb0':'#e8eef5'; ctx.fillText(L,pL+22,pT+66+k*20);});
+  }
+}
+
+function regimeName(th){
+  if(Math.abs(th)<0.05) return ['— θ = 0 is exactly Almgren–Chriss', cssv('--dim')];
+  if(th>0) return ['— trade faster when volatility is high', cssv('--coral')];
+  return ['— trade slower when volatility is high', cssv('--coral')];
+}
+
+function render(){
+  const th=els.th.value/100, e=edgeSE(th);
+  els.thDisplay.textContent=th.toFixed(2);
+  els.plotSub.textContent = LOOK ? 'θ = '+th.toFixed(2)+' · look-ahead ON · apparent edge +1.52 (fake)'
+                                 : 'θ = '+th.toFixed(2)+' · edge over AC = '+e.toFixed(1)+' s.e.';
+  const rr=regimeName(th); els.regime.textContent=rr[0]; els.regime.style.color=rr[1];
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.th)===parseInt(els.th.value)));
+  document.getElementById('roTh').textContent=th.toFixed(2);
+  document.getElementById('roEdge').textContent = LOOK ? '+1.52*' : e.toFixed(1);
+  const v=document.getElementById('verdict'),ico=document.getElementById('vIco'),txt=document.getElementById('vText');
+  if(LOOK){
+    v.className='verdict warn';ico.textContent='⚠';
+    txt.innerHTML='Look-ahead ON: the <b>+1.52 &ldquo;edge&rdquo;</b> is an artifact — it\'s <b>bigger at H = 0.49</b> (a smooth market) and ~60× the trading cost. A real roughness edge would vanish when the market is Markovian. Turn it off.';
+  } else if(Math.abs(th)<0.05){
+    v.className='verdict warn';ico.textContent='!';
+    txt.innerHTML='θ = 0 is exactly <b>Almgren–Chriss</b> — you\'re sitting on the optimum. Turn up the vol-reactivity and watch the curve drop below the line.';
+  } else {
+    v.className='verdict ambiguous';ico.textContent='✗';
+    txt.innerHTML='At θ = '+th.toFixed(2)+', vol-timing is <b>'+Math.abs(e).toFixed(1)+' s.e. worse</b> than Almgren–Chriss. No θ beats the Markovian optimum, and the gap doesn\'t grow with roughness — <b>no executable execution edge</b>.';
+  }
+  drawEdge();
+}
+els.th.addEventListener('input',render);
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{els.th.value=c.dataset.th;render();}));
+document.getElementById('laToggle').addEventListener('click',function(){
+  LOOK=!LOOK; this.classList.toggle('active',LOOK);
+  document.getElementById('laText').textContent='let the policy see the future: '+(LOOK?'on':'off');
+  render();
+});
+window.addEventListener('resize',drawEdge);
+function tg(bodyId,togId){const b=document.getElementById(bodyId),t=document.getElementById(togId);const hid=b.classList.toggle('hidden');t.textContent=hid?'show ▼':'hide ▲';}
+document.getElementById('guideBody').classList.remove('hidden');
+render();
+</script>
+</body>
+</html>

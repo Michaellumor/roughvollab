@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can you back it out of the smile? — rough-Heston calibration and the H that won’t pin down</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap');
+:root{
+  --bg:#0d1420; --bg2:#111a2b; --panel:#131e30; --panel2:#0f1826;
+  --ink:#e8eef5; --dim:#8a9bb0; --faint:#5d6f85;
+  --teal:#2dd4a7; --coral:#f26d4b; --amber:#e0a92e; --violet:#8b7cf0;
+  --gjr:#f26d4b; --cd:#e0a92e; --mfdfa:#8b7cf0; --truth:#2dd4a7;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1400px 900px at 50% -10%,var(--bg2),var(--bg));color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 28px 90px}
+.masthead{margin-bottom:34px}
+.eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:18px}
+.eyebrow .mono{font-family:'JetBrains Mono',monospace;color:var(--violet);text-transform:none;letter-spacing:0}
+h1{font-family:'Newsreader',serif;font-size:clamp(32px,4.6vw,52px);font-weight:500;line-height:1.06;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--violet)}
+.lede{font-size:18px;color:var(--dim);max-width:730px;margin-top:20px;font-weight:300}
+.lede strong{color:var(--ink);font-weight:500}
+.lede code{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet);background:rgba(139,124,240,.08);padding:1px 6px;border-radius:5px}
+
+.guide{margin:32px 0;border:1px solid rgba(139,124,240,.28);border-radius:16px;background:linear-gradient(180deg,rgba(139,124,240,.06),rgba(139,124,240,.02));overflow:hidden}
+.guide-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.guide-head .dot{width:9px;height:9px;border-radius:50%;background:var(--violet);box-shadow:0 0 12px var(--violet)}
+.guide-head h2{font-size:16px;font-weight:600;flex:1}
+.guide-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.guide-body{padding:0 26px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--violet);font-weight:600;margin-bottom:8px}
+.step h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.step p{font-size:14px;color:var(--dim);line-height:1.5}
+@media(max-width:760px){.guide-body{grid-template-columns:1fr;gap:18px}}
+
+.explorer{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:900px){.explorer{grid-template-columns:1fr}}
+.plotcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px}
+.plot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.plot-title{font-size:14px;font-weight:600}
+.plot-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+/* the estimate dial-face: a horizontal H axis with markers */
+.hbar-wrap{margin:8px 0 4px}
+.hbar{position:relative;height:120px;border-radius:12px;background:linear-gradient(90deg,rgba(242,109,75,.10),rgba(224,169,46,.06) 50%,rgba(45,212,167,.10));border:1px solid var(--line2)}
+.hbar .brownian{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.28);transform:translateX(-1px)}
+.hbar .brownian .bl{position:absolute;top:6px;left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.hbar .regionlbl{position:absolute;bottom:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.hbar .rough-lbl{left:12px} .hbar .smooth-lbl{right:12px}
+.marker{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;transition:left .25s ease}
+.marker .stem{width:2px;height:34px;background:currentColor;opacity:.5}
+.marker .dot{width:16px;height:16px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;border:2px solid var(--bg)}
+.marker .tag{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap;background:var(--bg);padding:1px 5px;border-radius:4px}
+.marker.up .tag{top:-22px} .marker.down .tag{bottom:-22px}
+.marker.truth{color:var(--truth)} .marker.truth .dot{width:20px;height:20px}
+.marker.gjr{color:var(--gjr)} .marker.cd{color:var(--cd)} .marker.mfdfa{color:var(--mfdfa)}
+.axis-ticks{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-top:8px;padding:0 2px}
+
+/* estimate readouts */
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.ro{border-radius:12px;padding:16px;border:1px solid var(--line2);background:rgba(255,255,255,.03);text-align:center}
+.ro .rn{font-size:12px;font-weight:600;letter-spacing:.04em;margin-bottom:8px}
+.ro.truth .rn{color:var(--truth)} .ro.gjr .rn{color:var(--gjr)} .ro.cd .rn{color:var(--cd)} .ro.mfdfa .rn{color:var(--mfdfa)}
+.ro .rv{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1}
+.ro .rd{font-size:11px;color:var(--faint);margin-top:6px}
+
+/* verdict */
+.verdict{margin-top:20px;padding:18px 20px;border-radius:12px;display:flex;gap:16px;align-items:flex-start}
+.verdict.identified{background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.35)}
+.verdict.ambiguous{background:rgba(242,109,75,.08);border:1px solid rgba(242,109,75,.35)}
+.verdict .ico{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;flex:none;margin-top:1px}
+.verdict.identified .ico{color:var(--teal)} .verdict.ambiguous .ico{color:var(--coral)}
+.verdict .vt{font-size:14px;line-height:1.55;color:var(--dim)}
+.verdict .vt b{color:var(--ink)}
+
+.controls{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px;position:sticky;top:24px}
+.ctl-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:16px}
+.hval{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.hval .h{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:600;line-height:1;color:var(--truth)}
+.hval .hl{font-size:14px;color:var(--dim)}
+.regime{font-size:13px;font-weight:600;margin-bottom:16px;font-family:'JetBrains Mono',monospace;color:var(--dim)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--coral),var(--amber) 50%,var(--teal));outline:none;margin:6px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer}
+.rng-ends{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-bottom:20px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--violet);color:var(--ink)}
+.chip.active{background:rgba(139,124,240,.12);border-color:var(--violet);color:var(--violet)}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.param{margin-bottom:16px}
+.param-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.param-name{font-size:14px;font-weight:500}
+.param-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--violet)}
+.param-hint{font-size:11px;color:var(--faint);margin-top:3px}
+.btn{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.08);border-color:var(--dim)}
+.btn.primary{background:rgba(139,124,240,.14);border-color:rgba(139,124,240,.4);color:var(--violet)}
+.btn.primary:hover{background:rgba(139,124,240,.2)}
+
+.advanced{margin-top:28px;border:1px solid rgba(45,212,167,.3);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel2))}
+.adv-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.adv-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.adv-head h2{font-size:16px;font-weight:600;flex:1}
+.adv-head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--teal);border:1px solid rgba(45,212,167,.35);padding:3px 9px;border-radius:6px}
+.adv-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.adv-body{padding:0 26px 28px}
+.adv-intro{font-size:15px;color:var(--dim);max-width:760px;margin-bottom:20px;line-height:1.6}
+.adv-intro b{color:var(--ink)} .adv-intro code{font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--teal)}
+.mapcard{border-radius:14px;padding:20px;border:1px solid var(--line2);background:rgba(255,255,255,.03);margin-bottom:20px}
+.mapcard .ml{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:14px}
+canvas{width:100%;display:block;border-radius:8px}
+.assetrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.assetchip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px;border-radius:8px;background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.3);color:var(--teal);cursor:pointer}
+.assetchip:hover{background:rgba(45,212,167,.15)}
+.punchline{margin-top:20px;padding:18px 22px;border-radius:12px;background:rgba(139,124,240,.06);border:1px solid rgba(139,124,240,.25);font-size:14px;color:var(--dim);line-height:1.6}
+.punchline b{color:var(--ink)} .punchline .em{color:var(--violet);font-weight:600}
+
+.foot{margin-top:52px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot .fl{font-size:13px;color:var(--faint)} .foot .fr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)} .foot a{color:var(--violet);text-decoration:none}
+.hidden{display:none}
+
+  /* --- pricing explorer additions --- */
+  .canvas-wrap{margin:6px 0 2px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.015)}
+  #decayCanvas,#smileCanvas{width:100%;height:auto;display:block}
+  .readouts.three{grid-template-columns:repeat(3,1fr)}
+  .ro.beta .rn{color:var(--teal)} .ro.beta .rv{color:var(--teal)}
+  .ro.gamma .rn{color:var(--violet)} .ro.gamma .rv{color:var(--violet)}
+  .ro.ratio .rn{color:var(--dim)}
+  .verdict.warn{background:rgba(224,169,46,.09);border:1px solid rgba(224,169,46,.38)}
+  .verdict.warn .ico{color:var(--amber)}
+  .costbars{margin:18px 0 6px;display:flex;flex-direction:column;gap:12px}
+  .cbar-row{display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center}
+  .cbar-lab{font-size:13.5px;color:var(--ink);text-align:right;line-height:1.3}
+  .cbar-win{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+  .cbar-track{background:rgba(255,255,255,.04);border-radius:8px;height:36px;overflow:hidden}
+  .cbar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#08131f;min-width:46px;transition:width .5s}
+  .cbar-fill.teal{background:linear-gradient(90deg,#1a9e78,#2dd4a7)}
+  .cbar-fill.amber{background:linear-gradient(90deg,#b3841f,#e0a92e)}
+  .cbar-fill.dim{background:linear-gradient(90deg,#3a4a5e,#5d6f85);color:#e8eef5}
+  .cbar-fill.coral{background:linear-gradient(90deg,#c24e30,#f26d4b)}
+  .ratio-callout{display:flex;gap:20px;align-items:center;margin:22px 0;padding:20px 22px;border:1px solid rgba(45,212,167,.3);border-radius:14px;background:linear-gradient(180deg,rgba(45,212,167,.07),rgba(45,212,167,.02))}
+  .rc-num{font-family:'JetBrains Mono',monospace;font-size:33px;font-weight:700;color:var(--teal);flex:none;line-height:1}
+  .rc-txt{font-size:14px;color:var(--dim);line-height:1.5}
+  .rc-txt .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--ink)}
+  .adv-note{font-size:14px;color:var(--dim);line-height:1.6;margin:18px 0;padding-left:16px;border-left:2px solid rgba(139,124,240,.4)}
+  .adv-note .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet)}
+  .adv-note em{color:var(--ink);font-style:italic}
+
+  /* --- calibration explorer additions --- */
+  .ro.hh .rn{color:var(--coral)} .ro.hh .rv{color:var(--coral)}
+  .ro.nu2 .rn{color:var(--teal)} .ro.nu2 .rv{color:var(--teal)}
+  .ro.rmse .rn{color:var(--dim)}
+  .ro.cond .rn{color:var(--amber)} .ro.cond .rv{color:var(--amber);font-size:22px}
+  @media(max-width:560px){.readouts{grid-template-columns:repeat(2,1fr)}}
+  .slegend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--dim)}
+  .slegend span{display:inline-flex;align-items:center;gap:7px}
+  .slegend .sw{width:18px;border-top-width:3px;border-top-style:solid;display:inline-block;height:0}
+  .slegend .dotm{width:9px;height:9px;border-radius:50%;background:#e8eef5;display:inline-block}
+  .ctl-note{font-size:12.5px;color:var(--dim);line-height:1.55}
+  .senslist{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 4px}
+  .senschip{font-family:'JetBrains Mono',monospace;font-size:12.5px;padding:6px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Rough volatility · teaching module · <span class="mono">Layer 4 — calibration (Q4)</span></div>
+    <h1>Can you back it<br>out of the <em>smile?</em></h1>
+    <p class="lede">The other route to the roughness runs through <strong>option prices</strong>. Fit the rough-Heston model to a market implied-vol smile and read off its parameters — level ξ₀, skew ρ, vol-of-vol ν, and the roughness <strong>H</strong>. The model fits beautifully. But watch what H does when you slide it.</p>
+  </div>
+
+  <div class="guide">
+    <div class="guide-head" onclick="tg('guideBody','guideToggle')">
+      <span class="dot"></span><h2>Start here — a two-minute guided tour</h2>
+      <span class="toggle" id="guideToggle">hide ▲</span>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <div class="step"><div class="n">01 · the fit</div><h3>Rough-Heston fits the smile</h3><p>The dots are the market smile; the teal curve is the calibrated model. It sits right on the data — and it pins the level (ξ₀), the skew (ρ) and the vol-of-vol (ν) cleanly.</p></div>
+      <div class="step"><div class="n">02 · slide H</div><h3>Now drag the roughness</h3><p>The fit <b>doesn't budge</b>. As you change H, the vol-of-vol <b>ν silently recalibrates</b> to compensate — the faint dashed line shows what H alone would do, and ν cancels it. Same smile, any H.</p></div>
+      <div class="step"><div class="n">03 · the wall</div><h3>H is not identified</h3><p>A single smile fixes ξ₀, ρ and ν, but leaves H on a <b>flat, ν-degenerate direction</b> — the calibration is ill-posed (cond ≈ 6&times;10<sup>5</sup>). You can fit the market perfectly and still not know the roughness. Same wall as the price-history route.</p></div>
+    </div>
+  </div>
+
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top">
+        <span class="plot-title">Fit rough-Heston to the smile</span>
+        <span class="plot-sub" id="plotSub">H = 0.10 · ν = 0.35 · IV-RMSE = 0.13pp</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="smileCanvas" width="760" height="320"></canvas>
+      </div>
+
+      <div class="slegend">
+        <span><span class="dotm"></span>market smile</span>
+        <span><span class="sw" style="border-top-color:#2dd4a7"></span>best fit (ν recalibrated)</span>
+        <span><span class="sw" style="border-top-color:#8a9bb0;border-top-style:dashed"></span>same H, ν held fixed</span>
+      </div>
+
+      <div class="readouts">
+        <div class="ro hh"><div class="rn">H · roughness</div><div class="rv" id="roH">0.10</div><div class="rd">the parameter you're sliding</div></div>
+        <div class="ro nu2"><div class="rn">ν* · best-fit vol-of-vol</div><div class="rv" id="roNu">0.35</div><div class="rd">moves to compensate H</div></div>
+        <div class="ro rmse"><div class="rn">IV-RMSE</div><div class="rv" id="roRmse">0.13</div><div class="rd">fit error (pp) — stays tiny</div></div>
+        <div class="ro cond"><div class="rn">cond(J&#7488;J)</div><div class="rv" id="roCond">6.2&times;10&#8309;</div><div class="rd">how ill-posed — huge</div></div>
+      </div>
+
+      <div class="verdict ambiguous" id="verdict">
+        <span class="ico" id="vIco">&#10007;</span>
+        <span class="vt" id="vText">The fit stays perfect as H moves — ν absorbs it. A single smile fixes ξ₀, ρ, ν but not H.</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-label">Set the roughness</div>
+      <div class="hval"><span class="h" id="hDisplay">0.10</span><span class="hl">H</span></div>
+      <div class="regime" id="regimeLabel">— the true value the market was built from</div>
+      <input type="range" id="hSlider" min="5" max="50" value="10" step="1">
+      <div class="rng-ends"><span>0.05 · rough</span><span>0.50 · smooth</span></div>
+      <div class="chips" id="chips">
+        <div class="chip" data-h="5">0.05</div><div class="chip active" data-h="10">0.10</div>
+        <div class="chip" data-h="20">0.20</div><div class="chip" data-h="35">0.35</div><div class="chip" data-h="50">0.50</div>
+      </div>
+      <div class="divider"></div>
+      <div class="ctl-note">Every H you pick refits the smile just as well. Try the chips — the dashed line jumps, the fit doesn't. That flatness <b>is</b> the non-identifiability.</div>
+    </div>
+  </div>
+
+  <div class="advanced">
+    <div class="adv-head" onclick="tg('advBody','advToggle')">
+      <span class="dot"></span><h2>Advanced — does more data pin it down?</h2>
+      <span class="tag">THE FINDING</span>
+      <span class="toggle" id="advToggle">show ▼</span>
+    </div>
+    <div class="adv-body hidden" id="advBody">
+      <p class="adv-intro">One smile is one maturity. The rough-Heston skew has a <b>term structure</b> — it scales like T<sup>H&minus;½</sup> — so different maturities feel H differently, and stacking them into a <b>surface</b> should help. It does, a lot. But it doesn't cure the problem. Condition number of the calibration as maturities are added:</p>
+
+      <div class="costbars" id="condbars">
+        <div class="cbar-row"><div class="cbar-lab">1 smile</div><div class="cbar-track"><div class="cbar-fill coral" style="width:100%"><span>6.2&times;10&#8309;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">3 maturities</div><div class="cbar-track"><div class="cbar-fill amber" style="width:34%"><span>5.2&times;10&#8308;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">4 maturities</div><div class="cbar-track"><div class="cbar-fill amber" style="width:19%"><span>2.0&times;10&#8308;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">5 (incl. a 1-month)<span class="cbar-win">~100&times; better</span></div><div class="cbar-track"><div class="cbar-fill teal" style="width:9%"><span>9.8&times;10&#179;</span></div></div></div>
+      </div>
+
+      <p class="adv-note"><b>Better, but H stays soft.</b> The surface improves conditioning ~100&times; and makes H <em>usable at clean data</em> — the H-spread over repeated fits drops from ~106% (one smile) to ~10% (H &approx; 0.10&#177;0.01). But H is still the flat direction (|flat[H]| = 0.89), still degenerate with ν (corr &minus;0.85), and the gain <b>erodes as noise grows</b> (~10&times; &rarr; ~4&times; from 0.1pp to 0.5pp market noise). The term structure <em>mitigates</em> the weak identifiability; it does not remove it.</p>
+
+      <div class="ratio-callout">
+        <div class="rc-num" style="font-size:26px">non-identified</div>
+        <div class="rc-txt">On <b>live Deribit BTC options</b>, the validated surface engine fits the gross smile to <span class="mono">~0.9pp</span> and recovers ξ₀/ρ/ν plausibly — but <b>H is non-identified</b> by three independent diagnostics, and the model under-produces crypto's extreme crash tail. The option-pricing route reaches the same wall.</div>
+      </div>
+
+      <div class="senslist">
+        <span class="senschip" style="color:#2dd4a7">ξ₀&nbsp; 6.6</span>
+        <span class="senschip" style="color:#2dd4a7">ρ&nbsp; 0.31</span>
+        <span class="senschip" style="color:#2dd4a7">ν&nbsp; 0.26</span>
+        <span class="senschip" style="color:#f26d4b">H&nbsp; 0.042</span>
+        <span style="font-size:12px;color:var(--faint)">← how strongly the smile responds to each parameter; H is ~150&times; below ξ₀</span>
+      </div>
+
+      <div class="punchline">
+        You can fit the smile beautifully and still not know how rough the market is. From the price history the roughness estimators can't agree (Q1); from option prices the calibration leaves H on a flat, degenerate direction (this) — <span class="em">two independent routes to the same observational-equivalence wall.</span> That agreement is the strongest evidence in RoughVolLab that the measured roughness may be more artefact than fact.
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="fl">Rough-Heston CF calibration geometry (D37&ndash;D39): cond(J&#7488;J), the H~ν degeneracy, live Deribit BTC · illustrative smile, reported numbers are the project’s measured values · runs in your browser</div>
+    <div class="fr">RoughVolLab · <a href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Calibration explorer (Layer 4 / Q4)
+//  Finding (D37-D39): fitting rough-Heston theta=[H,nu,rho,xi0] to a single IV
+//  smile identifies xi0/rho/nu but NOT H. H is the flat eigen-direction of the
+//  single-maturity inverse problem: cond(J^T J) ~ 6.2e5, H~nu degenerate
+//  (corr -0.82), H sensitivity 0.042 vs nu 0.26. Many (H,nu) pairs give the same
+//  smile -> slide H and nu recalibrates to hold the fit. A surface (D38) improves
+//  cond ~100x and makes H usable at low noise but keeps it soft; on live Deribit
+//  BTC (D39) H is non-identified by 3 diagnostics.
+//  The smile here is an illustrative stand-in for the SHAPE; the reported numbers
+//  (cond, sensitivities, spreads, the Deribit result) are the project's measured
+//  values.
+// ============================================================
+const H0=0.10, NU0=0.35, RHO=-0.70, XI0=0.04;
+const ATM=Math.sqrt(XI0);              // 0.20
+const LAM=0.9;                         // effective-amplitude shape (the degenerate direction)
+const KS=0.1143, KC=0.049, K3=0.0004;  // skew, curvature, un-absorbable H-only wing residual
+function wH(H){return 1+LAM*(H-H0);}
+const A0=NU0*wH(H0);                    // = NU0
+function skew(A){return KS*RHO*A;}
+function curv(A){return KC*A*A;}
+function ivBase(vu,A){return ATM+skew(A)*vu+curv(A)*vu*vu;}
+function noiseAt(i){return 0.0018*Math.sin(2.3*i+1);}   // deterministic market micro-noise
+function resid(H,vu){return K3*(H-H0)*vu*vu*vu;}        // the tiny H-only part nu can't cancel
+const VUS=[], MKT=[];
+for(let i=0;i<15;i++){const vu=-2.5+(4.5*i/14); VUS.push(vu); MKT.push(ivBase(vu,A0)+noiseAt(i));}
+
+const els={h:document.getElementById('hSlider'),
+  hDisplay:document.getElementById('hDisplay'),regime:document.getElementById('regimeLabel'),plotSub:document.getElementById('plotSub')};
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function nuStar(H){return A0/wH(H);}                    // keeps A fixed -> smile unchanged
+function rmsePP(H){let s=0;for(let i=0;i<VUS.length;i++){const d=resid(H,VUS[i])-noiseAt(i);s+=d*d;}return Math.sqrt(s/VUS.length)*100;}
+
+function drawSmile(){
+  const cv=document.getElementById('smileCanvas'), ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const Wc=cv.clientWidth||760, Hc=Math.max(240,Math.min(360,Wc*0.42));
+  const nw=Math.round(Wc*dpr), nh=Math.round(Hc*dpr);
+  if(cv.width!==nw||cv.height!==nh){cv.width=nw;cv.height=nh;}
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,Wc,Hc);
+  const H=els.h.value/100;
+  const pL=54,pR=18,pT=22,pB=40, xw=Wc-pL-pR, yh=Hc-pT-pB;
+  const VLO=-2.5,VHI=2.0, YLO=0.08,YHI=0.40;
+  const X=vu=>pL+((vu-VLO)/(VHI-VLO))*xw, Y=iv=>pT+((YHI-iv)/(YHI-YLO))*yh;
+  const clip=iv=>Math.max(YLO,Math.min(YHI,iv));
+  // frame
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,pT+yh);ctx.lineTo(pL+xw,pT+yh);ctx.stroke();
+  // y gridlines + % labels
+  ctx.font='11px JetBrains Mono,monospace';ctx.textAlign='right';
+  for(let iv=0.10;iv<=0.401;iv+=0.10){const y=Y(iv);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.moveTo(pL,y);ctx.lineTo(pL+xw,y);ctx.stroke();
+    ctx.fillStyle='#5d6f85';ctx.fillText(Math.round(iv*100)+'%',pL-8,y+4);}
+  // x ticks + labels
+  ctx.textAlign='center';
+  for(let vu=-2;vu<=2;vu++){ctx.fillStyle='#5d6f85';ctx.fillText(vu,X(vu),pT+yh+18);}
+  ctx.fillStyle='#8a9bb0';ctx.font='12px JetBrains Mono,monospace';ctx.fillText('log-moneyness  (vol units)',pL+xw/2,Hc-9);
+  ctx.save();ctx.translate(14,pT+yh/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle='#8a9bb0';ctx.font='11px JetBrains Mono,monospace';ctx.fillText('implied vol',0,0);ctx.restore();
+  // ATM line
+  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(X(0),pT);ctx.lineTo(X(0),pT+yh);ctx.stroke();ctx.setLineDash([]);
+  // ghost: nu fixed at NU0, vary H (what H alone would do)
+  const Ag=NU0*wH(H);
+  ctx.strokeStyle='rgba(138,155,176,.7)';ctx.lineWidth=2;ctx.setLineDash([6,5]);
+  ctx.beginPath();let st=false;for(let vu=VLO;vu<=VHI+1e-9;vu+=0.05){const y=Y(clip(ivBase(vu,Ag)));st?ctx.lineTo(X(vu),y):ctx.moveTo(X(vu),y);st=true;}ctx.stroke();ctx.setLineDash([]);
+  // best fit: nu*=nuStar -> A0, plus the tiny H-only residual
+  ctx.strokeStyle='#2dd4a7';ctx.lineWidth=3;ctx.lineJoin='round';
+  ctx.beginPath();st=false;for(let vu=VLO;vu<=VHI+1e-9;vu+=0.05){const y=Y(clip(ivBase(vu,A0)+resid(H,vu)));st?ctx.lineTo(X(vu),y):ctx.moveTo(X(vu),y);st=true;}ctx.stroke();
+  // market dots
+  for(let k=0;k<VUS.length;k++){const x=X(VUS[k]),y=Y(clip(MKT[k]));ctx.fillStyle='#e8eef5';ctx.beginPath();ctx.arc(x,y,3.4,0,7);ctx.fill();}
+  // tag
+  ctx.textAlign='left';ctx.font='700 13px JetBrains Mono,monospace';ctx.fillStyle='#e0a92e';
+  ctx.fillText('any H fits — H not identified',pL+8,pT+15);
+}
+
+function render(){
+  const H=els.h.value/100, nu=nuStar(H), rm=rmsePP(H);
+  els.hDisplay.textContent=H.toFixed(2);
+  els.plotSub.textContent='H = '+H.toFixed(2)+' · ν = '+nu.toFixed(2)+' · IV-RMSE = '+rm.toFixed(2)+'pp';
+  const near=Math.abs(H-H0)<0.015;
+  els.regime.textContent = near ? '— the true value the market was built from' : '— a different roughness — and the smile still fits';
+  els.regime.style.color = near ? cssv('--dim') : cssv('--coral');
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.h)===parseInt(els.h.value)));
+  document.getElementById('roH').textContent=H.toFixed(2);
+  document.getElementById('roNu').textContent=nu.toFixed(2);
+  document.getElementById('roRmse').textContent=rm.toFixed(2);
+  document.getElementById('verdict').className='verdict ambiguous';
+  document.getElementById('vIco').textContent='✗';
+  const txt=document.getElementById('vText');
+  if(near){
+    txt.innerHTML='You\'re at the <b>true</b> H (0.10) — but the fit here (<b>'+rm.toFixed(2)+'pp</b>) is no better than at any other H, so nothing in the smile tells you that. H is <b>not identified</b>.';
+  } else {
+    txt.innerHTML='Slid H to <b>'+H.toFixed(2)+'</b> — ν recalibrated to <b>'+nu.toFixed(2)+'</b>, and the fit is still <b>'+rm.toFixed(2)+'pp</b> RMSE, as good as at the truth. A single smile fixes ξ₀, ρ, ν but leaves H on a flat, ν-degenerate direction (cond ≈ 6×10⁵). H is <b>not identified</b>.';
+  }
+  drawSmile();
+}
+els.h.addEventListener('input',render);
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{els.h.value=c.dataset.h;render();}));
+window.addEventListener('resize',drawSmile);
+function tg(bodyId,togId){const b=document.getElementById(bodyId),t=document.getElementById(togId);const hid=b.classList.toggle('hidden');t.textContent=hid?'show ▼':'hide ▲';}
+document.getElementById('guideBody').classList.remove('hidden');
+render();
+</script>
+</body>
+</html>

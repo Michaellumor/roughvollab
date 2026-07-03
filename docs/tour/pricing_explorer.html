@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can you price it cheaply? — MLMC, and the estimator that beats it</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap');
+:root{
+  --bg:#0d1420; --bg2:#111a2b; --panel:#131e30; --panel2:#0f1826;
+  --ink:#e8eef5; --dim:#8a9bb0; --faint:#5d6f85;
+  --teal:#2dd4a7; --coral:#f26d4b; --amber:#e0a92e; --violet:#8b7cf0;
+  --gjr:#f26d4b; --cd:#e0a92e; --mfdfa:#8b7cf0; --truth:#2dd4a7;
+  --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1400px 900px at 50% -10%,var(--bg2),var(--bg));color:var(--ink);line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:48px 28px 90px}
+.masthead{margin-bottom:34px}
+.eyebrow{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:18px}
+.eyebrow .mono{font-family:'JetBrains Mono',monospace;color:var(--violet);text-transform:none;letter-spacing:0}
+h1{font-family:'Newsreader',serif;font-size:clamp(32px,4.6vw,52px);font-weight:500;line-height:1.06;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--violet)}
+.lede{font-size:18px;color:var(--dim);max-width:730px;margin-top:20px;font-weight:300}
+.lede strong{color:var(--ink);font-weight:500}
+.lede code{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet);background:rgba(139,124,240,.08);padding:1px 6px;border-radius:5px}
+
+.guide{margin:32px 0;border:1px solid rgba(139,124,240,.28);border-radius:16px;background:linear-gradient(180deg,rgba(139,124,240,.06),rgba(139,124,240,.02));overflow:hidden}
+.guide-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.guide-head .dot{width:9px;height:9px;border-radius:50%;background:var(--violet);box-shadow:0 0 12px var(--violet)}
+.guide-head h2{font-size:16px;font-weight:600;flex:1}
+.guide-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.guide-body{padding:0 26px 26px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--violet);font-weight:600;margin-bottom:8px}
+.step h3{font-size:15px;font-weight:600;margin-bottom:6px}
+.step p{font-size:14px;color:var(--dim);line-height:1.5}
+@media(max-width:760px){.guide-body{grid-template-columns:1fr;gap:18px}}
+
+.explorer{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+@media(max-width:900px){.explorer{grid-template-columns:1fr}}
+.plotcard{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px}
+.plot-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+.plot-title{font-size:14px;font-weight:600}
+.plot-sub{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)}
+
+/* the estimate dial-face: a horizontal H axis with markers */
+.hbar-wrap{margin:8px 0 4px}
+.hbar{position:relative;height:120px;border-radius:12px;background:linear-gradient(90deg,rgba(242,109,75,.10),rgba(224,169,46,.06) 50%,rgba(45,212,167,.10));border:1px solid var(--line2)}
+.hbar .brownian{position:absolute;top:0;bottom:0;left:50%;width:2px;background:rgba(255,255,255,.28);transform:translateX(-1px)}
+.hbar .brownian .bl{position:absolute;top:6px;left:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.hbar .regionlbl{position:absolute;bottom:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint)}
+.hbar .rough-lbl{left:12px} .hbar .smooth-lbl{right:12px}
+.marker{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;transition:left .25s ease}
+.marker .stem{width:2px;height:34px;background:currentColor;opacity:.5}
+.marker .dot{width:16px;height:16px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor;border:2px solid var(--bg)}
+.marker .tag{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;white-space:nowrap;background:var(--bg);padding:1px 5px;border-radius:4px}
+.marker.up .tag{top:-22px} .marker.down .tag{bottom:-22px}
+.marker.truth{color:var(--truth)} .marker.truth .dot{width:20px;height:20px}
+.marker.gjr{color:var(--gjr)} .marker.cd{color:var(--cd)} .marker.mfdfa{color:var(--mfdfa)}
+.axis-ticks{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-top:8px;padding:0 2px}
+
+/* estimate readouts */
+.readouts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.ro{border-radius:12px;padding:16px;border:1px solid var(--line2);background:rgba(255,255,255,.03);text-align:center}
+.ro .rn{font-size:12px;font-weight:600;letter-spacing:.04em;margin-bottom:8px}
+.ro.truth .rn{color:var(--truth)} .ro.gjr .rn{color:var(--gjr)} .ro.cd .rn{color:var(--cd)} .ro.mfdfa .rn{color:var(--mfdfa)}
+.ro .rv{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1}
+.ro .rd{font-size:11px;color:var(--faint);margin-top:6px}
+
+/* verdict */
+.verdict{margin-top:20px;padding:18px 20px;border-radius:12px;display:flex;gap:16px;align-items:flex-start}
+.verdict.identified{background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.35)}
+.verdict.ambiguous{background:rgba(242,109,75,.08);border:1px solid rgba(242,109,75,.35)}
+.verdict .ico{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;flex:none;margin-top:1px}
+.verdict.identified .ico{color:var(--teal)} .verdict.ambiguous .ico{color:var(--coral)}
+.verdict .vt{font-size:14px;line-height:1.55;color:var(--dim)}
+.verdict .vt b{color:var(--ink)}
+
+.controls{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:22px;position:sticky;top:24px}
+.ctl-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:16px}
+.hval{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.hval .h{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:600;line-height:1;color:var(--truth)}
+.hval .hl{font-size:14px;color:var(--dim)}
+.regime{font-size:13px;font-weight:600;margin-bottom:16px;font-family:'JetBrains Mono',monospace;color:var(--dim)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--coral),var(--amber) 50%,var(--teal));outline:none;margin:6px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer}
+.rng-ends{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--faint);margin-bottom:20px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--violet);color:var(--ink)}
+.chip.active{background:rgba(139,124,240,.12);border-color:var(--violet);color:var(--violet)}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.param{margin-bottom:16px}
+.param-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.param-name{font-size:14px;font-weight:500}
+.param-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--violet)}
+.param-hint{font-size:11px;color:var(--faint);margin-top:3px}
+.btn{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover{background:rgba(255,255,255,.08);border-color:var(--dim)}
+.btn.primary{background:rgba(139,124,240,.14);border-color:rgba(139,124,240,.4);color:var(--violet)}
+.btn.primary:hover{background:rgba(139,124,240,.2)}
+
+.advanced{margin-top:28px;border:1px solid rgba(45,212,167,.3);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel2))}
+.adv-head{display:flex;align-items:center;gap:14px;padding:20px 26px;cursor:pointer;user-select:none}
+.adv-head .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+.adv-head h2{font-size:16px;font-weight:600;flex:1}
+.adv-head .tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--teal);border:1px solid rgba(45,212,167,.35);padding:3px 9px;border-radius:6px}
+.adv-head .toggle{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--dim)}
+.adv-body{padding:0 26px 28px}
+.adv-intro{font-size:15px;color:var(--dim);max-width:760px;margin-bottom:20px;line-height:1.6}
+.adv-intro b{color:var(--ink)} .adv-intro code{font-family:'JetBrains Mono',monospace;font-size:.88em;color:var(--teal)}
+.mapcard{border-radius:14px;padding:20px;border:1px solid var(--line2);background:rgba(255,255,255,.03);margin-bottom:20px}
+.mapcard .ml{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:600;margin-bottom:14px}
+canvas{width:100%;display:block;border-radius:8px}
+.assetrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.assetchip{font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 13px;border-radius:8px;background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.3);color:var(--teal);cursor:pointer}
+.assetchip:hover{background:rgba(45,212,167,.15)}
+.punchline{margin-top:20px;padding:18px 22px;border-radius:12px;background:rgba(139,124,240,.06);border:1px solid rgba(139,124,240,.25);font-size:14px;color:var(--dim);line-height:1.6}
+.punchline b{color:var(--ink)} .punchline .em{color:var(--violet);font-weight:600}
+
+.foot{margin-top:52px;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.foot .fl{font-size:13px;color:var(--faint)} .foot .fr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--faint)} .foot a{color:var(--violet);text-decoration:none}
+.hidden{display:none}
+
+  /* --- pricing explorer additions --- */
+  .canvas-wrap{margin:6px 0 2px;border-radius:12px;overflow:hidden;background:rgba(255,255,255,.015)}
+  #decayCanvas{width:100%;height:auto;display:block}
+  .readouts.three{grid-template-columns:repeat(3,1fr)}
+  .ro.beta .rn{color:var(--teal)} .ro.beta .rv{color:var(--teal)}
+  .ro.gamma .rn{color:var(--violet)} .ro.gamma .rv{color:var(--violet)}
+  .ro.ratio .rn{color:var(--dim)}
+  .verdict.warn{background:rgba(224,169,46,.09);border:1px solid rgba(224,169,46,.38)}
+  .verdict.warn .ico{color:var(--amber)}
+  .costbars{margin:18px 0 6px;display:flex;flex-direction:column;gap:12px}
+  .cbar-row{display:grid;grid-template-columns:210px 1fr;gap:16px;align-items:center}
+  .cbar-lab{font-size:13.5px;color:var(--ink);text-align:right;line-height:1.3}
+  .cbar-win{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);letter-spacing:.07em;text-transform:uppercase;margin-top:3px}
+  .cbar-track{background:rgba(255,255,255,.04);border-radius:8px;height:36px;overflow:hidden}
+  .cbar-fill{height:100%;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:12px;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:#08131f;min-width:46px;transition:width .5s}
+  .cbar-fill.teal{background:linear-gradient(90deg,#1a9e78,#2dd4a7)}
+  .cbar-fill.amber{background:linear-gradient(90deg,#b3841f,#e0a92e)}
+  .cbar-fill.dim{background:linear-gradient(90deg,#3a4a5e,#5d6f85);color:#e8eef5}
+  .cbar-fill.coral{background:linear-gradient(90deg,#c24e30,#f26d4b)}
+  .ratio-callout{display:flex;gap:20px;align-items:center;margin:22px 0;padding:20px 22px;border:1px solid rgba(45,212,167,.3);border-radius:14px;background:linear-gradient(180deg,rgba(45,212,167,.07),rgba(45,212,167,.02))}
+  .rc-num{font-family:'JetBrains Mono',monospace;font-size:33px;font-weight:700;color:var(--teal);flex:none;line-height:1}
+  .rc-txt{font-size:14px;color:var(--dim);line-height:1.5}
+  .rc-txt .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--ink)}
+  .adv-note{font-size:14px;color:var(--dim);line-height:1.6;margin:18px 0;padding-left:16px;border-left:2px solid rgba(139,124,240,.4)}
+  .adv-note .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet)}
+  .adv-note em{color:var(--ink);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Rough volatility · teaching module · <span class="mono">Layer 1b — pricing (Q2)</span></div>
+    <h1>Can you price it <em>cheaply?</em></h1>
+    <p class="lede">Pricing an option under rough volatility means heavy Monte Carlo. The celebrated speed-up is <strong>multilevel Monte Carlo</strong> (MLMC) — simulate on coarse-to-fine grids and telescope. But it only pays off if the correction between grids <strong>shrinks fast enough</strong> as you refine. Drag the roughness below and watch whether it does.</p>
+  </div>
+
+  <div class="guide">
+    <div class="guide-head" onclick="tg('guideBody','guideToggle')">
+      <span class="dot"></span><h2>Start here — a two-minute guided tour</h2>
+      <span class="toggle" id="guideToggle">hide ▲</span>
+    </div>
+    <div class="guide-body" id="guideBody">
+      <div class="step"><div class="n">01 · the premise</div><h3>Start at H = 0.7</h3><p>The teal line is how much the coarse-vs-fine <b>correction</b> shrinks at each grid level. Here it drops <b>faster</b> than the dashed cost line (&beta; &gt; &gamma;) — so refining is cheap, and MLMC does exactly what the textbooks promise.</p></div>
+      <div class="step"><div class="n">02 · go rough</div><h3>Drag H down toward 0.1</h3><p>Watch the teal line <b>flatten</b>. The rougher the vol, the slower the correction shrinks — coarse and fine rough paths barely line up. The decay rate is <b>&beta; &asymp; 2H</b>.</p></div>
+      <div class="step"><div class="n">03 · the stall</div><h3>Watch it cross the cost line</h3><p>Once the correction shrinks <b>slower</b> than cost grows (&beta; &lt; &gamma;), MLMC's whole advantage evaporates — for rough Asian options it even <b>loses to plain Monte Carlo</b>. What actually wins is in the Advanced panel.</p></div>
+    </div>
+  </div>
+
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top">
+        <span class="plot-title">Does the correction shrink fast enough?</span>
+        <span class="plot-sub" id="plotSub">H = 0.70 · &beta; = 1.40 · &gamma; = 1.00</span>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="decayCanvas" width="760" height="320"></canvas>
+      </div>
+
+      <div class="readouts three">
+        <div class="ro beta"><div class="rn">&beta; · variance rate</div><div class="rv" id="roBeta">1.00</div><div class="rd">how fast the correction shrinks (&asymp; 2H)</div></div>
+        <div class="ro gamma"><div class="rn">&gamma; · cost rate</div><div class="rv" id="roGamma">1.00</div><div class="rd">how fast work grows per level</div></div>
+        <div class="ro ratio"><div class="rn">&beta; &minus; &gamma;</div><div class="rv" id="roMargin">0.00</div><div class="rd">positive &rarr; MLMC pays · negative &rarr; it stalls</div></div>
+      </div>
+
+      <div class="verdict identified" id="verdict">
+        <span class="ico" id="vIco">&#10003;</span>
+        <span class="vt" id="vText">The correction shrinks faster than cost grows — MLMC's premise holds.</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="ctl-label">Set the roughness</div>
+      <div class="hval"><span class="h" id="hDisplay">0.70</span><span class="hl">H</span></div>
+      <div class="regime" id="regimeLabel">— smooth vol · MLMC thrives</div>
+      <input type="range" id="hSlider" min="5" max="95" value="70" step="1">
+      <div class="rng-ends"><span>0.05 · rough</span><span>0.95 · smooth</span></div>
+      <div class="chips" id="chips">
+        <div class="chip" data-h="10">0.1</div><div class="chip" data-h="15">0.15</div>
+        <div class="chip" data-h="50">0.5</div><div class="chip active" data-h="70">0.7</div><div class="chip" data-h="90">0.9</div>
+      </div>
+      <div class="divider"></div>
+      <div class="param">
+        <div class="param-top"><span class="param-name">Grid levels shown</span><span class="param-val" id="lVal">7</span></div>
+        <input type="range" id="lSlider" min="3" max="9" value="7" step="1">
+        <div class="param-hint">the coarse-to-fine hierarchy MLMC telescopes over</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="advanced">
+    <div class="adv-head" onclick="tg('advBody','advToggle')">
+      <span class="dot"></span><h2>Advanced — what actually prices it cheaply</h2>
+      <span class="tag">THE FINDING</span>
+      <span class="toggle" id="advToggle">show ▼</span>
+    </div>
+    <div class="adv-body hidden" id="advBody">
+      <p class="adv-intro">If refining grids doesn't pay (&beta; &lt; &gamma;), the fix isn't <b>more levels</b> — it's less noise per path. <b>Conditioning</b> on the variance path (a geometric-Asian control variate) removes a large share of the noise analytically, on a <b>single</b> grid — and it helps standard MC <b>more</b> than it helps MLMC. So the honest winner is single-grid, not multilevel. Cost to reach a fixed accuracy at H &asymp; 0.1 (matched levels, seeds 11/99/1234):</p>
+
+      <div class="costbars" id="costbars">
+        <div class="cbar-row"><div class="cbar-lab">conditional · single-grid MC<span class="cbar-win">the winner</span></div><div class="cbar-track"><div class="cbar-fill teal" style="width:18%"><span>1.0&times;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">conditional · MLMC</div><div class="cbar-track"><div class="cbar-fill amber" style="width:42%"><span>2.3&times;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">naive · standard MC</div><div class="cbar-track"><div class="cbar-fill dim" style="width:60%"><span>3.3&times;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">naive · MLMC</div><div class="cbar-track"><div class="cbar-fill coral" style="width:100%"><span>5.5&times;</span></div></div></div>
+      </div>
+
+      <div class="ratio-callout">
+        <div class="rc-num">0.41&ndash;0.45</div>
+        <div class="rc-txt">the decisive, <b>&kappa;-invariant</b> cost ratio <span class="mono">cond-stdMC / cond-MLMC</span>. It sits below 1 — so even after conditioning, going multilevel <b>costs more</b> than staying single-grid. Turbocharging beats telescoping.</div>
+      </div>
+
+      <p class="adv-note"><b>A sharper engine helps the winner, not MLMC.</b> Swapping the &kappa;=0 core for exact near-cell (&kappa;=1) integration closes the fine-path variance from <span class="mono">0.853</span> to <span class="mono">0.9996</span>, making conditional single-grid MC a further ~1.3&ndash;1.5&times; cheaper. That sharpens the <em>constant</em>, not the rate — &beta; is still &asymp; 2H, so the verdict is untouched.</p>
+
+      <div class="punchline">
+        The honest headline: for arithmetic-Asian options under rough Bergomi, <b>MLMC does not earn its place.</b> The variance rate &beta; &asymp; 2H is simply too small — coarse and fine rough paths won't couple, so telescoping saves almost nothing and naive MLMC even loses to plain Monte Carlo. <span class="em">Cheap pricing exists — as single-grid turbocharging, not multilevel.</span> That is the fact-checked answer to &ldquo;can you price it cheaply?&rdquo;
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="fl">MLMC complexity (Giles rates) with the project’s measured &beta; &asymp; 2H · cost ratios from the P2 matched-L runs · runs in your browser</div>
+    <div class="fr">RoughVolLab · <a href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a></div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  Pricing explorer (Layer 1b / Q2)
+//  Finding (P2, D20-D23): for arithmetic-Asian options under rough Bergomi the
+//  MLMC variance rate is beta ~ 2H (measured). Multilevel only pays when
+//  beta > gamma, the cost rate (= 1: work doubles per grid level). For rough vol
+//  beta < gamma, so telescoping saves almost nothing and naive MLMC even loses
+//  to standard MC. What wins is CONDITIONAL SINGLE-GRID MC: the kappa-invariant
+//  ratio cond-stdMC / cond-MLMC = 0.41-0.45 < 1. This plot shows the mechanism
+//  (beta = 2H vs gamma); the advanced cost bars are the measured matched-L result.
+// ============================================================
+const els={
+  h:document.getElementById('hSlider'), l:document.getElementById('lSlider'),
+  hDisplay:document.getElementById('hDisplay'), regime:document.getElementById('regimeLabel'),
+  lVal:document.getElementById('lVal'), plotSub:document.getElementById('plotSub')
+};
+function cssv(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function regimeName(H){
+  if(H<0.45) return ['— rough vol · MLMC stalls here', cssv('--coral')];
+  if(H<=0.55) return ['— ordinary Brownian · MLMC’s textbook case', cssv('--dim')];
+  return ['— smooth vol · MLMC thrives', cssv('--teal')];
+}
+function drawDecay(){
+  const cv=document.getElementById('decayCanvas'), ctx=cv.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const Wc=cv.clientWidth||760, Hc=Math.max(240,Math.min(360,Wc*0.42));
+  const nw=Math.round(Wc*dpr), nh=Math.round(Hc*dpr);
+  if(cv.width!==nw||cv.height!==nh){cv.width=nw;cv.height=nh;}
+  ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,Wc,Hc);
+  const H=els.h.value/100, beta=Math.max(2*H,0.1), gamma=1.0, L=parseInt(els.l.value);
+  const pL=52,pR=20,pT=22,pB=40, xw=Wc-pL-pR, yh=Hc-pT-pB;
+  const span=Math.max(beta,gamma)*L+0.9;
+  const X=l=>pL+(l/L)*xw, Y=y=>pT+(-y)/span*yh;
+  const stall=beta<gamma-1e-9;
+  // frame
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pL,pT);ctx.lineTo(pL,pT+yh);ctx.lineTo(pL+xw,pT+yh);ctx.stroke();
+  // gridlines + x ticks
+  ctx.font='11px JetBrains Mono,monospace';ctx.textAlign='center';
+  for(let l=0;l<=L;l++){const x=X(l);
+    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,pT);ctx.lineTo(x,pT+yh);ctx.stroke();
+    ctx.fillStyle='#5d6f85';ctx.fillText(l,x,pT+yh+18);}
+  ctx.fillStyle='#8a9bb0';ctx.font='12px JetBrains Mono,monospace';ctx.fillText('grid level   (coarse → fine)',pL+xw/2,Hc-9);
+  ctx.save();ctx.translate(15,pT+yh/2);ctx.rotate(-Math.PI/2);ctx.textAlign='center';ctx.fillStyle='#8a9bb0';ctx.font='11px JetBrains Mono,monospace';ctx.fillText('correction variance  (log)',0,0);ctx.restore();
+  // shaded gap
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(L),Y(-beta*L));ctx.lineTo(X(L),Y(-gamma*L));ctx.closePath();
+  ctx.fillStyle=stall?'rgba(224,169,46,.13)':'rgba(45,212,167,.13)';ctx.fill();
+  // cost line (violet dashed)
+  ctx.strokeStyle='rgba(139,124,240,.7)';ctx.lineWidth=2;ctx.setLineDash([6,5]);
+  ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(L),Y(-gamma*L));ctx.stroke();ctx.setLineDash([]);
+  // decay line (teal) + markers
+  ctx.strokeStyle='#2dd4a7';ctx.lineWidth=3;ctx.lineJoin='round';
+  ctx.beginPath();for(let l=0;l<=L;l++){const x=X(l),y=Y(-beta*l);l===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  for(let l=0;l<=L;l++){const x=X(l),y=Y(-beta*l);ctx.fillStyle='#2dd4a7';ctx.beginPath();ctx.arc(x,y,4,0,7);ctx.fill();ctx.fillStyle='#0d1420';ctx.beginPath();ctx.arc(x,y,1.8,0,7);ctx.fill();}
+  // line labels
+  ctx.font='700 12.5px JetBrains Mono,monospace';ctx.textAlign='left';
+  ctx.fillStyle='#8b7cf0';ctx.fillText('cost line  γ = 1',X(L*0.58),Y(-gamma*L*0.58)+(stall?18:-9));
+  ctx.fillStyle='#2dd4a7';ctx.fillText('correction  β = '+beta.toFixed(2),X(L*0.40),Y(-beta*L*0.40)+(stall?-9:18));
+  // regime tag (3-way), top-left
+  ctx.textAlign='left';ctx.font='700 13px JetBrains Mono,monospace';
+  let _tag,_tc;
+  if(beta>gamma+0.02){_tag='β > γ  —  MLMC pays';_tc='#2dd4a7';}
+  else if(beta<gamma-0.02){_tag='β < γ  —  MLMC stalls';_tc='#e0a92e';}
+  else{_tag='β = γ  —  break-even';_tc='#8a9bb0';}
+  ctx.fillStyle=_tc;ctx.fillText(_tag,pL+8,pT+15);
+}
+function render(){
+  const H=els.h.value/100, beta=Math.max(2*H,0.1), gamma=1.0, L=parseInt(els.l.value);
+  els.hDisplay.textContent=H.toFixed(2);
+  els.lVal.textContent=L;
+  els.plotSub.textContent='H = '+H.toFixed(2)+' · β = '+beta.toFixed(2)+' · γ = '+gamma.toFixed(2);
+  const rr=regimeName(H); els.regime.textContent=rr[0]; els.regime.style.color=rr[1];
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',parseInt(c.dataset.h)===parseInt(els.h.value)));
+  document.getElementById('roBeta').textContent=beta.toFixed(2);
+  document.getElementById('roGamma').textContent=gamma.toFixed(2);
+  const margin=beta-gamma, rm=document.getElementById('roMargin');
+  rm.textContent=(margin>=0?'+':'')+margin.toFixed(2);
+  rm.style.color = margin>=-1e-9 ? cssv('--teal') : cssv('--coral');
+  const v=document.getElementById('verdict'),ico=document.getElementById('vIco'),txt=document.getElementById('vText');
+  if(margin>0.02){
+    v.className='verdict identified';ico.textContent='✓';
+    txt.innerHTML='The correction shrinks <b>faster</b> than cost grows (β '+beta.toFixed(2)+' &gt; γ 1.00) — MLMC’s premise holds and multilevel pays, exactly as the textbooks promise for smooth vol.';
+  } else if(margin>-0.02){
+    v.className='verdict warn';ico.textContent='!';
+    txt.innerHTML='Right at the edge: β ≈ γ (H ≈ 0.5, ordinary Brownian). MLMC still works, but only marginally — the classic borderline case. Drag <b>rougher</b> and its advantage disappears.';
+  } else {
+    v.className='verdict ambiguous';ico.textContent='✗';
+    txt.innerHTML='The correction shrinks <b>slower</b> than cost grows (β '+beta.toFixed(2)+' &lt; γ 1.00). Work piles onto the expensive fine grids, so MLMC stalls — and for rough Asian options it even <b>loses to plain Monte Carlo</b>. What actually wins is below.';
+  }
+  drawDecay();
+}
+[els.h,els.l].forEach(sl=>sl.addEventListener('input',render));
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{els.h.value=c.dataset.h;render();}));
+window.addEventListener('resize',drawDecay);
+function tg(bodyId,togId){const b=document.getElementById(bodyId),t=document.getElementById(togId);const hid=b.classList.toggle('hidden');t.textContent=hid?'show ▼':'hide ▲';}
+document.getElementById('guideBody').classList.remove('hidden');
+render();
+</script>
+</body>
+</html>
