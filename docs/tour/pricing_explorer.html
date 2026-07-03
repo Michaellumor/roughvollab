@@ -150,10 +150,37 @@ canvas{width:100%;display:block;border-radius:8px}
   .adv-note{font-size:14px;color:var(--dim);line-height:1.6;margin:18px 0;padding-left:16px;border-left:2px solid rgba(139,124,240,.4)}
   .adv-note .mono{font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--violet)}
   .adv-note em{color:var(--ink);font-style:italic}
+
+  /* --- tour navigation --- */
+  .tournav{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:'JetBrains Mono',monospace}
+  .tournav.top{padding:14px 4px 2px}
+  .tournav.bot{margin-top:20px;padding:20px 4px 8px;border-top:1px solid var(--line)}
+  .tn-btn{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);color:var(--ink);text-decoration:none;font-size:12.5px;max-width:40%;transition:border-color .15s,background .15s}
+  .tn-btn:hover{border-color:rgba(45,212,167,.55);background:rgba(45,212,167,.07)}
+  .tn-btn.disabled{opacity:.3;pointer-events:none;border-style:dashed}
+  .tn-ar{color:var(--teal);font-size:17px;line-height:1;flex:none}
+  .tn-btn.disabled .tn-ar{color:var(--faint)}
+  .tn-txt{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+  .tn-next .tn-txt{text-align:right}
+  .tn-badge{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .tn-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tn-hub{display:inline-flex;align-items:center;gap:9px;color:var(--dim);text-decoration:none;font-size:12px;white-space:nowrap;padding:8px 12px;border-radius:8px;transition:color .15s}
+  .tn-hub:hover{color:var(--teal)}
+  .tn-hub .tn-ic{font-size:15px}
+  .tn-pos{color:var(--faint);border-left:1px solid var(--line);padding-left:9px}
+  @media(max-width:640px){
+    .tournav{gap:7px}
+    .tn-title{display:none}
+    .tn-badge{font-size:11px;letter-spacing:.05em}
+    .tn-btn{max-width:none;padding:9px 12px}
+    .tn-hub .tn-pos{display:none}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<nav class="tournav top" aria-label="tour navigation"><a class="tn-btn tn-prev" href="calibration_explorer.html"><span class="tn-ar">‹</span><span class="tn-txt"><span class="tn-badge">Q4</span><span class="tn-title">Measure it from options</span></span></a><a class="tn-hub" href="index.html"><span class="tn-ic">⌂</span>the hub<span class="tn-pos">4 / 6</span></a><a class="tn-btn tn-next" href="execution_explorer.html"><span class="tn-txt"><span class="tn-badge">Q3</span><span class="tn-title">Trade on it</span></span><span class="tn-ar">›</span></a></nav>
 
   <div class="masthead">
     <div class="eyebrow">Rough volatility · teaching module · <span class="mono">Layer 1b — pricing (Q2)</span></div>
@@ -248,6 +275,7 @@ canvas{width:100%;display:block;border-radius:8px}
     <div class="fl">MLMC complexity (Giles rates) with the project’s measured &beta; &asymp; 2H · cost ratios from the P2 matched-L runs · runs in your browser</div>
     <div class="fr">RoughVolLab · <a href="https://github.com/Michaellumor/roughvollab">github.com/Michaellumor/roughvollab</a></div>
   </div>
+<nav class="tournav bot" aria-label="tour navigation"><a class="tn-btn tn-prev" href="calibration_explorer.html"><span class="tn-ar">‹</span><span class="tn-txt"><span class="tn-badge">Q4</span><span class="tn-title">Measure it from options</span></span></a><a class="tn-hub" href="index.html"><span class="tn-ic">⌂</span>the hub<span class="tn-pos">4 / 6</span></a><a class="tn-btn tn-next" href="execution_explorer.html"><span class="tn-txt"><span class="tn-badge">Q3</span><span class="tn-title">Trade on it</span></span><span class="tn-ar">›</span></a></nav>
 </div>
 
 <script>
