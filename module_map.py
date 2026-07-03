@@ -116,8 +116,8 @@ LAYERS = [
       ("Statistics","y2"),("Final-year Project","y3")]),
 ]
 OUTPUTS = [
-    ("Tested, validated code", "252 pytest tests + gate-checks"),
-    ("arXiv notes (P2, P3)", "+ Zenodo DOI at v0.2"),
+    ("Tested, validated code", "254 pytest tests + gate-checks"),
+    ("arXiv notes (P1–P4)", "+ Zenodo DOI at v0.2"),
     ("JOSS software paper", "peer-reviewed, citable"),
     ("PhD applications", "Oxford · Imperial · Manchester"),
 ]
