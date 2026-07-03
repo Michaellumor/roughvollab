@@ -86,10 +86,10 @@ per-layer sections below and the reproducibility script `paper_outputs.py`.
 | `layer3_deep_hedging.py` | Layer 3 — deep-hedging engine (Buehler-style direct policy optimisation, CVaR objective, self-computed signatures; isolated torch venv, deletion-safe leaf). Finds: deep beats delta under frictions, but roughness adds no hedging edge beyond it (D40) | ✅ 7 tests (isolated venv); core stays torch-free |
 | `rough_heston.py` · `rough_heston_cf.py` | Layer 4 — native rough-Heston simulator (κ=0 Volterra) + characteristic-function reference & BS-IV inverter (El Euch–Rosenbaum) | ✅ 8 + 23 tests pass |
 | `rough_kernel_soe.py` · `rough_heston_lifted.py` | Layer 4 — sum-of-exponentials kernel (Gate A) + multifactor Markovian-lift simulator (Gates B/C/D), O(N·n) vs O(n²) Volterra | ✅ 7 + 9 tests pass |
-| `layer4_convergence.py` | Layer 4 — weak-order (α) convergence study vs the CF reference (D31, D35) | ✅ 8 tests pass |
+| `layer4_convergence.py` | Layer 4 — weak-order (α) convergence study vs the CF reference (the P4 deliverable; D31, D35) | ✅ 8 tests pass |
 | `layer4_smile_gate.py` | Layer 4 — OTM implied-vol smile gate (lift vs CF) | ✅ 5 tests pass |
-| `layer4_calibrate.py` · `layer4_calibrate_surface.py` | Layer 4 — single-smile + multi-maturity surface calibration engines | ✅ 9 + 7 tests pass |
-| `deribit_surface.py` · `calibrate_btc.py` | Layer 4 — live Deribit BTC fetch/clean + calibration driver (D39) | ✅ 8 tests pass |
+| `layer4_calibrate.py` · `layer4_calibrate_surface.py` | Layer 4 — single-smile + multi-maturity surface calibration engines (the P1 deliverable) | ✅ 9 + 7 tests pass |
+| `deribit_surface.py` · `calibrate_btc.py` | Layer 4 — live Deribit BTC fetch/clean + calibration driver (P1; D39) | ✅ 8 tests pass |
 | `binance_data.py` · `kline_verifier.py` · `rv_series.py` | Phase B data layer: download + SHA-verify Binance klines → log-RV proxy | ✅ 66 tests pass |
 | `estimate_h.py` · `interpret_h.py` | Phase B analysis: 3 estimators + de-bias vs the Rung-1 envelope | ✅ 21 tests pass |
 | `equity_data.py` | Equity arm: free daily OHLC → range-based log-variance (Rung-5 gap leg) | ✅ 6 tests; run on SPX |
