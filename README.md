@@ -6,6 +6,7 @@ One tested engine and five honest questions about how rough markets really are â
 
 [![RoughVolLab â€” the five questions](docs/guide/roughvollab_map_v2.png)](https://michaellumor.github.io/roughvollab/tour/)
 
+[![tests](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml/badge.svg)](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
