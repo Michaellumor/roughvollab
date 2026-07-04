@@ -111,7 +111,15 @@ draws on, with current build status:
 git clone https://github.com/Michaellumor/roughvollab.git
 cd roughvollab
 pip install -r requirements.txt
-python layer1_rough_vol.py
+python -m pytest -q        # 254 tests — the engine's guarantees, verified on your machine
+```
+
+```python
+import numpy as np
+from roughvol_core import rough_bergomi_paths
+
+t, S, V = rough_bergomi_paths(n=500, H=0.10, n_paths=2000, rng=np.random.default_rng(0))
+print(S.shape, V[:, -1].mean())   # 2000 rough Bergomi paths; E[V_T] ≈ ξ₀ = 0.04
 ```
 
 > `pip install roughvollab` via PyPI coming once the core modules are stable.

@@ -112,7 +112,7 @@ references:
     journal: "Mathematical Finance"
     year: 2019
     doi: "10.1111/mafi.12173"
-- type: article
+  - type: article
     title: "Rough volatility: fact or artefact?"
     authors:
       - family-names: Cont
