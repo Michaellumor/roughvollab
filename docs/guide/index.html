@@ -66,7 +66,7 @@
   .toc ol{list-style:none;counter-reset:toc;columns:2;column-gap:2.5rem;max-width:44rem;}
   .toc li{counter-increment:toc;padding:0.35rem 0;font-size:0.98rem;color:var(--ink-2);break-inside:avoid;}
   .toc li::before{content:counter(toc,decimal-leading-zero);font-family:'SFMono-Regular','Consolas',monospace;font-size:0.72rem;color:var(--line-2);margin-right:0.8rem;}
-  @media(max-width:640px){.toc ol{columns:1;}}
+  @media(max-width:640px){.toc ol{columns:1;} }
 
   section{padding:3.5rem 0;}
   section.tight{padding:2.5rem 0;}
@@ -91,7 +91,7 @@
 
   /* triad */
   .triad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:2rem 0;}
-  @media(max-width:640px){.triad-grid{grid-template-columns:1fr;}}
+  @media(max-width:640px){.triad-grid{grid-template-columns:1fr;} }
   .triad-card{border:1px solid var(--line);border-top:3px solid var(--band);background:#fff;border-radius:3px;padding:1.4rem 1.4rem 1.5rem;}
   .triad-card.c-code{--band:var(--teal);}
   .triad-card.c-stat{--band:var(--amber);}
@@ -174,7 +174,7 @@
 
   /* papers */
   .papers-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.8rem 0;}
-  @media(max-width:640px){.papers-grid{grid-template-columns:1fr;}}
+  @media(max-width:640px){.papers-grid{grid-template-columns:1fr;} }
   .paper{background:#fff;border:1px solid var(--line);border-radius:3px;padding:1.3rem 1.4rem;}
   .paper .p-status{font-family:'SFMono-Regular','Consolas',monospace;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-bottom:0.5rem;}
   .paper.done .p-status{color:var(--teal);}
@@ -188,14 +188,14 @@
   .route-step{background:#fff;border:1px solid var(--line-2);border-radius:2px;padding:0.55rem 0.85rem;color:var(--ink);}
   .route-arrow{color:var(--ink-3);}
   .rules{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin:1.8rem 0;}
-  @media(max-width:640px){.rules{grid-template-columns:1fr;}}
+  @media(max-width:640px){.rules{grid-template-columns:1fr;} }
   .rule{background:var(--paper-2);border-radius:3px;padding:1.1rem 1.3rem;}
   .rule h3{margin:0 0 0.4rem;font-size:1.05rem;}
   .rule p{font-size:0.92rem;color:var(--ink-2);line-height:1.5;max-width:none;margin:0;}
 
   /* glossary */
   .gloss{display:grid;grid-template-columns:repeat(2,1fr);gap:0.9rem 2rem;margin:1.6rem 0;}
-  @media(max-width:640px){.gloss{grid-template-columns:1fr;}}
+  @media(max-width:640px){.gloss{grid-template-columns:1fr;} }
   .gloss dt{font-weight:400;font-size:1rem;color:var(--ink);background:linear-gradient(transparent 62%,#EDE6D2 62%);display:inline;padding:0 1px;}
   .gloss dd{font-size:0.94rem;color:var(--ink-2);line-height:1.5;margin:0.2rem 0 0;}
 
