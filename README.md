@@ -112,7 +112,7 @@ draws on, with current build status:
 git clone https://github.com/Michaellumor/roughvollab.git
 cd roughvollab
 pip install -r requirements.txt
-python -m pytest -q        # 254 tests — the engine's guarantees, verified on your machine
+python -m pytest -q        # 254 tests: 252 pass + 2 torch-skips on a core install
 ```
 
 ```python

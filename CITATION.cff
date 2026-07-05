@@ -29,8 +29,8 @@ authors:
       University of Salford
     orcid: https://orcid.org/0009-0000-0326-3891
 
-version: "0.1.0-research"
-date-released: "2026-06-12"
+version: "0.2.0"
+date-released: "2026-07-05"
 
 repository-code: "https://github.com/Michaellumor/roughvollab"
 url: "https://github.com/Michaellumor/roughvollab"
