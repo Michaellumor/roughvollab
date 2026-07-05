@@ -11,6 +11,8 @@ One tested engine and five honest questions about how rough markets really are �
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
 
+**New to the project?** Start with the [plain-English guide](https://michaellumor.github.io/roughvollab/guide/) — no installation needed — then drive every result yourself in the [interactive tour](https://michaellumor.github.io/roughvollab/tour/).
+
 **An open-source research programme on rough stochastic volatility — built on the principle of honest measurement over confident numbers.**
 
 RoughVolLab interrogates the rough-volatility paradigm rather than assuming it. The paradigm holds that log-volatility behaves as a fractional process with a small Hurst exponent (H ≈ 0.1). This project asks **five questions** about that claim and reports the honest answer to each — four of which are negative, and deliberately so. It is an independent research programme by a mathematics undergraduate at the University of Salford, built to publication standard, where every numerical claim is backed by a committed, reproducible run.
