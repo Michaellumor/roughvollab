@@ -81,7 +81,7 @@ per-layer sections below and the reproducibility script `paper_outputs.py`.
 |------|-------|--------|
 | `roughvol_core.py` | Shared rough-path engine (κ=0 Volterra), pinned by tests | ✅ 18 tests pass |
 | `layer1_rough_vol.py` | fBm simulation, hybrid scheme, Hurst estimation | ✅ complete |
-| `layer1b_mlmc_asian.py` | MLMC Asian pricing + complexity; opt-in antithetic / conditional / κ=1 estimator flags (P2) | ✅ complete (v0.1) + P2 |
+| `layer1b_mlmc_asian.py` | MLMC Asian pricing + complexity; opt-in antithetic / conditional / κ=1 estimator flags — κ=1 is fine-path / single-grid only (P2) | ✅ complete (v0.1) + P2 |
 | `layer1b_kappa1.py` | Exact near-cell (κ=1) Volterra module + coarse coupler | ✅ G-H1 / G-H2 pass |
 | `layer1c_roughness_audit.py` | Roughness-estimator audit (GJR + Cont–Das + MF-DFA + corruption ladder Rungs 1–5: RV-proxy mirage + envelope; microstructure noise + subsampling; jumps + bipower; finite-sample; calendar/day-of-week seasonality) | ✅ estimators + full ladder |
 | `identifiability_map.py` | Layer 1c capstone — identifiability map over (η, Δ): classifier, phase diagram, per-asset η-calibration & placement (the P3 deliverable) | ✅ 15 tests pass |
