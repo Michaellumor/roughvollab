@@ -17,6 +17,8 @@ One tested engine and five honest questions about how rough markets really are �
 
 RoughVolLab interrogates the rough-volatility paradigm rather than assuming it. The paradigm holds that log-volatility behaves as a fractional process with a small Hurst exponent (H ≈ 0.1). This project asks **five questions** about that claim and reports the honest answer to each — four of which are negative, and deliberately so. It is an independent research programme by a mathematics undergraduate at the University of Salford, built to publication standard, where every numerical claim is backed by a committed, reproducible run.
 
+**Who this is for.** Students meeting rough volatility for the first time — the [interactive tour](https://michaellumor.github.io/roughvollab/tour/) and [plain-English guide](https://michaellumor.github.io/roughvollab/guide/) teach the paradigm with no installation. Researchers who want a verified baseline engine, estimator suite and calibration stack rather than re-implementing one. Practitioners prototyping against live option data.
+
 > The unifying question: *is what we're seeing real, or an artefact of how we looked?*
 
 ### Five questions, five honest answers
