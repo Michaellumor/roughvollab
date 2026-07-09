@@ -272,10 +272,10 @@ canvas{width:100%;display:block;border-radius:8px}
         <div class="cbar-row"><div class="cbar-lab">1 smile</div><div class="cbar-track"><div class="cbar-fill coral" style="width:100%"><span>6.2&times;10&#8309;</span></div></div></div>
         <div class="cbar-row"><div class="cbar-lab">3 maturities</div><div class="cbar-track"><div class="cbar-fill amber" style="width:34%"><span>5.2&times;10&#8308;</span></div></div></div>
         <div class="cbar-row"><div class="cbar-lab">4 maturities</div><div class="cbar-track"><div class="cbar-fill amber" style="width:19%"><span>2.0&times;10&#8308;</span></div></div></div>
-        <div class="cbar-row"><div class="cbar-lab">5 (incl. a 1-month)<span class="cbar-win">~100&times; better</span></div><div class="cbar-track"><div class="cbar-fill teal" style="width:9%"><span>9.8&times;10&#179;</span></div></div></div>
+        <div class="cbar-row"><div class="cbar-lab">5 (incl. a 1-month)<span class="cbar-win">~60&times; better</span></div><div class="cbar-track"><div class="cbar-fill teal" style="width:9%"><span>9.8&times;10&#179;</span></div></div></div>
       </div>
 
-      <p class="adv-note"><b>Better, but H stays soft.</b> The surface improves conditioning ~100&times; and makes H <em>usable at clean data</em> — the H-spread over repeated fits drops from ~106% (one smile) to ~10% (H &approx; 0.10&#177;0.01). But H is still the flat direction (|flat[H]| = 0.89), still degenerate with ν (corr &minus;0.85), and the gain <b>erodes as noise grows</b> (~10&times; &rarr; ~4&times; from 0.1pp to 0.5pp market noise). The term structure <em>mitigates</em> the weak identifiability; it does not remove it.</p>
+      <p class="adv-note"><b>Better, but H stays soft.</b> The surface improves conditioning ~60&times; and makes H <em>usable at clean data</em> — the H-spread over repeated fits drops from ~106% (one smile) to ~10% (H &approx; 0.10&#177;0.01). But H is still the flat direction (|flat[H]| = 0.89), still degenerate with ν (corr &minus;0.85), and the gain <b>erodes as noise grows</b> (~10&times; &rarr; ~4&times; from 0.1pp to 0.5pp market noise). The term structure <em>mitigates</em> the weak identifiability; it does not remove it.</p>
 
       <div class="ratio-callout">
         <div class="rc-num" style="font-size:26px">non-identified</div>
@@ -311,7 +311,7 @@ canvas{width:100%;display:block;border-radius:8px}
 //  single-maturity inverse problem: cond(J^T J) ~ 6.2e5, H~nu degenerate
 //  (corr -0.82), H sensitivity 0.042 vs nu 0.26. Many (H,nu) pairs give the same
 //  smile -> slide H and nu recalibrates to hold the fit. A surface (D38) improves
-//  cond ~100x and makes H usable at low noise but keeps it soft; on live Deribit
+//  cond ~60x and makes H usable at low noise but keeps it soft; on live Deribit
 //  BTC (D39) H is non-identified by 3 diagnostics.
 //  The smile here is an illustrative stand-in for the SHAPE; the reported numbers
 //  (cond, sensitivities, spreads, the Deribit result) are the project's measured
