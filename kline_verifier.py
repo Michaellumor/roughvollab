@@ -180,8 +180,16 @@ def load_klines(path_or_paths: Union[str, Path, Sequence[Union[str, Path]]],
     for path in paths:
         if not path.exists():
             raise FileNotFoundError(path)
-        with open(path, "r") as f:
+        # RVL-036/037: utf-8-sig strips a UTF-8 BOM (PowerShell/Excel re-saves add
+        # one) so it can't glue to the first field and be misread as a header;
+        # skip leading blank lines so a blank first line doesn't classify the
+        # whole file as empty. n_blank feeds skiprows for the load below.
+        n_blank = 0
+        with open(path, "r", encoding="utf-8-sig") as f:
             first = f.readline()
+            while first != "" and not first.strip():
+                n_blank += 1
+                first = f.readline()
         if not first.strip():
             log.warning("empty file, skipping: %s", path)
             continue
@@ -199,7 +207,8 @@ def load_klines(path_or_paths: Union[str, Path, Sequence[Union[str, Path]]],
         # specific numpy "input contained no data" warning rather than leak it.
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="loadtxt: input contained no data")
-            arr = np.loadtxt(path, delimiter=",", skiprows=1 if header else 0,
+            arr = np.loadtxt(path, delimiter=",", encoding="utf-8-sig",
+                             skiprows=n_blank + (1 if header else 0),
                              usecols=range(_N_COLS), ndmin=2)
         if arr.size:
             blocks.append(arr)

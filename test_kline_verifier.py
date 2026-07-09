@@ -456,5 +456,62 @@ def test_missing_file_raises():
         load_klines("does_not_exist_12345.csv")
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# RVL-036 + RVL-037: load_klines must not silently drop data on a BOM'd or
+# blank-first-line CSV (and must not regress the good paths).
+# ──────────────────────────────────────────────────────────────────────────
+
+def _kline_csv_text(arr: np.ndarray, header: bool = False) -> str:
+    """The exact text write_csv produces, so callers can prepend a BOM/blank."""
+    lines = []
+    if header:
+        lines.append(",".join(BINANCE_COLS))
+    for row in arr:
+        fields = [str(int(round(v))) if j in _INT_COLS else repr(float(v))
+                  for j, v in enumerate(row)]
+        lines.append(",".join(fields))
+    return "\n".join(lines) + "\n"
+
+
+def test_load_bom_headerless_csv(tmp_path):
+    """RVL-036: a UTF-8 BOM'd headerless CSV loads all N rows, had_header=False."""
+    arr = clean_array(START_MS, 30)
+    p = tmp_path / "bom.csv"
+    with open(p, "w", encoding="utf-8-sig") as f:      # utf-8-sig prepends the BOM
+        f.write(_kline_csv_text(arr, header=False))
+    d = load_klines(p)
+    assert d.n == 30, "the BOM'd first bar must not be misread as a header and dropped"
+    assert not d.had_header, "a BOM'd data row is not a header"
+
+
+def test_load_leading_blank_line_csv(tmp_path):
+    """RVL-037: a leading blank line must not classify the whole file as empty."""
+    arr = clean_array(START_MS, 30)
+    p = tmp_path / "blank.csv"
+    with open(p, "w") as f:
+        f.write("\n" + _kline_csv_text(arr, header=False))
+    d = load_klines(p)
+    assert d.n == 30, "a leading blank line must not drop the whole file"
+
+
+def test_load_real_header_still_loads(tmp_path):
+    """Guard: a genuine header row still loads correctly with had_header=True."""
+    arr = clean_array(START_MS, 30)
+    p = tmp_path / "hdr.csv"
+    with open(p, "w") as f:
+        f.write(_kline_csv_text(arr, header=True))
+    d = load_klines(p)
+    assert d.n == 30 and d.had_header
+
+
+def test_load_truly_empty_file(tmp_path):
+    """Guard: a genuinely empty (0-byte) file yields a well-formed empty KlineData."""
+    p = tmp_path / "empty.csv"
+    p.write_text("")
+    d = load_klines(p)
+    assert isinstance(d, KlineData)
+    assert d.n == 0 and not d.had_header
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
