@@ -110,6 +110,10 @@ import matplotlib.pyplot as plt
 from scipy.signal import fftconvolve
 from scipy.stats import norm
 
+# RVL-007 / RVL-022: volterra_weights is the single validated engine — imported
+# from roughvol_core (guards 0<H<1, safe at H=1/2) rather than duplicated here.
+from roughvol_core import volterra_weights
+
 os.makedirs("output", exist_ok=True)
 
 # ── colour palette (matches project blueprint) ──────────────────────────────
@@ -150,26 +154,10 @@ PARAMS = dict(
 # SECTION 1 — Coupled rough Bergomi engine + correctness validation
 # ══════════════════════════════════════════════════════════════════════════════
 
-def volterra_weights(n: int, H: float, T: float) -> tuple:
-    """
-    Convolution weights for the optimal-discretisation (kappa = 0) scheme.
-
-    Returns
-    -------
-    g : np.ndarray, shape (n,)
-        Kernel values g_m = (b_m dt)^{H-1/2} with b_m the BLP optimal
-        evaluation points, so that  W~_i = sqrt(2H) * (g * dW)_i.
-    v : np.ndarray, shape (n,)
-        Discrete variance  v_i = Var(W~_{t_i}) = 2H dt cumsum(g^2),
-        used in the lognormal compensator (exact forward variance).
-    """
-    a  = H - 0.5
-    dt = T / n
-    m  = np.arange(1, n + 1)
-    b  = ((m**(a + 1) - (m - 1)**(a + 1)) / (a + 1)) ** (1.0 / a)
-    g  = (b * dt) ** a
-    v  = 2.0 * H * dt * np.cumsum(g**2)
-    return g, v
+# volterra_weights is imported from roughvol_core (top of file) — the single
+# validated engine (guards 0<H<1, safe at H=1/2). The former in-file duplicate
+# was byte-identical for valid H but lacked the guard and crashed at H=1/2
+# (RVL-007 / RVL-022).
 
 
 def volterra_weights_kappa1(n: int, H: float, T: float) -> tuple:
