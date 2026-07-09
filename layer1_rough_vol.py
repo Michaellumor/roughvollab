@@ -16,6 +16,16 @@ Structure
 Each section prints its results and saves a figure to ./output/.
 Run the whole file with:  python layer1_rough_vol.py
 Or run one section:       python layer1_rough_vol.py --section 2
+
+Correction note (ROADMAP L1-1)
+------------------------------
+Section 2/3's rough-path construction was corrected under ROADMAP issue L1-1.
+``fbm_hybrid`` now produces a Volterra path normalised to the discrete variance
+v = 2H·dt·cumsum(g²), so Var(W̃_{t_i}) = v_i by construction, and
+``rough_bergomi_paths`` uses that same v as its lognormal compensator (not the
+continuum t^{2H}), so E[V_t] = ξ₀ holds exactly on the grid. This is the
+readable teaching implementation; for production or correctness-critical work,
+``roughvol_core.py`` is the separately-validated engine.
 """
 
 import argparse
@@ -28,6 +38,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from scipy.linalg import cholesky, solve_triangular
 from scipy.optimize import minimize_scalar
+from scipy.signal import fftconvolve
 from scipy.special import gamma
 
 warnings.filterwarnings("ignore")
@@ -172,97 +183,76 @@ def section1_fbm(show: bool = True):
 # SECTION 2 — Hybrid O(N log N) Scheme  (Bennedsen-Lunde-Pakkanen 2017)
 # ══════════════════════════════════════════════════════════════════════════════
 
-def fbm_hybrid(n: int, H: float, n_paths: int = 1,
-               n_wiener: int = None) -> np.ndarray:
+def _volterra_weights(n: int, H: float, T: float = 1.0):
     """
-    Simulate fBm using the hybrid scheme of Bennedsen, Lunde & Pakkanen (2017).
+    κ = 0 hybrid-scheme convolution weights (self-contained; the same maths as
+    the validated ``roughvol_core.volterra_weights``, kept local so this teaching
+    module does the correct construction itself rather than importing the engine).
 
-    The key idea: split the Mandelbrot-Van Ness kernel into two parts.
+        g_m = (b_m · dt)^{H - 1/2}      b_m = Bennedsen–Lunde–Pakkanen (2017)
+                                        optimal evaluation point in cell m
+        v_i = 2H · dt · Σ_{m ≤ i} g_m²  =  Var(W̃_{t_i}) for the process
+        W̃   = sqrt(2H) · (g ∗ dW),      dW ~ N(0, dt).
 
-        B^H_t = ∫₀ᵗ K(t-s) dW_s
-        K(x)  = x^{H - 1/2} / Γ(H + 1/2)          (power-law kernel)
-
-    The kernel is singular near x = 0 (the 'rough' part) and has long memory
-    for x large (the 'smooth' part).  The hybrid scheme treats these separately:
-
-      - 'b' nearest Wiener increments: exact representation using a Volterra
-        matrix — captures the roughness (singularity near zero)
-      - remaining increments: fast convolution via FFT — captures long memory
-
-    This reduces complexity from O(N²) (naive) to O(N log N) (FFT convolution)
-    while preserving the strong convergence rate of the Milstein scheme.
-
-    Strong convergence rate:  E[|B^H_{t_k} - B̂^H_{t_k}|²]^{1/2} = O(N^{-H})
-
-    Parameters
-    ----------
-    n        : int   Number of time steps.
-    H        : float Hurst exponent ∈ (0, ½).
-    n_paths  : int   Number of independent paths.
-    n_wiener : int   Number of Wiener increments treated exactly (b parameter).
-                     Default: max(10, int(n**0.4)) — balances speed vs accuracy.
+    Use v — NOT the continuum t^{2H} — in any lognormal compensator so that
+    E[V_t] = ξ₀ holds exactly on the discrete grid.
 
     Returns
     -------
-    paths : np.ndarray  shape (n_paths, n)
+    g : np.ndarray (n,)   convolution kernel
+    v : np.ndarray (n,)   discrete variance, v[i-1] = Var(W̃_{t_i})
     """
-    alpha = H - 0.5                                  # roughness index: α ∈ (-½, 0)
-    b     = n_wiener if n_wiener else max(10, int(n**0.4))
-    dt    = 1.0 / n
-    t_grid = np.arange(1, n + 1) * dt
+    a  = H - 0.5
+    dt = T / n
+    m  = np.arange(1, n + 1)
+    if abs(a) < 1e-12:                  # H = 1/2: removable singularity — the
+        g = np.ones(n)                  # kernel is flat, i.e. standard Brownian motion
+    else:
+        b = ((m**(a + 1) - (m - 1)**(a + 1)) / (a + 1)) ** (1.0 / a)
+        g = (b * dt) ** a
+    v = 2.0 * H * dt * np.cumsum(g**2)
+    return g, v
 
-    # Kernel weights for the 'smooth' part (indices b+1, ..., N)
-    def kernel(x):
-        return x**alpha / gamma(H + 0.5)
 
-    # ── build Volterra matrix for the exact (rough) part ──
-    # V[k, j] = integral of kernel over [(j-1)dt, j·dt] for j ≤ b
-    V = np.zeros((n, b))
-    for j in range(b):
-        for k in range(j, n):
-            s_lo = j * dt
-            s_hi = (j + 1) * dt
-            t_k  = (k + 1) * dt
-            # Exact integral: ∫_{s_lo}^{s_hi} (t_k - s)^α ds
-            V[k, j] = ((t_k - s_lo)**(alpha + 1) - (t_k - s_hi)**(alpha + 1)) \
-                      / ((alpha + 1) * gamma(H + 0.5) * dt)
+def fbm_hybrid(n: int, H: float, n_paths: int = 1,
+               n_wiener: int = None) -> np.ndarray:
+    """
+    Simulate the rough Volterra process W̃ via the κ = 0 optimal hybrid scheme of
+    Bennedsen, Lunde & Pakkanen (2017).
 
-    # ── FFT convolution weights for the smooth part ──
-    # kernel evaluated at lag distances n*dt, (n-1)*dt, ..., (b+1)*dt
-    lag_smooth = np.array([kernel((k + 1) * dt) for k in range(b, n)])
+        W̃_t = sqrt(2H) ∫₀ᵗ (t - s)^{H - 1/2} dW_s
 
-    # Precompute FFT of convolution kernel (padded to 2N for linear conv)
-    fft_len = 2 * n
-    kernel_fft_vec = np.zeros(fft_len)
-    # place smooth kernel at positions corresponding to lags b+1..n
-    for i, k_val in enumerate(lag_smooth):
-        kernel_fft_vec[b + i] = k_val
-    K_fft = np.fft.rfft(kernel_fft_vec)
+    The power-law kernel is singular at s = t. The hybrid scheme places, in each
+    cell m, an *optimal* evaluation point b_m (so the near-diagonal singularity is
+    integrated accurately) and convolves the resulting kernel weights
+    g_m = (b_m·dt)^{H-1/2} with the Brownian increments in a single FFT:
 
-    paths = np.zeros((n_paths, n))
+        W̃ = sqrt(2H) · (g ∗ dW),      dW ~ N(0, dt).
 
-    for p in range(n_paths):
-        dW = np.random.standard_normal(n) * np.sqrt(dt)
+    This is O(N log N) and is normalised to the DISCRETE variance
+    v_i = 2H·dt·Σ_{m≤i} g_m², so **Var(W̃_{t_i}) = v_i by construction** (v_i → 1
+    as N → ∞). Getting this normalisation right is ROADMAP issue L1-1 (RVL-001):
+    the previous split-kernel construction over-subtracted the near-diagonal
+    terms and undershot the variance (~0.91).
 
-        # ── exact rough part: matrix-vector product ──
-        rough_part = V @ dW[:b]
+    Parameters
+    ----------
+    n        : int   Number of time steps on [0, 1].
+    H        : float Hurst exponent ∈ (0, 1)  (H = ½ ⇒ standard Brownian motion).
+    n_paths  : int   Number of independent paths.
+    n_wiener : int   Retained for API compatibility; unused by the κ = 0 optimal
+                     scheme, which needs no explicit exact/FFT split.
 
-        # ── smooth part: FFT convolution ──
-        dW_padded = np.zeros(fft_len)
-        dW_padded[:n] = dW
-        dW_fft     = np.fft.rfft(dW_padded)
-        conv_full  = np.fft.irfft(K_fft * dW_fft)[:n]
-
-        # Remove the b already handled exactly
-        smooth_corr = np.zeros(n)
-        for j in range(b):
-            # subtract the exact kernel contribution already counted
-            for k in range(j, n):
-                t_k = (k + 1) * dt
-                smooth_corr[k] += kernel((t_k - j * dt)) * dW[j]
-
-        paths[p] = rough_part + conv_full - smooth_corr
-
+    Returns
+    -------
+    paths : np.ndarray  shape (n_paths, n)   W̃_{t_1}, …, W̃_{t_n} for each path.
+    """
+    dt = 1.0 / n
+    g, _ = _volterra_weights(n, H)
+    # W̃ = sqrt(2H) · (g ∗ dW). The causal (linear) convolution gives
+    # W̃_{t_i} = sqrt(2H) Σ_{m=1}^{i} g_m · dW_{i-m+1}, hence Var(W̃_{t_i}) = v_i.
+    dW = np.random.standard_normal((n_paths, n)) * np.sqrt(dt)
+    paths = np.sqrt(2.0 * H) * fftconvolve(dW, g[None, :], axes=1)[:, :n]
     return paths
 
 
@@ -398,6 +388,10 @@ def rough_bergomi_paths(n: int, H: float, xi0: float, eta: float,
     where B^H is fractional Brownian motion with Hurst exponent H,
     and W^S, B^H are correlated:  Corr(dW^S, dB^H) = ρ.
 
+    Numerically the continuum compensator ½η²t^{2H} is replaced by the discrete
+    variance ½η²v_t, v_t = 2H·dt·cumsum(g²), so E[V_t] = ξ₀ holds exactly on the
+    grid (ROADMAP L1-1 / RVL-002).
+
     Key feature: V_t is log-normal, B^H gives rough sample paths of V.
     The negative correlation ρ < 0 produces the observed volatility skew.
 
@@ -433,10 +427,14 @@ def rough_bergomi_paths(n: int, H: float, xi0: float, eta: float,
     S[:, 0] = S0
     V[:, 0] = xi0
 
+    # RVL-002: discrete compensator v[k] = Var(W̃_{t_{k+1}}) from the corrected
+    # kernel — keeps E[V_t] = ξ₀ exact on the grid. The continuum t^{2H} does not
+    # match the discrete scheme's variance (it made E[V_t]/ξ₀ dip to ~0.35).
+    _, v = _volterra_weights(n, H)
     for k in range(n):
         # variance at time t_{k+1}
         V[:, k+1] = xi0 * np.exp(
-            eta * B_H_full[:, k+1] - 0.5 * eta**2 * t[k+1]**(2*H)
+            eta * B_H_full[:, k+1] - 0.5 * eta**2 * v[k]
         )
         sqrt_V = np.sqrt(np.maximum(V[:, k], 1e-8))
 
