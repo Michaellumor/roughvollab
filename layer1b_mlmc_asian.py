@@ -110,7 +110,6 @@ import matplotlib.pyplot as plt
 from scipy.signal import fftconvolve
 from scipy.stats import norm
 
-warnings.filterwarnings("ignore")
 np.random.seed(42)
 os.makedirs("output", exist_ok=True)
 
@@ -844,4 +843,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # Blanket warning suppression is a convenience for direct CLI runs only.
+    # Scoping it here (it used to run at module import) keeps
+    # `import layer1b_mlmc_asian` from silencing every warning process-wide for
+    # downstream modules — e.g. the overflow RuntimeWarning that flags the
+    # silent-NaN Riccati path stays visible to importers (RVL-040).
+    warnings.filterwarnings("ignore")
     main()
