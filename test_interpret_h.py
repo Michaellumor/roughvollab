@@ -192,5 +192,56 @@ def test_collapse_flag_on_flat_curve():
     assert abs(slope) < _FLAT_SLOPE, "flat curve should register as collapse"
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# RVL-039 (warn-only): warn when the RV-proxy window is ASSUMED from the
+# arguments rather than measured from the CSV.
+# ──────────────────────────────────────────────────────────────────────────
+
+class _StopBeforeEnvelope(Exception):
+    """Sentinel to short-circuit interpret() at the (post-warning) envelope
+    build, so the warn-only behaviour is tested without the heavy MC."""
+
+
+def _stop(*args, **kwargs):
+    raise _StopBeforeEnvelope
+
+
+def _window_less_rv_csv(tmp_path) -> str:
+    """A canonical processed-RV CSV (built at 1h/1m) that carries no explicit
+    window — reaches the interpret() `window is None` CSV branch."""
+    import rv_series
+    from kline_verifier import KlineData, INTERVAL_MS
+    rng = np.random.default_rng(0)
+    n = 400 * 60                                        # 400 hourly RV bars from 1m data
+    close = 100.0 * np.exp(np.cumsum(rng.standard_normal(n) * 0.002))
+    ot = np.arange(n, dtype=np.int64) * INTERVAL_MS["1m"]
+    kl = KlineData(open_time=ot, open=close, high=close, low=close, close=close,
+                   volume=np.ones(n), close_time=ot + INTERVAL_MS["1m"] - 1,
+                   n_trades=np.ones(n, np.int64), n_files=1)
+    series = rv_series.build_rv_series(kl, sampling="1m", rv_bar="1h")
+    csv = tmp_path / "rv.csv"
+    rv_series._save_csv(series, csv)
+    return str(csv)
+
+
+def test_interpret_warns_only_when_window_assumed(tmp_path, capsys, monkeypatch):
+    """CSV + window=None prints the assumption [WARN]; an explicit window is silent."""
+    import interpret_h
+    csv = _window_less_rv_csv(tmp_path)
+    monkeypatch.setattr(interpret_h, "build_bias_curve", _stop)   # skip the heavy MC
+
+    # (a) window=None on a CSV -> the assumption warning fires
+    with pytest.raises(_StopBeforeEnvelope):
+        interpret_h.interpret(csv)
+    assumed = capsys.readouterr().out
+    assert "[WARN]" in assumed
+    assert "assumed from arguments" in assumed and "not measured from file" in assumed
+
+    # (b) an explicit window -> no such warning
+    with pytest.raises(_StopBeforeEnvelope):
+        interpret_h.interpret(csv, window=60)
+    assert "assumed from arguments" not in capsys.readouterr().out
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
