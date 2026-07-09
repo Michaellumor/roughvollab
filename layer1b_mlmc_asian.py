@@ -110,7 +110,6 @@ import matplotlib.pyplot as plt
 from scipy.signal import fftconvolve
 from scipy.stats import norm
 
-np.random.seed(42)
 os.makedirs("output", exist_ok=True)
 
 # ── colour palette (matches project blueprint) ──────────────────────────────
@@ -849,4 +848,7 @@ if __name__ == "__main__":
     # downstream modules — e.g. the overflow RuntimeWarning that flags the
     # silent-NaN Riccati path stays visible to importers (RVL-040).
     warnings.filterwarnings("ignore")
+    # RVL-046: seed the global RNG only for direct CLI runs, not on import —
+    # importing the module must not reseed a downstream user's global numpy RNG.
+    np.random.seed(42)
     main()

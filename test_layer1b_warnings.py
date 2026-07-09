@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Regression test for RVL-040.
+"""Regression tests for RVL-040 and RVL-046 — importing the module must not
+mutate process-global state.
 
 `layer1b_mlmc_asian` used to run a bare ``warnings.filterwarnings("ignore")`` at
 module import, installing a process-global ignore-all filter that silenced every
@@ -55,5 +56,35 @@ def test_importing_layer1b_does_not_silence_warnings_process_wide():
                        capture_output=True, text=True, cwd=_REPO)
     assert r.returncode == 0 and "RVL040-OK" in r.stdout, (
         "fresh-process warning probe failed:\n"
+        "--- stdout ---\n%s\n--- stderr ---\n%s" % (r.stdout, r.stderr)
+    )
+
+
+# ── RVL-046: importing the module must not reseed numpy's GLOBAL RNG ─────────
+# `np.random.seed(42)` used to run at module import, silently reseeding the
+# global RNG for every importer. It now lives under `if __name__ == "__main__":`.
+_RNG_PROBE = r"""
+import numpy as np
+
+# Put the global RNG in a KNOWN state distinct from the module's seed(42), so a
+# reseed-on-import is unambiguously detectable (not a coincidental match).
+np.random.seed(12345)
+before = np.random.get_state()
+import layer1b_mlmc_asian                      # must not touch the global RNG
+after = np.random.get_state()
+
+assert before[0] == after[0], "global RNG bit-generator changed on import"
+assert np.array_equal(before[1], after[1]) and before[2] == after[2], \
+    "importing layer1b_mlmc_asian reseeded numpy's global RNG"
+
+print("RVL046-OK")
+"""
+
+
+def test_importing_layer1b_does_not_reseed_global_rng():
+    r = subprocess.run([sys.executable, "-c", _RNG_PROBE],
+                       capture_output=True, text=True, cwd=_REPO)
+    assert r.returncode == 0 and "RVL046-OK" in r.stdout, (
+        "fresh-process RNG probe failed:\n"
         "--- stdout ---\n%s\n--- stderr ---\n%s" % (r.stdout, r.stderr)
     )
