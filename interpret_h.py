@@ -407,6 +407,14 @@ def interpret(source, window: Optional[int] = None, sampling: str = "5m",
         log_rv, _, _ = load_log_rv_csv(source)
         if window is None:
             window = INTERVAL_MS[rv_bar] // INTERVAL_MS[sampling]
+            # RVL-039 (warn-only): for a CSV source the window is ASSUMED from the
+            # rv_bar/sampling arguments, not measured from the file, so a CSV built
+            # at a different sampling gets de-biased at the wrong measurement
+            # conditions. Surface the assumption; inferring it from the file's
+            # n_returns column is deferred to a follow-up.
+            print(f"  [WARN] window={window} assumed from arguments "
+                  f"(--rv-bar={rv_bar} / --sampling={sampling}), not measured "
+                  f"from file; pass --window to match the CSV's sampling")
     else:
         series = build_rv_series(source, sampling=sampling, rv_bar=rv_bar,
                                  base_interval=base_interval)
