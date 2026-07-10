@@ -31,6 +31,10 @@ from rv_series import (
     build_rv_series,
     RVSeries,
 )
+# RVL-008: layer1c_roughness_audit is a first-party module — import it plainly
+# (NOT pytest.importorskip), so a broken import makes the load-bearing round-trip
+# test FAIL rather than silently SKIP behind a green suite.
+import layer1c_roughness_audit as audit
 
 DAY_MS = INTERVAL_MS["1d"]
 MIN_MS = INTERVAL_MS["1m"]
@@ -73,7 +77,6 @@ def make_klines(start_ms, n, unit="ms", close=None, interval_ms=MIN_MS):
 
 def test_matches_phase_a_rung1():
     """Our proxies must equal layer1c's realized/bipower log-variance exactly."""
-    audit = pytest.importorskip("layer1c_roughness_audit")
     rng = np.random.default_rng(7)
     S = 100.0 * np.exp(np.cumsum(rng.normal(0, 0.001, size=(4, 3001)), axis=1))
     for window in (10, 30, 100):
