@@ -98,3 +98,24 @@ def test_gate_d_highnu_qe_beats_trunc_on_price():
     eq = abs(np.maximum(Sq[:, -1] - K, 0).mean() - P_cf) / P_cf
     et = abs(np.maximum(St[:, -1] - K, 0).mean() - P_cf) / P_cf
     assert eq < et and eq < 0.06, f"qe err {eq:.3f} not < trunc {et:.3f} (& <6%)"
+
+
+def test_lifted_non_anticipating():
+    """Lifted V_i must be F_{t_i}-measurable: perturbing dWV[:, k] must leave
+    V[:, :k+1] BIT-IDENTICAL and change only V[:, k+1:]. Left-point Ito /
+    non-anticipation; beta=2H cannot catch a look-ahead here, so it is tested
+    directly (mirrors the explicit test_non_anticipating in test_rough_heston.py)."""
+    p = dict(PARAMS)
+    gammas, weights = lifted_setup(0.10, 8)          # SOE nodes/weights; p is PARAMS
+    n, k = 64, 30
+    dt = p["T"] / n
+    r = np.random.default_rng(99)
+    dWV = r.standard_normal((200, n)) * np.sqrt(dt)
+    dWp = r.standard_normal((200, n)) * np.sqrt(dt)
+    _, V0 = _lifted_from_increments(dWV, dWp, n, 0.10, p, gammas, weights)
+    dWV2 = dWV.copy(); dWV2[:, k] += 0.5             # perturb increment over [t_k, t_{k+1}]
+    _, V1 = _lifted_from_increments(dWV2, dWp, n, 0.10, p, gammas, weights)
+    assert np.array_equal(V0[:, :k + 1], V1[:, :k + 1]), \
+        "LOOK-AHEAD: V_{<=k} changed when a FUTURE increment dWV[:,k] was perturbed"
+    assert not np.array_equal(V0[:, k + 1:], V1[:, k + 1:]), \
+        "V_{>k} must respond to dWV[:,k] (sanity that the perturbation took effect)"
