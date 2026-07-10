@@ -83,13 +83,13 @@
   <h1>How this codebase <span class="g">audits itself</span></h1>
   <p class="lede">Every numerical claim in RoughVolLab is backed by a committed, reproducible run — and the code is held to the same standard. This is the public record of the project's internal quality audit: how findings were <em>verified before they were trusted</em>, what was fixed, and what remains open.</p>
 
-  <div class="stamp"><span class="d"></span>Reconciled against <b>main</b> @ <b>131a37b</b> · 2026-07-10</div>
+  <div class="stamp"><span class="d"></span>Reconciled against <b>main</b> @ <b>f9b22e5</b> · 2026-07-10</div>
 
   <!-- 01 -->
   <section>
     <div class="sechead"><span class="secnum">01</span><span class="sectitle">Refute-first, not trust-first</span></div>
     <p class="body">Findings were not taken on trust. Each was <b>adversarially verified against the current code</b> before any fix — line-checked, and where the claim was numerical, reproduced by Monte Carlo. Every fix is then pinned by a <b>regression test proven to fail on the pre-fix code</b>, so a silent regression can't slip back behind a green suite.</p>
-    <p class="body">One issue at a time; each closed by a public pull request with the reasoning, the diff, and the verification in the open. The full test suite — <span class="mono">264 passed, 2 skipped</span> — runs on every change.</p>
+    <p class="body">One issue at a time; each closed by a public pull request with the reasoning, the diff, and the verification in the open. The full test suite — <span class="mono">265 passed, 2 skipped</span> — runs on every change.</p>
   </section>
 
   <!-- 02 -->
@@ -171,8 +171,8 @@
     <div class="sechead"><span class="secnum">04</span><span class="sectitle">What's still open — honestly</span></div>
     <p class="body">The nine above resolve every confirmed High- and Medium-severity finding — all fixed and merged. The audit also logged a longer tail of lower-priority items:</p>
     <div class="tracked">
-      <div class="big">~25 <span>lower-priority items still tracked</span></div>
-      <p class="body" style="margin-top:14px;margin-bottom:0">Documentation polish, cosmetic consistency, and defensive hardening — logged in the ROADMAP and closed gradually, one reviewed PR at a time. Nothing load-bearing is left open, and nothing is hidden.</p>
+      <div class="big">~15 <span>lower-priority items still tracked</span></div>
+      <p class="body" style="margin-top:14px;margin-bottom:0">Documentation polish, cosmetic consistency, and defensive hardening — logged in the ROADMAP. A documentation-accuracy pass has since cleared the substantive tail; the ~15 that remain are minor items, closed gradually in the open, one reviewed PR at a time. Nothing load-bearing is left open, and nothing is hidden.</p>
     </div>
   </section>
 
