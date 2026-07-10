@@ -70,10 +70,13 @@ def soe_bb(H, N, T=1.0, alpha=1.6, beta=0.4275, a=1.0, b=1.0):
     subintervals of the spectral integral + a gamma=0 tail node (BB construction).
     Optimal split m ~ (beta/A) sqrt(N), n ~ (A/beta) sqrt(N) (so n*m ~ N); the
     exponential range spread (xi_0, xi_n ~ exp(+-c sqrt(N))) yields the
-    superpolynomial rate exp(-2 alpha/A sqrt(N)). alpha=1.6 chosen empirically
-    (BB sec. 4.2-style tuning) -- best realised rate across H in {0.05,0.1,0.2}
-    for this folded-Gauss-Legendre variant; beta sets the m/n split. Returns
-    (gammas, weights); total factors = n*m + 1."""
+    superpolynomial rate exp(-2 alpha/A sqrt(N)). Both alpha=1.6 and beta=0.4275
+    are empirically-tuned constants of the Bayer-Breneis SOE method
+    (arXiv:2108.05048, sec. 4.2; full reference in the module header), not free
+    parameters: alpha=1.6 gives the best realised rate across H in {0.05,0.1,0.2}
+    for this folded-Gauss-Legendre variant, and beta=0.4275 sets the m/n
+    (quadrature-level / interval) split. Returns (gammas, weights);
+    total factors = n*m + 1."""
     cH = _mu_norm(H)
     aexp = H + 0.5
     A = np.sqrt(1.0 / H + 1.0 / (1.5 - H))        # A_H

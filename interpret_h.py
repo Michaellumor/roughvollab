@@ -95,6 +95,9 @@ DEFAULT_TRUE_GRID = np.array([0.05, 0.08, 0.10, 0.15, 0.20, 0.30, 0.45, 0.60])
 
 # Below this local slope d(observed Ĥ)/d(true H), the inversion is ill-posed:
 # a flat bias curve means many true H map to the same observed Ĥ (the collapse).
+# The 0.25 threshold is where the bias-curve gradient becomes shallow enough that
+# a change in true H barely moves observed Ĥ relative to the estimator's sampling
+# noise — so distinct true H are practically indistinguishable and recovery is flagged.
 _FLAT_SLOPE = 0.25
 
 
