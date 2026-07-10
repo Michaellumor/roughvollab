@@ -91,6 +91,10 @@ BIAS_DIRECTION = {
 }
 
 # q values for the MF-DFA multifractal-width probe (flat h(q) => monofractal).
+# Symmetric ±2/±4 straddles both regimes (q<0 weights small fluctuations, q>0
+# large ones); q=0 is dropped (the generalised Hurst h(q) needs a log-limit
+# there) and |q|≤4 keeps the moment estimates stable — larger |q| is dominated
+# by a few extreme fluctuations and grows noisy on finite series.
 _MF_QS = np.array([-4.0, -2.0, 2.0, 4.0])
 
 
