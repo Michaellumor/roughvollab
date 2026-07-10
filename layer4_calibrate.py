@@ -261,7 +261,7 @@ def exp_cf_recovery(N_riccati=1500, n_nodes=200):
 def exp_identifiability(N_riccati=1000, n_nodes=160):
     cf_kw = dict(N_riccati=N_riccati, n_nodes=n_nodes)
     atm = atm_iv_cf(TRUTH, **cf_kw)
-    print(f"\n=== EXP 3: identifiability (JᵀJ at truth) ===")
+    print(f"\n=== EXP 2: identifiability (JᵀJ at truth) ===")
     conds = {}
     for tag, Ks in _grids(atm).items():
         rep = identifiability_report(TRUTH, Ks, cf_kw=cf_kw)
@@ -276,7 +276,7 @@ def exp_noise(sigmas=(0.001, 0.003, 0.005), n_draws=16, N_riccati=1000, n_nodes=
     atm = atm_iv_cf(TRUTH, **cf_kw)
     Ks = fixed_strikes_from_target(atm, VUS_FULL)
     target = model_smile_cf(TRUTH, Ks, **cf_kw)
-    print(f"\n=== EXP 2: noise-robustness ensemble (FULL grid, {n_draws} draws) ===")
+    print(f"\n=== EXP 3: noise-robustness ensemble (FULL grid, {n_draws} draws) ===")
     print(f"  truth: " + "  ".join(f"{n}={v:+.4f}" for n, v in zip(PNAMES, TRUTH)))
     print(f"  {'σ(pp)':>6} " + " ".join(f"{n+'_mean':>10} {n+'_std':>9}" for n in PNAMES))
     for sg in sigmas:

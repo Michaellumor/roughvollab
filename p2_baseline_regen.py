@@ -75,6 +75,8 @@ def rates():
         r = estimate_rates(L=5, N=12_000, p=dict(PARAMS, H=H), seed=23,
                            verbose=False)
         sweep[H] = float(r["beta"])
+    # RVL-033: the canonical H=0.10 baseline for the paper is bBmain (the seed-7
+    # main run, L=6/N=20000); bB=sweep[0.10] is the lower-fidelity β-vs-H trend point.
     out = dict(bA=(sweep[0.05], None), bB=(sweep[0.10], None),
                bC=(sweep[0.20], None), bD=(sweep[0.35], None),
                bBmain=(float(main["beta"]), None),
