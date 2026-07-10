@@ -32,7 +32,7 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 
 | Module | Contents | Status | Last touched |
 |---|---|---|---|
-| `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **1 known issue (L1-1)** | 2026-06-12 |
+| `layer1_rough_vol.py` | fBm (Cholesky + hybrid), rBergomi/rHeston paths, Hurst estimation | ✅ complete — **L1-1 resolved** (PR #53) | 2026-07-09 |
 | `layer1b_mlmc_asian.py` | Coupled rBergomi engine, Giles rates, adaptive MLMC, β-vs-H study; opt-in antithetic / conditional / κ=1 estimator flags (P2) | ✅ v0.1 + P2 estimators, validated | 2026-06-23 |
 | `layer1b_kappa1.py` | Exact near-cell (κ=1) Volterra module + coarse coupler (split + conditional resampling) | ✅ G-H1 / G-H2 pass | 2026-06-23 |
 | `roughvol_core.py` | Shared tested rough-path engine (κ=0 Volterra) + `test_roughvol_core.py` | ✅ 18 tests pass | 2026-06-13 |
@@ -56,13 +56,18 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 
 ---
 
-## Layer 1 — Stochastic simulation core (complete, 1 known issue)
+## Layer 1 — Stochastic simulation core (complete)
 
 Cholesky-exact fBm, BLP hybrid scheme, rBergomi and rough Heston path
 simulation, Hurst estimation from realised variance. Four sections, figures
 to `output/`.
 
-### KNOWN ISSUE L1-1 — Volterra normalisation (logged 2026-06-12)
+### KNOWN ISSUE L1-1 — Volterra normalisation (logged 2026-06-12; RESOLVED 2026-07-09) ✅
+
+**✅ RESOLVED (2026-07-09, PR #53 — RVL-001/002/016/017; see D47):** the fix
+plan below was carried out exactly. The bug record is kept verbatim as honest
+history — the present-tense description is how it was logged, not the current
+state.
 
 `fbm_hybrid` produces a process with **Var(B^H_1) ≈ 0.89** (measured,
 n = 128, 3000 paths, H = 0.1), but `rough_bergomi_paths` uses the
@@ -77,7 +82,7 @@ internally inconsistent too (suspect: double-subtraction in the
 why Layer 1b has its own verified Volterra engine and does **not** import
 Layer 1's.
 
-**Fix plan:** rewrite `fbm_hybrid` against the κ=0 weights in
+**Fix plan (carried out — PR #53):** rewrite `fbm_hybrid` against the κ=0 weights in
 `layer1b_mlmc_asian.volterra_weights` (vectorised, FFT), normalise so
 Var(W̃_t) matches the discrete formula, and switch the rBergomi compensator
 to the discrete variance. **Acceptance test:** empirical Var(W̃_T) within
@@ -911,6 +916,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   baseline remains inside P2 per D23. Seeds section updated in place (current-plan,
   not append-only log); this entry records the change.
 - **D46** *(2026-07-03)* **Public interactive tour shipped + wired into the README.** The six browser explorers (engine + Q1–Q5) and their hub are published via GitHub Pages from `docs/tour/` (hub = `index.html`), live at `https://michaellumor.github.io/roughvollab/tour/`. README now leads with a tour link and the five-questions poster is a clickable entry point. Each explorer runs client-side with no build step or dependencies beyond web fonts; every reported number is traced to its decision (D20–D23 pricing, D24–D26 execution, D37–D39/D41 calibration, D40/D43 hedging, Q1 estimators), and the illustrative visuals are labelled as such. Docs/infra only — no core code touched; `.nojekyll` added, Pages source = `/docs` on `main`.
+- **D47** *(2026-07-09)* **L1-1 resolved — `fbm_hybrid` Volterra normalisation corrected; the quarantined Layer 1 teaching engine now matches the validated core.** The long-logged KNOWN ISSUE L1-1 (above) is fixed. `fbm_hybrid` was rewritten to the discrete-variance construction — `√(2H)·` FFT-convolution of the BLP κ=0 weights via a self-contained `_volterra_weights` — and the rBergomi compensator switched from the continuum `t^{2H}` to the discrete `v[k] = Var(W̃_{t_{k+1}})`, removing the ~18% forward-variance bias (E[V_t] → ξ₀). Both acceptance tests from the original fix plan pass under Monte Carlo, now pinned by `test_layer1_rough_vol.py`. Shipped as PR #53 (RVL-001/002/016/017). **Numbering / scope note (honest):** this is *not* a new result — the correct discrete-variance compensator and its regression guards have existed and been enforced in `roughvol_core.py` / Layer 1b since **D2** and **D11**; L1-1 was only that the quarantined Layer 1 teaching module (nothing imports it — `roughvol_core.py` is the pricing engine, so pricing was never affected) had not been brought in line. Recorded here as **D47**, the next sequential entry, dated to the fix's merge (2026-07-09); the bug it closes was first logged 2026-06-12.
 ---
 
 ## Publication seeds
