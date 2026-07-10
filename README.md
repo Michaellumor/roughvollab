@@ -116,8 +116,10 @@ foundations to graduate stochastic analysis — with current build status:
 git clone https://github.com/Michaellumor/roughvollab.git
 cd roughvollab
 pip install -r requirements.txt
-python -m pytest -q        # 254 tests: 252 pass + 2 torch-skips on a core install
+python -m pytest -q        # 2 skips on a core install — the Layer-3 deep-hedging tests need torch
 ```
+
+*The 2 skips are the Layer-3 deep-hedging tests (`layer3_deep_hedging.py`): they require **torch**, so on a core (torch-free) install they skip — the deep-hedging suite runs in its own isolated venv, and everything else runs on the plain requirements above.*
 
 ```python
 import numpy as np

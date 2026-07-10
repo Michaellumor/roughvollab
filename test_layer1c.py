@@ -28,7 +28,7 @@ def test_gjr_recovers_known_H_within_tolerance(H_true):
     )
 
 
-def test_gjr_bias_is_positive_and_grows_as_H_shrinks():
+def test_gjr_bias_grows_as_H_shrinks():
     """Document the estimator's signature: a systematic positive finite-lag
     bias that increases toward H → 0. If this ordering ever reverses, the
     estimator's behaviour has changed and the audit's premise needs review."""
