@@ -242,7 +242,7 @@ bootstrap otherwise). Batched generation per Layer 1b conventions (D8).
 
 **STATUS (2026-06-20): CRYPTO ARM COMPLETE.** Pipeline built and tested
 (`binance_data` → `kline_verifier` → `rv_series` → `estimate_h` → `interpret_h`,
-87 tests; runbook `run_phaseb.md`). Analysis run on BTCUSDT + ETHUSDT, 2019–2025,
+a committed pytest suite; runbook `run_phaseb.md`). Analysis run on BTCUSDT + ETHUSDT, 2019–2025,
 2,557 daily obs. **Finding (full write-up: `PHASE_B_FINDINGS.md`):** the apparent
 ultra-roughness of crypto vol (GJR Ĥ ≈ 0.08) is real and sampling-invariant but
 **NOT IDENTIFIED** as a property of the latent volatility — seen only by the
@@ -631,7 +631,7 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
 
 - **2026-06-20 — Phase B crypto arm built and analysed; the headline finding.**
   Built the real-data pipeline (downloader+verifier+RV-series+estimator-runner+
-  de-biaser, 87 tests, runbook). Ran it on BTCUSDT+ETHUSDT 2019–2025 (2,557 daily
+  de-biaser, a committed pytest suite, runbook). Ran it on BTCUSDT+ETHUSDT 2019–2025 (2,557 daily
   obs each). Result chain: (1) GJR reads Ĥ ≈ 0.08 (BTC) / 0.07 (ETH), clean
   monofractal, but Cont–Das returns nan and MF-DFA returns negative/unphysical at
   every sampling — only the model-assuming estimator sees roughness. (2) Sampling

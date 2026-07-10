@@ -6,8 +6,9 @@ Giles level-variance decay rate β on rough_heston.py via an MLMC coupling
 (coarse grid = pairwise-summed fine Brownian increments), with an arithmetic-
 Asian-call functional — apples-to-apples with the layer1b β-vs-H result.
 
-PASS criterion: β must be CONSISTENT with layer1b's MEASURED β-vs-H, not merely
-> 2H. Reference (layer1b_mlmc_asian.py, κ=0 exact coupling):
+PASS criterion is the Gate below — |β − 2H| ≤ 0.05, monotone in H — NOT a match
+to a fixed table. The layer1b β-vs-H values below (layer1b_mlmc_asian.py, κ=0
+exact coupling) are shown only for context — what that coupling measured:
 
     H      0.05   0.10   0.20   0.35
     2H     0.10   0.20   0.40   0.70

@@ -225,7 +225,7 @@ byte-identical to the Layer 1c Rung-1 object) → `estimate_h.py` (GJR + Cont–
 + MF-DFA, with trust signals and cross-estimator disagreement) → `interpret_h.py`
 (de-bias an observed Ĥ against a *matched* Rung-1 bias envelope, recovering the
 implied **true** H and flagging where the inversion is ill-posed). Runbook:
-[`run_phaseb.md`](run_phaseb.md). 87 tests.
+[`run_phaseb.md`](run_phaseb.md). Backed by a committed pytest suite.
 
 **Finding** (BTCUSDT + ETHUSDT, 2019–2025, 2,557 daily observations; full
 write-up in [`PHASE_B_FINDINGS.md`](PHASE_B_FINDINGS.md)): the apparent
