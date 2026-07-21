@@ -200,16 +200,16 @@ def _giles_cost(V, C, eps, Lstar):
     return 2.0 / eps**2 * s**2
 
 
-def gate_c4(quick):
+def gate_c4(quick, p=PARAMS):
     print("\n" + "=" * 74)
     print("  G-C4 — matched-accuracy cost, naive vs conditional (seeds 11/99/1234)")
     print("=" * 74)
     N = 8_000 if quick else 14_000
     Lpil = 6
     seeds = [11, 99, 1234]
-    res = {s: estimate_cond_rates(Lpil, N, seed=s) for s in seeds}
-    kappa = measure_kappa()
-    n0 = PARAMS["n0"]
+    res = {s: estimate_cond_rates(Lpil, N, p=p, seed=s) for s in seeds}
+    kappa = measure_kappa(p=p)
+    n0 = p["n0"]
 
     # rates / L* from the reference (seed-11) NAIVE means; same L* for all four
     r0 = res[11]
