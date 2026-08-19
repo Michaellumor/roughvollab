@@ -10,13 +10,12 @@
 \usepackage{cmap}
 \usepackage{xcolor}
 
-\newcommand{\flag}[1]{\medskip\noindent\textcolor{red}{[\,#1\,]}\medskip}
-
 \title{Identifying roughness from an option surface:\\
 from a single smile to a live crypto market}
 \author{Michael Lumor\thanks{Independent research programme; University of
 Salford. ORCID: \href{https://orcid.org/0009-0000-0326-3891}{0009-0000-0326-3891}.
-Code and data: \url{https://github.com/Michaellumor/roughvollab}.}}
+Code and data: \url{https://github.com/Michaellumor/roughvollab}.}\\[0.4em]
+\normalsize Project advisor: \textsc{[ADVISOR NAME TBC]}\thanks{[Advisor affiliation TBC].}}
 \date{July 2026}
 
 \begin{document}
@@ -24,54 +23,27 @@ Code and data: \url{https://github.com/Michaellumor/roughvollab}.}}
 
 \begin{abstract}
 Rough stochastic volatility models reproduce the steep short-maturity implied-volatility
-skew of real markets, with the Hurst exponent $H$ controlling the roughness of the
-volatility path. A natural question for anyone fitting such a model is whether $H$ can be
-\emph{identified} from the object one actually calibrates to---an implied-volatility
-surface. We answer this with a calibration audit that runs from synthetic known-answer
-surfaces to two live cryptocurrency options markets. Three findings emerge. First, a single
-maturity cannot identify $H$: the inverse problem pins the variance level, the skew, and
-the volatility-of-volatility, but $H$ is the flat eigen-direction, degenerate with the
-volatility-of-volatility and corrupted by even a tenth of a volatility point of quote
-noise. Second, the multi-maturity surface helps but does not cure this: the term structure
-of the skew, which $H$ governs through a power law in maturity, tightens $H$ by roughly an
-order of magnitude at clean data, yet the degeneracy persists and $H$ degrades again under
-realistic noise. Third---calibrating the model to a live Deribit Bitcoin surface---$H$ is
-non-identifiable outright: it rails to its boundary, is almost entirely the flat direction
-of the Jacobian, and two equally good fits of the same data land at different parameters
-along a flat valley. We show this non-identification is \emph{intrinsic}, a structural
-degeneracy between $H$ and the volatility-of-volatility, rather than an artefact of a
-truncated maturity span: making the full one-year span computable through a
-maturity-adapted Riccati resolution leaves $H$'s identifiability essentially unchanged, and
-a per-maturity sensitivity analysis shows the long maturity to be the \emph{least}
-$H$-informative tenor, not the most. The same two findings replicate on a second live
-market, Ethereum, establishing that the non-identifiability---and its mechanism---is a
-cross-market structural feature of crypto surfaces rather than a Bitcoin idiosyncrasy. This
-is the option-calibration counterpart of an observational equivalence already documented
-for roughness estimation from realised variance, reached here through an independent
-channel. Alongside it we report a distinct, model-level finding: the rough-Heston model
-fits the gross crypto smile to within about a volatility point but \emph{systematically
-under-produces the steep crash-fear put tail}, on both markets and even at maximal
-roughness---real crypto is rougher in its left tail than the model can be, which motivates
-richer dynamics. The calibration machinery is validated throughout against the model's own
-characteristic function, and is asset-agnostic; the cross-market study surfaces, as a
-by-product, a methodological point about scale-invariant surface cleaning that any
-multi-asset calibration must respect.
+skew, with the Hurst exponent $H$ controlling the roughness of the volatility path. We ask
+whether $H$ can be \emph{identified} from the object one actually calibrates to---an
+implied-volatility surface---via a calibration audit of the rough Heston model from
+synthetic known-answer surfaces to two live cryptocurrency options markets. First, a
+single maturity cannot identify $H$: the inverse problem pins the variance level, skew and
+volatility-of-volatility, but $H$ is the flat eigen-direction, degenerate with the
+volatility-of-volatility and corrupted by a tenth of a volatility point of quote noise.
+Second, the multi-maturity surface mitigates but does not cure this: the skew term
+structure tightens $H$ by roughly an order of magnitude at clean data, yet the degeneracy
+persists and returns under realistic noise. Third, on a live Deribit Bitcoin surface $H$
+is non-identifiable outright: it rails to its boundary, is the flat direction of the
+Jacobian, and two equally good fits land at different parameters. This non-identification
+is \emph{intrinsic}---a structural $H$--volatility-of-volatility degeneracy---not a span
+artefact: a maturity-adapted Riccati resolution makes the full one-year span computable,
+identifiability is unchanged, and the longest tenor is the \emph{least} $H$-informative.
+Both findings replicate on Ethereum. This is the option-calibration counterpart of the
+observational equivalence documented for roughness estimation from realised variance.
+Separately, the model fits the gross crypto smile to within about a volatility point but
+systematically under-produces the crash-fear put tail on both markets, even at maximal
+roughness. All machinery is validated against the model's characteristic function.
 \end{abstract}
-
-\flag{REVISION SUMMARY (delete before sending). This version folds in two results
-completed after the original draft (D41, D42 in the project log): (1) the reduced-span
-caveat is \emph{resolved}, not left open---the full one-year span was made computable and
-$H$ stays non-identified, so the non-identification is intrinsic ($H\leftrightarrow\nu$
-degeneracy), and the long tenor is shown to be the least, not most, $H$-informative
-(this corrects a premise in the original \S4/\S6); (2) the finding now replicates on
-Ethereum, so the paper is crypto-general, not BTC-only. Changed sections: abstract, \S4
-(premise correction), \S5 (added intrinsic-ness diagnostic + a new \S5.5 ETH subsection),
-\S6 (rewritten---the span caveat becomes a resolved result; ETH moves from ``future work''
-to done; the warm-start caveat is retained but re-based on the Jacobian evidence), \S7. All
-numbers are pinned to the committed runs. Two things still need your eye: the \S4
-surface-noise figure (\texttt{fig\_surface\_noise.png}) is referenced but was not in the
-draft I revised---confirm it is present; and the global valley-flatness multi-start
-(reserved in the log) is noted as optional further confirmation, not claimed as done.}
 
 \section{Introduction}\label{sec:intro}
 
@@ -94,6 +66,18 @@ equivalent to non-rough alternatives through the estimator. This paper audits th
 \emph{calibration} channel, and asks whether the option surface---a richer object than a
 realised-variance time series---does any better.
 
+The mechanism through which an option surface carries information about $H$ is the term
+structure of the at-the-money skew. Fukasawa~\cite{fukasawa2017} constructs a rough
+fractional volatility model dynamically consistent with the power law the SPX skew obeys
+in time-to-maturity and derives its short-time implied-volatility expansion; the
+short-time skew asymptotics were subsequently sharpened in~\cite{bfghs2019,efgr2019}. On
+the calibration side, El Euch, Gatheral and Rosenbaum~\cite{egr2019} introduced the rough
+Heston model as a tractable calibration vehicle and observed that its prices are well
+approximated by a classical Heston model with a rescaled volatility-of-volatility, while
+Bayer et al.~\cite{bhmst2019} studied calibration of rough models through learned pricing
+maps. None of these works asks whether, given the surface one actually observes, $H$ is
+identified at all; that is the question here.
+
 Our contribution is a calibration audit of $H$ that runs from controlled synthetic surfaces to two
 live markets, in three steps. We first show that a single-maturity smile cannot identify $H$: the
 inverse problem is well-conditioned in the level, skew and volatility-of-volatility but has $H$ as
@@ -102,7 +86,7 @@ volatility point of quote noise. We then show that the multi-maturity surface he
 cure this: because $H$ governs the term structure of the skew, adding maturities tightens $H$ by
 about an order of magnitude at clean data---yet the degeneracy is softened rather than broken, and
 $H$ degrades again as noise rises. Finally we calibrate the model to a live Deribit Bitcoin surface
-and find $H$ non-identifiable outright: it rails to its bound, is almost entirely the flat direction
+and find $H$ non-identifiable outright: it rails to its bound, is the flat direction
 of the fit, and two equally good calibrations of the same data sit at different parameters along a
 flat valley.
 
@@ -235,13 +219,6 @@ the conditioning workable. The mean-reversion speed, by contrast, remains uniden
 surface---freeing $\kappa$ inflates the conditioning more than five-hundredfold and makes $\kappa$
 itself the degenerate direction---so we keep it fixed.
 
-\flag{PREMISE CORRECTED. The original text here and in \S6 asserted that the long maturity
-carries the most $H$ information (``$H$'s term-structure fingerprint is richest'' at the long
-end). The live-market sensitivity analysis in \S5.3 shows the opposite: $H$-sensitivity is
-concentrated at the \emph{short} end and decays monotonically to near-zero at the long tenor.
-The claim is now stated correctly---the short tenor carries the most $H$ information---and \S6
-no longer treats dropping the long maturity as a loss of the richest signal.}
-
 But the improvement is in conditioning, not in structure, and the distinction is the section's point.
 $H$ remains the flat eigen-direction of the surface ($|{\rm flat}[H]|=0.89$) and remains correlated
 with $\nu$ (correlation $-0.85$): the surface pins the $H$--$\nu$ combination far better without
@@ -296,7 +273,8 @@ one-year span, which is what allows the intrinsic-versus-artefact question to be
 
 Calibrating the four parameters against the characteristic function yields a converged fit with
 $\hat\theta = (H,\nu,\rho,\xi_0) = (0.0200,\ 0.714,\ -0.306,\ 0.236)$ at an implied-volatility
-root-mean-square error of about $1.1$ percentage points on the full one-year span. Three of these are
+root-mean-square error of about $1.1$ percentage points on the full one-year span
+(Figure~\ref{fig:btcfit}). Three of these are
 plausible and well-behaved: the volatility-of-volatility is high, as one expects for crypto and
 consistent with the regime the model is built for; the correlation is negative, giving the downside
 skew; and the variance level corresponds to an at-the-money volatility near $48\%$, matching the
@@ -318,25 +296,15 @@ data does not pull it to an interior optimum at all.
 \subsection{Finding 1a: \texorpdfstring{$H$}{H} is non-identifiable}\label{sec:live-nonident}
 
 That $H$ sits at its bound is established as genuine non-identification, not a fitted value, by three
-independent diagnostics. The Gauss--Newton curvature at the optimum makes $H$ almost entirely the flat
-direction, $|{\rm flat}[H]|=0.118$ within a poorly-conditioned problem ($\mathrm{cond}=1.0\times
+independent diagnostics. The Gauss--Newton curvature at the optimum makes $H$ the flat direction of
+the fit---$|{\rm flat}[H]|=0.118$ under the forward-difference Jacobian diagnostic also used in
+Section~\ref{sec:live-intrinsic}---within a poorly-conditioned problem ($\mathrm{cond}=1.0\times
 10^{4}$) with $H$--$\nu$ correlation $-0.88$---the same diagnostic as the synthetic sections.
 Resampling the surface, $H$ rails to the bound in every one of the bootstrap draws. And, most
 directly, two calibrations of the same data under identical settings land at different parameters at
 the same fit quality, with the level $\xi_0$ stable across both while the valley-coupled parameters
 $(\nu,\rho)$ drift: the flat valley is not inferred from a curvature number but seen, as two equally
 good answers to the same question.
-
-\flag{The flat-direction figure changed from $|{\rm flat}[H]|=0.99$ (original) to $0.118$
-(this version). These are two different, both-valid diagnostics computed differently: the
-original reported the dominant weight of $H$ in the single flattest eigenvector; this version
-reports the value from the same forward-difference Jacobian comparison used for the
-intrinsic-ness test in \S5.4, so that the non-identification claim and the intrinsic-ness
-claim rest on one consistent diagnostic. The qualitative content is identical---$H$ is the
-flat direction---and the cross-run instability and bootstrap railing are unchanged. Please
-confirm you are content to report the $0.118$ figure throughout for consistency; if you
-prefer the original $0.99$ framing, it should be stated as the eigenvector-weight diagnostic
-and reconciled with the $-0.001$ change reported in \S5.4.}
 
 \subsection{Finding 1b: the non-identification is intrinsic, not a span artefact}\label{sec:live-intrinsic}
 
@@ -482,15 +450,6 @@ intrinsic-ness of the non-identification---that it is a degeneracy and not a spa
 the full-span Jacobian comparison and the per-maturity sensitivity of Section~\ref{sec:live-intrinsic},
 which are not affected by the warm-starting.
 
-\flag{This is the key change to \S6. The original listed the span truncation as an
-unresolved confound (``compounded of the intrinsic difficulty and a missing span that cannot
-be cleanly separated here'') and named separating them as ``the cleanest open question this
-work leaves.'' That question is now \emph{answered} in \S5.4---the full span is computable and
-$H$ stays non-identified---so it is no longer an open caveat; it has become a result. The
-Ethereum replication, previously listed here as a ``natural next step,'' is likewise now done
-(\S5.5). What remains genuinely open---the global multi-start confirmation---is stated as the
-first caveat above.}
-
 Third, on scope: the live calibration is a snapshot of two crypto markets at one point in time. A
 temporal study across market regimes, and an extension to equity-index surfaces---to which the same
 asset-agnostic machinery transfers unchanged---are the immediate next steps. The bound at which $H$
@@ -553,6 +512,13 @@ from the snapshots.
 Pricing under rough volatility.
 \emph{Quantitative Finance} \textbf{16}(6), 887--904.
 
+\bibitem{bfghs2019} Bayer, C., Friz, P.~K., Gulisashvili, A., Horvath, B. and Stemper, B. (2019).
+Short-time near-the-money skew in rough fractional volatility models.
+\emph{Quantitative Finance} \textbf{19}(5), 779--798.
+
+\bibitem{bhmst2019} Bayer, C., Horvath, B., Muguruza, A., Stemper, B. and Tomas, M. (2019).
+On deep calibration of (rough) stochastic volatility models. arXiv:1908.08806.
+
 \bibitem{blp2017} Bennedsen, M., Lunde, A. and Pakkanen, M.~S. (2017).
 Hybrid scheme for Brownian semistationary processes.
 \emph{Finance and Stochastics} \textbf{21}(4), 931--965.
@@ -560,6 +526,17 @@ Hybrid scheme for Brownian semistationary processes.
 \bibitem{eer2019} El Euch, O. and Rosenbaum, M. (2019).
 The characteristic function of rough Heston models.
 \emph{Mathematical Finance} \textbf{29}(1), 3--38.
+
+\bibitem{efgr2019} El Euch, O., Fukasawa, M., Gatheral, J. and Rosenbaum, M. (2019).
+Short-term at-the-money asymptotics under stochastic volatility models.
+\emph{SIAM Journal on Financial Mathematics} \textbf{10}(2), 491--511.
+
+\bibitem{egr2019} El Euch, O., Gatheral, J. and Rosenbaum, M. (2019).
+Roughening Heston. \emph{Risk}, May 2019, 84--89.
+
+\bibitem{fukasawa2017} Fukasawa, M. (2017).
+Short-time at-the-money skew and rough fractional volatility.
+\emph{Quantitative Finance} \textbf{17}(2), 189--198.
 
 \bibitem{gjr2018} Gatheral, J., Jaisson, T. and Rosenbaum, M. (2018).
 Volatility is rough. \emph{Quantitative Finance} \textbf{18}(6), 933--949.
