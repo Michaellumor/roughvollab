@@ -8,11 +8,14 @@
 \usepackage{booktabs}
 \usepackage[margin=1in]{geometry}
 \usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}
 \theoremstyle{definition}
 \newtheorem{remark}{Remark}
+
+\newcommand{\reframe}[1]{\medskip\noindent\textcolor{red}{[\,REFRAME: #1\,]}\medskip}
 
 \title{Weak convergence is faster than strong:\\
 measuring the weak order of a hybrid scheme\\
@@ -25,6 +28,10 @@ Code and data: \url{https://github.com/Michaellumor/roughvollab}.}}
 \date{June 2026}
 
 \begin{document}
+% THEORY vs MEASURED (for the reframe; rough-Bergomi theory, rough-Heston measurement)
+%   left-point (3H+1/2)^1 : H=0.05 -> 0.65 | H=0.10 -> 0.80 | H=0.20 -> 1.00  [Gassiat; FSW optimal]
+%   hybrid weights H+1/2  : H=0.05 -> 0.55 | H=0.10 -> 0.60 | H=0.20 -> 0.70  [Gassiat; BFN]
+%   measured alpha (this paper): H=0.05 -> 0.74 | H=0.10 -> unresolved | H=0.20 -> ~1
 \maketitle
 
 \begin{abstract}
@@ -33,7 +40,12 @@ rough stochastic volatility, and its \emph{strong} (pathwise) convergence order 
 known to be $H$, the Hurst exponent---so for the empirically relevant regime
 $H\approx 0.1$ the strong rate is severely throttled by roughness. The \emph{weak}
 order $\alpha$, which governs the accuracy of \emph{prices} rather than paths, has
-not been measured. We ask whether roughness throttles the weak rate as it does the
+not been measured.
+\reframe{Abstract novelty claim. Weak rates for rough-volatility schemes are established:
+Gassiat 2023 (SIFIN), Bayer--Hall--Tempone 2023 (IJTAF), Friz--Salkeld--Wagenhofer 2025
+(AAP), Bayer--Fukasawa--Nakahara 2022 (SIFIN), Bonesini--Jacquier--Pannier 2023. Reframe
+as an empirical test in rough Heston against the rough-Bergomi theory.}
+We ask whether roughness throttles the weak rate as it does the
 strong rate, and commit---before measuring---to the prediction $\alpha > H$, with
 $\alpha\approx 1$ expected for smooth payoffs. To measure $\alpha$ without
 circularity (a fine simulation cannot serve as ground truth for the order of the
@@ -99,6 +111,8 @@ converge this slowly, so must the prices. This worry is not idle: the weak order
 the hybrid scheme has, to our knowledge, never been measured, and it is not obvious
 that the usual ``weak beats strong'' speed-up survives the rough setting, where the
 driving kernel is singular and the variance process is non-smooth at the origin.
+\reframe{Same as above -- this sentence must go; replace with the positioning Michael
+dictates.}
 \textbf{The question this paper answers is whether the strong-order roughness
 pessimism carries to the weak rate.}
 
@@ -393,6 +407,13 @@ next section attempts, and exactly where it fails.
 
 \section{The multifactor lift, and why it cannot resolve the borderline}\label{sec:lift}
 
+\reframe{Lift section must engage Bayer--Breneis 2023 (weak error of Markovian
+approximations bounded by the L1 kernel error -- more factors, smaller weak error) and
+Bayer--Breneis 2024 (second-order weak scheme on the Markovian approximation). State
+exactly how this lift's noise approximation differs from the Abi Jaber--El Euch /
+Bayer--Breneis construction, or drop the section. Also state what the lift was supposed
+to measure: a different scheme has its own weak rate.}
+
 \subsection{The construction}
 
 The $H=0.10$ borderline is unresolved only because the explicit scheme cannot reach fine
@@ -543,9 +564,21 @@ a single command.
 
 \begin{thebibliography}{99}
 
+% metadata to pin before submission
+\bibitem{ak2024} Alfonsi, A. and Kebaier, A. (2024).
+Approximation of stochastic Volterra equations with kernels of completely
+monotone type. \emph{Mathematics of Computation} \textbf{93}(346), 643--677.
+
 \bibitem{bbf2023} Bayer, C. and Breneis, S. (2023).
 Markovian approximations of stochastic Volterra equations with the fractional kernel.
 \emph{Quantitative Finance} \textbf{23}(1), 53--70.
+
+\bibitem{bb2023} Bayer, C. and Breneis, S. (2023).
+Weak Markovian approximations of rough Heston. arXiv:2309.07023.
+
+\bibitem{bb2024} Bayer, C. and Breneis, S. (2024).
+Efficient option pricing in the rough Heston model using weak simulation schemes.
+\emph{Quantitative Finance} \textbf{24}(9), 1247--1261.
 
 \bibitem{blp2017} Bennedsen, M., Lunde, A. and Pakkanen, M.~S. (2017).
 Hybrid scheme for Brownian semistationary processes.
@@ -555,6 +588,19 @@ Hybrid scheme for Brownian semistationary processes.
 Pricing under rough volatility.
 \emph{Quantitative Finance} \textbf{16}(6), 887--904.
 
+% metadata to pin before submission
+\bibitem{bfn2022} Bayer, C., Fukasawa, M. and Nakahara, S. (2022).
+Short communication: On the weak convergence rate in the discretization of
+rough volatility models. \emph{SIAM Journal on Financial Mathematics} \textbf{13}(3).
+
+\bibitem{bht2023} Bayer, C., Hall, E.~J. and Tempone, R. (2023).
+Weak error rates for option pricing under linear rough volatility.
+\emph{International Journal of Theoretical and Applied Finance} \textbf{25}(7--8), 2250029.
+
+\bibitem{bjp2023} Bonesini, O., Jacquier, A. and Pannier, A. (2023).
+Rough volatility, path-dependent PDEs and weak rates of convergence.
+arXiv:2304.03042.
+
 \bibitem{dff2002} Diethelm, K., Ford, N.~J. and Freed, A.~D. (2002).
 A predictor--corrector approach for the numerical solution of fractional differential
 equations. \emph{Nonlinear Dynamics} \textbf{29}(1--4), 3--22.
@@ -562,6 +608,14 @@ equations. \emph{Nonlinear Dynamics} \textbf{29}(1--4), 3--22.
 \bibitem{eer2019} El Euch, O. and Rosenbaum, M. (2019).
 The characteristic function of rough Heston models.
 \emph{Mathematical Finance} \textbf{29}(1), 3--38.
+
+\bibitem{fsw2025} Friz, P.~K., Salkeld, W. and Wagenhofer, T. (2025).
+Weak error estimates for rough volatility models.
+\emph{Annals of Applied Probability} \textbf{35}(1), 64--98.
+
+\bibitem{gassiat2023} Gassiat, P. (2023).
+Weak error rates of numerical schemes for rough volatility.
+\emph{SIAM Journal on Financial Mathematics} \textbf{14}(2), 475--496.
 
 \bibitem{gjr2018} Gatheral, J., Jaisson, T. and Rosenbaum, M. (2018).
 Volatility is rough. \emph{Quantitative Finance} \textbf{18}(6), 933--949.

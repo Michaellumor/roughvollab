@@ -1,0 +1,129 @@
+% =====================================================================
+%  NEW REFERENCES FOR P4 AND P1 — verification status as of 19 Aug 2026
+%  VERIFIED = title/authors/venue/volume/pages confirmed against the
+%             publisher page, arXiv abs page, or the journal's own listing
+%             in this session. LEAD = existence confirmed, full metadata
+%             still to be pinned by you before citing (Bilokon rule).
+%  Style matches the existing \bibitem entries in the P4/P1 drafts.
+% =====================================================================
+
+% ---------------------------------------------------------------------
+%  P4 — weak error rates for rough volatility (the literature the draft
+%       currently says does not exist)
+% ---------------------------------------------------------------------
+
+% VERIFIED (HAL + arXiv abs + SIAM listing)
+\bibitem{gassiat2023} Gassiat, P. (2023).
+Weak error rates of numerical schemes for rough volatility.
+\emph{SIAM Journal on Financial Mathematics} \textbf{14}(2), 475--496.
+% Result: weak rate (3H+1/2)\wedge 1 for exact left-point discretisation,
+% H+1/2 for the hybrid scheme with well-chosen weights; fBm integrand or
+% cubic test function. arXiv:2203.09298.
+
+% VERIFIED (Dundee repository + publisher DOI 10.1142/S0219024922500297)
+\bibitem{bht2023} Bayer, C., Hall, E.~J. and Tempone, R. (2023).
+Weak error rates for option pricing under linear rough volatility.
+\emph{International Journal of Theoretical and Applied Finance} \textbf{25}(7--8), 2250029.
+% arXiv:2009.01219 (2020). Linear rough volatility / rough Bergomi setting.
+
+% VERIFIED (Project Euclid + arXiv abs)
+\bibitem{fsw2025} Friz, P.~K., Salkeld, W. and Wagenhofer, T. (2025).
+Weak error estimates for rough volatility models.
+\emph{Annals of Applied Probability} \textbf{35}(1), 64--98.
+% Result: weak rate essentially min\{3H+1/2, 1\} for a large class of test
+% functions, with a matching lower bound (optimal); phase transition at
+% H=1/6 tied to the correlation. Covers rough Bergomi and rough Stein--Stein.
+% arXiv:2212.01591.
+
+% LEAD — venue and pages to pin (SIFIN 13(3), 2022, "Short communication";
+%        page numbers not captured this session)
+\bibitem{bfn2022} Bayer, C., Fukasawa, M. and Nakahara, S. (2022).
+Short communication: On the weak convergence rate in the discretization of
+rough volatility models. \emph{SIAM Journal on Financial Mathematics} \textbf{13}(3).
+% Result (as reported by Gassiat's comparison table): H+1/2 for linear
+% variance and regular payoff. arXiv:2203.02943.
+
+% VERIFIED as a preprint (arXiv abs, revised Feb 2026; Bonesini's page says
+%        "submitted" — re-check for a journal version before sending)
+\bibitem{bjp2023} Bonesini, O., Jacquier, A. and Pannier, A. (2023).
+Rough volatility, path-dependent PDEs and weak rates of convergence.
+arXiv:2304.03042.
+% Result: optimal weak rate 1 for quadratic test functions and
+% (3H+1/2)\wedge 1 for C^5 test functions, via path-dependent PDEs.
+
+% VERIFIED (arXiv abs; the weak-error bound for Markovian approximations)
+\bibitem{bb2023} Bayer, C. and Breneis, S. (2023).
+Weak Markovian approximations of rough Heston. arXiv:2309.07023.
+% Result: weak error of Markovian (multifactor) approximations of rough
+% Heston is bounded by the L^1 error of the kernel approximation, extending
+% Abi Jaber--El Euch (SIFIN 10(2), 309--349, 2019). Directly relevant to
+% your lift section.
+
+% VERIFIED (Taylor & Francis, QF 24(9), pp. 1247--1261, published online 2 Sep 2024)
+\bibitem{bb2024} Bayer, C. and Breneis, S. (2024).
+Efficient option pricing in the rough Heston model using weak simulation schemes.
+\emph{Quantitative Finance} \textbf{24}(9), 1247--1261.
+% Result: weak simulation scheme on low-dimensional Markovian approximations;
+% numerically second-order weak convergence at linear cost in n; notes that
+% Gatheral's HQE scheme numerically shows weak rate 1 at quadratic cost.
+% arXiv:2310.04146.
+
+% LEAD — confirmed to exist via citation in a 2025 preprint; pin from the
+%        AMS page (Math. Comp. 93(346), 643--677, 2024, DOI 10.1090/mcom/3911)
+\bibitem{ak2024} Alfonsi, A. and Kebaier, A. (2024).
+Approximation of stochastic Volterra equations with kernels of completely
+monotone type. \emph{Mathematics of Computation} \textbf{93}(346), 643--677.
+% Relevance: approximation theory for SVEs of the rough-Heston type (the
+% model you actually simulate), as opposed to the rough-Bergomi theory above.
+
+% LEAD — Gatheral's HQE scheme; cited in Bayer--Breneis 2024 as
+%        "Gatheral (2022)"; pin title/venue (Risk / SSRN) before citing
+% \bibitem{gatheral2022hqe} Gatheral, J. (2022). Efficient simulation of
+% affine forward variance models. (venue to confirm)
+
+% ---------------------------------------------------------------------
+%  P1 — identification of H from the surface: the skew-term-structure
+%       literature the calibration audit leans on, and the rough-Heston
+%       calibration papers
+% ---------------------------------------------------------------------
+
+% VERIFIED (multiple journal citations; QF 17(2), 189--198)
+\bibitem{fukasawa2017} Fukasawa, M. (2017).
+Short-time at-the-money skew and rough fractional volatility.
+\emph{Quantitative Finance} \textbf{17}(2), 189--198.
+% The dynamically consistent model for the power-law ATM skew term structure;
+% this is the mechanism by which the multi-maturity surface carries H.
+
+% VERIFIED (QF 19(5), 779--798, published online 13 Nov 2018)
+\bibitem{bfghs2019} Bayer, C., Friz, P.~K., Gulisashvili, A., Horvath, B. and Stemper, B. (2019).
+Short-time near-the-money skew in rough fractional volatility models.
+\emph{Quantitative Finance} \textbf{19}(5), 779--798.
+
+% VERIFIED (Baruch faculty listing + SIAM citation; SIFIN 10(2), 491--511)
+\bibitem{efgr2019} El Euch, O., Fukasawa, M., Gatheral, J. and Rosenbaum, M. (2019).
+Short-term at-the-money asymptotics under stochastic volatility models.
+\emph{SIAM Journal on Financial Mathematics} \textbf{10}(2), 491--511.
+
+% VERIFIED (SSRN + Risk.net: Risk, May 2019, pp. 84--89)
+\bibitem{egr2019} El Euch, O., Gatheral, J. and Rosenbaum, M. (2019).
+Roughening Heston. \emph{Risk}, May 2019, 84--89.
+% The rough-Heston calibration paper; also the source of the
+% "scale the classical Heston vol-of-vol" approximation — relevant to the
+% H--nu degeneracy you report.
+
+% VERIFIED as arXiv preprint (1908.08806); check whether a journal version
+%        now exists before citing as preprint
+\bibitem{bhmst2019} Bayer, C., Horvath, B., Muguruza, A., Stemper, B. and Tomas, M. (2019).
+On deep calibration of (rough) stochastic volatility models. arXiv:1908.08806.
+
+% LEAD — Guyon & El Amrani on whether the equity ATM-skew term structure
+%        really follows a power law (Risk 2023; SSRN 4174538). Directly
+%        relevant to the premise that the skew term structure identifies H.
+%        Pin title/venue before citing.
+% \bibitem{guyonelamrani2023} Guyon, J. and El Amrani, M. (2023). Does the
+% term-structure of equity at-the-money skew really follow a power law?
+% \emph{Risk}. (venue/issue to confirm)
+
+% LEAD — Gatheral & Radoičić, Rational approximation of the rough Heston
+%        solution, IJTAF 22(3), 1950010 (2019): relevant to both P1 and P4
+%        (Riccati solve). Pin before citing.
