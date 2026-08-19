@@ -4,7 +4,7 @@
 %    (map grid eta {0.5,1.5,2.5,3.5}, Delta {48,96,288}, n_obs=2500, n_mc=40;
 %     BTC/ETH 5-minute proxy with 1/5/15-min sweep; SPX = Garman-Klass range proxy).
 %  - TODO before submission:
-%      upload fig1_bias_curves.png and fig2_map_with_assets.png alongside this file.
+%      DONE (figures committed alongside this file).
 %      (Citations checked June 2026. STILL TO CONFIRM before send: ftw2019 vs ftw2022 are
 %       DISTINCT works (arXiv preprint vs the Math Finance paper), and contdas2024 exact
 %       (title/venue/pages) since the framing rests on it.)
@@ -34,7 +34,8 @@ with application to cryptocurrency}
 
 \author{Michael Lumor\thanks{Independent research programme; University of
 Salford. ORCID: \href{https://orcid.org/0009-0000-0326-3891}{0009-0000-0326-3891}.
-Code and data: \url{https://github.com/Michaellumor/roughvollab}.}}
+Code and data: \url{https://github.com/Michaellumor/roughvollab}.}\\[0.4em]
+\normalsize Project advisor: \textsc{[ADVISOR NAME TBC]}\thanks{[Advisor affiliation TBC].}}
 
 \date{June 2026}
 
@@ -46,24 +47,25 @@ The rough-volatility paradigm holds that log-volatility behaves as a fractional
 process with Hurst exponent $H \approx 0.1$, an estimate obtained from
 realised-volatility (RV) proxies of latent volatility. A parallel literature
 argues that this roughness is partly or wholly an artefact of estimating $H$
-through a noisy, discretely-sampled proxy. We do not adjudicate \emph{fact versus
-artefact}. Instead we ask a prior question: for what region of model and sampling
+through a noisy, discretely sampled proxy. We do not adjudicate \emph{fact versus
+artefact}. We ask a prior question: for what region of model and sampling
 parameters is $H$ identifiable from RV at all? Using a verified rough-Bergomi
 simulator as ground truth---and, crucially, a smooth (semimartingale) null---we
 audit the operating characteristics of three roughness estimators (a
 structure-function regression, a model-free $p$-variation index, and multifractal
 detrended fluctuation analysis) and formalise their behaviour into an
 \emph{identifiability map} over the vol-of-vol $\eta$ and the proxy sampling
-window $\Delta$. We then pin $\eta$ to data, rather than assuming it, by matching
+window $\Delta$. We then pin $\eta$ to data rather than assuming it, by matching
 the model's daily-log-RV variability to each asset's. Applied to BTC and ETH
 (Binance, 2019--2025; $n = 2{,}557$ daily observations) and to the S\&P~500
 ($n = 1{,}759$), the calibration forces $\eta \gtrsim 1.5$, and at that calibrated
-$\eta$ no estimator returns an identified reading: the inversion is non-identified,
-undefined, or beyond the model's range. The identifiable region is non-empty---%
-multifractal DFA recovers roughness across roughly $30\%$ of the grid, concentrated
-at fine sampling---but the real assets do not fall in it. This reframes the debate:
-the ``rough'' and ``artefact'' readings are two answers to a single ill-posed
-inverse problem. All code, data tooling, and figures are open and reproducible.
+$\eta$ none of the three estimators returns an identified reading from daily RV:
+the inversion is non-identified, undefined, or beyond the model's range. The
+identifiable region is non-empty---multifractal DFA recovers roughness across
+roughly $30\%$ of the grid, concentrated at fine sampling---but the real assets
+do not fall in it. For these estimators at daily sampling, the ``rough'' and
+``artefact'' readings are two answers to a single ill-posed inverse problem.
+Code, data tooling, and figures are open and reproducible.
 
 \medskip
 \noindent\textbf{Keywords:} rough volatility, Hurst exponent, realised variance,
@@ -129,7 +131,12 @@ stdlib-only data pipeline, a test suite, and one-command figure regeneration.
 The work is undergraduate-led and deliberately scoped: it audits operating
 characteristics by simulation rather than proving identifiability theorems, and it
 is offered as a careful, open, reproducible contribution to a contested empirical
-question.
+question. Throughout, ``identifiable'' is relative to the three estimators studied
+and to daily-frequency RV proxies; estimators built on an explicit noise
+model---the quasi-likelihood approach of \cite{ftw2022} and the GMM approach of
+\cite{bolko2023}---are outside the scope of this audit, which is about what the
+standard scaling-based estimators can recover from the proxy they are usually
+applied to.
 
 % =====================================================================
 \section{Related work}
