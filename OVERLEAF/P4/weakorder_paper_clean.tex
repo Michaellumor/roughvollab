@@ -37,39 +37,28 @@ Code and data: \url{https://github.com/Michaellumor/roughvollab}.}}
 \begin{abstract}
 The hybrid scheme of Bennedsen, Lunde and Pakkanen is the standard simulator for
 rough stochastic volatility, and its \emph{strong} (pathwise) convergence order is
-known to be $H$, the Hurst exponent---so for the empirically relevant regime
-$H\approx 0.1$ the strong rate is severely throttled by roughness. The \emph{weak}
-order $\alpha$, which governs the accuracy of \emph{prices} rather than paths, has
-not been measured.
-\reframe{Abstract novelty claim. Weak rates for rough-volatility schemes are established:
-Gassiat 2023 (SIFIN), Bayer--Hall--Tempone 2023 (IJTAF), Friz--Salkeld--Wagenhofer 2025
-(AAP), Bayer--Fukasawa--Nakahara 2022 (SIFIN), Bonesini--Jacquier--Pannier 2023. Reframe
-as an empirical test in rough Heston against the rough-Bergomi theory.}
-We ask whether roughness throttles the weak rate as it does the
-strong rate, and commit---before measuring---to the prediction $\alpha > H$, with
-$\alpha\approx 1$ expected for smooth payoffs. To measure $\alpha$ without
-circularity (a fine simulation cannot serve as ground truth for the order of the
-scheme that produced it), we price European options against a simulation-free
-reference: the rough-Heston characteristic function evaluated by a fractional
-Riccati solve and Fourier inversion, validated to reduce to the closed-form Heston
-price at $H=\tfrac12$. The estimation is made feasible by Romano--Touzi conditional
-Monte Carlo, without which the bias signal is buried under sampling noise. We find
-that \textbf{the strong-order roughness pessimism does not carry to the weak rate}:
-$\alpha \gg H$ across the tested range, with $\alpha\approx 1$ at $H=0.20$ and a
-genuine---but quantitatively modest---roughness penalty emerging only at the rough
-extreme ($\alpha\approx 0.74$ at $H=0.05$). Pricing accuracy therefore survives
-roughness even where pathwise convergence does not. An intermediate regime
-($H=0.10$) is not resolvable at feasible cost with the $O(n^2)$ explicit scheme,
-and the natural remedy is a multifactor Markovian lift, whose $O(N n)$ cost would
-afford the finer grids the explicit scheme cannot reach. We construct and validate
-this lift, and report a negative result that is the paper's second contribution: the
-lift \emph{cannot} settle the borderline. Its cost advantage rests on a
-sum-of-exponentials noise approximation that we show, against the same
-characteristic-function reference, perturbs the weak rate itself in a manner that
-more factors do not remove---so the very approximation that makes the lift cheap
-also makes it unfit to measure the quantity in question. The $H=0.10$ borderline is
-thus not merely unresolved but resolution-resistant by the natural method, and we
-characterise precisely why.
+known to be $H$, the Hurst exponent---so at the empirically relevant $H\approx 0.1$,
+pathwise accuracy nearly stalls. Whether \emph{prices} stall too is a question about
+the weak order $\alpha$, and there the theory is model-specific: for Gaussian-volatility
+models (rough Bergomi and its relatives), recent work establishes weak rates of
+$(3H+\tfrac12)\wedge 1$ for left-point discretisation---proven optimal, with a phase
+transition at $H=\tfrac16$---and $H+\tfrac12$ for the weighted hybrid scheme. No such
+result covers rough Heston, whose square-root Volterra dynamics fall outside these
+theorems; known rough-Heston weak-rate evidence concerns Markovian-approximation
+schemes, not the direct discretisation. We measure the weak order of the direct
+hybrid-type discretisation of rough Heston against a simulation-free
+characteristic-function reference, committing before measurement to the prediction
+$\alpha>H$. Estimation is made feasible by Romano--Touzi conditioning, which is
+bias-preserving by construction and turns the payoff into a smooth functional of the
+discretised variance integrals---the object class the theory rates. We find
+$\alpha\gg H$ throughout: $\alpha\approx 1$ at $H=0.20$, and a genuine penalty only at
+the rough extreme, $\alpha\approx 0.74$ at $H=0.05$ (below $1$ at eight standard
+errors)---reproducing, in a model the theorems do not cover, the qualitative phase
+structure they prove, with the sub-transition exponent somewhat above the
+Gaussian-theory line. The intermediate $H=0.10$ (theory target $0.80$) is not
+resolvable at the explicit scheme's $O(n^2)$ cost; a multifactor Markovian lift,
+built as the natural remedy, cannot settle it---its noise approximation perturbs the
+measured rate itself, a negative result we characterise precisely.
 \end{abstract}
 
 \section{Introduction}\label{sec:intro}
@@ -106,15 +95,26 @@ practical consequence is stark: at the empirically relevant $H\approx 0.1$, the
 strong rate is $O(n^{-0.1})$---roughness throttles pathwise convergence almost to a
 standstill.
 
-The natural worry is that roughness throttles \emph{everything}---that if the paths
-converge this slowly, so must the prices. This worry is not idle: the weak order of
-the hybrid scheme has, to our knowledge, never been measured, and it is not obvious
-that the usual ``weak beats strong'' speed-up survives the rough setting, where the
-driving kernel is singular and the variance process is non-smooth at the origin.
-\reframe{Same as above -- this sentence must go; replace with the positioning Michael
-dictates.}
-\textbf{The question this paper answers is whether the strong-order roughness
-pessimism carries to the weak rate.}
+How fast prices converge is a question the strong order cannot answer, and for rough
+volatility the weak-rate theory that does answer it is model-specific. For
+\emph{Gaussian-volatility} models---rough Bergomi and its relatives, where the variance is a
+(function of a) Gaussian Volterra process---the weak rate of the left-point discretisation is
+$(3H+\tfrac12)\wedge 1$: established by Gassiat~\cite{gassiat2023} for fBm integrands and
+cubic test functions, extended and proven \emph{optimal}, with a matching lower bound and a
+phase transition at $H=\tfrac16$, by Friz, Salkeld and Wagenhofer~\cite{fsw2025}, and
+recovered through path-dependent PDEs by Bonesini, Jacquier and Pannier~\cite{bjp2023}; the
+weighted hybrid scheme attains $H+\tfrac12$~\cite{gassiat2023,bfn2022}, and Bayer, Hall and
+Tempone~\cite{bht2023} treat option pricing under linear rough volatility. None of these
+theorems covers the \emph{rough Heston} model: its variance is a square-root Volterra
+process---non-Gaussian, with a diffusion coefficient that is neither linear nor smooth at the
+origin---and it is rough Heston that this paper discretises. What is known there concerns
+Markovian approximations: Bayer and Breneis bound the weak error of the approximation by the
+$L^1$ kernel error~\cite{bb2023} and report second-order weak convergence for a weak
+simulation scheme built on it, alongside a numerically observed rate of one for Gatheral's
+HQE scheme~\cite{bb2024}---schemes, in both cases, other than the direct discretisation.
+\textbf{The question this paper answers is empirical: what weak rate does the direct
+hybrid-type discretisation of rough Heston exhibit, and does it match the phase structure
+the Gaussian-volatility theory proves?}
 
 Following the discipline of committing a falsifiable prediction before measurement,
 we state our hypothesis up front: we predict $\alpha > H$ (the weak rate is faster
@@ -150,10 +150,17 @@ carry to the weak rate}. Across the tested range $H\in\{0.05,0.10,0.20\}$ we
 measure $\alpha \gg H$---weak convergence is far faster than strong---with
 $\alpha\approx 1$ at $H=0.20$, consistent with the classical weak order, and a
 genuine but modest roughness penalty emerging only at the rough extreme, where
-$\alpha\approx 0.74$ at $H=0.05$ (below $1$ at high statistical significance). The
+$\alpha\approx 0.74$ at $H=0.05$ (below $1$ at eight standard errors). This is,
+qualitatively, the phase structure the Gaussian-volatility theory proves---the classical
+rate above $H=\tfrac16$, a genuine sub-unit penalty below it---reproduced in a model the
+theorems do not cover. Quantitatively, the sub-transition exponent sits somewhat above the
+Gaussian-theory line: $0.74$--$0.77$ across fit windows against $3H+\tfrac12=0.65$, a gap
+we report as an observation, not a refutation---the theorems do not apply to rough Heston,
+and the fitted exponent is an effective rate over the measurable window. The
 pricing accuracy of the hybrid scheme therefore survives roughness even in the
 regime where its pathwise accuracy collapses. We report the boundary of the method
-with equal care: an intermediate regime, $H=0.10$, exhibits a pre-asymptotic
+with equal care: an intermediate regime, $H=0.10$---where the Gaussian-theory target is
+$0.80$---exhibits a pre-asymptotic
 ambiguity that more sampling cannot resolve and that the $O(n^2)$ cost of the
 explicit scheme prevents us from settling with finer grids. The natural remedy is a
 multifactor Markovian lift, which replaces the singular convolution kernel by a sum
@@ -337,6 +344,22 @@ the realised variance. This is bias-preserving---it leaves the variance discreti
 untouched---while cutting the sampling variance enough to expose the bias. Without it the
 absolute estimator cannot resolve $\alpha$ at all.
 
+Conditioning also fixes \emph{what} is being rated, and it is worth being precise. The
+conditional payoff is a Black--Scholes price evaluated at
+$S_{\mathrm{eff}}=S_0\exp(\rho M-\tfrac12\rho^2 I)$ and
+$\sigma_{\mathrm{eff}}^2=(1-\rho^2)\,I/T$, where $M=\int_0^T\!\sqrt{V}\,\mathrm{d}W^V$ and
+$I=\int_0^T\!V\,\mathrm{d}t$ are computed by the \emph{same left-point discretisation} as the
+variance path itself, so the discretisation bias of the conditional price is that of the
+variance path and its integrals, by construction. Two consequences follow. The orthogonal
+component of the asset noise is integrated out exactly, so no discretisation error is added on
+that channel; and the kinked call payoff is replaced by a smooth (out-of-the-money,
+$C^\infty$) functional of the discretised integrals $(M,I)$---the object class the
+Gaussian-volatility weak-rate theorems rate, graded there by test-function
+smoothness~\cite{fsw2025,bjp2023}. The measured $\alpha$ is therefore the weak rate of the
+discretised variance integrals under a smooth functional, in a model those theorems do not
+cover; the kink penalty that the harness itself exposes at the money
+(Section~\ref{sec:results}) is deliberately excluded from the rough sweep.
+
 \section{Results: the weak order}\label{sec:results}
 
 \subsection{Validating the harness on a known answer}
@@ -371,7 +394,21 @@ does not bound the pricing rate. Resolving the individual cases:
       not robustly distinguishable from $1$. We do not force a verdict here; the next
       subsection explains why we cannot.
 \end{itemize}
-The trend is monotone: $\alpha$ rises with $H$ and dips below $1$ only as $H\to 0$. The
+The trend is monotone: $\alpha$ rises with $H$ and dips below $1$ only as $H\to 0$.
+
+Set against the Gaussian-volatility theory, the measurements read as follows. At $H=0.20$,
+above the $H=\tfrac16$ phase transition of~\cite{fsw2025}, the theory caps the rate at $1$
+and we measure $1.01$: consistent. At $H=0.05$, below the transition, the theory gives
+$3H+\tfrac12=0.65$ (left-point, optimal in that setting~\cite{gassiat2023,fsw2025}) and
+$H+\tfrac12=0.55$ (weighted hybrid~\cite{gassiat2023,bfn2022}); we measure $0.74$--$0.77$,
+window-stable and below $1$ at eight standard errors---the same qualitative regime, a
+sub-unit rate, with the exponent somewhat above the Gaussian-theory line. We state the gap
+as an observation: the theorems do not cover square-root Volterra dynamics, the conditional
+functional is smoother than the minimal test classes the sharpest rates assume, and the
+fitted exponent is an effective rate over the coarse-to-intermediate window that the
+signal-to-noise structure permits. At $H=0.10$ the Gaussian-theory target is $0.80$,
+adjacent to our unresolved band of $0.84$--$0.95$---which is why the borderline matters and
+why the next section pursues it. The
 prediction committed before measurement---$\alpha>H$, with $\alpha\approx 1$ for smooth
 payoffs---is confirmed in its first part everywhere and in its second part for the less
 rough regimes, with a clean penalty emerging only at the roughest.
