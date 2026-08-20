@@ -49,10 +49,10 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
-| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ Overleaf-ready; positioned & compiled | 2026-07-02 |
-| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ Overleaf-ready; Giles positioning added | 2026-07-02 |
-| `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ Overleaf-ready (figures inserted) | 2026-07-02 |
-| `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H); underpins P2's single-grid conclusion | ✅ Overleaf-ready | 2026-07-02 |
+| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ submission-shaped (PR #87: flags out, 0.118 diagnostic harmonised, 250w abstract, skew-literature positioning + 5 verified refs) | 2026-08-19 |
+| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ submission-shaped for SIURO (PR #83: advisor line, Bourgey–De Marco 2022 journal metadata) | 2026-08-19 |
+| `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ submission-shaped (PR #85: scoped abstract + estimator-scope sentence; ftw merge pending Wiley confirmation) | 2026-08-19 |
+| `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H), measured in rough Heston and tested against the Gaussian-volatility weak-rate theory; rank-one-lift negative result; underpins P2's single-grid conclusion | ✅ reframed & submission-shaped (PRs #89/#91/#93) | 2026-08-20 |
 
 ---
 
@@ -919,11 +919,63 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
 - **D47** *(2026-07-09)* **L1-1 resolved — `fbm_hybrid` Volterra normalisation corrected; the quarantined Layer 1 teaching engine now matches the validated core.** The long-logged KNOWN ISSUE L1-1 (above) is fixed. `fbm_hybrid` was rewritten to the discrete-variance construction — `√(2H)·` FFT-convolution of the BLP κ=0 weights via a self-contained `_volterra_weights` — and the rBergomi compensator switched from the continuum `t^{2H}` to the discrete `v[k] = Var(W̃_{t_{k+1}})`, removing the ~18% forward-variance bias (E[V_t] → ξ₀). Both acceptance tests from the original fix plan pass under Monte Carlo, now pinned by `test_layer1_rough_vol.py`. Shipped as PR #53 (RVL-001/002/016/017). **Numbering / scope note (honest):** this is *not* a new result — the correct discrete-variance compensator and its regression guards have existed and been enforced in `roughvol_core.py` / Layer 1b since **D2** and **D11**; L1-1 was only that the quarantined Layer 1 teaching module (nothing imports it — `roughvol_core.py` is the pricing engine, so pricing was never affected) had not been brought in line. Recorded here as **D47**, the next sequential entry, dated to the fix's merge (2026-07-09); the bug it closes was first logged 2026-06-12.
 - **D48** *(2026-07-25)* **Audit tail: source lost, reconstructed, made durable.** A read-only survey found the audit page's claim that the remaining ~15 tail items were "logged in the ROADMAP" to be inaccurate: the ROADMAP holds no item list, and the original itemised audit body (2026-07-02/05) survives only as its reconciliation header. All 15 item natures were reconstructed from dated session records (2026-07-11, 2026-07-19). Decision: commit `docs/AUDIT_TAIL.md` as the tail's system of record; correct the audit page to point at it with accurate counts; retire RVL-015/032/034/043/044 (cosmetic, detailed blocks unrecoverable — retire rather than re-audit); keep 10 items open at recovered-spec/nature level, RVL-009 flagged as the next real loop. Honest-tracking principle: a public "still tracked" claim must point at a file that actually contains the items.
 - **D49** *(2026-08-02)* **Dissertation citation state sealed.** Figure-reproduction script committed (`plot_rho_sweep.py`, PR #79, issue #78), fulfilling the stated principle that every reported figure is reproducible from committed code; annotated tag `v1.0-dissertation` pushed at `de47ca1` as the repository state cited by the BSc dissertation. Open audit-tail items continue per `docs/AUDIT_TAIL.md`.
+- **D50** *(2026-08-19)* **Publication pack, mechanical passes: P2, P3, P1 made
+  submission-shaped; verified reference file committed.** One-day prep arc through
+  the issue→branch→PR loop, chat-Claude as constructor/verifier, Claude Code as
+  executor. P2 (PR #83): draft date removed; SIURO project-advisor placeholder;
+  Bourgey–De Marco pinned to the JCF 26(2), 53–82 journal record. P3 (PR #85):
+  advisor placeholder; abstract re-scoped to what was measured ("none of the three
+  estimators … from daily RV"); explicit scope sentence excluding quasi-likelihood
+  (ftw2022) and GMM (bolko2023) estimators from the audit; figure TODO closed; the
+  ftw2019/ftw2022 merge deferred until the Wiley record is confirmed. P1 (PR #87):
+  all four editorial flag blocks removed (texts preserved in the PR body); the
+  flat-direction diagnostic harmonised to |flat[H]| = 0.118 — the §5.4 Jacobian
+  diagnostic — throughout; abstract cut 401→250 words; skew-term-structure
+  positioning paragraph added on five source-verified references (Fukasawa 2017
+  QF; Bayer–Friz–Gulisashvili–Horvath–Stemper 2019 QF; El Euch–Fukasawa–Gatheral–
+  Rosenbaum 2019 SIFIN; El Euch–Gatheral–Rosenbaum 2019 Risk; Bayer et al. deep
+  calibration); the dangling fig:btcfit now referenced. The reference working file
+  (`OVERLEAF/_refs/new_references_verified.tex`; every entry marked VERIFIED
+  against the publisher/arXiv record or LEAD-to-pin) committed in PR #89.
+  Discipline: every PR independently compiled by chat-Claude before merge (P2 9pp,
+  P3 10pp, P1 11pp; zero undefined references). Outstanding: advisor names in the
+  four placeholders; bfn2022/ak2024 metadata pins; the ftw merge.
+- **D51** *(2026-08-20)* **P4 premise corrected and reframed; lift negative result
+  mechanised and situated (PRs #89, #91, #93).** The draft's founding claim — that
+  the hybrid scheme's weak order "has never been measured" — was found false
+  against the established weak-rate literature (Gassiat, SIFIN 14(2) 2023:
+  (3H+½)∧1 left-point, H+½ weighted hybrid; Friz–Salkeld–Wagenhofer, AAP 35(1)
+  2025: matching lower bound, phase transition at H=1/6; Bayer–Hall–Tempone, IJTAF
+  2023; Bayer–Fukasawa–Nakahara, SIFIN 2022; Bonesini–Jacquier–Pannier 2023).
+  Phase 1 (PR #89) inserted the eight-entry literature and boxed the claims.
+  Phase 2a (PR #91) reframed the paper as an empirical weak-rate measurement of the
+  direct rough-Heston discretisation tested against that Gaussian-volatility
+  theory — none of the theorems covers square-root Volterra dynamics — with the
+  measurements reproducing the proved phase structure (α ≈ 1 at H = 0.20 > 1/6;
+  α ≈ 0.74, below 1 at 8 SE, at H = 0.05 < 1/6) and the sub-transition exponent
+  sitting above 3H+½ = 0.65, stated as an observation, not a refutation; a new
+  method paragraph records what conditioning rates (bias-preserving by the code's
+  own construction — M, I left-point — a smooth OTM functional of the discretised
+  integrals). Phase 2b (PR #93) rewrote the lift section on the mechanism read off
+  `rough_heston_lifted.py`: the shared Brownian is the Abi Jaber (2019)
+  lifted-Heston *model* (aj2019 added, QF 19(12), 1995–2013); the approximation is
+  rank-one noise — each per-factor OU integral replaced by its L²-projection
+  env_i·ΔW onto the shared increment — preserving each factor's covariance with ΔW
+  (why β = 2H and prices validated) while under-representing stiff-factor variance
+  by x_i·Δt/2, independent of N; the flat N-sweep recast as confirming the
+  Bayer–Breneis L¹ kernel bound (bb2023), localising the fault in the scheme; the
+  BB second-order weak scheme (bb2024) engaged as the non-rank-one counterexample
+  that acquits the lift but not the surrogate purpose; the once-dangling bbf2023
+  now cited at the Gauss–Jacobi quadrature; "second contribution" priority framing
+  removed. All Phase-2 swaps SHA-256-gated and independently compiled (12pp, 0
+  undefined references, 0 boxes). Open on P4: title/subtitle still predates the
+  reframe; advisor placeholder; venue call.
 ---
 
 ## Publication seeds
 
-Four papers, Overleaf-ready (`OVERLEAF/P1`–`P4`). The identification question is
+Four papers, submission-shaped (`OVERLEAF/P1`–`P4`; the August 2026 prep arc is
+recorded as D50–D51). The identification question is
 deliberately split across two independent routes (P1 from option prices, P3 from
 realised variance); P2 prices; P4 supplies the convergence foundation.
 
@@ -953,10 +1005,16 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   2 tables, 16 verified refs, AI-use statement). Target: arXiv q-fin.ST → SIURO.
   *(Q1; Layer 1c + Phase B.)*
 - **P4 — "Weak convergence is faster than strong: measuring the weak order of a
-  hybrid scheme."** Measures the *weak* order of the Bennedsen–Lunde–Pakkanen
-  hybrid scheme, showing weak convergence outpaces the throttled strong rate (H) —
-  the result that makes single-grid pricing viable and underpins P2's conclusion.
-  Target: arXiv q-fin.CP / math.NA. *(Foundational; Layer 4 convergence.)*
+  hybrid scheme."** Measures the *weak* order of the direct rough-Heston
+  discretisation against the Gaussian-volatility weak-rate theory (Gassiat; FSW;
+  BHT; BFN; BJP — none of which covers square-root Volterra dynamics): weak
+  convergence far outpaces the throttled strong rate (H), reproducing the proved
+  phase structure at H=1/6, with the sub-transition exponent stated as an
+  observation above the theory line; plus a characterised negative result on the
+  rank-one-noise lift as a weak-order surrogate (situated against Bayer–Breneis).
+  Underpins P2's single-grid conclusion. Title/subtitle update to match the
+  reframe still pending. Target: arXiv q-fin.CP / math.NA. *(Foundational;
+  Layer 4 convergence.)*
 
 - Long-range: MLMC for market-risk measures (nested estimation) — aligns with the
   PhD direction.
