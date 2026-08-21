@@ -1016,6 +1016,23 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   reframe still pending. Target: arXiv q-fin.CP / math.NA. *(Foundational;
   Layer 4 convergence.)*
 
+- **P5 (seed, parked 2026-08) — "Does the learned pricing map identify H? An
+  identifiability audit of deep calibration."** Deep calibration replaces the
+  pricing map with a trained surrogate (Bayer–Horvath–Muguruza–Stemper–Tomas
+  line); nobody has asked what that substitution does to identifiability. The
+  study: train a surrogate on RoughVolLab's verified rough-Heston surfaces, then
+  rerun the P1 audit *through the surrogate* — known-answer recovery, Jacobian
+  flat directions, the H–ν degeneracy, noise robustness — with the true map's
+  results as the gate. Either outcome is a result: if the degeneracy survives,
+  P1's non-identification is a property of the model, not of any particular
+  numerics; if the surrogate manufactures identifiability that the true map does
+  not possess (smoothing a flat valley into a spurious minimum), that is a
+  warning the deep-calibration literature currently lacks. Verification-first
+  by construction: every surrogate claim is gated against the audited
+  characteristic-function pricer. Parked deliberately — earliest build summer
+  2027; needs a compute budget and the P1–P4 pipeline cleared first. Target:
+  arXiv q-fin.CP. *(P1 sequel; Layers 3–4 machinery reused.)*
+
 - Long-range: MLMC for market-risk measures (nested estimation) — aligns with the
   PhD direction.
 
