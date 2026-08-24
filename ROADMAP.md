@@ -1031,7 +1031,8 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   by construction: every surrogate claim is gated against the audited
   characteristic-function pricer. Parked deliberately — earliest build summer
   2027; needs a compute budget and the P1–P4 pipeline cleared first. Target:
-  arXiv q-fin.CP. *(P1 sequel; Layers 3–4 machinery reused.)*
+  arXiv q-fin.CP → SIFIN / Quantitative Finance / ACM ICAIF. *(P1 sequel;
+  Layers 3–4 machinery reused.)*
 
 - Long-range: MLMC for market-risk measures (nested estimation) — aligns with the
   PhD direction.
