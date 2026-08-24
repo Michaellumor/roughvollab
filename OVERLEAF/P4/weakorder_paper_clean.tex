@@ -8,18 +8,15 @@
 \usepackage{booktabs}
 \usepackage[margin=1in]{geometry}
 \usepackage[hidelinks]{hyperref}
-\usepackage{xcolor}
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
 \newtheorem{proposition}{Proposition}
 \theoremstyle{definition}
 \newtheorem{remark}{Remark}
 
-\newcommand{\reframe}[1]{\medskip\noindent\textcolor{red}{[\,REFRAME: #1\,]}\medskip}
-
 \title{Weak convergence is faster than strong:\\
-measuring the weak order of a hybrid scheme\\
-for rough stochastic volatility}
+the weak order of a direct rough Heston discretisation,
+measured against Gaussian-volatility theory}
 
 \author{Michael Lumor\thanks{Independent research programme; University of
 Salford. ORCID: \href{https://orcid.org/0009-0000-0326-3891}{0009-0000-0326-3891}.
@@ -104,7 +101,11 @@ cubic test functions, extended and proven \emph{optimal}, with a matching lower 
 phase transition at $H=\tfrac16$, by Friz, Salkeld and Wagenhofer~\cite{fsw2025}, and
 recovered through path-dependent PDEs by Bonesini, Jacquier and Pannier~\cite{bjp2023}; the
 weighted hybrid scheme attains $H+\tfrac12$~\cite{gassiat2023,bfn2022}, and Bayer, Hall and
-Tempone~\cite{bht2023} treat option pricing under linear rough volatility. None of these
+Tempone~\cite{bht2023} treat option pricing under linear rough volatility. Results in
+the Gaussian and nonsingular classes continue to appear: Alfonsi and Kebaier obtain
+rates for rough Stein--Stein-type (mean-reverting Gaussian) volatility via
+integrated-kernel Euler schemes~\cite{ak2026}, and Bras and Fukasawa treat nonsingular
+stochastic Volterra equations~\cite{bf2025}. None of these
 theorems covers the \emph{rough Heston} model: its variance is a square-root Volterra
 process---non-Gaussian, with a diffusion coefficient that is neither linear nor smooth at the
 origin---and it is rough Heston that this paper discretises. What is known there concerns
@@ -620,10 +621,13 @@ a single command.
 \bibitem{aj2019} Abi Jaber, E. (2019).
 Lifting the Heston model. \emph{Quantitative Finance} \textbf{19}(12), 1995--2013.
 
-% metadata to pin before submission
 \bibitem{ak2024} Alfonsi, A. and Kebaier, A. (2024).
 Approximation of stochastic Volterra equations with kernels of completely
 monotone type. \emph{Mathematics of Computation} \textbf{93}(346), 643--677.
+
+\bibitem{ak2026} Alfonsi, A. and Kebaier, A. (2026).
+Weak error approximation for rough and Gaussian mean-reverting stochastic
+volatility models. arXiv:2602.18234.
 
 \bibitem{bbf2023} Bayer, C. and Breneis, S. (2023).
 Markovian approximations of stochastic Volterra equations with the fractional kernel.
@@ -644,10 +648,9 @@ Hybrid scheme for Brownian semistationary processes.
 Pricing under rough volatility.
 \emph{Quantitative Finance} \textbf{16}(6), 887--904.
 
-% metadata to pin before submission
 \bibitem{bfn2022} Bayer, C., Fukasawa, M. and Nakahara, S. (2022).
 Short communication: On the weak convergence rate in the discretization of
-rough volatility models. \emph{SIAM Journal on Financial Mathematics} \textbf{13}(3).
+rough volatility models. \emph{SIAM Journal on Financial Mathematics} \textbf{13}(2), SC66--SC73.
 
 \bibitem{bht2023} Bayer, C., Hall, E.~J. and Tempone, R. (2023).
 Weak error rates for option pricing under linear rough volatility.
@@ -656,6 +659,11 @@ Weak error rates for option pricing under linear rough volatility.
 \bibitem{bjp2023} Bonesini, O., Jacquier, A. and Pannier, A. (2023).
 Rough volatility, path-dependent PDEs and weak rates of convergence.
 arXiv:2304.03042.
+
+\bibitem{bf2025} Bras, P. and Fukasawa, M. (2025).
+Weak error rates for numerical schemes of nonsingular stochastic Volterra
+equations with application to stochastic volatility models.
+\emph{SIAM Journal on Financial Mathematics} \textbf{16}(1), 1--28.
 
 \bibitem{dff2002} Diethelm, K., Ford, N.~J. and Freed, A.~D. (2002).
 A predictor--corrector approach for the numerical solution of fractional differential
