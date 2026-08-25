@@ -309,6 +309,7 @@
       <li>The finding underneath it all</li>
       <li>Three times the data lied — and got caught</li>
       <li>What it all adds up to</li>
+      <li>From one triad to another — what the project asks</li>
       <li>A programme, not a single paper</li>
       <li>How it maps to the maths degree</li>
       <li>How the work is done</li>
@@ -585,7 +586,33 @@
 
 <section>
   <div class="wrap">
-    <div class="sec-label"><span class="sec-num">10</span> · a programme, not a single paper</div>
+    <div class="sec-label"><span class="sec-num">10</span> · the second triad</div>
+    <h2>From one triad to another</h2>
+    <p class="lead">The first triad — code, statistics, finance — explains how the project is <em>built</em>. Somewhere along the way a second triad emerged, and it explains what the project <em>asks</em>. The five questions you've just read group into it naturally.</p>
+    <div class="triad-grid">
+      <div class="triad-card c-fin">
+        <div class="tt">Information</div>
+        <h3>What's in there?</h3>
+        <p>What do rough-volatility models actually claim to encode — roughness of the volatility path, the Hurst exponent, the shape of the option surface? This is the premise every question starts from.</p>
+      </div>
+      <div class="triad-card c-stat">
+        <div class="tt">Reliability</div>
+        <h3>Can it be trusted?</h3>
+        <p>Can that information really be recovered from data? From price history, that's the estimator audit and the identifiability map (P3). From option surfaces, it's the calibration audit (P1). Two routes, one honest answer about when a measurement means something.</p>
+      </div>
+      <div class="triad-card c-code">
+        <div class="tt">Efficiency</div>
+        <h3>What does it cost?</h3>
+        <p>How cheaply can the information be extracted? That's the pricing race (P2) — and underneath it, the question of whether the simulator's accuracy survives roughness at all (P4), the result that makes the single-grid answer possible.</p>
+      </div>
+    </div>
+    <p>Notice each card wears the colour of the discipline that answers it: statistics carries the trust question, code carries the cost question, and the markets supply the information both are about. The project didn't abandon the first triad — it grew a second one on top. Stage one is how it's built; stage two is what it asks. The frame also points forward: the newest question parked in the roadmap — whether a machine-learned pricing map preserves identifiability, or manufactures it — is just the Reliability question asked one level up.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-label"><span class="sec-num">11</span> · a programme, not a single paper</div>
     <h2>A line of papers</h2>
     <p class="lead">RoughVolLab isn't built around one paper. Each strand of the work becomes a research paper of its own — several are written, and they all follow the same route to publication.</p>
     <div class="papers-grid">
@@ -667,7 +694,7 @@
 
 <section class="degmap">
   <div class="wrap">
-    <div class="sec-label"><span class="sec-num">11</span> · the degree connection</div>
+    <div class="sec-label"><span class="sec-num">12</span> · the degree connection</div>
     <h2>How it maps to the maths degree</h2>
     <p class="lead">Every layer is built on specific parts of the BSc Mathematics curriculum — the modules aren't abstract, they're being put to work. Year 2's Business &amp; Industrial Mathematics spans the whole thing: RoughVolLab is its industrial case study.</p>
     <div class="deg-row">
@@ -694,7 +721,7 @@
 
 <section>
   <div class="wrap">
-    <div class="sec-label"><span class="sec-num">12</span> · the method</div>
+    <div class="sec-label"><span class="sec-num">13</span> · the method</div>
     <h2>How the work is done</h2>
     <p class="lead">A few simple rules run through the whole project. They explain why it can be trusted more than a typical side-project — and they're what made the three catches possible.</p>
     <div class="rules">
@@ -715,7 +742,7 @@
 
 <section>
   <div class="wrap">
-    <div class="sec-label"><span class="sec-num">13</span> · plain terms</div>
+    <div class="sec-label"><span class="sec-num">14</span> · plain terms</div>
     <h2>A few words, in plain terms</h2>
     <dl class="gloss">
       <div><dt>Volatility</dt><dd>How much a price jumps around. Calm market = low; panic = high.</dd></div>
