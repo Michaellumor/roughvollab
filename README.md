@@ -65,7 +65,7 @@ identification question is split across two independent routes — from option p
   Hurst estimation from realised variance, with application to cryptocurrency.*** An
   identifiability map over (η, Δ); three estimators with intrinsic small-H biases; real
   assets (BTC/ETH/SPX) all non-identified. The realised-variance answer to Question 1.
-  *(Layer 1c + Phase B.)*
+  **Preprint:** [SSRN 7346318](https://ssrn.com/abstract=7346318). *(Layer 1c + Phase B.)*
 - **P4 — *Weak convergence is faster than strong.*** In rough Heston, the weak order of
   the direct (hybrid-type) discretisation far outpaces the throttled strong rate H —
   measured against a simulation-free characteristic-function reference and tested
@@ -74,7 +74,7 @@ identification question is split across two independent routes — from option p
   reproduce in a model the theorems do not cover. Includes a characterised negative
   result: the rank-one-noise Markovian lift cannot serve as a weak-order surrogate.
   The convergence result that makes single-grid pricing viable and underpins P2.
-  *(Layer 4 convergence.)*
+  **Preprint:** [SSRN 7346418](https://ssrn.com/abstract=7346418). *(Layer 4 convergence.)*
 
 Each paper's methods are implemented by tested modules in this repository; see the
 per-layer sections below and the reproducibility script `paper_outputs.py`.
