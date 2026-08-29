@@ -2,13 +2,15 @@
 % Body text and thebibliography verbatim; only the class/front-matter block
 % converted to SIAM macros (siamonline250211.cls, in this folder — SIAM's
 % class for its online-only journals, SIFIN included; siamart251216.cls kept
-% alongside for reference). The class loads amsmath/amssymb/graphicx/hyperref/
-% ntheorem itself and predefines theorem/lemma/corollary/proposition/definition;
-% remark is declared below via \newsiamremark. geometry removed (class layout).
+% alongside for reference). The class loads amsmath/graphicx/hyperref/ntheorem
+% itself (NOT amssymb — loaded explicitly below; verified by compile) and
+% predefines theorem/lemma/corollary/proposition/definition; remark is
+% declared below via \newsiamremark. geometry removed (class layout).
 \documentclass{siamonline250211}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{booktabs}
 \newsiamremark{remark}{Remark}
