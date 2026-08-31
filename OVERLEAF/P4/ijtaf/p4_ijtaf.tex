@@ -78,10 +78,10 @@ Rough stochastic volatility models---in which log-volatility is driven by a
 fractional process with Hurst exponent $H\approx 0.1$---reproduce the steep
 short-maturity implied-volatility skew that classical diffusive models miss, and
 have become a central object of study in quantitative finance since the work of
-Gatheral, Jaisson and Rosenbaum. Pricing under these models is not analytically
+Gatheral, Jaisson and Rosenbaum~\citeyearpar{gjr2018}. Pricing under these models is not analytically
 tractable in general and rests on Monte Carlo simulation of the underlying rough
-Volterra dynamics. The standard simulator is the \emph{hybrid scheme} of
-Bennedsen, Lunde and Pakkanen (henceforth BLP), which discretises the
+Volterra dynamics~\citep{bfg2016}. The standard simulator is the \emph{hybrid scheme} of
+Bennedsen, Lunde and Pakkanen~\citeyearpar{blp2017} (henceforth BLP), which discretises the
 $(t-s)^{H-1/2}$ kernel on a refining time grid.
 
 A discretisation scheme is characterised by two convergence orders, and they
@@ -98,7 +98,7 @@ pathwise fluctuations that limit the strong error largely cancel in expectation.
 For the BLP hybrid scheme the strong order is known: it is $H$, so that the
 $L^2$ error decays as $O(n^{-H})$ in the number of steps $n$. This is a result of
 BLP, and it is tight---the pathwise bound is achieved with equality, which can be
-seen empirically through the Giles level-variance decay rate $\beta = 2H$ that the
+seen empirically through the Giles~\citeyearpar{giles2008} level-variance decay rate $\beta = 2H$ that the
 strong order implies.\footnote{This corroboration is established separately in the
 \texttt{RoughVolLab} programme of which the present work is a part; the measured
 $\beta$ tracks $2H$ across $H\in\{0.05,0.10,0.20,0.35\}$ with equality.} The
@@ -156,7 +156,7 @@ anchored to a known answer before it is trusted at $H<\tfrac12$. Second,
 faster than the scale of the sampling error as the grid refines, so the measurable
 window is confined to coarse-to-intermediate grids and fine grids are intrinsically
 noise-dominated. Naive estimation of the bias against the reference cannot resolve
-$\alpha$ at all; we recover it using Romano--Touzi conditional Monte Carlo, which
+$\alpha$ at all; we recover it using Romano--Touzi~\citeyearpar{rt1997} conditional Monte Carlo, which
 integrates the orthogonal asset Brownian motion out analytically and slashes the
 sampling variance while preserving the discretisation bias.
 
@@ -211,7 +211,7 @@ Section~\ref{sec:conclusion} concludes.
 
 \subsection{The model and the scheme}
 
-We work with the rough Heston model of El Euch and Rosenbaum, in which the variance
+We work with the rough Heston model of El Euch and Rosenbaum~\citeyearpar{eer2019}, in which the variance
 follows a fractional stochastic Volterra equation. Writing $\alpha_{\!H}=H+\tfrac12$
 for the fractional order, the variance $V$ and asset $S$ satisfy
 \begin{align}
@@ -302,7 +302,7 @@ D^{\alpha_{\!H}}\psi
 \end{equation}
 $I^{\beta}$ denotes the Riemann--Liouville fractional integral of order $\beta$, and the
 European price follows by Gil--Pelaez Fourier inversion. We solve \eqref{eq:riccati}
-by the Diethelm--Ford--Freed fractional Adams--Bashforth--Moulton predictor--corrector
+by the Diethelm--Ford--Freed~\citeyearpar{dff2002} fractional Adams--Bashforth--Moulton predictor--corrector
 and use an Albrecher little-trap classical-Heston characteristic function as an
 independent reference at $H=\tfrac12$.
 
@@ -469,7 +469,7 @@ singular kernel $K(t)=t^{H-1/2}/\Gamma(H+\tfrac12)$ admits the spectral represen
 $K(t)=\int_0^\infty e^{-\gamma t}\mu(\mathrm{d}\gamma)$ with
 $\mu(\mathrm{d}\gamma)\propto \gamma^{-H-1/2}\mathrm{d}\gamma$, and approximating this
 integral by a finite quadrature gives a sum of exponentials
-$K(t)\approx\sum_{i=1}^N c_i e^{-x_i t}$. Each exponential drives an Ornstein--Uhlenbeck
+$K(t)\approx\sum_{i=1}^N c_i e^{-x_i t}$~\citep{ak2024}. Each exponential drives an Ornstein--Uhlenbeck
 factor $U_i$, and their weighted sum reconstructs the rough variance,
 \begin{equation}
 V_t = g_0(t) + \sum_{i=1}^N c_i U_i^t,
