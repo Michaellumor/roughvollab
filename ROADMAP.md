@@ -1034,6 +1034,14 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   arXiv q-fin.CP → SIFIN / Quantitative Finance / ACM ICAIF. *(P1 sequel;
   Layers 3–4 machinery reused.)*
 
+- **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
+  estimation reads H under the physical measure; surface calibration reads it
+  under the pricing measure. Pathwise regularity is invariant under equivalent
+  Girsanov-type measure changes, so a disagreement between the two readings is
+  an estimator artefact, not a measure effect. Open question: do the two
+  readings agree once *both* identifiability regions are accounted for?
+  Requires the P-side audit and the Q-side audit as inputs. No date.
+
 - Long-range: MLMC for market-risk measures (nested estimation) — aligns with the
   PhD direction.
 
