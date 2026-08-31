@@ -48,28 +48,23 @@ Salford, United Kingdom\\
 \begin{abstract}
 The hybrid scheme of Bennedsen, Lunde and Pakkanen is the standard simulator for
 rough stochastic volatility, and its \emph{strong} (pathwise) convergence order is
-known to be $H$, the Hurst exponent---so at the empirically relevant $H\approx 0.1$,
-pathwise accuracy nearly stalls. Whether \emph{prices} stall too is a question about
-the weak order $\alpha$, and there the theory is model-specific: for Gaussian-volatility
-models (rough Bergomi and its relatives), recent work establishes weak rates of
-$(3H+\tfrac12)\wedge 1$ for left-point discretisation---proven optimal, with a phase
-transition at $H=\tfrac16$---and $H+\tfrac12$ for the weighted hybrid scheme. No such
-result covers rough Heston, whose square-root Volterra dynamics fall outside these
-theorems; known rough-Heston weak-rate evidence concerns Markovian-approximation
-schemes, not the direct discretisation. We measure the weak order of the direct
-hybrid-type discretisation of rough Heston against a simulation-free
-characteristic-function reference, committing before measurement to the prediction
-$\alpha>H$. Estimation is made feasible by Romano--Touzi conditioning, which is
-bias-preserving by construction and turns the payoff into a smooth functional of the
-discretised variance integrals---the object class the theory rates. We find
-$\alpha\gg H$ throughout: $\alpha\approx 1$ at $H=0.20$, and a genuine penalty only at
-the rough extreme, $\alpha\approx 0.74$ at $H=0.05$ (below $1$ at eight standard
-errors)---reproducing, in a model the theorems do not cover, the qualitative phase
-structure they prove, with the sub-transition exponent somewhat above the
-Gaussian-theory line. The intermediate $H=0.10$ (theory target $0.80$) is not
-resolvable at the explicit scheme's $O(n^2)$ cost; a multifactor Markovian lift,
-built as the natural remedy, cannot settle it---its noise approximation perturbs the
-measured rate itself, a negative result we characterise precisely.
+the Hurst exponent $H$---so at the empirically relevant $H\approx 0.1$, pathwise
+accuracy nearly stalls. Whether \emph{prices} stall too is a question about the
+weak order $\alpha$, and there the theory is model-specific. For
+Gaussian-volatility models, recent work establishes weak rates of
+$(3H+\tfrac12)\wedge 1$ for left-point discretisation---proven optimal, with a
+phase transition at $H=\tfrac16$---and $H+\tfrac12$ for the weighted hybrid
+scheme. No such result covers rough Heston, whose square-root Volterra dynamics
+fall outside these theorems. We measure the weak order of the direct hybrid-type
+discretisation of rough Heston against a simulation-free characteristic-function
+reference, committing before measurement to the prediction $\alpha>H$.
+Romano--Touzi conditioning makes estimation feasible and is bias-preserving by
+construction. We find $\alpha\gg H$ throughout: $\alpha\approx 1$ at $H=0.20$,
+with a genuine penalty only at the rough extreme, $\alpha\approx 0.74$ at
+$H=0.05$---reproducing, in a model the theorems do not cover, the qualitative
+phase structure they prove. The intermediate $H=0.10$ is not resolvable at the
+explicit scheme's $O(n^2)$ cost; a multifactor Markovian lift cannot settle it,
+since its noise approximation perturbs the measured rate itself.
 \end{abstract}
 
 \keywords{Rough volatility; rough Heston; weak convergence; discretisation error;
@@ -115,23 +110,23 @@ How fast prices converge is a question the strong order cannot answer, and for r
 volatility the weak-rate theory that does answer it is model-specific. For
 \emph{Gaussian-volatility} models---rough Bergomi and its relatives, where the variance is a
 (function of a) Gaussian Volterra process---the weak rate of the left-point discretisation is
-$(3H+\tfrac12)\wedge 1$: established by Gassiat~\cite{gassiat2023} for fBm integrands and
+$(3H+\tfrac12)\wedge 1$: established by Gassiat~\citeyearpar{gassiat2023} for fBm integrands and
 cubic test functions, extended and proven \emph{optimal}, with a matching lower bound and a
-phase transition at $H=\tfrac16$, by Friz, Salkeld and Wagenhofer~\cite{fsw2025}, and
-recovered through path-dependent PDEs by Bonesini, Jacquier and Pannier~\cite{bjp2023}; the
-weighted hybrid scheme attains $H+\tfrac12$~\cite{gassiat2023,bfn2022}, and Bayer, Hall and
-Tempone~\cite{bht2023} treat option pricing under linear rough volatility. Results in
+phase transition at $H=\tfrac16$, by Friz, Salkeld and Wagenhofer~\citeyearpar{fsw2025}, and
+recovered through path-dependent PDEs by Bonesini, Jacquier and Pannier~\citeyearpar{bjp2023}; the
+weighted hybrid scheme attains $H+\tfrac12$~\citep{gassiat2023,bfn2022}, and Bayer, Hall and
+Tempone~\citeyearpar{bht2023} treat option pricing under linear rough volatility. Results in
 the Gaussian and nonsingular classes continue to appear: Alfonsi and Kebaier obtain
 rates for rough Stein--Stein-type (mean-reverting Gaussian) volatility via
-integrated-kernel Euler schemes~\cite{ak2026}, and Bras and Fukasawa treat nonsingular
-stochastic Volterra equations~\cite{bf2025}. None of these
+integrated-kernel Euler schemes~\citeyearpar{ak2026}, and Bras and Fukasawa treat nonsingular
+stochastic Volterra equations~\citeyearpar{bf2025}. None of these
 theorems covers the \emph{rough Heston} model: its variance is a square-root Volterra
 process---non-Gaussian, with a diffusion coefficient that is neither linear nor smooth at the
 origin---and it is rough Heston that this paper discretises. What is known there concerns
 Markovian approximations: Bayer and Breneis bound the weak error of the approximation by the
-$L^1$ kernel error~\cite{bb2023} and report second-order weak convergence for a weak
+$L^1$ kernel error~\citeyearpar{bb2023} and report second-order weak convergence for a weak
 simulation scheme built on it, alongside a numerically observed rate of one for Gatheral's
-HQE scheme~\cite{bb2024}---schemes, in both cases, other than the direct discretisation.
+HQE scheme~\citep{bb2024}---schemes, in both cases, other than the direct discretisation.
 \textbf{The question this paper answers is empirical: what weak rate does the direct
 hybrid-type discretisation of rough Heston exhibit, and does it match the phase structure
 the Gaussian-volatility theory proves?}
@@ -194,7 +189,7 @@ saving is what makes the lift cheap; we show this approximation perturbs the wea
 itself, by an amount that is independent of the number of factors and therefore not
 removable by refining the kernel approximation. We characterise the failure mode
 precisely and situate it against the Markovian-approximation results of Bayer and
-Breneis~\cite{bb2023,bb2024}. The lift reproduces the strong rate and prices correctly, yet
+Breneis~\citeyearpar{bb2023,bb2024}. The lift reproduces the strong rate and prices correctly, yet
 measures a weak rate that is not the true one. So the $H=0.10$ borderline is not
 merely unresolved but resolution-resistant by the natural method, and we characterise
 exactly why.
@@ -377,7 +372,7 @@ component of the asset noise is integrated out exactly, so no discretisation err
 that channel; and the kinked call payoff is replaced by a smooth (out-of-the-money,
 $C^\infty$) functional of the discretised integrals $(M,I)$---the object class the
 Gaussian-volatility weak-rate theorems rate, graded there by test-function
-smoothness~\cite{fsw2025,bjp2023}. The measured $\alpha$ is therefore the weak rate of the
+smoothness~\citep{fsw2025,bjp2023}. The measured $\alpha$ is therefore the weak rate of the
 discretised variance integrals under a smooth functional, in a model those theorems do not
 cover; the kink penalty that the harness itself exposes at the money
 (Section~\ref{sec:results}) is deliberately excluded from the rough sweep.
@@ -419,10 +414,10 @@ does not bound the pricing rate. Resolving the individual cases:
 The trend is monotone: $\alpha$ rises with $H$ and dips below $1$ only as $H\to 0$.
 
 Set against the Gaussian-volatility theory, the measurements read as follows. At $H=0.20$,
-above the $H=\tfrac16$ phase transition of~\cite{fsw2025}, the theory caps the rate at $1$
+above the $H=\tfrac16$ phase transition of~\citet{fsw2025}, the theory caps the rate at $1$
 and we measure $1.01$: consistent. At $H=0.05$, below the transition, the theory gives
-$3H+\tfrac12=0.65$ (left-point, optimal in that setting~\cite{gassiat2023,fsw2025}) and
-$H+\tfrac12=0.55$ (weighted hybrid~\cite{gassiat2023,bfn2022}); we measure $0.74$--$0.77$,
+$3H+\tfrac12=0.65$ (left-point, optimal in that setting~\citealp{gassiat2023,fsw2025}) and
+$H+\tfrac12=0.55$ (weighted hybrid~\citealp{gassiat2023,bfn2022}); we measure $0.74$--$0.77$,
 window-stable and below $1$ at eight standard errors---the same qualitative regime, a
 sub-unit rate, with the exponent somewhat above the Gaussian-theory line. We state the gap
 as an observation: the theorems do not cover square-root Volterra dynamics, the conditional
@@ -483,11 +478,11 @@ V_t = g_0(t) + \sum_{i=1}^N c_i U_i^t,
                  + \nu\sqrt{V_t}\,\mathrm{d}W_t,
 \end{equation}
 so the non-Markovian dynamics become a finite Markovian system. This is the lifted
-Heston model of Abi Jaber~\cite{aj2019}: the factors share the single Brownian motion
+Heston model of Abi Jaber~\citeyearpar{aj2019}: the factors share the single Brownian motion
 $W$ \emph{by construction}---the sharing is the model, not an approximation of it---and
 mean-revert at different speeds. The factors carry no
 history, so the per-step cost falls from $O(n)$ to $O(N)$ and the trajectory cost from
-$O(n^2)$ to $O(Nn)$. With the Bayer--Breneis Gauss--Jacobi quadrature of~\cite{bbf2023} the kernel approximation
+$O(n^2)$ to $O(Nn)$. With the Bayer--Breneis Gauss--Jacobi quadrature of~\citet{bbf2023} the kernel approximation
 converges superpolynomially in $N$, and only a few tens of factors suffice to capture the
 strong rate. The lift is thus, in principle, exactly the cheap fine-grid simulator the
 borderline needs.
@@ -520,7 +515,7 @@ artefact of the reference.
 The cause is not the kernel approximation. Sweeping the number of factors at $H=0.20$ leaves
 the estimate flat at $\alpha\approx 0.80$ from $N=150$ through $N=600$ (Figure~\ref{fig:nsweep}):
 refining the kernel does not move it. This is what the Bayer--Breneis bound
-predicts~\cite{bb2023}---the weak error of the \emph{model} approximation is controlled by the
+predicts~\citeyearpar{bb2023}---the weak error of the \emph{model} approximation is controlled by the
 $L^1$ kernel error, which the sweep drives down---so the flatness at the \emph{wrong} value
 localises the fault in the scheme, not the lift. The perturbation is intrinsic to the noise
 construction. Exact simulation of the factor system requires, per step, the jointly Gaussian
@@ -554,7 +549,7 @@ rather than a kernel-truncation error that more factors would remove.}
 An exact-noise lift removes the identified corruption channel, but at $O(N^2)$---no
 cheaper than the explicit $O(n^2)$ scheme for this purpose. Nor is the failure the lift's
 own: Bayer and Breneis construct a purpose-built \emph{weak} simulation scheme on the
-Markovian approximation with second-order weak convergence at linear cost~\cite{bb2024}---a
+Markovian approximation with second-order weak convergence at linear cost~\citeyearpar{bb2024}---a
 different, non-rank-one noise construction, and further evidence that the fault here lies in
 the natural scheme rather than the model. But their scheme does not rescue the surrogate
 purpose either: its weak rate is its own by design, so it would fail the known-answer gate
@@ -581,7 +576,7 @@ the $H=0.10$ rate cannot be pinned without finer grids than either the explicit 
 cheap lift can deliver. We have shown that the obvious route to those grids fails for a
 structural reason; a weak-order-preserving fine-grid simulator---an exact-noise lift at
 $O(N^2)$, or a streaming explicit scheme that breaks the memory ceiling---would be required to
-settle $H=0.10$, and we have not built one. (The Bayer--Breneis weak scheme~\cite{bb2024}
+settle $H=0.10$, and we have not built one. (The Bayer--Breneis weak scheme~\citeyearpar{bb2024}
 reaches fine grids cheaply, but converges at its own designed rate and so measures a
 different object than the direct scheme's $\alpha$.) These boundaries are characterisations of where the
 method stops being trustworthy, not incidental gaps, and we report them as such.
@@ -638,77 +633,77 @@ a single command.
 
 \begin{thebibliography}{99}
 
-\bibitem{aj2019} Abi Jaber, E. (2019).
+\bibitem[Abi Jaber(2019)]{aj2019} Abi Jaber, E. (2019).
 Lifting the Heston model. \emph{Quantitative Finance} \textbf{19}(12), 1995--2013.
 
-\bibitem{ak2024} Alfonsi, A. and Kebaier, A. (2024).
+\bibitem[Alfonsi and Kebaier(2024)]{ak2024} Alfonsi, A. and Kebaier, A. (2024).
 Approximation of stochastic Volterra equations with kernels of completely
 monotone type. \emph{Mathematics of Computation} \textbf{93}(346), 643--677.
 
-\bibitem{ak2026} Alfonsi, A. and Kebaier, A. (2026).
+\bibitem[Alfonsi and Kebaier(2026)]{ak2026} Alfonsi, A. and Kebaier, A. (2026).
 Weak error approximation for rough and Gaussian mean-reverting stochastic
 volatility models. arXiv:2602.18234.
 
-\bibitem{bbf2023} Bayer, C. and Breneis, S. (2023).
+\bibitem[Bayer and Breneis(2023a)]{bbf2023} Bayer, C. and Breneis, S. (2023a).
 Markovian approximations of stochastic Volterra equations with the fractional kernel.
 \emph{Quantitative Finance} \textbf{23}(1), 53--70.
 
-\bibitem{bb2023} Bayer, C. and Breneis, S. (2023).
+\bibitem[Bayer and Breneis(2023b)]{bb2023} Bayer, C. and Breneis, S. (2023b).
 Weak Markovian approximations of rough Heston. arXiv:2309.07023.
 
-\bibitem{bb2024} Bayer, C. and Breneis, S. (2024).
+\bibitem[Bayer and Breneis(2024)]{bb2024} Bayer, C. and Breneis, S. (2024).
 Efficient option pricing in the rough Heston model using weak simulation schemes.
 \emph{Quantitative Finance} \textbf{24}(9), 1247--1261.
 
-\bibitem{blp2017} Bennedsen, M., Lunde, A. and Pakkanen, M.~S. (2017).
+\bibitem[Bennedsen et al.(2017)]{blp2017} Bennedsen, M., Lunde, A. and Pakkanen, M.~S. (2017).
 Hybrid scheme for Brownian semistationary processes.
 \emph{Finance and Stochastics} \textbf{21}(4), 931--965.
 
-\bibitem{bfg2016} Bayer, C., Friz, P. and Gatheral, J. (2016).
+\bibitem[Bayer et al.(2016)]{bfg2016} Bayer, C., Friz, P. and Gatheral, J. (2016).
 Pricing under rough volatility.
 \emph{Quantitative Finance} \textbf{16}(6), 887--904.
 
-\bibitem{bfn2022} Bayer, C., Fukasawa, M. and Nakahara, S. (2022).
+\bibitem[Bayer et al.(2022)]{bfn2022} Bayer, C., Fukasawa, M. and Nakahara, S. (2022).
 Short communication: On the weak convergence rate in the discretization of
 rough volatility models. \emph{SIAM Journal on Financial Mathematics} \textbf{13}(2), SC66--SC73.
 
-\bibitem{bht2023} Bayer, C., Hall, E.~J. and Tempone, R. (2023).
+\bibitem[Bayer et al.(2023)]{bht2023} Bayer, C., Hall, E.~J. and Tempone, R. (2023).
 Weak error rates for option pricing under linear rough volatility.
 \emph{International Journal of Theoretical and Applied Finance} \textbf{25}(7--8), 2250029.
 
-\bibitem{bjp2023} Bonesini, O., Jacquier, A. and Pannier, A. (2023).
+\bibitem[Bonesini et al.(2023)]{bjp2023} Bonesini, O., Jacquier, A. and Pannier, A. (2023).
 Rough volatility, path-dependent PDEs and weak rates of convergence.
 arXiv:2304.03042.
 
-\bibitem{bf2025} Bras, P. and Fukasawa, M. (2025).
+\bibitem[Bras and Fukasawa(2025)]{bf2025} Bras, P. and Fukasawa, M. (2025).
 Weak error rates for numerical schemes of nonsingular stochastic Volterra
 equations with application to stochastic volatility models.
 \emph{SIAM Journal on Financial Mathematics} \textbf{16}(1), 1--28.
 
-\bibitem{dff2002} Diethelm, K., Ford, N.~J. and Freed, A.~D. (2002).
+\bibitem[Diethelm et al.(2002)]{dff2002} Diethelm, K., Ford, N.~J. and Freed, A.~D. (2002).
 A predictor--corrector approach for the numerical solution of fractional differential
 equations. \emph{Nonlinear Dynamics} \textbf{29}(1--4), 3--22.
 
-\bibitem{eer2019} El Euch, O. and Rosenbaum, M. (2019).
+\bibitem[El Euch and Rosenbaum(2019)]{eer2019} El Euch, O. and Rosenbaum, M. (2019).
 The characteristic function of rough Heston models.
 \emph{Mathematical Finance} \textbf{29}(1), 3--38.
 
-\bibitem{fsw2025} Friz, P.~K., Salkeld, W. and Wagenhofer, T. (2025).
+\bibitem[Friz et al.(2025)]{fsw2025} Friz, P.~K., Salkeld, W. and Wagenhofer, T. (2025).
 Weak error estimates for rough volatility models.
 \emph{Annals of Applied Probability} \textbf{35}(1), 64--98.
 
-\bibitem{gassiat2023} Gassiat, P. (2023).
+\bibitem[Gassiat(2023)]{gassiat2023} Gassiat, P. (2023).
 Weak error rates of numerical schemes for rough volatility.
 \emph{SIAM Journal on Financial Mathematics} \textbf{14}(2), 475--496.
 
-\bibitem{gjr2018} Gatheral, J., Jaisson, T. and Rosenbaum, M. (2018).
+\bibitem[Gatheral et al.(2018)]{gjr2018} Gatheral, J., Jaisson, T. and Rosenbaum, M. (2018).
 Volatility is rough. \emph{Quantitative Finance} \textbf{18}(6), 933--949.
 
-\bibitem{giles2008} Giles, M.~B. (2008).
+\bibitem[Giles(2008)]{giles2008} Giles, M.~B. (2008).
 Multilevel Monte Carlo path simulation.
 \emph{Operations Research} \textbf{56}(3), 607--617.
 
-\bibitem{rt1997} Romano, M. and Touzi, N. (1997).
+\bibitem[Romano and Touzi(1997)]{rt1997} Romano, M. and Touzi, N. (1997).
 Contingent claims and market completeness in a stochastic volatility model.
 \emph{Mathematical Finance} \textbf{7}(4), 399--412.
 
