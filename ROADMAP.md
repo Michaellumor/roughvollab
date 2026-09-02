@@ -49,10 +49,10 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
-| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ submission-shaped (PR #87: flags out, 0.118 diagnostic harmonised, 250w abstract, skew-literature positioning + 5 verified refs) | 2026-08-19 |
-| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ submission-shaped for SIURO (PR #83: advisor line, Bourgey–De Marco 2022 journal metadata) | 2026-08-19 |
-| `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ submission-shaped (PR #85: scoped abstract + estimator-scope sentence; ftw merge pending Wiley confirmation) | 2026-08-19 |
-| `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H), measured in rough Heston and tested against the Gaussian-volatility weak-rate theory; rank-one-lift negative result; underpins P2's single-grid conclusion | ✅ reframed & submission-shaped (PRs #89/#91/#93) | 2026-08-20 |
+| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ submission-shaped (PR #87); P3 self-reference now cites its SSRN record (PR #108); SIURO track, awaiting project-advisor letter | 2026-08-26 |
+| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ submission-shaped for SIURO (PR #83); packet delivered to the project advisor 20 Aug; awaiting advisor letter | 2026-08-20 |
+| `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ preprint posted — SSRN 7346318 (approved 26 Aug 2026); pins closed (PR #101: ftw merged, Cont–Das → Sankhyā B) | 2026-08-26 |
+| `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H), measured in rough Heston and tested against the Gaussian-volatility weak-rate theory; rank-one-lift negative result; underpins P2's single-grid conclusion | ✅ preprint posted — SSRN 7346418 (26 Aug 2026; PR #104 title/pins). Journal: SIFIN Short Communications, desk-declined on scope (31 Aug, no referee reports); resubmitted to IJTAF 31 Aug, at referees (~5–6 months). Per-venue copies: OVERLEAF/P4/sifin/ (frozen record), ijtaf/ (PRs #118/#120/#122) | 2026-09-02 |
 
 ---
 
@@ -970,6 +970,27 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   removed. All Phase-2 swaps SHA-256-gated and independently compiled (12pp, 0
   undefined references, 0 boxes). Open on P4: title/subtitle still predates the
   reframe; advisor placeholder; venue call.
+- **D52** *(2026-09-02)* **Dissemination and the P4 venue sequence (PRs
+  #97–#130).** Project-advisor names set (P1, P2) and placeholders stripped
+  from the arXiv-track papers (PR #97). P3 and P4 posted to SSRN 24 Aug,
+  approved and distributed 26 Aug (7346318, 7346418; a ligature-mangled title
+  corrected before posting); README carries both links (PR #110); P1's
+  self-reference now cites P3's SSRN record (PR #108). P4 went to SIFIN Short
+  Communications 30 Aug (siamonline copy; Declarations section brought to
+  SIAM's AI-policy v2.0 wording, PRs #112/#114) and was desk-declined on scope
+  31 Aug — a placement outcome, not a finding, since the paper is empirical
+  and SIFIN's scope asks for theorems or new algorithms — and resubmitted the
+  same day to IJTAF on the precedent of Bayer–Hall–Tempone (IJTAF 2023):
+  ws-ijtaf copy, abstract cut to 195 words, natbib author-year citations,
+  bibliography closed at 19 cited / 19 defined (PRs #118/#120/#122); at
+  referees from ~2 Sept. Principle adopted: submission copies live per venue
+  under OVERLEAF/P4/<venue>/ and are frozen as the record of what each venue
+  held; the master stays canonical. Alongside: guide gained the
+  Information/Reliability/Efficiency section (PR #106), a public seed for the
+  P-vs-Q roughness question (PR #116), the custom domain roughvollab.com with
+  root-relative links (PR #124), and a revised author note, strapline and
+  headline (PRs #128/#130). A Mathematics Today feature derived from P3 was
+  submitted 28 Aug (off-repo).
 ---
 
 ## Publication seeds
