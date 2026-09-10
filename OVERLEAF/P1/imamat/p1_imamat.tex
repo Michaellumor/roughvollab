@@ -84,7 +84,7 @@ realised-variance time series---does any better. Calibration is a nonlinear inve
 problem---recovering model parameters from a finite, noisy set of option prices---and the
 question is one of parameter identifiability: whether the forward map from parameters to
 surface is locally injective in the direction of $H$, diagnosed through the Jacobian's
-singular values and the geometry of the fit's flat directions.
+singular values and the geometry of the fit's flat directions~\citep{kaipio2005}.
 
 The mechanism through which an option surface carries information about $H$ is the term
 structure of the at-the-money skew. Fukasawa~\citeyearpar{fukasawa2017} constructs a rough
@@ -98,7 +98,7 @@ Bayer et al.~\citeyearpar{bhmst2019} studied calibration of rough models through
 maps. None of these works asks whether, given the surface one actually observes, $H$ is
 identified at all; that is the question here. It is an open question rather than a solved
 one: the tools we use---Jacobian conditioning, flat-direction analysis, noise-perturbed
-refits---are standard in inverse problems, but they have not been turned on this parameter
+refits---are standard in inverse problems~\citep{tms2010}, but they have not been turned on this parameter
 of this model with market data, and their answer is not the one the calibration literature
 assumes.
 
@@ -586,10 +586,18 @@ Volatility is rough. \emph{Quant. Finance} \textbf{18}(6), 933--949.
 \bibitem[Gil-Pelaez(1951)]{gilpelaez1951} Gil-Pelaez, J. (1951).
 Note on the inversion theorem. \emph{Biometrika} \textbf{38}(3--4), 481--482.
 
+\bibitem[Kaipio and Somersalo(2005)]{kaipio2005} Kaipio, J.~P. and
+Somersalo, E. (2005). \emph{Statistical and Computational Inverse Problems},
+Applied Mathematical Sciences, vol.~160. Springer, New York.
+
 \bibitem[Lumor(2026)]{lumor_identifiability} Lumor, M. (2026).
 When is volatility roughness identifiable? A simulation-grounded audit of Hurst
 estimation from realised variance, with application to cryptocurrency. Available at
 SSRN: \url{https://ssrn.com/abstract=7346318}.
+
+\bibitem[Transtrum et al.(2010)]{tms2010} Transtrum, M.~K., Machta, B.~B.
+and Sethna, J.~P. (2010). Why are nonlinear fits to data so challenging?
+\emph{Phys. Rev. Lett.} \textbf{104}, 060201.
 
 \end{thebibliography}
 
