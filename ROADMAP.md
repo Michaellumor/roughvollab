@@ -49,7 +49,7 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
-| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ submission-shaped (PR #87); P3 self-reference now cites its SSRN record (PR #108); SIURO track, awaiting project-advisor letter | 2026-08-26 |
+| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ submitted — Applied Mathematical Finance, 26 Sept 2026 (ID 266158357); IMAMAT declined on scope 23 Sept; QF held in reserve. Venue copies: OVERLEAF/P1/imamat/ (frozen), amf/ | 2026-09-26 |
 | `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ submission-shaped for SIURO (PR #83); packet delivered to the project advisor 20 Aug; awaiting advisor letter | 2026-08-20 |
 | `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ preprint posted — SSRN 7346318 (approved 26 Aug 2026); pins closed (PR #101: ftw merged, Cont–Das → Sankhyā B) | 2026-08-26 |
 | `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H), measured in rough Heston and tested against the Gaussian-volatility weak-rate theory; rank-one-lift negative result; underpins P2's single-grid conclusion | ✅ preprint posted — SSRN 7346418 (26 Aug 2026; PR #104 title/pins). Journal: SIFIN Short Communications, desk-declined on scope (31 Aug, no referee reports); resubmitted to IJTAF 31 Aug, at referees (~5–6 months). Per-venue copies: OVERLEAF/P4/sifin/ (frozen record), ijtaf/ (PRs #118/#120/#122) | 2026-09-02 |
@@ -991,6 +991,23 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   root-relative links (PR #124), and a revised author note, strapline and
   headline (PRs #128/#130). A Mathematics Today feature derived from P3 was
   submitted 28 Aug (off-repo).
+- **D53** *(2026-09-26)* **P1's venue sequence: IMAMAT declined, AMF
+  submitted (PRs #147, #149, #151).** P1 went to the IMA Journal of Applied
+  Mathematics on a faculty head's suggestion (IMAMAT-2026-211, submitted
+  10 Sept) and was desk-declined on scope on 23 Sept — "more suitable for a
+  financial mathematics journal", no referee reports. Second scope decline of
+  the programme, after SIFIN's on P4. Venue rule adopted in response: choose
+  the journal the paper's own bibliography cites most, since a stated scope
+  is a superset of what a journal actually publishes. P1 cites Quantitative
+  Finance four times, so QF was the pick — but its portal charges a $162
+  submission fee, and Applied Mathematical Finance is free, also Taylor &
+  Francis, accepts any standard layout for initial review, and publishes the
+  implied-volatility-surface and skew work P1 sits beside. **P1 submitted to
+  AMF on 26 Sept 2026, submission ID 266158357**; QF is held as the reserve
+  venue. A venue-neutral copy — stock article class, nothing vendored, no
+  \date so it rebuilds identically — is frozen at OVERLEAF/P1/amf/.
+  Referees suggested: Gassiat, Rosenbaum, Jacquier; Reisinger excluded as an
+  AMF Editor-in-Chief.
 ---
 
 ## Publication seeds
