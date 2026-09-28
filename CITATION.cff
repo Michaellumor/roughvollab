@@ -13,24 +13,24 @@ abstract: >
   codebase for rough volatility research. It covers four layers:
   (1) fractional Brownian motion simulation and Hurst estimation;
   (2) multilevel Monte Carlo pricing of Asian and path-dependent
-  options under rough dynamics; (3) non-linear market friction
-  modelling including Almgren-Chriss impact and rough execution
+  options under rough dynamics; (3) market friction modelling with
+  linear temporary price impact (Almgren-Chriss) and rough execution
   slippage; and (4) a risk-aware deep hedging engine using path
-  signature features and CVaR-sensitive reinforcement learning.
-  The software accompanies an independent research programme and
-  each module is built to publication standard and is individually
-  citable.
+  signature features and direct CVaR (Rockafellar-Uryasev)
+  minimisation. The software accompanies an independent research
+  programme and each module is built to publication standard and is
+  individually citable.
 
 authors:
   - family-names: "Lumor"
     given-names: "Michael"
     affiliation: >
-      Department of Mathematics,
+      School of Science, Engineering and Environment,
       University of Salford
     orcid: https://orcid.org/0009-0000-0326-3891
 
-version: "0.2.0"
-date-released: "2026-07-05"
+version: "0.3.0"
+date-released: "2026-09-28"
 
 repository-code: "https://github.com/Michaellumor/roughvollab"
 url: "https://github.com/Michaellumor/roughvollab"
@@ -43,7 +43,7 @@ keywords:
   - multilevel Monte Carlo
   - Asian options
   - deep hedging
-  - reinforcement learning
+  - conditional value at risk
   - path signatures
   - stochastic optimal control
   - quantitative finance
