@@ -221,3 +221,15 @@ data/
 
 data/
 output/
+
+# Personal and working material — never part of the public repository
+CVs/
+BSc Dissertation/
+BSc_PhD_DPhil/
+IJTAF Manuscript/
+IMA_Applied Maths/
+arXiv/
+*_draft.md
+*_draft*.md
+README_draft.md
+ROADMAP_additions_draft.md
