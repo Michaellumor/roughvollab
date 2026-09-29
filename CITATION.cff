@@ -35,6 +35,7 @@ date-released: "2026-09-28"
 repository-code: "https://github.com/Michaellumor/roughvollab"
 url: "https://github.com/Michaellumor/roughvollab"
 license: MIT
+doi: "10.5281/zenodo.23026690"
 
 keywords:
   - rough volatility

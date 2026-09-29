@@ -9,7 +9,7 @@ One tested engine and five honest questions about how rough markets really are �
 [![tests](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml/badge.svg)](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23026690.svg)](https://doi.org/10.5281/zenodo.23026690)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23026689.svg)](https://doi.org/10.5281/zenodo.23026689)
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
 
 **New to the project?** Start with the [plain-English guide](https://roughvollab.com/guide/) — no installation needed — then drive every result yourself in the [interactive tour](https://roughvollab.com/tour/).
@@ -390,8 +390,8 @@ Papers whose methods are implemented in the current code:
 ## Citation
 
 If you use RoughVolLab in your research, please cite it using the metadata
-in [`CITATION.cff`](CITATION.cff). A Zenodo DOI will be minted at the first
-tagged release. A BibTeX entry is provided below for convenience:
+in [`CITATION.cff`](CITATION.cff). Archived on Zenodo: https://doi.org/10.5281/zenodo.23026689 (concept DOI,
+always resolving to the latest release). A BibTeX entry is provided below for convenience:
 
 ```bibtex
 @software{roughvollab2026,
@@ -399,6 +399,7 @@ tagged release. A BibTeX entry is provided below for convenience:
   title     = {RoughVolLab: Simulation, pricing, and optimal control
                under rough stochastic volatility},
   year      = {2026},
+  doi       = {10.5281/zenodo.23026689},
   url       = {https://github.com/Michaellumor/roughvollab},
   note      = {Independent research software,
                University of Salford}
