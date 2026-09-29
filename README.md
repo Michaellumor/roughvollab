@@ -9,6 +9,7 @@ One tested engine and five honest questions about how rough markets really are �
 [![tests](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml/badge.svg)](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23026690.svg)](https://doi.org/10.5281/zenodo.23026690)
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
 
 **New to the project?** Start with the [plain-English guide](https://roughvollab.com/guide/) — no installation needed — then drive every result yourself in the [interactive tour](https://roughvollab.com/tour/).
