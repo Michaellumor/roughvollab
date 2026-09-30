@@ -10,11 +10,10 @@ retired below rather than re-audited. Recorded as ROADMAP decision **D48**.
 Baseline of the "still live" determination: `f77f3ac` reconciliation (2026-07-08),
 minus everything closed by the 14 issue→PR→merge loops and later work.
 
-## Open — 10 items
+## Open — 9 items
 
 | ID | Nature (recovered) | Status / next step |
 |---|---|---|
-| RVL-009 | Five gate-check specs absent from `docs/gate_checks/` (`p2_antithetic_build_and_verify.md`, `p2_conditional_gate_check.md`, `p2_conditional_build_and_verify.md`, `gh1_kappa1_fine_path_spec.md`, `gh4_kappa1_adoption_spec.md`) — corroborated by `docs/gate_checks/README.md` | Fully specified. **Recommended next loop** — reconstruct from the driver scripts, one PR |
 | RVL-003 | Monotonicity trend check missing ("real-ish") | Open; fuller spec in 2026-07-19 session record; own small loop with test |
 | RVL-004 | Dropped `weights` (real fix, deliberately left optional) | Open; fuller spec in 2026-07-19 session record; own loop with test |
 | RVL-005 | Characteristic-function overflow guard (real fix, deliberately left optional) | Open; fuller spec in 2026-07-19 session record; own loop with test |
@@ -24,6 +23,12 @@ minus everything closed by the 14 issue→PR→merge loops and later work.
 | RVL-012 | Documentation/hygiene | Open at nature level |
 | RVL-038 | Deribit exception contract (hygiene) | Open at nature level |
 | RVL-041 | Checksum mislabel (hygiene) | Open at nature level |
+
+## Closed — 1 item
+
+| ID | Nature (recovered) | Resolution |
+|---|---|---|
+| RVL-009 | Five gate-check specs absent from `docs/gate_checks/` (`p2_antithetic_build_and_verify.md`, `p2_conditional_gate_check.md`, `p2_conditional_build_and_verify.md`, `gh1_kappa1_fine_path_spec.md`, `gh4_kappa1_adoption_spec.md`) | **Closed 2026-09-30.** All five written to `docs/gate_checks/`. They are **reconstructions from the driver scripts**, not the originals — the originals were chat-only and are not recoverable, so each carries a dated provenance header stating that its predictions and gates are as recorded in the code and that the document does not attest when they were written. **61 questions the code could not answer** are recorded in [`gate_checks/RVL-009_open_items.md`](gate_checks/RVL-009_open_items.md) rather than closed with invented rationale. `p2_coupling_gate_check.md`, the sixth filename the drivers reference, is confirmed dead and was not created |
 
 ## Retired — 5 items (2026-07-25, decision D48)
 

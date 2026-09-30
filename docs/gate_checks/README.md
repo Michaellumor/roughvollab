@@ -12,18 +12,20 @@ one-line verdict with its headline number, and the seeds that produced it.
 - **Verdicts/numbers below are from this session's driver runs** (re-runnable
   via the listed commands). Where a number is not in a file readable here it is
   marked “see spec”.
-- Spec files that were only ever given in chat are listed as **“chat-only — to
-  add”** in the final section; do not treat their absence as “no spec”.
+- Five specs here are **reconstructions** rebuilt from their drivers under
+  RVL-009 (2026-09-30); the originals were chat-only and are not recoverable.
+  Each carries a dated provenance header. Questions the code could not answer
+  are in [`RVL-009_open_items.md`](RVL-009_open_items.md).
 
 ## Index
 
 | Thread | Spec | Driver(s) | Gate IDs | Verdict (headline) | Seeds |
 |---|---|---|---|---|---|
-| Antithetic coupling | `p2_antithetic_build_and_verify.md` §1 (build-and-verify doc — to be added) | `p2_antithetic_gatecheck.py` (via production), `p2_antithetic_verify.py` (standalone) | G-A1, G-A2, G-A3, G-A4 | **REFUTED** — β unchanged ≈2H (not 4H); variance factor ≈1.44×; **~9–11% costlier** at matched L (eff ≈0.91×) | 7 / 23 / 11 |
-| Conditional MC (geometric control variate) | chat-only (`p2_conditional_gate_check.md`, `p2_conditional_build_and_verify.md`) | `p2_conditional_verify.py` | G-C4 (+ variance verdicts V1/V2, unbiasedness) | **CONFIRMED** — conditional *standard* MC cheapest; conditional MLMC does **not** beat it, ratio **0.41–0.45** | 11 / 99 / 1234 |
-| κ=1 fine path | chat-only (`gh1_kappa1_fine_path_spec.md`) | `gh1_kappa1_finepath.py` (engine: `kappa=1` in `layer1b_mlmc_asian.py`) | G-H1a, G-H1b, G-H1c, G-H1d | **PASS** — variance gap closed **0.853 → 0.9996** (analytic; 0.9973 emp.); compensator unbiased; BS z=0.64 | fixed internal (1/2/7/100/999) |
+| Antithetic coupling | `p2_antithetic_build_and_verify.md` §1 (this dir) | `p2_antithetic_gatecheck.py` (via production), `p2_antithetic_verify.py` (standalone) | G-A1, G-A2, G-A3, G-A4 | **REFUTED** — β unchanged ≈2H (not 4H); variance factor ≈1.44×; **~9–11% costlier** at matched L (eff ≈0.91×) | 7 / 23 / 11 |
+| Conditional MC (geometric control variate) | `p2_conditional_gate_check.md`, `p2_conditional_build_and_verify.md` (this dir) | `p2_conditional_verify.py` | G-C4 (+ variance verdicts V1/V2, unbiasedness) | **CONFIRMED** — conditional *standard* MC cheapest; conditional MLMC does **not** beat it, ratio **0.41–0.45** | 11 / 99 / 1234 |
+| κ=1 fine path | `gh1_kappa1_fine_path_spec.md` (this dir) | `gh1_kappa1_finepath.py` (engine: `kappa=1` in `layer1b_mlmc_asian.py`) | G-H1a, G-H1b, G-H1c, G-H1d | **PASS** — variance gap closed **0.853 → 0.9996** (analytic; 0.9973 emp.); compensator unbiased; BS z=0.64 | fixed internal (1/2/7/100/999) |
 | κ=1 coarse coupler | `kappa1_hybrid_coupling_design.md` (this dir) | `gh2_kappa1_coupler.py` (gate), `kappa1_coupling_design_check.py` (covariance de-risk), `layer1b_kappa1.py` (coupler engine) | G-H2a, G-H2b, G-H2c | **PASS** — coupling tightness **0.001 vs 0.39–0.58 (552× separation)**; telescoping <1; β≈2H | 11 |
-| κ=1 adoption | chat-only (`gh4_kappa1_adoption_spec.md`) | `gh4_kappa1_conditional.py` (2a), `gh4_kappa1_cost.py` (2b) | G-H4 step 2a, step 2b | **ADOPT for conditional-std-MC only** — ~1.3–1.5× cheaper (k1/k0 = 0.79× @ε=0.05, 0.68× @ε=0.025); **not** for MLMC | 5 / 11 / 23 (+proxy 999) |
+| κ=1 adoption | `gh4_kappa1_adoption_spec.md` (this dir) | `gh4_kappa1_conditional.py` (2a), `gh4_kappa1_cost.py` (2b) | G-H4 step 2a, step 2b | **ADOPT for conditional-std-MC only** — ~1.3–1.5× cheaper (k1/k0 = 0.79× @ε=0.05, 0.68× @ε=0.025); **not** for MLMC | 5 / 11 / 23 (+proxy 999) |
 | Baseline regeneration | n/a (regeneration driver, not a gate) | `p2_baseline_regen.py` | n/a | β-sweep reproduces **0.120/0.219/0.418/0.726 bit-for-bit**; costratio 0.63 (<1) | 7 / 11 / 23 (+1/2) |
 
 ## Thread detail
@@ -97,22 +99,29 @@ one-line verdict with its headline number, and the seeds that produced it.
   L=[2,3,5,7] monotone, std-MC/MLMC ratio 0.63 at ε=0.025; Asian price 4.2143.
 - **Run:** `python p2_baseline_regen.py` · seeds 7/11/23 (+1/2 validation).
 
-## Specs referenced but not in the repo (chat-only — to add)
+## Reconstructed specs (RVL-009, closed 2026-09-30)
 
-These were provided as inline specs in chat; the drivers reconstruct them. Drop
-the .md into `docs/gate_checks/` to complete the audit trail:
+Five specs here were rebuilt from their driver scripts; the originals were
+chat-only and are not recoverable. Their predictions and gates are **as recorded
+in the code** — those documents do not attest when they were written. The 61
+questions the drivers could not answer are in
+[`RVL-009_open_items.md`](RVL-009_open_items.md), not filled in with plausible
+rationale.
 
 - `p2_antithetic_build_and_verify.md` — antithetic build **and the gate spec
-  (§1)** for G-A1..G-A4 (the original was in Downloads, not the repo).
-- `p2_coupling_gate_check.md` — a dead filename the build doc's prompt refers
-  to; **not a real file**. The antithetic gate spec lives in
-  `p2_antithetic_build_and_verify.md` §1, not a separate file.
+  (§1)** for G-A1..G-A4.
 - `p2_conditional_gate_check.md`, `p2_conditional_build_and_verify.md` —
   conditional MC build + G-C gates.
 - `gh1_kappa1_fine_path_spec.md` — κ=1 fine-path build + G-H1a..d.
 - `gh4_kappa1_adoption_spec.md` — κ=1 adoption G-H4 (step 2a/2b).
+- `p2_coupling_gate_check.md` — a dead filename the build doc's prompt refers
+  to; **not a real file**, and deliberately not created. The antithetic gate
+  spec lives in `p2_antithetic_build_and_verify.md` §1, not a separate file.
 
 ## Related files (not gate specs)
+- `RVL-009_open_items.md` — the 61 questions the RVL-009 reconstruction could
+  not answer from the drivers, grouped by spec, each with a `file:line`
+  citation into the code.
 - `../p2_estimator_results.md` — paper-ready writeup for the antithetic +
   conditional threads; relocated to `docs/` (a result artifact, not a gate spec).
 - `../../layer2_piece1_gate_check.md` — belongs to a **separate Layer 2
