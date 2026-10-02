@@ -441,7 +441,7 @@ def download_range(data_type: str, symbol: str, start: str, end: str,
                     results.append(res)
                     log.error("CHECKSUM MISMATCH (not extracting): %s", url)
                     continue
-                res.checksum_verified = bool(expected)
+                res.checksum_verified = True if expected else None
             except NotFound:
                 res.checksum_verified = None  # reported, not assumed OK
                 log.warning("no .CHECKSUM for %s — proceeding unverified", url)
