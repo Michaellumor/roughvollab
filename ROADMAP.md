@@ -1078,6 +1078,8 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   along flat directions, tested by prior swap and by coverage under prior
   shift against P1's Fisher geometry. The two-step surrogate survives as an
   exploratory baseline. Build timing and targets unchanged.
+  Independently registered on OSF: https://doi.org/10.17605/OSF.IO/APSF7
+  — the registered file is byte-identical to the committed protocol.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
