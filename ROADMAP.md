@@ -1008,6 +1008,21 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   \date so it rebuilds identically — is frozen at OVERLEAF/P1/amf/.
   Referees suggested: Gassiat, Rosenbaum, Jacquier; Reisinger excluded as an
   AMF Editor-in-Chief.
+- **D54** *(2026-10-02)* **P5 protocol frozen as a pre-registration.** The
+  protocol (`docs/protocols/P5_protocol.md`) is committed before any P5 code,
+  network or surrogate exists; this commit's timestamp is the record. Its
+  question narrowed under a literature search: Brigo, Huser and Leonte (2026)
+  and Bayer, Horvath, Muguruza, Stemper and Tomas (2019/2025) are the state of
+  the art in prior-conditional deep inference, but neither varies its prior,
+  and none of the four papers reviewed computes a Jacobian, Fisher information
+  or Cramér–Rao bound. P5 tests what in-prior checks cannot: whether a deep
+  ensemble and a neural-ratio posterior return their training prior along
+  flat directions. Bayer et al. report H well identified for rough Bergomi on
+  SPX, in tension with P1; the protocol treats identifiability as
+  setting-specific and measures it by flatness quintile. Four predictions with
+  refutation thresholds, a sealed test-set seed (20261002) and three pilot
+  gates are fixed; any later change is a dated amendment. Drafted with AI
+  assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -1054,23 +1069,15 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   reframe still pending. Target: arXiv q-fin.CP / math.NA. *(Foundational;
   Layer 4 convergence.)*
 
-- **P5 (seed, parked 2026-08) — "Does the learned pricing map identify H? An
-  identifiability audit of deep calibration."** Deep calibration replaces the
-  pricing map with a trained surrogate (Bayer–Horvath–Muguruza–Stemper–Tomas
-  line); nobody has asked what that substitution does to identifiability. The
-  study: train a surrogate on RoughVolLab's verified rough-Heston surfaces, then
-  rerun the P1 audit *through the surrogate* — known-answer recovery, Jacobian
-  flat directions, the H–ν degeneracy, noise robustness — with the true map's
-  results as the gate. Either outcome is a result: if the degeneracy survives,
-  P1's non-identification is a property of the model, not of any particular
-  numerics; if the surrogate manufactures identifiability that the true map does
-  not possess (smoothing a flat valley into a spurious minimum), that is a
-  warning the deep-calibration literature currently lacks. Verification-first
-  by construction: every surrogate claim is gated against the audited
-  characteristic-function pricer. Parked deliberately — earliest build summer
-  2027; needs a compute budget and the P1–P4 pipeline cleared first. Target:
-  arXiv q-fin.CP → SIFIN / Quantitative Finance / ACM ICAIF. *(P1 sequel;
-  Layers 3–4 machinery reused.)*
+- **P5 (protocol frozen 2026-10-02) — "Does a learned calibrator know what it
+  cannot know?"** Pre-registered in `docs/protocols/P5_protocol.md`, committed
+  before any P5 code exists. The design evolved from this seed's original
+  framing — re-running P1's audit through a two-step surrogate — to the
+  question the literature search showed is open: whether one-step calibrators,
+  a deep ensemble and a neural-ratio posterior, return their training prior
+  along flat directions, tested by prior swap and by coverage under prior
+  shift against P1's Fisher geometry. The two-step surrogate survives as an
+  exploratory baseline. Build timing and targets unchanged.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
