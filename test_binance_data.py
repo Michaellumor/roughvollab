@@ -213,6 +213,30 @@ def test_missing_checksum_downloads_unverified(tmp_path):
     assert r.checksum_verified is None          # reported, not assumed OK
 
 
+def test_blank_checksum_downloads_unverified(tmp_path):
+    """A present-but-blank .CHECKSUM reports unverified, not failed (RVL-041).
+
+    `parse_checksum` returns "" for a blank file, so there is no digest to
+    compare against. That is the same epistemic position as a missing
+    .CHECKSUM: nothing was checked. So `checksum_verified` must be None, not
+    False — False is reserved for "a checksum was checked" — and the file must
+    be counted by summarize(), which tallies `checksum_verified is None`.
+    """
+    url = build_url("klines", "BTCUSDT", "2024-01", interval="1m")
+    member = "BTCUSDT-1m-2024-01.csv"
+    store = {
+        url: make_zip_bytes(member, CSV_BODY),
+        url + ".CHECKSUM": b"   \n",          # present, but carries no digest
+    }
+    feed = FakeFeed(store)
+    res = download_range("klines", "BTCUSDT", "2024-01", "2024-01",
+                         interval="1m", out_dir=tmp_path, fetcher=feed)
+    r = res[0]
+    assert r.status == "downloaded"
+    assert r.checksum_verified is None          # not False: nothing was checked
+    assert summarize(res, printout=False)["unverified"] == 1
+
+
 def test_existing_file_is_skipped(tmp_path):
     url = build_url("klines", "BTCUSDT", "2024-01", interval="1m")
     feed = FakeFeed(_seed_store(url))
