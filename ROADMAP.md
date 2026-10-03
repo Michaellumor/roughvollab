@@ -1058,6 +1058,48 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Nothing decided.** The draft has 16 items marked OPEN and an unticked
     checklist; none is decided by this entry.
   - Drafted with AI assistance; decisions remain the author's.
+- **D56** *(2026-10-03)* **P1: power-law skew claim softened; two references
+  added (text and source comments only; no results change).** The
+  introduction said Fukasawa's model is consistent with "the power law the
+  SPX skew obeys in time-to-maturity", which asserted a disputed market fact
+  in the author's voice. It now reads "a power-law decay of the SPX skew in
+  time-to-maturity". Two sentences follow the skew-asymptotics citations:
+  the first records the dispute, citing Guyon and El Amrani (Risk.net, 2023)
+  and Abi Jaber and Li (Mathematical Finance, 2025); the second states that
+  the paper works within the rough model, asking what a surface can identify
+  and reporting where the model fails to fit live surfaces, and does not
+  compare it with non-rough alternatives. Changed in the master
+  (`OVERLEAF/P1/calibration_paper_revised.tex`) and in the AMF copy
+  (`OVERLEAF/P1/amf/p1_qf.tex`); no result, number, figure or other claim
+  changes.
+  - **Not in the version under review.** The manuscript under review at
+    Applied Mathematical Finance (submitted 26 Sept 2026, submission ID
+    266158357; D53) does not contain the change. It is queued for the
+    revision. Nothing was sent to the journal and no submitted PDF was
+    regenerated or replaced.
+  - **Frozen AMF copy.** The copy D53 records as frozen for AMF:
+    `OVERLEAF/P1/amf/p1_qf.tex` at commit
+    `0130d36b1c175c5a5eea4e2acc86db9481a00d1a`, blob `6055761`; the file is
+    unchanged from its addition in `5ee9795` through its move to `amf/` in
+    `185afde`. This blob first entered git on 28 Sept 2026, after the address
+    and \date{} edits. Whether it is identical to the source submitted on
+    26 Sept is not established from the repository; the PDF held by the
+    journal is the authority. From this entry on, `amf/` is the working copy
+    for the revision; this supersedes the freeze recorded in D53. The header
+    comment of `p1_qf.tex` now records that commit and blob and the
+    working-copy status.
+  - **SSRN is not updated.**
+  - **Other copy.** `OVERLEAF/P1/imamat/p1_imamat.tex` keeps the original
+    sentence; it is the frozen record of a declined submission.
+  - **Also queued for the revision.** The abstract and the introduction's
+    first sentence state that rough models reproduce the short-maturity
+    skew; that statement is unchanged here and is queued for the revision.
+  - **References.** Guyon and El Amrani verified at the Risk.net article
+    page; Abi Jaber and Li verified against the Crossref record deposited by
+    Wiley (the Wiley page could not be read). Both are recorded in
+    `OVERLEAF/_refs/new_references_verified.tex`. The SSRN preprint of the
+    Risk article is not cited: its details could not be confirmed at source.
+  - Drafted with AI assistance; decisions remain the author's.
 ---
 
 ## Publication seeds
