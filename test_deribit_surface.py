@@ -23,6 +23,70 @@ def test_api_get_parses_result_and_raises_on_error():
         pass
 
 
+# ---- RVL-038: every fetch failure must surface as DeribitError ----
+# backoff=0 throughout so the retry path does not sleep.
+
+def test_api_get_non_json_body_raises_deribit_error_after_retries():
+    """A non-JSON body is transient: retried, then surfaced as DeribitError.
+
+    Before the fix json.loads raised JSONDecodeError (a ValueError) which
+    neither except clause caught, so it escaped raw on the first attempt and
+    the retry loop never ran.
+    """
+    calls = []
+
+    def bad(url, t):
+        calls.append(url)
+        return b"<html>502 Bad Gateway</html>"
+
+    try:
+        D._api_get("m", {}, fetcher=bad, retries=2, backoff=0)
+        assert False, "should raise"
+    except D.DeribitError:
+        pass
+    except ValueError as e:                     # JSONDecodeError is a ValueError
+        assert False, f"leaked a raw {type(e).__name__}: {e}"
+    assert len(calls) == 3, f"expected retries+1 = 3 attempts, got {len(calls)}"
+
+
+def test_api_get_retries_past_a_single_non_json_body():
+    """One bad body then a good one returns the result — the retry works."""
+    bodies = [b"<html>502 Bad Gateway</html>",
+              json.dumps({"result": {"x": 1}}).encode()]
+
+    def flaky(url, t):
+        return bodies.pop(0)
+
+    assert D._api_get("m", {}, fetcher=flaky, retries=2, backoff=0) == {"x": 1}
+
+
+def test_api_get_missing_result_key_raises_deribit_error():
+    """A parsed body with no 'result' is a malformed protocol response.
+
+    Before the fix payload["result"] raised a raw KeyError.
+    """
+    no_result = lambda url, t: json.dumps({"jsonrpc": "2.0", "usIn": 1}).encode()
+    try:
+        D._api_get("m", {}, fetcher=no_result, retries=0, backoff=0)
+        assert False, "should raise"
+    except D.DeribitError as e:
+        assert "result" in str(e), f"error should name the missing key: {e}"
+    except KeyError as e:
+        assert False, f"leaked a raw KeyError: {e}"
+
+
+def test_api_get_non_object_payload_raises_deribit_error():
+    """Valid JSON that is not an object is malformed too (before: TypeError)."""
+    arr = lambda url, t: b"[1,2]"
+    try:
+        D._api_get("m", {}, fetcher=arr, retries=0, backoff=0)
+        assert False, "should raise"
+    except D.DeribitError:
+        pass
+    except (TypeError, KeyError) as e:
+        assert False, f"leaked a raw {type(e).__name__}: {e}"
+
+
 # ---- parse from FIELDS (not the instrument name) ----
 def _inst(name="BTC-31JUL26-60000-P", strike=60000.0, opt="put", exp_ms=2_592_000_000):
     return {"instrument_name": name, "strike": strike, "option_type": opt,
