@@ -1023,6 +1023,41 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   refutation thresholds, a sealed test-set seed (20261002) and three pilot
   gates are fixed; any later change is a dated amendment. Drafted with AI
   assistance; every decision confirmed by the author.
+- **D55** *(2026-10-03)* **P5 protocol under amendment — v2 draft recorded; v1
+  remains the registered protocol.** The v1 protocol (D54) is under amendment;
+  the draft is `docs/protocols/P5_protocol_v2_draft.md`. v1 remains the
+  registered protocol until v2 is frozen and the OSF registration is amended;
+  the OSF amendment is pending and will be made by the author at freeze.
+  - **No code yet.** At the time of the amendment no P5 code, pilot, network or
+    surrogate exists in the repository (file and import search at `e4a1a80`).
+  - **Reason.** v1's four predictions follow from Bayes' rule and the parameter
+    box, so an exact posterior would confirm them as readily as a network. v2
+    asks instead whether a learned calibrator is more prior-driven than the
+    exact posterior under its own training prior.
+  - **Three repo-grounded changes.** (i) "P1's grid" was ambiguous between the
+    D37 smile, the D38 synthetic surface and the D39 Deribit grid, and v2 names
+    D38's. (ii) v1's single noise level of 0.1 vol point is the level at which
+    D38 found the surface pins H to about 10%, so v2 makes noise a design
+    factor. (iii) The pricer cannot afford the design directly, so v2 defines
+    the model as a frozen emulator used by both the training data and the
+    exact reference.
+  - **What was seen.** On 3 Oct 2026 a timing and finiteness probe of the
+    existing pricer was run by Claude in a claude.ai chat sandbox, on a shallow
+    clone at commit `e4a1a8027ce7576040e92c4476f1bd8e25d1561f`, not on the
+    author's machine; the script is not in the repo. Setup: 35-quote surface
+    (`TS` × `VUS`), strikes standardised on each point's own ATM vol,
+    per-maturity CF memoisation, `N_riccati` 1000, `n_nodes` 128, κ 0.30, one
+    core. Results: at θ = (0.10, 0.35, −0.70, 0.04), 1.67 s and 0 of 35
+    non-finite; over 24 points uniform on the box (H capped at 0.48, numpy
+    `default_rng(7)`), mean 1.58 s and 9 of 24 with at least one non-finite
+    maturity. Follow-up on four failing points, ATM quote only: finite at
+    T ≤ 0.25 with N 1000 in all four; T = 0.5 needed N 2000 in two; T = 1.0
+    needed N 4000 in two; T = 2.0 was finite at N 2000 in two and still
+    non-finite at N 4000 in the other two. No Jacobian, Fisher information,
+    Cramér–Rao bound, posterior or calibration was computed.
+  - **Nothing decided.** The draft has 16 items marked OPEN and an unticked
+    checklist; none is decided by this entry.
+  - Drafted with AI assistance; decisions remain the author's.
 ---
 
 ## Publication seeds
@@ -1080,6 +1115,8 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   exploratory baseline. Build timing and targets unchanged.
   Independently registered on OSF: https://doi.org/10.17605/OSF.IO/APSF7
   — the registered file is byte-identical to the committed protocol.
+  Under amendment: a v2 draft, `docs/protocols/P5_protocol_v2_draft.md`, is
+  recorded in D55; v1 remains the registered protocol until v2 is frozen.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
