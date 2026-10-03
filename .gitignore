@@ -231,5 +231,6 @@ IMA_Applied Maths/
 arXiv/
 *_draft.md
 *_draft*.md
+!docs/protocols/*_draft*.md
 README_draft.md
 ROADMAP_additions_draft.md
