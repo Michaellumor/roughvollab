@@ -10,7 +10,7 @@ retired below rather than re-audited. Recorded as ROADMAP decision **D48**.
 Baseline of the "still live" determination: `f77f3ac` reconciliation (2026-07-08),
 minus everything closed by the 14 issue→PR→merge loops and later work.
 
-## Open — 8 items
+## Open — 7 items
 
 | ID | Nature (recovered) | Status / next step |
 |---|---|---|
@@ -21,14 +21,14 @@ minus everything closed by the 14 issue→PR→merge loops and later work.
 | RVL-031 | Collapse-zone untested (verification gap) | Open; fuller spec in 2026-07-19 session record |
 | RVL-042 | fig1 eta parameter untraceable; deferred because the fix changes output | Open; requires its own verified loop, not a doc batch |
 | RVL-012 | Documentation/hygiene | Open at nature level |
-| RVL-038 | Deribit exception contract (hygiene) | Open at nature level |
 
-## Closed — 2 items
+## Closed — 3 items
 
 | ID | Nature (recovered) | Resolution |
 |---|---|---|
 | RVL-009 | Five gate-check specs absent from `docs/gate_checks/` (`p2_antithetic_build_and_verify.md`, `p2_conditional_gate_check.md`, `p2_conditional_build_and_verify.md`, `gh1_kappa1_fine_path_spec.md`, `gh4_kappa1_adoption_spec.md`) | **Closed 2026-09-30.** All five written to `docs/gate_checks/`. They are **reconstructions from the driver scripts**, not the originals — the originals were chat-only and are not recoverable, so each carries a dated provenance header stating that its predictions and gates are as recorded in the code and that the document does not attest when they were written. **61 questions the code could not answer** are recorded in [`gate_checks/RVL-009_open_items.md`](gate_checks/RVL-009_open_items.md) rather than closed with invented rationale. `p2_coupling_gate_check.md`, the sixth filename the drivers reference, is confirmed dead and was not created |
 | RVL-041 | Checksum mislabel (hygiene) | **Closed 2026-10-03.** A present-but-blank `.CHECKSUM` set `checksum_verified = False` via `bool(expected)` (`binance_data.py:444`), which the `FileResult` docstring reserves for "a checksum was checked" and which `summarize()` does not count as unverified — so a blank digest was both mislabelled and uncounted. Now `True if expected else None`, matching the missing-`.CHECKSUM` path: nothing was checked, so nothing is claimed. Pinned by `test_blank_checksum_downloads_unverified`, which fails on the old line |
+| RVL-038 | Deribit exception contract (hygiene) | **Closed 2026-10-03.** `_api_get` promised that fetch failures surface as `DeribitError`, but two paths escaped raw: `json.loads` on a non-JSON body raised `JSONDecodeError`, caught by neither except clause, so it bypassed the retry loop entirely; and `payload["result"]` raised `KeyError` on a parsed body without that key, or `TypeError` when the payload was not an object. Now a non-JSON body is treated as transient — backed off and retried like a `URLError`, then raised as `DeribitError` — while a malformed shape (not a dict, or no `result`) raises `DeribitError` immediately, since the transport worked and retrying cannot help. Pinned by four tests that fail on the old code |
 
 ## Retired — 5 items (2026-07-25, decision D48)
 

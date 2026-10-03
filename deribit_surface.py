@@ -100,9 +100,28 @@ def _api_get(method: str, params: dict, *, fetcher: Optional[Callable[[str, floa
     last = None
     for attempt in range(retries + 1):
         try:
-            payload = json.loads(fetcher(url, timeout))
+            body = fetcher(url, timeout)
+            try:
+                payload = json.loads(body)
+            except ValueError as e:               # JSONDecodeError is a ValueError
+                last = e                          # transient: a proxy/gateway blurt
+                if attempt < retries:
+                    time.sleep(backoff * (2 ** attempt))
+                    continue
+                raise DeribitError(
+                    f"{method}: non-JSON response after {retries} retries: {e}")
+            # Past this point the transport worked; a bad shape is the protocol's
+            # fault, not the network's, so it is permanent — no retry.
+            if not isinstance(payload, dict):
+                raise DeribitError(
+                    f"{method}: malformed response — expected a JSON object, got "
+                    f"{type(payload).__name__}")
             if "error" in payload and payload["error"]:
                 raise DeribitError(f"{method}: {payload['error']}")
+            if "result" not in payload:
+                raise DeribitError(
+                    f"{method}: malformed response — no 'result' key "
+                    f"(keys: {sorted(payload)})")
             return payload["result"]
         except urllib.error.HTTPError as e:
             if e.code in (400, 404):                      # client error -> permanent, don't retry
