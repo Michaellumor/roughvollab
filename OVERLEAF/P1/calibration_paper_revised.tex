@@ -69,9 +69,16 @@ realised-variance time series---does any better.
 
 The mechanism through which an option surface carries information about $H$ is the term
 structure of the at-the-money skew. Fukasawa~\cite{fukasawa2017} constructs a rough
-fractional volatility model dynamically consistent with the power law the SPX skew obeys
+fractional volatility model dynamically consistent with a power-law decay of the SPX skew
 in time-to-maturity and derives its short-time implied-volatility expansion; the
-short-time skew asymptotics were subsequently sharpened in~\cite{bfghs2019,efgr2019}. On
+short-time skew asymptotics were subsequently sharpened in~\cite{bfghs2019,efgr2019}.
+Whether the market skew is a power law is itself disputed: Guyon and
+El Amrani~\cite{guyonelamrani2023} find that the fit holds beyond about one month but
+deteriorates when shorter maturities are included, and Abi Jaber and
+Li~\cite{abijaberli2025} find rough models inconsistent with the global shape of SPX
+smiles. We work within the rough model: we ask what a surface can identify and report
+where the model fails to fit live surfaces, but we do not compare it with non-rough
+alternatives. On
 the calibration side, El Euch, Gatheral and Rosenbaum~\cite{egr2019} introduced the rough
 Heston model as a tractable calibration vehicle and observed that its prices are well
 approximated by a classical Heston model with a rescaled volatility-of-volatility, while
@@ -509,6 +516,10 @@ from the snapshots.
 
 \begin{thebibliography}{99}
 
+\bibitem{abijaberli2025} Abi Jaber, E. and Li, S. (2025).
+Volatility models in practice: rough, path-dependent, or Markovian?
+\emph{Mathematical Finance} \textbf{35}(4), 796--817.
+
 \bibitem{bfg2016} Bayer, C., Friz, P. and Gatheral, J. (2016).
 Pricing under rough volatility.
 \emph{Quantitative Finance} \textbf{16}(6), 887--904.
@@ -544,6 +555,10 @@ Volatility is rough. \emph{Quantitative Finance} \textbf{18}(6), 933--949.
 
 \bibitem{gilpelaez1951} Gil-Pelaez, J. (1951).
 Note on the inversion theorem. \emph{Biometrika} \textbf{38}(3--4), 481--482.
+
+\bibitem{guyonelamrani2023} Guyon, J. and El Amrani, M. (2023).
+Does the term structure of the at-the-money skew really follow a power law?
+\emph{Risk.net}, 26 July 2023.
 
 \bibitem{lumor_identifiability} Lumor, M. (2026).
 When is volatility roughness identifiable? A simulation-grounded audit of Hurst

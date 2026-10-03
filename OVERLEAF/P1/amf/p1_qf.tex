@@ -1,7 +1,8 @@
-% Quantitative Finance submission copy of ../calibration_paper_revised.tex.
-% Body and bibliography carried over unchanged from the reviewed version; the
-% class and front matter are neutral (article + natbib author-year), since QF
-% accepts any standard scholarly layout for initial peer review.
+% Applied Mathematical Finance copy of ../calibration_paper_revised.tex.
+% The copy D53 records as frozen for AMF is this file at commit 0130d36,
+% blob 6055761 (ROADMAP D56); from D56 on this is the working copy for the
+% revision. The class and front matter are neutral (article + natbib
+% author-year).
 \documentclass[11pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -83,9 +84,16 @@ singular values and the geometry of the fit's flat directions~\citep{kaipio2005}
 
 The mechanism through which an option surface carries information about $H$ is the term
 structure of the at-the-money skew. Fukasawa~\citeyearpar{fukasawa2017} constructs a rough
-fractional volatility model dynamically consistent with the power law the SPX skew obeys
+fractional volatility model dynamically consistent with a power-law decay of the SPX skew
 in time-to-maturity and derives its short-time implied-volatility expansion; the
-short-time skew asymptotics were subsequently sharpened in~\citet{bfghs2019} and~\citet{efgr2019}. On
+short-time skew asymptotics were subsequently sharpened in~\citet{bfghs2019} and~\citet{efgr2019}.
+Whether the market skew is a power law is itself disputed: Guyon and
+El Amrani~\citeyearpar{guyonelamrani2023} find that the fit holds beyond about one month but
+deteriorates when shorter maturities are included, and Abi Jaber and
+Li~\citeyearpar{abijaberli2025} find rough models inconsistent with the global shape of SPX
+smiles. We work within the rough model: we ask what a surface can identify and report
+where the model fails to fit live surfaces, but we do not compare it with non-rough
+alternatives. On
 the calibration side, El Euch, Gatheral and Rosenbaum~\citeyearpar{egr2019} introduced the rough
 Heston model as a tractable calibration vehicle and observed that its prices are well
 approximated by a classical Heston model with a rescaled volatility-of-volatility, while
@@ -533,6 +541,10 @@ from the snapshots.
 
 \begin{thebibliography}{99}
 
+\bibitem[Abi Jaber and Li(2025)]{abijaberli2025} Abi Jaber, E. and Li, S. (2025).
+Volatility models in practice: rough, path-dependent, or Markovian?
+\emph{Math. Finance} \textbf{35}(4), 796--817.
+
 \bibitem[Bayer et al.(2016)]{bfg2016} Bayer, C., Friz, P. and Gatheral, J. (2016).
 Pricing under rough volatility.
 \emph{Quant. Finance} \textbf{16}(6), 887--904.
@@ -567,6 +579,10 @@ Volatility is rough. \emph{Quant. Finance} \textbf{18}(6), 933--949.
 
 \bibitem[Gil-Pelaez(1951)]{gilpelaez1951} Gil-Pelaez, J. (1951).
 Note on the inversion theorem. \emph{Biometrika} \textbf{38}(3--4), 481--482.
+
+\bibitem[Guyon and El Amrani(2023)]{guyonelamrani2023} Guyon, J. and El Amrani, M. (2023).
+Does the term structure of the at-the-money skew really follow a power law?
+\emph{Risk.net}, 26 July 2023.
 
 \bibitem[Kaipio and Somersalo(2005)]{kaipio2005} Kaipio, J.~P. and
 Somersalo, E. (2005). \emph{Statistical and Computational Inverse Problems},
