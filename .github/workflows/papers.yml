@@ -1,0 +1,145 @@
+name: papers
+
+# Compiles the P1 papers with pdfLaTeX and attaches the PDFs and logs to the run.
+# The job fails on a LaTeX error or an undefined citation or reference.
+#
+# The TeX toolchain is pinned. To move it, change the values under `env:`
+# together: the TinyTeX release, its SHA-256, and a TeX Live snapshot whose
+# texlive.infra and texlive-scripts revisions match that release.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to a pull request replaces the older run. Pushes to main and
+# manual runs each get their own group, so none of them is cancelled.
+concurrency:
+  group: papers-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  TINYTEX_VERSION: "2026.10"
+  TINYTEX_ASSET: TinyTeX-1-linux-x86_64-v2026.10.tar.xz
+  TINYTEX_SHA256: 4d519d6236ee6798e3ec0d8e2093d1fda01aeb267aa22c2a5586d76bcfce6566
+  TLNET_SNAPSHOT: https://texlive.info/tlnet-archive/2026/09/30/tlnet
+  TL_PACKAGES: mathtools cmap microtype cm-super
+
+jobs:
+  compile:
+    name: compile P1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Restore TeX from cache
+        id: tex
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.TinyTeX
+          key: tinytex-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('.github/workflows/papers.yml') }}
+
+      - name: Install TeX (TinyTeX bundle plus four packages)
+        if: steps.tex.outputs.cache-hit != 'true'
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 5 --retry-delay 10 -o "$TINYTEX_ASSET" \
+            "https://github.com/rstudio/tinytex-releases/releases/download/v${TINYTEX_VERSION}/${TINYTEX_ASSET}"
+          echo "${TINYTEX_SHA256}  ${TINYTEX_ASSET}" | sha256sum --check --strict -
+          tar -xJf "$TINYTEX_ASSET" -C "$HOME"
+          export PATH="$HOME/.TinyTeX/bin/x86_64-linux:$PATH"
+          # The package list is meant to split on spaces.
+          # shellcheck disable=SC2086
+          tlmgr --repository "$TLNET_SNAPSHOT" install $TL_PACKAGES
+
+      - name: Put TeX on PATH
+        run: echo "$HOME/.TinyTeX/bin/x86_64-linux" >> "$GITHUB_PATH"
+
+      - name: Check the toolchain
+        run: |
+          pdflatex --version | sed -n '1p'
+          latexmk --version | sed -n '/Latexmk/p'
+          # tlmgr exits 0 even when a package fails to download, so check here.
+          for f in mathtools.sty cmap.sty microtype.sty natbib.sty sfrm1095.pfb; do
+            kpsewhich "$f" || { echo "::error::TeX file missing: $f"; exit 1; }
+          done
+
+      - name: Save TeX to cache
+        if: steps.tex.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.TinyTeX
+          key: ${{ steps.tex.outputs.cache-primary-key }}
+
+      - name: Compile
+        env:
+          max_print_line: "10000"
+        run: |
+          set +e
+          papers=(
+            OVERLEAF/P1/calibration_paper_revised.tex
+            OVERLEAF/P1/amf/p1_qf.tex
+          )
+          out="$GITHUB_WORKSPACE/_papers"
+          bad='Citation .* undefined|Reference .* undefined|There were undefined (references|citations)'
+          failed=0
+          {
+            echo "### Papers"
+            echo
+            echo "| File | Result | Pages | Undefined | Warnings | Overfull boxes |"
+            echo "|---|---|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for tex in "${papers[@]}"; do
+            dir=$(dirname "$tex")
+            base=$(basename "$tex" .tex)
+            dest="$out/$base"
+            log="$dest/$base.log"
+            mkdir -p "$dest"
+            echo "::group::latexmk $tex"
+            ( cd "$dir" && latexmk -pdf -interaction=nonstopmode -halt-on-error \
+                -file-line-error -outdir="$dest" "$base.tex" )
+            rc=$?
+            echo "::endgroup::"
+            pages=""; undefined=0; warnings=0; overfull=0
+            if [ -f "$log" ]; then
+              pages=$(sed -n 's/^Output written on .*(\([0-9][0-9]*\) page.*/\1/p' "$log" | tail -n 1)
+              undefined=$(grep -c -E "$bad" "$log")
+              warnings=$(grep -c -E ' Warning: |^pdfTeX warning' "$log")
+              overfull=$(grep -c '^Overfull ' "$log")
+            fi
+            if [ "$rc" -ne 0 ] || [ ! -s "$dest/$base.pdf" ]; then
+              result="FAILED: LaTeX error"
+              failed=1
+              [ -f "$log" ] && grep -n -A 3 -E '^!|:[0-9]+: ' "$log" | sed -n '1,40p'
+            elif [ "$undefined" -ne 0 ]; then
+              result="FAILED: undefined citation or reference"
+              failed=1
+              grep -n -E "$bad" "$log"
+            else
+              result="ok"
+            fi
+            echo "| \`$tex\` | $result | ${pages:--} | $undefined | $warnings | $overfull |" >> "$GITHUB_STEP_SUMMARY"
+            echo "$tex: $result (pages ${pages:--}, undefined $undefined, warnings $warnings, overfull $overfull)"
+          done
+          exit "$failed"
+
+      - name: Attach the PDFs and logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: p1-papers
+          path: |
+            _papers/**/*.pdf
+            _papers/**/*.log
+          if-no-files-found: warn
