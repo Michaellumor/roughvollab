@@ -1100,6 +1100,26 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     `OVERLEAF/_refs/new_references_verified.tex`. The SSRN preprint of the
     Risk article is not cited: its details could not be confirmed at source.
   - Drafted with AI assistance; decisions remain the author's.
+- **D57** *(2026-10-04)* **P1 compiles in CI: the master and the AMF copy are
+  built on every push to main and every pull request (CI only; no paper or
+  code changes).** A second workflow, `.github/workflows/papers.yml`, compiles
+  `OVERLEAF/P1/calibration_paper_revised.tex` and `OVERLEAF/P1/amf/p1_qf.tex`
+  with pdfLaTeX and attaches the PDFs and logs to the run. The job fails on a
+  LaTeX error or an undefined citation or reference. Until now the papers
+  were compiled by hand, outside the repository.
+  - **Toolchain.** TinyTeX-1 v2026.10 (TeX Live 2026), checked against a
+    SHA-256 held in the workflow, plus `mathtools`, `cmap`, `microtype` and
+    `cm-super` from the TeX Live snapshot of 30 Sept 2026. The runner is
+    pinned to `ubuntu-24.04` and the three GitHub actions to commit SHAs.
+  - **Why not the runner's own packages.** Ubuntu 24.04 packages TeX Live
+    2023; Overleaf's logs of 3 Oct 2026 report TeX Live 2026 for both files.
+  - **Scope.** The two P1 files only. The other papers and the frozen venue
+    copies are not compiled.
+  - **Local build.** TinyTeX-1 v2026.10 with the same four packages was
+    installed on the author's Windows machine on 3 Oct 2026, outside the
+    repository; both files compile there to 11 pages with no undefined
+    citations.
+  - Drafted with AI assistance; decisions remain the author's.
 ---
 
 ## Publication seeds
