@@ -1186,6 +1186,95 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Checklist.** No box is ticked; three are reworded. 15 items remain
     OPEN.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D59** *(2026-10-05)* **P5 v2 draft: G0's tolerance, comparisons, cost
+  limit and criterion written in; the pilot staged as a scoping run and a
+  main run (no item closes; nothing frozen).** Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md` (lines 15, 139 and 176). For this
+  entry nothing was run, no measurement was made and no code was written; the
+  repository holds no script or output of the pilot. What is said below about
+  the pricer is reasoning from the code or arithmetic on recorded numbers. v1
+  remains the registered protocol. The decision sheet is not updated.
+  - **Why the check gains comparisons.** G0 as drafted compared each quote at
+    `N_riccati` and at twice that. Both pricings use the same Gauss–Legendre
+    nodes and the same `U_max` (`gil_pelaez_call` in `rough_heston_cf.py`),
+    so an error of the inversion is, to leading order, the same in both and
+    does not show in the difference. Arithmetic for a Gaussian characteristic
+    function with σ√T = 0.01 (ξ₀ = 0.001, T = 0.10): cutting the integral at
+    `U_max` 200 scales the at-the-money time value by 1 − 2Φ(−2), which
+    lowers the implied vol by 4.6%, about 0.14 vol point. That is arithmetic
+    on a Gaussian case, not a measurement of the rough pricer. The one
+    existing test that varies `U_max` is on the classical Heston
+    characteristic function at T = 1 and asserts only its finest setting
+    (`test_rough_heston_cf.py`).
+  - **Why two runs.** A reading of the Riccati recursion: for the highest
+    node, whether the solve stays finite depends on ν · `U_max` · h^(H+½),
+    with h the step T / `N_riccati`, and on H, ρ and the number of steps. The
+    recorded outcomes at D38's point (D55) and at the railed H on live BTC
+    (D39, D41) are consistent with it; they lie at H of 0.10 and 0.02 and,
+    where ρ is recorded, at ρ between −0.70 and −0.31. Raising `U_max` to
+    reduce truncation raises that quantity. The prediction, untested, is that
+    the box as proposed does not pass at any affordable setting. Where it
+    stops depends on numbers not yet measured: that threshold across H and ρ,
+    where truncation bites, and what the solves cost at those settings on the
+    author's machine. A scoping run is to measure them first.
+  - **Fixed now.** Existing verification tests: the repository's test suite,
+    run on the author's machine. Tolerance: 0.01 vol point (0.0001),
+    absolute, on every quote and in each comparison separately; a tenth of
+    the smallest proposed noise level and half of G1's proposed allowance at
+    that level. Comparisons: `N_riccati` doubled, the node count doubled,
+    `U_max` raised; by how much, with which node count and at which
+    `N_riccati`, is among the main run's settings. They are checks of
+    convergence, not a bound on the pricer's error. Cost limit: 1,200
+    core-seconds for the Riccati solves of one (H, ν, ρ) over the grid's
+    maturities, at the node count from which the comparisons start, as the
+    median over the points priced, on the author's machine with the pilot's
+    worker pool running; two weeks of four cores for 4,000 such sets of
+    solves. Criterion: the box, the grid and the resolution are taken from
+    the main run's output by a written order, given in the draft. The range
+    of H is not narrowed; candidates that contain D38's point come first,
+    then five maturities before four, then the largest share of the proposed
+    ranges. The candidate taken is confirmed on fresh points; those points
+    count as pilot points from then on, and if it then no longer passes the
+    order is applied again. If no candidate passes, the draft is not frozen
+    as it stands and anything adopted afterwards is declared as a judgement
+    made on seen output. D58 left open whether the choice would be by
+    criterion or by judgement; it is by criterion. Seeds: pilot seeds are
+    stated with each run; none is the sealed seed 20261002 or the probe's 7.
+  - **What the pilot computes.** D58's list is widened: the comparisons in
+    node count and `U_max`, the inversion applied to characteristic functions
+    for which a reference price is available (Black–Scholes and classical
+    Heston), the stage at which a non-finite quote failed, and the modulus of
+    the characteristic function at the highest node, which decides nothing.
+    Beyond the existing tests, as in D58: D58's exclusions stand (no
+    Jacobian, Fisher information, posterior, calibration or emulator), and
+    the draft now states the limit as nothing that compares quotes across
+    parameter values.
+  - **Scoping run.** To be made first, on the box and the grid as proposed,
+    the 16 corners included. It has no pass or fail. It measures cost on the
+    author's machine and, at each point and maturity it prices, whether and
+    from which `N_riccati` among those it tries the quotes are finite, and
+    which comparisons are met. Its points and the values of `N_riccati`, node
+    count and `U_max` it tries are those of the script as committed before it
+    is run.
+  - **Still OPEN at G0.** For the main run: the resolutions tried, the
+    Fourier inversion settings, the pilot points and the candidate bounds,
+    the size of the worker pool, the number of confirming points and of
+    confirmations attempted, and how a tie in share is broken. They are to be
+    written into the draft before the main run, with the scoping run's output
+    in view, and declared as such. After it: the resolution at which the
+    emulator is built.
+  - **Change from D58.** Of what D58 listed as owed before the pilot is run,
+    the tolerance, the cost limit and the criterion are written in now, and
+    the rest is to be written into the draft before the main run. For the
+    scoping run the points and the numerical settings it tries are fixed by
+    the script as committed before it is run, not by the draft.
+  - **What the fixed values rest on.** The tolerance rests on the smallest
+    noise level and on G1's ratio, and the cost limit on an emulator design
+    of about 4,000 sets of solves. All three are still OPEN in the draft.
+  - **Counts.** 15 items remain OPEN. No checklist box is ticked; one is
+    reworded.
+  - A further entry is owed after each run.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
