@@ -1120,6 +1120,72 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     repository; both files compile there to 11 pages with no undefined
     citations.
   - Drafted with AI assistance; decisions remain the author's.
+- **D58** *(2026-10-05)* **P5 v2 draft: observable decided; box and grid to
+  be fixed as values from G0's pilot, to be run before freezing (one of the
+  16 OPEN items decided; nothing frozen).** Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md`. The decision sheet
+  (`docs/protocols/P5_v2_decision_sheet.md`) was the working aid; it is not
+  updated, describes the draft as at commit `28e441b` (4 Oct 2026) and still
+  places G0 after freezing. For this entry no measurement was made, nothing
+  was run and no code was written. v1 remains the registered protocol.
+  - **Observable: self-standardised quotes.** For maturity T and standardised
+    moneyness point z, the quote is the model implied vol at strike
+    S0·exp(z·σ_ATM(θ, T)·√T), where σ_ATM(θ, T) is θ's own noiseless implied
+    vol at strike S0. The reference and the networks take as input the noisy
+    quotes in a fixed order and nothing else that depends on θ; the strikes
+    and the noiseless σ_ATM are withheld. That closes the leak in D38's
+    convention, which anchors strikes once from the target's noiseless ATM
+    vol. The fixed absolute grid is not chosen. No claim is made about quotes
+    at fixed strikes, and D38's figures do not carry over to this observable
+    as measured.
+  - **Box and grid: not decided; the route is.** Both stay OPEN. The record
+    cannot settle them: no coordinates are recorded for the failing points of
+    the 3 October probe (D55), no result above `N_riccati` 4000 is recorded
+    for T = 2.00, and what T = 2.00 adds about H has not been measured in
+    this repository. G0's pilot is therefore run before freezing, on the
+    author's machine, from a script committed with its output, first on the
+    box and the grid as proposed (all five maturities). What it showed is
+    declared under "What was known before freezing", and the box, the grid
+    and the resolution (the `N_riccati` at which the emulator is built) are
+    then written in as values on which G0's check has passed. After freezing
+    no gate changes them. The earlier wording, which implied that G0 followed
+    freezing and under which G0 could shrink the box or the grid, is
+    withdrawn.
+  - **What the pilot computes.** Beyond the existing tests: timing,
+    finiteness and the change in each quote when `N_riccati` doubles. No
+    Jacobian, Fisher information, posterior, calibration or emulator. It does
+    not measure what T = 2.00 adds about H, so it bears on whether T = 2.00
+    stays only through finiteness, the change when `N_riccati` doubles and
+    cost. It uses no point of the sealed test set (seed 20261002).
+  - **Owed before the pilot is run.** G0's tolerance and its unit, the pilot
+    points, the starting `N_riccati`, the Fourier inversion settings, any
+    limit on cost and any criterion for choosing the box and the grid from
+    the pilot's output are marked OPEN and are to be written into the draft
+    before the run. Whether that choice is made by such a criterion or by a
+    judgement declared as made on seen output is not decided here. Every run,
+    passing or failing, is to be declared with its settings.
+  - **What this changes about v2.** v1 was frozen before any P5 code existed.
+    v2 will not be: the pilot's script and output will exist at freezing and
+    will be declared; no emulator, reference posterior or trained network is
+    built before freezing. G0's run over the box is not among the pilots v1
+    declares (its gates G1 to G3); v1's G2 asks only that the existing
+    verification tests pass, as G0 also does. v1 asks that a departure be a
+    dated amendment stating what changed, why and whether any data had been
+    seen: the change is that a pilot of the pricer precedes the freezing of
+    v2; the reason is that the record cannot settle the box and the grid;
+    what had been seen is declared in the draft's section "What was known
+    before freezing", and the repository holds no script or output of the
+    pilot. A further entry is owed when the pilot has been run.
+  - **Also in the draft.** The prior-knowledge section now declares the
+    fitted ν of 0.71 and the overflow recorded on live BTC, and that D38's
+    figures were measured with strikes anchored once on the target. The unit
+    of the quotes is written in (implied vols are decimals and one vol point
+    is 0.01, as in `layer4_calibrate_surface.py`). Scope lists quotes at
+    fixed strikes as out. The priors of H and the 0.20 between their means
+    are noted as written for the proposed range of H.
+  - **Checklist.** No box is ticked; three are reworded. 15 items remain
+    OPEN.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
