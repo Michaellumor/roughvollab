@@ -27,7 +27,7 @@ pip install -r requirements.txt
 python -m pytest -q
 ```
 
-The suite collects 254 tests. The deep-hedging tests (`test_layer3_deep_hedging.py`)
+The suite collects 280 tests. The deep-hedging tests (`test_layer3_deep_hedging.py`)
 require PyTorch and skip automatically when it is absent — see
 `requirements-layer3.txt` for that optional environment.
 
