@@ -1404,6 +1404,142 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The main run's settings sitting is owed next, with this output in view;
     what it sets is declared as such.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D61** *(2026-10-10)* **P5 v2 draft: the main run's settings written in with
+  the scoping output in view; `p5_g0_main.py` committed (no item closes;
+  nothing frozen).** Recorded in `docs/protocols/P5_protocol_v2_draft.md` (line
+  140, the OPEN span for the main run, now values). The settings were chosen
+  with the scoping run's output (D60) in view, as line 140 allowed, and are
+  declared as such. No run was made for this entry; the main run follows. The
+  box, the grid and the resolution remain OPEN, as does the resolution at which
+  the emulator is built. v1 remains the registered protocol. The decision sheet
+  is not updated.
+  - **Settings.** Resolutions: one `N_riccati` per maturity; ladder 2000, 4000,
+    8000, climbed per point and maturity; a base solve at 16000 only for the
+    `N_riccati` comparison at 8000, and only where the base solve at 8000 is
+    finite. A point whose task stopped at a coarser rung by the stop rule
+    counts as passing at every finer `N_riccati` (the stop rule's claim).
+    Inversion: `U_max` = 250/√T rounded (790, 500, 350, 250, 180) with 504,
+    320, 224, 160 and 112 nodes, the scoping spacing of 1.5625 per node to the
+    nearest multiple of 8; the node count doubled at the same `U_max`; `U_max`
+    doubled with the node count doubled, compared with the doubled-node
+    setting; the `U_max` comparison at every rung at its own `N_riccati`. Stop
+    rule: a rung is final when every quote at every ξ₀ meets all three
+    comparisons or fails only the `U_max` comparison with the raised-`U_max`
+    quote unchanged from the rung before, more steps then being unable to
+    change the outcome; comparison solves are skipped where the base solve is
+    not finite. Pilot points: H {0.02, 0.05, 0.10, 0.25, 0.48} × ν {0.05, 0.35,
+    0.50, 0.65, 1.00} × ρ {0.00, −0.35, −0.70, −0.90, −0.99}, 125 triples, 625
+    tasks, each at ξ₀ {0.02, 0.04, 0.07, 0.10, 0.16, 0.25}; the 16 corners of
+    the widest candidate (ξ₀ 0.02 to 0.25) and D38's point are lattice points;
+    order: the corners, D38's triple, then H ascending. Candidates: boxes with
+    distinct lattice bounds in ν, ρ and ξ₀, H always full. Cost: D59's
+    quantity, formed from the record as the median, over the triples priced at
+    the resolution's `N_riccati` at every maturity of the grid, of the summed
+    seconds of their base solves, with the pool running (a resolution with no
+    such triple is not admissible). Pool: four; `--pool` defaults to it and the
+    launch line records the value used. Confirming points: eight per attempt,
+    uniform in the candidate with H over its full range, `default_rng(61)` then
+    `default_rng(62)`, counted only once all are priced (an incomplete attempt
+    is resumed, its draw being deterministic); confirmed when the candidate
+    taken with them included equals, in bounds, grid and resolution, the one
+    they were drawn for; two attempts; if the first fails the points join the
+    pilot points and the order is applied again; if the second fails, no
+    candidate passes. Tie in share: the larger share of ν, then of ρ, then of
+    ξ₀, then the smaller lower bound on ξ₀, on ν and on ρ in turn, shares
+    compared to nine decimal places (equal lattice widths differ in floating
+    point). Seeds 61 and 62 are neither the sealed seed nor the probe's.
+  - **What they rest on.** The scoping output, read as follows; the numbers are
+    from `output/p5_g0_pilot_quotes.csv`. (i) The log10 modulus of the
+    characteristic function at the top node of (400, 256) is a median 2.01
+    times that of (200, 128) (2.00 to 2.02 by (ξ₀, T); 1.3 to 3.3 over tasks):
+    the modulus falls about exponentially in u, so the `U_max` a quote needs is
+    inversely proportional to its decay rate; that rate is proportional to ξ₀
+    and grows as about T^0.46 (median −2.6 at T = 0.10 to −10.2 at T = 2.00 at
+    ξ₀ 0.04), so `U_max` ∝ 1/√T keeps the modulus about even across maturities.
+    (ii) At each task's top rung the `U_max` comparison was met on 99.5% of
+    finite pairs whose lower side had a log10 modulus below −3 (97.5% to 99.9%
+    by sub-bin), on 88% between −3 and −2, 29% between −2 and −1 and 2% above
+    −1. (iii) The slow decays are at ρ near −1 and ν near 1 at short maturity:
+    at ξ₀ 0.04 and T = 0.10 the log10 modulus at the top node is −0.6 to −1.9
+    at ρ −0.99, −2.1 to −5.3 at ρ −0.70 and −3.0 to −7.5 at ρ 0 (medians over
+    ν, ranges over H), and −1.2 at ν 1.00 against −3.2 at ν 0.35 (medians over
+    H and ρ); at ξ₀ 0.01 and 0.001 every value is a quarter and a fortieth of
+    these, so at T = 0.10 they need a `U_max` of about 1,100 and 11,000 and are
+    not priced. (iv) Doubling the node count cost a median 1.24 to 1.36 times
+    by rung at 128 nodes (1.0 to 1.7 by task); at the main run's counts, timed
+    alone at `N_riccati` 2000 and D38's triple on battery power, a base solve
+    at T = 0.10 with 504 nodes cost 1.8 times the scoping base (200, 128) and
+    doubling the nodes 1.4 to 1.7 times. Where the first finite rung rose when
+    `U_max` doubled (91 of 300 tasks; 177 unchanged, 26 never finite at (400,
+    256)), it rose 4 times at H ≤ 0.10 and 2 times at 0.25 as the median,
+    against 2^(1/(H+½)) = 3.8 to 2.0 in D59. (v) The ladder stops at 8000 on
+    cost: scaled from the scoping run's pool-running medians (775 s for one
+    triple's base solves over five maturities at 16000, at 128 nodes) by the
+    node-count ratios above (1.3 to 1.4 per doubling), 16000 is predicted to
+    cost about 1,000 to 1,100 s with the pool, near the 1,200 core-second
+    limit, and a rung at 16000 with its comparison solves about four times a
+    task's cost for ten more of the 300 scoping pairs predicted to pass; 16000
+    is therefore tried only as the partner, and whether 8000 is admissible is
+    the run's own measurement.
+  - **Prediction, not a result.** Applying the decay rates of the scoping run
+    to these settings with the truncation target a log10 modulus at or below
+    −3.5, and bounding the step count a solve needs from the first finite rung
+    at (200, 128) and at (400, 256) scaled by (U_max ratio)^(1/(H+½)), 154 of
+    the scoping run's 300 (triple, ξ₀) pairs are predicted to pass at the
+    ladder's top of 8000 (164 at 16000), and the largest box containing D38's
+    point predicted to pass on five maturities is ν [0.05, 0.35] × ρ [−0.70, 0]
+    × ξ₀ [0.04, 0.25] in both cases, the ν ceiling coming from H 0.02 and 0.05
+    at ν ≥ 0.65, where the step count needed at T ≥ 0.25 exceeds the ladder or
+    no rung was finite at T = 2.00 in the scoping run (at ρ 0 for ν 0.65); ν
+    0.50 is in the lattice so that ceiling can land between 0.35 and 0.65. The
+    step-count bound is loose: the scoping ladder began at 1000, so a point
+    finite there may need far fewer steps, and bounding from the base rung
+    alone gives 70 pairs at 8000 and no box containing D38's point. At `U_max`
+    = 320/√T the step count fails broadly; at 200/√T about the same box is
+    predicted. The box, the grid and the resolution are taken from the main
+    run's output by the order of line 140, not from this prediction.
+  - **What the script does.** `p5_g0_main.py` reuses the scoping script's
+    pricing path with the settings above; without a flag, and before `--run`,
+    the identity gate with `model_smile_cf_T` at the scoping base runs and
+    stops the script otherwise, then the design is printed, the three settings
+    timed at each maturity alone, and a bound and a labelled guess given;
+    `--run` prices the 625 tasks on the pool, resumable, writing
+    `output/p5_g0_main_tasks.jsonl`, `output/p5_g0_main.json` and
+    `output/p5_g0_main_quotes.csv`; `--criterion` applies the order of line 140
+    to the record and draws the pending attempt's confirming points into
+    `output/p5_g0_main_criterion.json`; `--confirm` prices them; `--criterion`
+    is then applied again. The criterion is a reading of the record: it
+    compares pass flags across points, not quotes. No flag changes a point or a
+    numerical setting. `p5_g0_pilot.py` gains one keyword argument
+    (`cost_summary(ladder=...)`) and the docstring that names it, nothing else;
+    the scoping run's provenance is the commit hash in its output. Nine
+    mechanics tests in `test_p5_g0_main.py`, including the criterion's order,
+    tie-break and confirmation states on hand-built records;
+    `CONTRIBUTING.md`'s count becomes 289.
+  - **Cost.** Scaled from the scoping run's launch-line timing (1.05 s for the
+    three base solves at (200, 128) and `N_riccati` 2000, alone, on mains) by
+    the node-count ratios in (iv) and as N², a task that exhausts the ladder
+    costs about 1,000 s alone at T = 0.10 and 300 to 400 s at the other
+    maturities, the partner at 16000 included; the bound for 625 tasks is about
+    60 core-hours alone and the guess (H ≥ 0.25 stopping by 4000, H 0.10 by
+    8000, half of H ≤ 0.05 exhausting) about 40; with the pool's slowdown of
+    2.2 to 2.6 times, about a day and a half of wall for the bound and a day
+    for the guess on four workers. The script prints its own figures from
+    solves timed at launch. The confirmation stage is 40 tasks per attempt.
+  - **Not decided.** The box, the grid and the resolution; the resolution at
+    which the emulator is built. The prediction above decides nothing. The
+    range of H is not narrowed. ξ₀ 0.001 and 0.01 are not priced, which bounds
+    the candidates' lower ξ₀ at 0.02 by construction; that choice is a setting
+    of the main run, declared here as made on seen output.
+  - **Draft.** Line 140: the bold OPEN span for the main run and the sentence
+    after it are replaced by the settings as values and one OPEN item, the
+    emulator's resolution. Line 177 stays unticked: its second and third
+    clauses are met at this commit, but its first, the gate tolerances
+    declared, is not, G1 to G3 still being OPEN. No line is added or removed;
+    179 lines; "OPEN" occurs 16 times before and after.
+  - **Counts.** 15 items remain OPEN. No checklist box is ticked.
+  - The main run, its declaration and the confirmation are owed next.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

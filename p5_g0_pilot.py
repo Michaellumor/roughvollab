@@ -635,11 +635,12 @@ def task_summary(rec):
             "rungs": rungs}
 
 
-def cost_summary(tasks):
+def cost_summary(tasks, ladder=LADDER):
     """Per triple and rung N: the sum over the five maturities of the base solve's
     seconds, None unless all five have that rung with a finite solve (a solve that
     failed carries only the time to the failing stage), and the median over triples.
-    n_ok_by_N counts the maturities whose base solve at N was finite."""
+    n_ok_by_N counts the maturities whose base solve at N was finite. `ladder` names
+    the rungs summarised (the main run, p5_g0_main.py, passes its own)."""
     by_triple = {}
     for rec in tasks.values():
         key = f"H{rec['H']:.2f}_nu{rec['nu']:.2f}_rho{rec['rho']:+.2f}"
@@ -647,7 +648,7 @@ def cost_summary(tasks):
     per_triple = {}
     for key, recs in by_triple.items():
         per_N, n_ok = {}, {}
-        for N in LADDER:
+        for N in ladder:
             secs, ok = [], 0
             for T in TS:
                 rec = recs.get(T)
@@ -661,7 +662,7 @@ def cost_summary(tasks):
         per_triple[key] = {"base_solves_s_by_N": per_N, "n_ok_by_N": n_ok, "n_maturities_done": len(recs),
                            "seconds_total": sum(r["seconds_total"] or 0.0 for r in recs.values())}
     median = {}
-    for N in LADDER:
+    for N in ladder:
         vals = [v["base_solves_s_by_N"][str(N)] for v in per_triple.values() if v["base_solves_s_by_N"][str(N)] is not None]
         median[str(N)] = {"n_triples": len(vals), "median_s": statistics.median(vals) if vals else None}
     return {"per_triple": per_triple, "median_base_solves_s_by_N": median}
