@@ -1823,6 +1823,67 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     boxes are ticked; 9 are not.
   - The noise sitting is owed next.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D65** *(2026-10-10)* **P5 v2 draft: noise levels set at 0.1, 0.3 and 0.5
+  vol point (one OPEN item closes; one checklist box ticks; nothing frozen).**
+  Recorded in `docs/protocols/P5_protocol_v2_draft.md` (line 56, the OPEN item
+  for the three levels, now values; lines 141 and 142, two words that said
+  "proposed"; line 171 ticked). The choice is the author's on the assistant's
+  lean, declared as such; it rests on the record (D38's measured scatter of H
+  under noise, the priors' standard deviations, the bin cut-offs as proposed,
+  D63's reading of the box) and on arithmetic from those figures, labelled
+  below as a reading. Nothing was measured. v1 remains the registered protocol.
+  The decision sheet is not updated.
+  - **The decision.** s in {0.1, 0.3, 0.5} vol point, independent Gaussian on
+    each quote, as a design factor; 1.0 vol point, proposed as the size of the
+    live misfit, is dropped. Three levels, as proposed, so the count of
+    experiments (two calibrators, two priors, three levels, the seeds of line
+    75) is unchanged.
+  - **What it rests on.** A reading, labelled as such. 0.1, 0.3 and 0.5 are the
+    three levels at which H's scatter under noise has been measured in this
+    repository: D38, at θ = (0.10, 0.35, −0.70, 0.04), spreads of about 10%,
+    29% and 48% of H, standard deviations of roughly 0.010, 0.029 and 0.048
+    (the record's own caveats: ten draws, strikes anchored once on the target,
+    approximate figures). Taken as if they were posterior standard deviations
+    and read against the priors' (0.054 under A, 0.062 under B), the
+    contraction c = 1 − SD²_post / SD²_prior of line 81 would be about 0.97,
+    0.71 and 0.21 under A and 0.97, 0.78 and 0.40 under B: one level in each of
+    the proposed bins (identified at or above 0.9, partial from 0.5 to 0.9,
+    flat below 0.5). D38's point lies on the face ν = 0.35 of the box, its most
+    informative in ν, so elsewhere in the box each level contracts H less and
+    the three levels span the bins from that edge inward; D63's two-way reading
+    (the flat regime reached at lower noise over ν ≤ 0.35; the valley cut by
+    the uniform prior on ν) stands and is not resolved here. At 1.0 vol point,
+    beyond the range D38 measured, the scatter extrapolated from its roughly
+    linear growth with the noise (0.010, 0.029, 0.048 at 0.1, 0.3, 0.5) would
+    exceed the prior's standard deviation at D38's point, so every pair would
+    be flat: a level that adds pairs to one bin and tests nothing in the
+    others. Its motivation, the live misfit (0.9 vol point on BTC's reduced
+    span, D39; 1.63 on ETH, D42), belongs to a regime D63 recorded as outside
+    the box and outside v2's claims (line 150). The reading equates an
+    optimiser ensemble's scatter under D38's anchoring with a posterior
+    standard deviation under v2's observable; it is a basis for choosing
+    levels, not a prediction of the bin shares, which Stage 1 measures (line
+    99), and the cut-offs it uses are still OPEN (line 89). The main run's
+    lattice measured the pricer's convergence, not H's identifiability, and is
+    not used here.
+  - **Unchanged.** The tolerance under G0, a tenth of the smallest noise level,
+    still 0.1 (line 141); G1's ratio, e ≤ s / 5, 0.02 vol point at 0.1 (line
+    142); the 10% stop rule for a thin bin (line 101, OPEN); the hypotheses,
+    scored per bin and pooled over levels (line 126); "three levels" under
+    Scope (line 148).
+  - **Not decided.** The contraction cut-offs and the 10% floor, the
+    reference's sampler and G2's tolerance, training adequacy and G3's
+    tolerance, the test-set size, the Beta parameters, the hypothesis numbers,
+    the prior-work section.
+  - **Draft.** Line 56: the OPEN span becomes the levels as values with the
+    reason, 1.0 named as dropped. Line 141: "the smallest noise level proposed
+    under Noise" and "what G1 as proposed allows" lose "proposed". Line 142:
+    "(0.1 as proposed)" becomes "(0.1)". Line 171 ticked. No line is added or
+    removed; 180 lines.
+  - **Counts.** 9 items remain OPEN; "OPEN" occurs 10 times. Four checklist
+    boxes are ticked; 8 are not.
+  - The reference sitting (G2) is owed next.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
