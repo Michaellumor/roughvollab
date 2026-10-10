@@ -1275,6 +1275,135 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     reworded.
   - A further entry is owed after each run.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D60** *(2026-10-10)* **P5 G0 scoping run made and declared; its output
+  committed (no item closes; nothing frozen).** Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md` (line 15 reworded; one bullet added
+  under "What was known before freezing", line 21). The run was made by the
+  author on his machine from `p5_g0_pilot.py` as committed in #184 (`1c6fc13`),
+  with the working tree clean at `d394b08`: one launch, 2026-10-09 09:48:53 UTC
+  to 23:42:47 UTC (ending at 00:42 on 10 Oct local time), 300 tasks, 0 errors,
+  a pool of 4 workers, on the author's laptop (an Intel i7-1165G7 with 4 cores;
+  the output records 8 logical processors and Windows 11), Python 3.14.3, numpy
+  2.4.4, scipy 1.17.1. No random draws were made, so there is no seed. The run
+  has no pass or fail and nothing below is a decision: the box, the grid, the
+  resolution and every main-run setting remain OPEN. v1 remains the registered
+  protocol. The decision sheet is not updated.
+  - **Settings as committed.** Base inversion setting `U_max` 200 with 128
+    nodes, the repository's own (`U_max` 200 is `gil_pelaez_call`'s default;
+    128 nodes is `NN` in `layer4_calibrate_surface.py`, as `model_smile_cf_T`
+    passes it; `gil_pelaez_call`'s own default is 256). Comparison settings:
+    (200, 256) for the node count doubled, against the base; (400, 256) for
+    `U_max` raised, against (200, 256); `N_riccati` doubled, the base at the
+    next rung. Ladder `N_riccati` 1000, 2000, 4000, 8000, 16000, climbed per
+    (H, ν, ρ, T) until a rung met all three comparisons on its 35 quotes; the
+    comparison solves skipped at a rung whose base solve was not finite; the
+    top rung without a partner. Tolerance 0.0001 per quote, per comparison.
+    Points: H {0.02, 0.05, 0.10, 0.25, 0.48} × ν {0.05, 0.35, 0.65, 1.00} × ρ
+    {0.00, −0.70, −0.99}, 60 triples, each at ξ₀ {0.001, 0.01, 0.04, 0.10,
+    0.25}, which share each solve; the 16 corners of the proposed box and D38's
+    point are among them; κ 0.30. Grid: D38's five maturities and seven z,
+    strikes standardised on each point's own ATM quote at the first rung where
+    it was finite under the base setting, then fixed for that task. Before the
+    run the script reproduced `model_smile_cf_T` on D38's 35 quotes with a
+    maximum difference of exactly 0.0 (the script stops otherwise; the value
+    itself is not in the output).
+  - **Cost.** With the pool running, the three base solves of one task took a
+    median 0.8, 2.4, 9.0, 38.1 and 156 s at `N_riccati` 1000, 2000, 4000, 8000
+    and 16000, over the finite solves; 2.2 to 2.6 times the same solves made
+    alone (0.31, 1.05 and 4.05 s at 1000, 2000 and 4000, from the launch line).
+    The cost quantity of L139, the base solves of one (H, ν, ρ) over the five
+    maturities, had median 4.0, 12.3, 44.4, 189.5 and 774.9 s at those
+    `N_riccati`, over the triples whose five maturities all had a finite base
+    solve at that rung: 32, 37, 37, 45 and 49 of the 60 (at 16000 the eleven
+    others are the six ν 0.05 triples with a task that stopped at 1000 and five
+    with a non-finite solve at one maturity); the largest at 16000 was 856 s.
+    The cost at a raised `U_max` was measured only at 400 and only where that
+    solve was finite. The whole run was 833.9 min of wall and 55.5 core-hours.
+  - **Finiteness, Riccati stage (base setting).** At T = 0.10 the solve was
+    finite from `N_riccati` 1000 everywhere except (H 0.02, ν 1.00, ρ 0) and
+    (0.05, 1.00, 0), which needed 2000. At T = 1.00 and 2.00 the steps needed
+    rose with ν and fell with H and with |ρ|: at T = 2.00, ν 0.35 needed 1000
+    to 8000, ν 0.65 up to 16000, and at ν 1.00 nothing below H 0.10 was finite
+    through 16000 at ρ 0. Six tasks were non-finite at 16000: (0.02, 0.65, 0),
+    (0.02, 1.00, each of the three ρ) and (0.05, 1.00, 0) at T = 2.00, and
+    (0.02, 1.00, 0) at T = 1.00. 79 of the 300 tasks had a non-finite base
+    solve at some rung. At (400, 256), 26 of the 283 tasks with a finite base
+    solve at 16000 were non-finite there (11 at H 0.02, 10 at 0.05, 5 at 0.10;
+    12 at T = 2.00, 8 at 1.00, 5 at 0.50, 1 at 0.25), and 177 were finite from
+    1000; at the six tasks above no comparison solve was made. At (200, 256) no
+    task was non-finite where the base solve was finite.
+  - **Finiteness, inversion stage (base setting, each task's top rung).** At ξ₀
+    0.001, 290 of 2,100 quotes were not finite: 242 with a price at or below
+    1e-12 and 48 with no implied vol, at every maturity, the former all at z =
+    +1 and +2. At ξ₀ 0.01, 0.04, 0.10 and 0.25, 73, 58, 55 and 37 quotes had a
+    price at or below 1e-12, all but three at ρ −0.99 and mostly at z = +2; 42
+    per ξ₀ more were non-finite at the Riccati stage. The modulus of the
+    characteristic function at the top node, just below u = 200 (median over
+    tasks), was 10^−0.1 to 10^−0.3 at ξ₀ 0.001, 10^−0.6 to 10^−2.5 at 0.01,
+    10^−2.6 to 10^−10 at 0.04, below 10^−6 at 0.10 and below 10^−16 at 0.25,
+    falling with T; at the top node of the (400, 256) setting and ξ₀ 0.001 it
+    was still 10^−0.1 to 10^−0.7.
+  - **Comparisons.** `N_riccati` doubled, 8000 against 16000: met on every
+    finite pair, largest difference 4.3e-5; 1000 against 2000: met on all but
+    14 of 7,367 finite pairs, largest 6.9e-4. Node count doubled, at each
+    task's top rung: met on every finite pair but 5 of 9,777 (all at ρ −0.99, T
+    = 2.00, z = +2, ξ₀ 0.25; up to 0.0136); over all rungs, 17 of 42,175.
+    `U_max` raised, at the top rung: met on 9%, 48%, 78%, 92% and 98% of finite
+    pairs at ξ₀ 0.001, 0.01, 0.04, 0.10 and 0.25; at ξ₀ 0.04 from 62% at T =
+    0.10 to 93% at T = 2.00; at ξ₀ ≥ 0.04 on 100% at ν 0.05 and at ν 1.00 from
+    58% at T = 0.10 to 87% at T = 2.00; largest difference 0.062. At D38's
+    point: met at every maturity for ξ₀ ≥ 0.10; at ξ₀ 0.04 one miss, 0.00014 at
+    T = 0.10; at ξ₀ 0.01 up to 0.0148; at ξ₀ 0.001 up to 0.0107. Tasks on which
+    all three comparisons were met on all 35 quotes at some rung: 11 of 300,
+    all at ν 0.05 and T ≥ 1.00 (ρ 0 at each H at T = 1.00 and 2.00, and (0.25,
+    0.05, −0.70) at T = 2.00); the other 289 climbed to 16000. Counting only
+    the quotes at ξ₀ ≥ 0.01, ≥ 0.04 or ≥ 0.10, the node and `U_max` comparisons
+    at the top rung were met on 105, 175 and 199 tasks.
+  - **Known answers (no Riccati solve).** Black–Scholes through the base
+    setting: largest error 0.0058 in vol over 175 rows, 0.0014 at the money at
+    T = 0.10 and ξ₀ 0.001 (the D59 arithmetic, now measured); 2.2e-6 at (400,
+    256); the adaptive quadrature used as the Heston reference, 2.2e-11.
+    Classical Heston through the base setting: up to 0.098 in vol, and 0.070 at
+    (400, 256), with 29 to 30 of 350 rows lacking an implied vol on one side.
+  - **What the output bears on.** A reading of the output, labelled as such; it
+    decides nothing. At the top rung the `U_max` comparison was met on 9% of
+    finite pairs at ξ₀ 0.001 and 48% at 0.01; at T = 0.10 and ξ₀ ≥ 0.04, on 75%
+    at ν 0.65 and 58% at ν 1.00. The logarithm of the modulus at the top node
+    falls in proportion to ξ₀ and more slowly with T. Only `U_max` 200 and 400
+    were tried; what a quote needs was not measured. At (400, 256) 26 tasks
+    were non-finite at 16000 where the base solve was finite, and at (200, 256)
+    none: the raised `U_max`, not the doubled node count, cost finiteness, at
+    low H, high ν and long maturity. The node-count comparison at `U_max` 200
+    was met on all finite pairs but 5 at the top rung and 17 of 42,175 over all
+    rungs. The median of L139's cost quantity at 16000, 774.9 s over the 49
+    triples with a finite base solve there at all five maturities, is below
+    1,200 core-seconds; at a raised `U_max` the cost was not measured beyond
+    400. Whether any resolution is admissible on any grid is for the main run.
+  - **Not decided.** The box, the grid and the resolution, and every main-run
+    setting listed OPEN at L139. The 11 tasks on which every comparison was met
+    are not a box: they are one value of ν at two maturities. The range of H is
+    not narrowed by anything here.
+  - **Files.** `output/p5_g0_pilot_tasks.jsonl` (12,803,200 bytes; the working
+    record: a header, one launch line, one line per task),
+    `output/p5_g0_pilot.json` (3,294,100 bytes; the summary) and
+    `output/p5_g0_pilot_quotes.csv` (19,775,497 bytes; one row per triple, ξ₀,
+    maturity, z and rung, 51,345 rows), committed unmodified; the folder is
+    git-ignored, so they were added by name. `py -3 p5_g0_pilot.py --report`
+    regenerates the second and the third from the first. The numbers above were
+    read from the JSON and the CSV by a script in a scratch folder, not in the
+    repository.
+  - **Draft.** Line 15: "Nothing from G0's pilot (see Gates) is declared here
+    yet; every run of it is to be declared in this section before freezing."
+    becomes "G0's scoping run is declared below (D60); the main run is to be
+    declared here before freezing." One bullet is added after the probe bullet
+    (new line 21), so the draft goes from 178 to 179 lines and the decision
+    sheet's references to lines from 21 on are off by one; the sheet is not
+    updated (D59). Lines 37, 39, 139 and 176 of the committed draft (now 38,
+    40, 140 and 177) are unchanged.
+  - **Counts.** 15 items remain OPEN. No checklist box is ticked.
+  - The main run's settings sitting is owed next, with this output in view;
+    what it sets is declared as such.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
