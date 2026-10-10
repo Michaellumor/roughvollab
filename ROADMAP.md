@@ -1540,6 +1540,121 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Counts.** 15 items remain OPEN. No checklist box is ticked.
   - The main run, its declaration and the confirmation are owed next.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D62** *(2026-10-10)* **P5 G0 main run made, confirmed and declared; the
+  box, the grid and the resolution written in as values (three OPEN items
+  close; nothing frozen).** Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md` (line 15 reworded; one bullet added
+  under "What was known before freezing", line 22; the Parameters line, the
+  Grid line and line 141 now carry values; the checklist box for the grid, the
+  box and the resolution ticked). The main run was made by the author on his
+  machine from `p5_g0_main.py` as committed in #188 (`99aa4d5`), with the
+  working tree clean at `47e3bb6`, at the settings written into line 140 by
+  D61: one launch, 2026-10-10 07:42:41 UTC, 625 tasks, 0 errors, 641.3 min of
+  wall, 42.7 core-hours on a pool of 4; the criterion applied; a second launch
+  at 18:30:48 UTC for the 40 confirming tasks of attempt 1 (seed 61; 8.0 min);
+  the criterion applied again at 18:48:29 UTC, returning confirmed. Nothing
+  below is a judgement: the box, the grid and the resolution are what the order
+  of line 140, written before the run, returned. v1 remains the registered
+  protocol. The decision sheet is not updated.
+  - **What the criterion returned.** Box: H [0.02, 0.48], not narrowed, by
+    rule; ν [0.05, 0.35]; ρ [−0.90, −0.70]; ξ₀ [0.04, 0.25]. Grid: the five
+    maturities; ten candidates passed on five, all with ν [0.05, 0.35] and ρ
+    [−0.90, −0.70] and differing only in their ξ₀ range, so the four-maturity
+    grid was not reached. Resolution: `N_riccati` 8000 at every maturity, with
+    `U_max` 790, 500, 350, 250 and 180 and 504, 320, 224, 160 and 112 nodes.
+    Cost: 288 core-seconds per (H, ν, ρ) over the grid, the median over the 54
+    triples priced at 8000 at every maturity (the 53 pilot triples and one
+    confirming point whose partner solves were at 8000), with the pool running,
+    against the limit of 1,200; the summary's median over the 53 pilot triples
+    alone is 290 s. Share of the proposed ranges: 0.0538 (ν 0.316 × ρ 0.202 ×
+    ξ₀ 0.843); no tie. Confirmation: the eight points of attempt 1, uniform in
+    the candidate with H over its full range, all met every comparison at every
+    maturity, at 2000 except one point at 4000 at every maturity and another at
+    4000 at T = 2.00; the candidate taken with them included was the same in
+    bounds, grid and resolution.
+  - **What the run showed.** 413 of the 750 (point, ξ₀) pairs met every
+    comparison at every maturity at or below 8000. By ν: 100% at 0.05, 67% at
+    0.35, 42% at 0.50, 38% at 0.65, 29% at 1.00. By ρ: 22% at −0.99, 62% at
+    −0.90, 71% at −0.70, 64% at −0.35, 56% at 0. By H: 27%, 32%, 55%, 81% and
+    80% from 0.02 to 0.48. By ξ₀: 46% at 0.02, 55% to 59% at 0.04 to 0.25. Of
+    the 3,750 (task, ξ₀) cases at each task's top rung, by the precedence base
+    solve, doubled-`U_max` solve, base quote, then the comparisons: 2,197
+    passed; 792 failed because the doubled-`U_max` solve was not finite within
+    the ladder; 330 because the base solve was not; 225 on the `U_max`
+    comparison, 95 of them because the raised-`U_max` or doubled-node quote
+    itself had no finite implied vol; 204 on a base quote with no finite
+    implied vol at the inversion stage; 2 on the node comparison. At ν ≤ 0.35
+    and ξ₀ ≥ 0.04: ρ −0.35 and 0 failed only through the doubled-`U_max` solve
+    (10 to 15 of 100 cases per maturity, all at H 0.02 and 0.05); ρ −0.99
+    through the inversion stage (7 to 13 of 50 per maturity) and the `U_max`
+    comparison (8 to 12); ν 0.50 inside the ρ band only through the
+    doubled-`U_max` solve (10 to 20 of 50 per maturity, at H ≤ 0.05); ξ₀ 0.02
+    inside the box on the `U_max` comparison (2 to 4 of 20 per maturity).
+    Inside the box the largest `U_max` difference was 6.4e-7; outside it 0.038.
+    D38's point passed at 2000 at T = 0.10 and 0.25 and at 4000 at T ≥ 0.50;
+    the resolution 8000 is forced at each maturity by 10 to 20 of the box's 100
+    (point, ξ₀) pairs, all at ν 0.35 and H 0.02 or 0.05. Stop rule: 317 tasks
+    final by all comparisons met, 39 by truncation only, 269 climbed to 8000
+    without a final rung (93 of the 125 at H 0.02, none at H 0.48 with ν 0.05).
+    Cost, median seconds of the finite base solve with the pool running at
+    2000, 4000, 8000 and the partner 16000 (the criterion file's cost table): T
+    = 0.10: 5.7, 21.9, 86.1, 338; 0.25: 4.2, 16.7, 67.6, 267; 0.50: 3.3, 13.1,
+    53.2, 212; 1.00: 2.8, 11.2, 46.0, 186; 2.00: 2.4, 8.9, 36.8, 154; against
+    the launch line's solo timing at 2000 (2.78 s at T = 0.10, 1.05 at 2.00)
+    the pool's slowdown was about 2 times. The sum of the per-maturity medians
+    at 16000 is 1,156 s, which bears out D61's "near the limit".
+  - **Prediction against outcome.** D61 predicted, over the scoping run's 300
+    (triple, ξ₀) pairs, 154 passing at 8000 from its step-count bound and 70
+    from the base rung alone, and ν [0.05, 0.35] × ρ [−0.70, 0] × ξ₀ [0.04,
+    0.25] as the largest box containing D38's point. The main run's 750 pairs
+    are a different lattice; on the 180 pairs common to both, 99 passed. The
+    box taken differs in ρ: it is the band −0.90 to −0.70 (ρ −0.90 was not in
+    the scoping lattice, so nothing was predicted about it), and ρ −0.35 and 0,
+    predicted to pass, did not, through the doubled-`U_max` solve, which the
+    prediction's step-count bound, scaled from the first finite rung at (400,
+    256), did not catch at H 0.02 and 0.05. The ν ceiling at 0.35 lies in the
+    range D61 left open (0.35 to 0.65), ν 0.50 falling through the same solve.
+    The ξ₀ floor is as predicted.
+  - **What the box's edges rest on.** A reading, labelled as such. The ρ and ν
+    edges are set by the check's own requirement that the `U_max` comparison be
+    made, which needs the doubled-`U_max` solve to stay finite within the
+    ladder: at ρ 0 and ν ≤ 0.35 the base quotes at 8000 meet the step and node
+    comparisons, and the solve at twice `U_max` does not stay finite at H 0.02
+    and 0.05. The ξ₀ floor and the ρ end near −1 are set by truncation and by
+    quotes with no finite implied vol at the inversion stage. Recovering ρ near
+    0 or ν above 0.35 would mean changing the check after seeing output, which
+    line 140 allows only as a declared judgement and which is not done.
+  - **Not decided.** Every other OPEN item. The hypotheses, the priors of H
+    (its range is unchanged), the noise levels, the emulator's form and design,
+    and the bin shares are untouched; what D59 anticipated for a narrower box
+    (the prior-knowledge wording, the sealed draw, which stays uniform on the
+    box, the bin shares and the hypothesis numbers) is to be re-read in the
+    next sitting.
+  - **Draft.** Line 15: "G0's scoping run is declared below (D60); the main run
+    is to be declared here before freezing." becomes "G0's scoping run (D60)
+    and its main run and confirmation (D62) are declared below." One bullet
+    added after the scoping bullet (new line 22), so the draft goes from 179 to
+    180 lines and the decision sheet's references to lines from 22 on are off
+    by two; the sheet is not updated (D59). Parameters line: the ranges become
+    the box's values with the proposal kept on record, and the OPEN span
+    becomes a note on what set the edges. Grid line: the OPEN span becomes the
+    five maturities as the grid, the probe's and D41's record kept. Line 141
+    (140 before the bullet): the OPEN item for the emulator's resolution
+    becomes 8000 at every maturity with the inversion settings above.
+    Checklist: the box for the grid, the box and the resolution is ticked; the
+    box for the prior-knowledge section stays unticked, its check against the
+    ROADMAP entries not having been made.
+  - **Files.** `output/p5_g0_main_tasks.jsonl` (14,830,944 bytes: a header, two
+    launch lines, 625 task and 40 confirm records), `output/p5_g0_main.json`
+    (3,413,470), `output/p5_g0_main_quotes.csv` (25,661,232; 80,108 rows) and
+    `output/p5_g0_main_criterion.json` (13,659), committed unmodified, added by
+    name as the folder is git-ignored. The numbers above were read from them by
+    a script in a scratch folder, not in the repository.
+  - **Counts.** 12 items remain OPEN; "OPEN" occurs 13 times. One checklist box
+    is ticked; 11 are not.
+  - The re-read of the passages a narrower box touches, and the emulator
+    sitting, are owed next.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
