@@ -1655,6 +1655,96 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The re-read of the passages a narrower box touches, and the emulator
     sitting, are owed next.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D63** *(2026-10-10)* **P5 v2 draft: re-read after the box narrowed; the
+  prior-knowledge section checked against its sources (one checklist box ticks;
+  no item closes; nothing frozen).** Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md` (lines 7, 24, 139 and 148 reworded
+  in place; line 169 ticked). D62 listed as owed, for the narrower box, the
+  re-read of the prior-knowledge wording, the sealed test draw, the bin shares
+  and the hypothesis numbers, and attributed that list to D59; D59's entry
+  fixes only that the range of H is not narrowed, so that the priors of H need
+  no restating, and the list was a working note of that sitting that entered
+  the record with D62. Checklist line 169 asks for the prior-knowledge section
+  to be checked against the ROADMAP entries it cites and for G0's pilot to be
+  declared in it. Both are done here. Nothing was run; no OPEN item is decided.
+  v1 remains the registered protocol. The decision sheet is not updated.
+  - **The citation check.** Every figure in lines 17 to 20 was read against its
+    source. D37 (line 17): H the flat eigen-direction, degenerate with ν
+    (correlation −0.82), a 62% spread at 0.1 vol point of noise; D37 items (2)
+    and (3). D38 (line 18): the point θ = (0.10, 0.35, −0.70, 0.04) (D37's
+    truth and `TRUTH` in `layer4_calibrate_surface.py`; D38's entry does not
+    restate it), the 25-quote grid (`NOISE_VUS`, five points at five
+    maturities, "trim strikes 7→5"), ten draws, spreads of about 10%, 29% and
+    48% at 0.1, 0.3 and 0.5 vol point, κ kept fixed (item (4)); D38 items (3)
+    and (4) and caveats (a) and (b); the standard deviations 0.010, 0.029 and
+    0.048 are those percentages of H = 0.10, as the sentence says. Line 19: H
+    rails to its lower bound (D39, D41, D42, each at the fitted optimum); the
+    overflow at low H, high ν and long maturity (D39 caveat (2); D41 phase 0).
+    D39: IV-RMSE 0.888 vol point on the reduced span. The 1.1 vol point on the
+    full one-year span is not in the ROADMAP; it is in
+    `OVERLEAF/P1/calibration_paper_revised.tex`, line 284 ("root-mean-square
+    error of about 1.1 percentage points on the full one-year span"), and the
+    sentence attributes it to the P1 paper. D42: IV-RMSE 1.63 on ETH; ν 0.713
+    (BTC 0.714 in D42's comparison, 0.71 in D41). D41: the one-year tenor the
+    least H-informative (H-sensitivity 64.5 at the short end to 5.2 at one
+    year; D42 65.7 to 5.9); the H 0.02, ν 0.63 overflow at T 0.986 non-finite
+    at `N_riccati` 6000 and finite at 8000. The code comment:
+    `calibrate_btc.py` lines 62 to 64 (T about 0.989, overflow at 8000, finite
+    from 8200). The probe (line 20): D55, 1.67 s at D38's point and 1.58 s
+    mean, 24 points with 9 failing, the four follow-ups. Line 15 was read
+    against D59. Lines 21 and 22 were written from the committed output in D60
+    and D62 and read then. Every figure holds; no sentence of the section
+    changes. The second clause of line 169 is met by lines 21 and 22; the box
+    is ticked.
+  - **Read and unchanged.** The observable (line 45) is defined without
+    reference to the box. The priors (lines 58 to 64) are written for H in
+    [0.02, 0.48], which the order did not narrow; "all other parameters uniform
+    on the box" reads over the box as written in; the means 0.12 and 0.32, the
+    standard deviations 0.054 and 0.062 and the 0.20 of the shift ratio (line
+    108) are unchanged. The reference (line 68) is under the uniform prior on
+    that box. The contraction c (lines 79 to 89) is defined from the posterior
+    and the prior of H; its definition does not depend on the box's width, its
+    values do, and they are measured at run time; the cut-offs stay OPEN. The
+    noise levels (line 56) are read: 1.0 vol point is motivated by the live
+    misfit, a regime line 24 now says v2 does not speak to, which is no
+    contradiction and is for the noise sitting. The sealed draw (line 93) has
+    not been made and is made on the box as written in; nothing is restated.
+    The bin shares (lines 99 to 101) are measured at run time, and the 10% stop
+    rule, OPEN, is what handles a bin left thin by a narrower box. The
+    hypotheses (lines 117 to 128) are in units of H or of posterior mass and
+    name no range; OPEN as before. Gates G1 to G3 are unchanged.
+  - **Updated wording.** Line 7: the pilot "is to be run" and its script and
+    output "are to be committed" become "was run" (D60 to D62) and "are
+    committed". Line 24: one sentence added, that the box lies at ν ≤ 0.35 and
+    ρ in [−0.90, −0.70], that the live BTC and ETH optima (ν 0.71 from line 19;
+    ρ −0.31 and −0.30 from D41 and D42) lie outside it so nothing in v2 speaks
+    to that regime, and that D38's point, the one point at which H's scatter
+    under noise has been measured on this grid, sits on three of the box's
+    faces (ν 0.35, ρ −0.70, ξ₀ 0.04). Line 139: "G0's pilot is run before
+    freezing" becomes "was run before freezing (D60 to D62)" and "fixes values
+    of the design" becomes "fixed the box, the grid and the resolution". Line
+    148: the surface in scope is "on the stated grid over the box under
+    Objects". No line is added or removed.
+  - **For the noise sitting.** A reading, labelled as such; nothing is set, and
+    neither effect is measured. Two effects pull against each other. The
+    H-signal sits at the short end of the skew's term structure (D38's span
+    sweep; D41's H-sensitivity at one fitted point), and in the model the skew
+    is smaller at smaller ν, so over ν ≤ 0.35 the flat regime may be reached at
+    lower noise than over the proposed box. The uniform prior on ν [0.05, 0.35]
+    also cuts off the H↔ν valley (correlations −0.82 in D37, −0.85 in D38,
+    −0.88 to −0.91 in D41, −0.86 in D42), which tightens the posterior on H and
+    moves pairs out of the flat bin. The 10% stop rule covers either case.
+  - **Two facts the narrower box makes visible.** The live BTC and ETH optima
+    (ν 0.71 to 0.714, ρ −0.30 to −0.31, H railed at 0.02; D41, D42) lie outside
+    the box in ν and ρ, so v2's claims, which are for the box under Objects,
+    say nothing about the regime those fits occupy; real surfaces are out of
+    scope in any case (line 150). D38's point, the one point at which H's
+    scatter under noise has been measured on this grid, lies on three of the
+    box's faces, so D38's figures describe the box's edge, not its interior.
+  - **Counts.** 12 items remain OPEN; "OPEN" occurs 13 times. Two checklist
+    boxes are ticked; 10 are not.
+  - The emulator sitting is owed next.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
