@@ -1848,24 +1848,27 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     contraction c = 1 − SD²_post / SD²_prior of line 81 would be about 0.97,
     0.71 and 0.21 under A and 0.97, 0.78 and 0.40 under B: one level in each of
     the proposed bins (identified at or above 0.9, partial from 0.5 to 0.9,
-    flat below 0.5). D38's point lies on the face ν = 0.35 of the box, its most
-    informative in ν, so elsewhere in the box each level contracts H less and
-    the three levels span the bins from that edge inward; D63's two-way reading
-    (the flat regime reached at lower noise over ν ≤ 0.35; the valley cut by
-    the uniform prior on ν) stands and is not resolved here. At 1.0 vol point,
-    beyond the range D38 measured, the scatter extrapolated from its roughly
-    linear growth with the noise (0.010, 0.029, 0.048 at 0.1, 0.3, 0.5) would
-    exceed the prior's standard deviation at D38's point, so every pair would
-    be flat: a level that adds pairs to one bin and tests nothing in the
-    others. Its motivation, the live misfit (0.9 vol point on BTC's reduced
-    span, D39; 1.63 on ETH, D42), belongs to a regime D63 recorded as outside
-    the box and outside v2's claims (line 150). The reading equates an
-    optimiser ensemble's scatter under D38's anchoring with a posterior
-    standard deviation under v2's observable; it is a basis for choosing
-    levels, not a prediction of the bin shares, which Stage 1 measures (line
-    99), and the cut-offs it uses are still OPEN (line 89). The main run's
-    lattice measured the pricer's convergence, not H's identifiability, and is
-    not used here.
+    flat below 0.5). D38's point lies on the box's face ν = 0.35, which by the
+    model's skew scaling with ν (D63's reading; not measured) is the face of
+    most information about H in ν; it also lies on the face ρ = −0.70, the
+    smallest |ρ| in the box, and on the ξ₀ floor, so by the same reading it
+    bounds the box's contraction in neither direction. The levels are placed by
+    their reading at that one point; where the bins fall elsewhere in the box,
+    Stage 1 measures (line 99). D63's two-way reading (the flat regime reached
+    at lower noise over ν ≤ 0.35; the valley cut by the uniform prior on ν)
+    stands and is not resolved here. At 1.0 vol point, beyond the range D38
+    measured, the scatter extrapolated from its roughly linear growth with the
+    noise (0.010, 0.029, 0.048 at 0.1, 0.3, 0.5) would exceed the prior's
+    standard deviation at D38's point, so every pair would be flat: a level
+    that adds pairs to one bin and tests nothing in the others. Its motivation,
+    the live misfit (0.9 vol point on BTC's reduced span, D39; 1.63 on ETH,
+    D42), belongs to a regime D63 recorded as outside the box and outside v2's
+    claims (line 150). The reading equates an optimiser ensemble's scatter
+    under D38's anchoring with a posterior standard deviation under v2's
+    observable; it is a basis for choosing levels, not a prediction of the bin
+    shares, which Stage 1 measures (line 99), and the cut-offs it uses are
+    still OPEN (line 89). The main run's lattice measured the pricer's
+    convergence, not H's identifiability, and is not used here.
   - **Unchanged.** The tolerance under G0, a tenth of the smallest noise level,
     still 0.1 (line 141); G1's ratio, e ≤ s / 5, 0.02 vol point at 0.1 (line
     142); the 10% stop rule for a thin bin (line 101, OPEN); the hypotheses,
