@@ -1745,6 +1745,84 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     boxes are ticked; 10 are not.
   - The emulator sitting is owed next.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D64** *(2026-10-10)* **P5 v2 draft: emulator form, design and gate written
+  in (two OPEN items close; one checklist box ticks; nothing frozen; nothing
+  built).** Recorded in `docs/protocols/P5_protocol_v2_draft.md` (line 52
+  reworded; line 54, the OPEN item for the emulator, now the design; line 142,
+  G1's OPEN ratio, now 5 with a refinement rule; line 172 ticked). The design
+  is a choice of the author, made on the assistant's lean and declared as such;
+  it rests on the record (the box, the grid and the resolution of D62, the cost
+  of 288 core-seconds per (H, ν, ρ) over the grid measured there, the tolerance
+  of D59 and the noise levels proposed) and on one piece of reasoning about the
+  model, labelled below. Nothing was measured or built: line 7 keeps every
+  emulator, reference posterior and network until after freezing. v1 remains
+  the registered protocol. The decision sheet is not updated.
+  - **The design.** Form: a tensor-product Chebyshev interpolant of G on the
+    box, one interpolant per quote (35), in (H, ν, ρ, ξ₀) mapped affinely to
+    [−1, 1]⁴, Chebyshev nodes of the first kind, barycentric evaluation;
+    deterministic, no training, no seed, exact at the nodes. Nodes: 16 in H, 8
+    in ν, 6 in ρ, 12 in ξ₀: 9,216 training surfaces at 768 (H, ν, ρ) triples,
+    the ξ₀ nodes sharing each triple's three Riccati solves per maturity.
+    Training data: priced by the path of `p5_g0_main.py` at `N_riccati` 8000
+    with `U_max` 790, 500, 350, 250 and 180 and 504, 320, 224, 160 and 112
+    nodes, each surface's strikes anchored on its own ATM quote at that
+    setting; a training quote that is not finite stops the build, the box
+    having passed G0 on its pilot and confirming points, not everywhere.
+    Held-out set: 200 points uniform on the box from `default_rng(73)` (neither
+    the sealed seed, nor the probe's 7, nor the confirmation's 61 and 62),
+    priced the same way; e is the 99th percentile over their 7,000 quotes of
+    |G̃ − G|, with the maximum and the per-maturity 99th percentiles beside it.
+    G1's ratio: 5, so e ≤ s / 5, which is 0.02 vol point at s = 0.1, the figure
+    D59 took as the basis of the pricer's tolerance of 0.01 vol point.
+    Refinement: if e exceeds s / 5 at the smallest noise level under Noise (0.1
+    as proposed), the node count is doubled once in the dimension whose
+    Chebyshev coefficient tail is largest, the tail of a dimension being the
+    largest absolute Chebyshev coefficient, over all 35 quotes and all indices
+    in the other three dimensions, at that dimension's highest index (the
+    coefficients are the cosine transform of the node values, so the rule needs
+    no further pricing), and the build repeated at the new nodes, declared as
+    such; no second refinement; Q1 is then claimed at the noise levels G1
+    allows and at no other, as line 51 already provides. Evaluation: 9,216 node
+    values per quote, 35 barycentric sums per surface, so the reference (G2)
+    and the calibrators' training data cost nothing in pricing.
+  - **What it rests on.** A reading, labelled as such. At a fixed standardised
+    quote the implied vol is a smooth function of (H, ν, ρ, ξ₀) on the interior
+    of the box: the price comes from a characteristic function whose dependence
+    on the parameters is analytic, discretised at fixed settings, and inverted
+    by a smooth map. Chebyshev interpolation of a function analytic on a
+    neighbourhood of the box converges geometrically in the node count, at a
+    rate set by the distance to its nearest singularity; for a function that is
+    merely smooth the rate is algebraic. Neither statement is measured here;
+    the held-out check under G1 measures the error, and the refinement rule is
+    the provision if it is larger than reasoned. The main run's lattice (125
+    points at six ξ₀) is not a test of smoothness and was not used as one.
+    Against a neural-network emulator, the choice is that G̃ should be a fixed
+    object with no training randomness, so that Q2's gap is the calibrators'
+    alone (line 50), and that its error should be set by a node count checked
+    on held-out points rather than by an optimiser. The risk is smoothness near
+    H = 0.02 at the shortest maturity; the nodes cluster at the box's ends,
+    where that risk sits.
+  - **Cost.** 768 training triples and 200 held-out points, 968 sets of solves
+    at the 288 core-seconds per (H, ν, ρ) over the grid measured in D62 with
+    the pool running: about 77 core-hours, 19 h on four workers. A refinement
+    repeats the training part at the doubled count, the first-kind nodes not
+    being nested: at most 1,536 triples, about 123 core-hours more, about 2,500
+    sets of solves in all. The cost limit under G0 presumed about 4,000 such
+    sets.
+  - **Not decided.** The noise levels (line 56), the reference's sampler and
+    acceptance (lines 68 and 143), the test-set size (line 94), training
+    adequacy (line 144), the Beta parameters, the cut-offs, the hypothesis
+    numbers. The emulator's script and build follow freezing.
+  - **Draft.** Line 52: the pricing path of the training surfaces is
+    `p5_g0_main.py`'s at the settings under Gates; the earlier sentence on
+    `calibrate_btc._cached_cf` and `surface_model` is replaced. Line 54: the
+    OPEN item becomes the design. Line 142: "OPEN — the ratio" becomes 5 with
+    the refinement rule. Line 172 ticked. No line is added or removed; 180
+    lines.
+  - **Counts.** 10 items remain OPEN; "OPEN" occurs 11 times. Three checklist
+    boxes are ticked; 9 are not.
+  - The noise sitting is owed next.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
