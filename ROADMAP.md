@@ -2212,56 +2212,69 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     variance; on the unit interval mean 15/23 and variance 36/2645, so a + b =
     47/3 exactly (standard deviation 0.054, mode 0.330, central 90% [0.227,
     0.403], 10.6% of its mass below 0.25, 1.1e-4 at or below 0.12). The
-    proposal's Beta(7.5, 4) had standard deviation 0.062. The gap of 0.20 is
-    3.73 standard deviations of either prior; the densities cross at H = 0.220
-    and the overlap coefficient is 0.090 (0.114 under the proposal).
-    Var_prior(H) in the contraction is declared the analytic variance of A.
-    Every figure is arithmetic on the Beta density, done today in exact
-    rationals and with scipy's beta.
+    proposal's Beta(7.5, 4) had standard deviation 0.062. The two priors are
+    equal in variance and differ in skew, 0.72 and −0.30, as any scaled-Beta
+    pair with these means on this support must. The gap of 0.20 is 3.73
+    standard deviations of either prior; the densities cross at H = 0.2197 and
+    the overlap coefficient is 0.090 (0.114 under the proposal). Var_prior(H)
+    in the contraction is declared the analytic variance of A, 0.00288 exactly.
+    Every figure in this bullet is arithmetic on the Beta density, done today
+    in exact rationals and with scipy's beta; in code the parameters are
+    floats, at which the two variances agree to about 1e-16.
   - **What it rests on.** A reading, labelled as such. v1 registered the
     support, the scaled-Beta family, the means 0.12 and 0.32, the 0.20 gap and
     priors that "differ only in where they put their mass" (v1, Decision 2);
     equal variances make that literal, where the proposal's pair differed in
     spread as well (variance ratio 4/3, the sheet's arithmetic). A is kept
-    because its 0.054 is the figure every reading in the draft uses: line 24's
+    because its 0.054 is the figure line 24 and the bins use: line 24's
     "identifies H well against a prior of standard deviation 0.054", D65's
-    reading of the noise levels (c about 0.97, 0.71 and 0.21 at D38's point),
-    and the cut-offs at line 89, which are fractions of A's variance; only B
-    moves. Under a Gaussian approximation to the likelihood in H, equal prior
-    variances make the reference's own shift ratio 1 − c, so at the Identified
-    bin's edge it is 0.10 wherever the data sit; under the proposal it ran from
-    0.065 to 0.118 at c = 0.9 across the box (the sheet's item 6 figure,
-    recomputed today). That bears on H-c, whose expected median S_net in the
-    Identified bin is "above 0.10": under the proposal a faithful calibrator
-    could have cleared it on the reference's own shift alone; the
-    hypothesis-numbers sitting inherits the cleaner yardstick. Half the uniform
-    test θ lie where A has 2% of its mass, which the sheet asks the author to
-    be content with; it is accepted as the design: v1 chose a neutral test set
-    so that neither network has home advantage, and the swap asks what a
-    calibrator does where its prior and the data disagree, which is where the
-    Flat bin lives. For the reference's reweighting from the uniform prior
-    (line 68), a completely flat posterior would give an effective-sample
-    fraction of 0.39 under A and 0.42 under the new B, 0.48 under the
-    proposal's B (the sheet's idealised case, recomputed); the direct-run
-    fallback stands. Not taken: a mirror pair, which would move a registered
-    mean; a wider or narrower common width; perturbing one prior in place of
-    the swap; training once on the uniform prior and reweighting, which is not
-    the draft's question.
+    reading of the noise levels under A (c about 0.97, 0.71 and 0.21 at D38's
+    point), and the cut-offs at line 89, which are fractions of A's variance;
+    only B moves. A defines the bins and m because one prior must, for c to be
+    one number per pair, and v1 made A the home prior (its P4 control is at
+    home on test H from prior A); line 66 now says so. Under a Gaussian
+    approximation to the likelihood in H, equal prior variances make the
+    reference's own shift ratio 1 − c, so at the Identified bin's edge it is
+    0.10 wherever the data sit; under the proposal it ran from 0.065 to 0.118
+    at c = 0.9 as the likelihood's centre moves across the range of H (the
+    sheet's "about 0.07 to 0.12", recomputed today). That bears on H-c, whose
+    expected median S_net in the Identified bin is "above 0.10": under the
+    proposal a faithful calibrator could have cleared it on the reference's own
+    shift alone; with equal variances 0.10 is the reference's own value at the
+    edge, not a margin above it, which the hypothesis-numbers sitting inherits
+    as the cleaner yardstick. The real priors are skewed and c uses the exact
+    posterior, so the reference's S will depart from 1 − c, most where a
+    posterior sits in one prior's tail; the size is a Stage 1 fact. Half the
+    uniform test θ lie where A has 2% of its mass, and 2.8e-6 of it lies above
+    H = 0.40, which the sheet asks the author to be content with; it is
+    accepted as the design: v1 chose a neutral test set so that neither network
+    has home advantage, and the swap asks what a calibrator does where its
+    prior and the data disagree. For the reference's reweighting from the
+    uniform prior (line 68), a completely flat posterior would give an
+    effective-sample fraction of 0.39 under A and 0.42 under the new B, 0.48
+    under the proposal's B (the sheet's idealised case, recomputed); the
+    direct-run fallback stands. Not taken: a mirror pair, which would move a
+    registered mean; a wider or narrower common width; perturbing one prior in
+    place of the swap; training once on the uniform prior and reweighting,
+    which is not the draft's question.
   - **What changes elsewhere.** Nothing in wording. D63 and D65 cite B's
     standard deviation as 0.062, as it then stood, and are left as the record;
     D65's contraction reading under A is unchanged, and its figures under B
-    (0.97, 0.78, 0.40) would now equal A's. Line 24 and line 56 read against
-    A's 0.054 and are unchanged. The exact parameters are unround; the rounded
-    Beta(10.22, 5.45) would break the equality of variances by about 0.1%, so
-    the exact values are written and the rounded ones given as "about".
+    (0.97, 0.78, 0.40) would now equal A's. Line 24 reads against A's 0.054 and
+    is unchanged; line 56 reads against both priors' and still places one level
+    in each bin, B's figures under D65's reading now equalling A's. The exact
+    parameters are unround; the rounded Beta(10.22, 5.45) would break the
+    equality of variances by about 0.02%, so the exact values are written and
+    the rounded ones given as "about".
   - **Not decided.** The contraction cut-offs (line 89), the number of test θ
     (line 94), the 10% floor (line 101), the hypothesis numbers (line 117), the
     prior-work section.
   - **Draft.** Line 62: prior B's parameters. Line 64: prior B's standard
     deviation, 0.062 to 0.054. Line 66: the OPEN item becomes the values, what
     each prior is, the gap, the equal-variance consequence for the reference's
-    shift ratio, the 2% point accepted, the analytic Var_prior(H) and what was
-    not taken. Line 173 ticked. No line is added or removed; 180 lines.
+    shift ratio, the 2% point accepted, why A defines the bins, the analytic
+    Var_prior(H) and what was not taken. Line 173 ticked. No line is added or
+    removed; 180 lines.
   - **Counts.** 4 items remain OPEN; "OPEN" occurs 5 times. Eight checklist
     boxes are ticked; 4 are not.
   - The contraction cut-offs (line 89) are owed next, with the 10% floor (line
