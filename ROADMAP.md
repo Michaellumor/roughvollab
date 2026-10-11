@@ -2735,6 +2735,149 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The calibrators' script (G3) is owed next among the scripts; the prior-work
     section and the OSF amendment remain the author's before freezing.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D74** *(2026-10-11)* **P5: the calibrators' script for gate G3 committed
+  (code and tests in the torch leaf; nothing trained on the emulator; nothing
+  frozen).** `p5_g3_calibrators.py`, `test_p5_g3_calibrators.py` and
+  `requirements-p5.txt` implement lines 72, 73 and 75 (the two calibrators,
+  their architecture and training, D68) and line 144 (G3, D67) as written, on
+  the emulator of `p5_g1_emulator.py` and the references of
+  `p5_g2_reference.py`. The leaf is isolated as line 154 requires: torch is a
+  guarded import, the core stays torch-free, the venv `.venv-p5` is recreated
+  from the requirements file and ignores itself. Nothing was trained on the
+  real emulator, which does not exist until G1 is built after freezing; the
+  tests use toy emulators in memory and short runs.
+  - **What the script does.** The literals of line 75: the trunk of three
+    hidden layers of 128 ReLU units with PyTorch's default initialisation; five
+    members; Adam at 0.001 with β (0.9, 0.999) and no weight decay; batch 256
+    with a partial final batch kept; patience 50 and the cap of 1,000 epochs;
+    the variance floor 1e-6; 4,000 validation surfaces; the seeds 109, 113 and
+    107 and the torch seed 109,000,000 + 10,000 p + 1,000 j + 10 q + m; and of
+    line 144: the ladder 10,000 × 2^k from one draw of 320,000, the slope 0.95,
+    the stability tolerance 0.002, the budgets of 320,000 surfaces and 4 h of
+    wall. Draws: one generator per (prior, level, seed), `default_rng([109, p,
+    j, q])`, drawing a 320,000 block in the order H (the prior's Beta, scaled
+    to the box), then (ν, ρ, ξ₀) uniform, then ε; a run at n takes the first n
+    rows, so the ladder's sets are nested exactly and every seed's set at n is
+    the head of its block; surfaces y = G̃(θ) + s ε from the emulator in
+    chunks; the validation block from `default_rng([113, p, j])` the same way.
+    Inputs standardised by the per-quote mean and standard deviation over the
+    run's n surfaces (standard deviation floored at 1e-12), stored with the
+    run; θ mapped to [0, 1]⁴. The ensemble member: four outputs, the Gaussian
+    negative log-likelihood summed over H and ξ₀ in mapped coordinates and
+    averaged over the batch, the variance softplus(raw) + 1e-6; Ĥ and the ξ₀
+    estimate the means over members mapped back; the two variance components of
+    H in box units (the mapped variance times 0.46²) reported separately; the
+    interval Ĥ ± 1.645 times the square root of their sum; nothing clipped. The
+    ratio estimator: 39 inputs, one logit; each batch's B joint pairs against
+    the B marginal pairs made by the cyclic shift of θ by one within the batch;
+    binary cross-entropy over the 2B; its posterior by the reference's own
+    sampler (the same chains, lengths, adaptation, acceptance and single
+    repeat) with the target log P(H) + logit(θ, y), the generator
+    `default_rng([107, p, q, i, j])`; Ĥ and ξ₀ the pooled means, the
+    equal-tailed 90% interval, the diagnostics, or a failure after the repeat.
+    Training: `torch.manual_seed` before construction and before the shuffles;
+    epochs of shuffled batches; the validation objective after every epoch in
+    drawn order in batches of 256 with the final 160 kept and the marginal
+    pairs formed as in training; stop after 50 epochs without improvement or at
+    1,000; the best state kept; per member. `--g3`: per calibrator, prior and
+    level, the pilot surfaces at that level whose reference was accepted (a
+    failed reference removes its surface, recorded), the runs at n_k and 2n_k
+    (the run at 2n_k is the next rung's run except at the top, where 320,000 is
+    the check run only), the two checks, the budgets, the smallest passing n,
+    none passing reported as P5 stopping; every run's networks and standardiser
+    saved under `output/p5_g3/`, every run and rung recorded in
+    `output/p5_g3_ladder.jsonl`, the verdict in `output/p5_g3_report.json`;
+    resumable, a run in the record with its networks saved being reused.
+    `--train`: seeds q = 2 to 5 at n* per cell, q = 1's run reused; a
+    non-finite loss retrained once from seed value 6, which takes the failed
+    seed's place. `--score SET`: every calibrator at every (prior, level, seed)
+    on a set's surfaces at its level, per pair the outputs of line 75, to
+    `output/p5_scores_<set>.jsonl`; Stage 2's measures, bins and verdicts are
+    the next script's work. No flag prints the design and holds; the modes
+    refuse without torch, the emulator or the references.
+  - **Declared, beyond the draft's words.** Indices: p is 1 for A and 2 for B
+    and j is 1, 2, 3 for the levels, as line 75 states, in every generator and
+    torch seed of this script; i counts a set's θ from 0 as the reference's
+    records do; the reference's own records carry j from 0 (D73), and the two
+    are reconciled by the level's value, not its index. "Seeds 2 to 5 draw the
+    first n only" is read as every seed drawing the whole 320,000 block and a
+    run taking its head, since the block draws all H before any ν and a direct
+    draw of n would differ from the head in (ν, ρ, ξ₀) and ε; the head reading
+    is the one consistent with q = 1 and with line 144's nesting. The wall
+    budget is a deadline for the whole calibrator's run, started before the
+    emulator prices the training and validation surfaces, checked after each
+    epoch's validation, so a run can overshoot by one epoch; a member past it
+    stops with the status over_budget, the remaining members are not trained,
+    and the rung fails, as it does on a non-finite loss; the ladder goes on to
+    the next rung, whose run at n already exists as this rung's check run.
+    After G3 the wall budget is not applied, line 144's budget being the
+    gate's, and the retraining from seed value 6 follows a non-finite loss
+    only, as line 75 says; a second failure in a cell leaves its slot empty and
+    is recorded. The member's torch seed does not depend on n, so at every rung
+    a member starts from the same initialisation and the rungs differ by their
+    data. The thread count is an argument, default 4, recorded in every record;
+    the networks run in float32 and the sampler in float64; Adam's other
+    settings are PyTorch's defaults; the variance over members is the
+    population variance; the standardiser's standard deviation is floored at
+    1e-12; bitwise reproduction across machines is not claimed (line 75). The
+    ratio estimator's posterior passes the sampler a callable target that
+    already holds log P(H); its R-hat and effective-sample thresholds are the
+    reference's; at G3 a pair on which it failed is excluded from both checks
+    at the run where it failed, the survivors at n and 2n possibly differing,
+    both counts recorded. The ensemble's ξ₀ estimate is the mean of the
+    members' ξ₀ means. The validation objective is the surface-weighted mean
+    over its batches. On resume the ladder's checks are recomputed from the
+    saved networks. Each run is saved as its state dictionaries and a JSON of
+    its metadata, including the standardiser, the members' epochs, best
+    validation losses, seconds and seeds; a scored pair carries the seed's slot
+    as q and the run's label, which names seed 6 where it replaced a slot.
+    `requirements-p5.txt` pins torch and numpy at the versions the scripts were
+    committed with, as line 75 requires. `p5_g2_reference.py` gained one
+    backward-compatible parameter, a callable target on its sampler functions,
+    so that the ratio estimator's posterior uses the same code; its eight tests
+    are unchanged and pass. Line 164's commitment to commit the trained
+    networks is met by the saved files, to be force-added by name after the
+    runs, as the G0 outputs were.
+  - **The tests.** Ten, in `test_p5_g3_calibrators.py`: five run in the core,
+    torch-free environment (the literals and the torch seeds' uniqueness; the
+    draw's order, nesting and surfaces, the standardiser and the batches; G3's
+    checks and the budgets on hand-built numbers; the pilot surfaces read from
+    reference records with a failure removed; the hold and the refusals) and
+    five need torch and skip without it (the models' shapes and parameter
+    counts 38,148 and 38,273, the member loss and the batch construction on
+    hand-built numbers; the training loop on a toy linear emulator, learning,
+    determinism under the same seed, the over_budget status and the nonfinite
+    status on both the training and the validation path; the ensemble's outputs
+    recomputed by hand in box units, the overflow-safe variance, saving and
+    loading, and the ratio estimator's posterior through the reference's
+    sampler with a hand-built quadratic logit whose posterior under A is known,
+    the generator's arguments pinned; a toy G3 ladder end to end with toy
+    references and resume; after a forced pass, the seeds at n*, the one
+    retraining from seed 6 with a second failure leaving its slot empty, and
+    the scoring of a set with resume). In `.venv-p5` all ten pass; in the core
+    interpreter five pass and five skip. The whole suite collects 316 tests
+    (CONTRIBUTING updated from 306, with a sentence on the leaf's environment).
+    An independent review of the code found six faults, fixed before the
+    commit: a non-finite validation loss would have crashed the record instead
+    of recording the declared failure; the prediction-time softplus overflowed
+    in float32 where training's did not; a second failed seed in a cell would
+    have received the same seed-6 network; the end-to-end test never reached
+    the seeds and the scoring; the requirements file did not pin; and a
+    `--pool` option did nothing while the scoring's thread count was neither
+    set nor recorded.
+  - **Cost.** Arithmetic, not a measurement: an epoch at 320,000 surfaces is
+    1,250 steps of batch 256; D68's estimate of a millisecond or two per step
+    puts 1,000 epochs at about 35 minutes per member, so a run at the top of
+    the ladder is within the 4 h budget line 144 sets for the whole calibrator
+    and the ladder is bounded by roughly twice the top per cell; early stopping
+    usually cuts it; the ratio estimator's posterior is 200,000 network
+    evaluations per pair, seconds. G3 measures all of it.
+  - **Not written.** Stage 2's analysis (d, S, E, m, the bins, the floor, the
+    verdicts, the bootstrap); the draft; any run on the emulator. G3's run, its
+    output and its verdict follow G1 and G2 after freezing.
+  - The Stage 2 analysis script is owed next among the scripts; the prior-work
+    section and the OSF amendment remain the author's before freezing.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

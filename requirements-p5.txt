@@ -1,0 +1,18 @@
+# P5 calibrators (p5_g3_calibrators.py) ONLY — the second ML leaf, kept ISOLATED as Layer 3 is
+# (docs/protocols/P5_protocol_v2_draft.md, "Repository placement"). The core (Layers 1/1b/1c/2/4,
+# Phase B) and the P5 pricer, emulator and reference scripts need none of this; their environment
+# stays numpy/scipy-only and the CI never imports torch. The .venv-p5 venv is NOT committed
+# (it ignores itself) — recreate it locally:
+#
+#   py -3 -m venv .venv-p5
+#   .venv-p5/Scripts/python -m pip install -r requirements-p5.txt                 # Windows
+#   .venv-p5/Scripts/python -m pytest -q test_p5_g3_calibrators.py
+#   .venv-p5/Scripts/python p5_g3_calibrators.py --g3 --threads 4                 # after G1 and G2
+#
+# torch and numpy are pinned, as the draft's line 75 requires of this file (the versions the
+# scripts were committed with; the CPU build of torch is what PyPI serves on Windows).
+# Deletion-safe: delete p5_g3_calibrators.py + the venv -> the core is untouched.
+numpy==2.5.4
+scipy
+torch==2.14.1
+pytest
