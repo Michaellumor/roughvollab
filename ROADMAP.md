@@ -2387,6 +2387,131 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The hypothesis numbers (line 117) are owed next; the number of test θ (line
     94) waits on G2's measured cost.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D71** *(2026-10-11)* **P5 v2 draft: the hypothesis numbers written in (H-c
+  scored on excess, H-d made one-sided, H-a and H-b accepted; one OPEN item
+  closes; one checklist box ticks; nothing frozen; nothing run).** The sitting
+  the decision sheet's item 12 asks for. Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md`: line 117's OPEN becomes "(D71)";
+  rows 123 and 124 of the table change; the reasons for every number are
+  written under the table at line 126; the definitions the sheet found missing
+  are written at lines 107, 109, 111, 126, 128, 132 and 134, and line 101's
+  phrase on the bootstrap follows line 132; line 177 is ticked. The bets are
+  the author's on the assistant's lean, declared as such. Nothing about any
+  posterior, verdict or interval was computed; nothing is frozen.
+  - **The table.** H-a, median abs(d) in Identified: expected below 0.01,
+    refuted above 0.03, unchanged. H-b, median E in Partial: expected above
+    0.15, refuted below 0.05, unchanged. H-c, now median E in Identified (was
+    S_net): expected above 0.05 and above the seed floor, refuted below 0.02
+    (were 0.10 and 0.05). H-d, median m in Flat, now one-sided: expected below
+    0.80, refuted above 0.85 (was outside [0.80, 0.95] and inside [0.85,
+    0.93]).
+  - **Why each number.** A reading, labelled as such, written at line 126. H-a:
+    0.01 is 0.59 of the largest posterior standard deviation the Identified bin
+    allows (0.017) and 0.19 of prior A's; a faithful calibrator's d carries the
+    reference's sampler error, about 0.0005 (D68), and training noise G3 holds
+    to 0.002 (D67), so the expectation leaves five times that room; 0.03 is
+    1.77 posterior standard deviations at the edge. The 0.01 is kept because
+    G2's 0.001 (D66), G3's 0.002 (D67) and D68's sampler-error reading are
+    built on it. H-b: through E = (d_B − d_A)/0.20, which the sheet's item 12
+    derives from the draft's definitions and which is now written at line 109,
+    0.05 and 0.15 are differences of 0.010 and 0.030 in H between the two
+    networks' mean errors, H-a's two scales; on the Gaussian reading a network
+    returning its prior mean scores E = c, 0.5 to 0.9 across the Partial bin
+    (the sheet's arithmetic), so 0.15 is a modest leak, and a network within
+    0.01 of the reference under both priors cannot exceed 0.10. H-c: moved from
+    S_net to E for two reasons the sheet records: S_net is the one measure that
+    does not compare with the reference, against line 113; and on the Gaussian
+    reading the reference's own shift ratio is 1 − c, 0.10 at the Identified
+    edge, so the old bet "S_net above 0.10" would have been met by Bayes' rule
+    alone at that edge. With equal prior variances (D69) that reading holds for
+    a Gaussian likelihood and Gaussian priors; D69 records that the skewed
+    Betas will depart from it, by an amount that is a Stage 1 fact. The new
+    numbers are H-a's scale in E units: 0.05 is 0.010 in H where the data carry
+    at least nine times the prior's precision; 0.02 is 0.004 in H, the scale of
+    the per-pair sampler error of the quantities in E, about what can be told
+    from zero on a pair (a scale, not the error of a median); the seed floor
+    stays as a second floor. The gap from 0.02 to 0.05 is narrow against the
+    seed-noise scale of 0.0095, so Inconclusive is a likely outcome, which line
+    126 says. The direction of H-b and H-c now has its mechanism written at
+    line 126 as a reading: the test θ are uniform while each network trains
+    under A or B (the sheet's arithmetic: about 46% of test H above A's 99th
+    percentile, 32% below B's 1st); the sheet's reading of Schmitt, Bürkner,
+    Köthe and Radev, that amortised posterior errors grow with the distance
+    from the training simulations' typical set; and the identity, which makes E
+    positive whenever each network is pulled towards its own prior mean, at low
+    H through d_B and at high H through d_A. So H-c is in effect the bet that
+    the B-trained network is not faithful at H-a's scale where H is identified,
+    and H-b that the pull grows as the data weaken. v1's P3 bet the total shift
+    ratio below 0.1 in the most identifiable quintile; v2 bets on an excess
+    over Bayes' rule, a different quantity, which is why the number differs
+    from v1's; why a leak is expected at all is the mechanism above. H-d: made
+    one-sided towards overconfidence, the failure the sheet records Hermans and
+    co-authors reporting for simulation-based inference algorithms, ratio
+    estimation among them, and the one that matters to a user of the interval;
+    the sheet's conversions, recomputed today, give m = 0.80 as a network
+    interval 0.78 times the exact width and 0.85 as 0.875 times (Gaussian
+    posterior, same centre), with a centre off by half a posterior standard
+    deviation at the right width scoring 0.858; the old two-sided band let
+    intervals too wide and too narrow both confirm. An interval wholly above
+    0.95 is Refuted on this row, which bets on overconfidence only, so the null
+    now also requires H-d's interval within [0.85, 0.95], and the share of
+    pairs above 0.95 is reported. The ensemble's central Gaussian interval on a
+    skewed posterior scores 0.9225 in the limit where the posterior is prior A
+    (the sheet's limiting case, recomputed), so H-d is an easier Refuted for
+    the ensemble than for the ratio estimator, whose equal-tailed interval has
+    no such offset; the asymmetry is declared at line 126.
+  - **Definitions added.** Line 107: d_P per training prior, Ĥ_exact,P the
+    exact posterior mean, d alone d_A. Line 109: the A and B networks of the
+    same seed paired, and the identity for E. Line 111: the seed floor as a
+    number, per prior the median over the bin's pairs and the ten seed pairs of
+    abs(S), the larger prior's value the floor, with the scale 0.954 τ/0.20,
+    that is 4.77 τ, the sheet's illustration (0.0095 at τ = 0.002, G3's
+    stability tolerance taken as a scale, since G3 bounds a median's shift
+    under doubling and does not measure seed scatter; the median of abs(N(0,
+    2τ²)) is 0.6745 × √2 × τ); the floor is a fixed number per bin, recomputed
+    on each shifted bin of D70's re-scoring, and a seed pair with a failed
+    network is left out for that pair. Line 126: a training-seed index is one
+    unit across the three noise levels; the per-level breakdown carries no
+    verdict; the eight verdicts are read individually at 95% without
+    adjustment, said in the report; no verdict is pooled across hypotheses or
+    calibrators, the null being read off the four verdicts and not a fifth;
+    v1's sentences that a result inside the gap is reported as inconclusive,
+    not stretched into a confirmation, and that the numbers are falsification
+    thresholds, not targets, restored near-verbatim. Line 128: the null per
+    calibrator is all four hypotheses Refuted with H-d's interval within [0.85,
+    0.95], an Inconclusive or untestable outcome leaving it unproven; "within
+    tolerance" removed. Line 132: the hierarchical form, "over training seeds
+    and, within seed, pairs", which D68 and D70 refer to, is replaced by
+    crossed resampling on the sheet's reading of Owen's pigeonhole bootstrap,
+    since every seed is scored on the same pairs; the point estimate is the
+    median over the bin's accepted (pair, seed) cells; each replicate resamples
+    seed indices and pair indices independently, a cell entering with the
+    product of its multiplicities; 2,000 replicates; percentile interval; the
+    seed count and the percentile form stand, so D68 is not reopened; the
+    five-seed narrowness is declared from the sheet's reading of Hesterberg's
+    Table 5, which is for a mean of five values and not this statistic, and not
+    corrected; the five per-seed medians are reported beside each interval; the
+    reference's Monte Carlo error is not resampled. Line 101's "over pairs
+    within seed" becomes "over pairs and seeds" to match. Line 134: the
+    dose-response per calibrator, pooled, over the accepted pairs with the
+    median over seeds of abs(d), its interval by the same bootstrap, expected
+    negative, descriptive.
+  - **What changes elsewhere.** Line 113, "every comparison is per pair against
+    the reference", now holds for every row. Line 75's seed pairing and seed
+    floor are used as written. The row that carries G2's and G3's tolerances
+    (H-a) is unchanged, so D66, D67 and D68 stand. Changing the seed count or
+    the interval type would reopen D68 and was not done; the bootstrap's
+    resampling scheme is changed, as above.
+  - **Not decided.** The number of test θ (line 94, set at G2 after freezing);
+    the prior-work section, the author's; the OSF amendment.
+  - **Draft.** Lines 101, 107, 109, 111, 117, 123, 124, 126, 128, 132 and 134
+    as above; line 177 ticked. No line is added or removed; 180 lines.
+  - **Counts.** 1 item remains OPEN; "OPEN" occurs 2 times. Ten checklist boxes
+    are ticked; 2 are not.
+  - What remains before freezing: the prior-work section, which is the author's
+    to write from the papers; the OSF amendment; the number of test θ is set at
+    G2 after freezing, as line 94 says.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
