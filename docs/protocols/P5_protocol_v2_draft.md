@@ -104,34 +104,34 @@ Descriptive, with one stop rule (D70): a bin holding fewer than 10% of the test 
 
 Per pair, with subscripts for the training prior:
 
-- **Mean error.** d = Ĥ_net,A − Ĥ_exact,A.
+- **Mean error.** d_P = Ĥ_net,P − Ĥ_exact,P for the training prior P, where Ĥ_net,P is the calibrator's point estimate (under The calibrators) and Ĥ_exact,P the exact posterior mean of H under P (under The exact reference); d alone is d_A.
 - **Shift ratio.** S = (Ĥ_B − Ĥ_A) / 0.20, for the network and for the reference.
-- **Excess prior dependence.** E = S_net − S_exact. Positive means the network leans on its prior more than Bayes' rule requires.
+- **Excess prior dependence.** E = S_net − S_exact, the networks trained under A and under B at the same training seed paired (under The calibrators); by the definitions above E = (d_B − d_A) / 0.20 on every pair. Positive means the network leans on its prior more than Bayes' rule requires.
 - **Interval mass.** m = exact posterior probability, under prior A, of the network's 90% interval. Faithful is 0.90.
-- **Seed floor.** S between two networks trained on the same prior with different seeds.
+- **Seed floor.** For each prior, the median, over the bin's pairs and the ten unordered pairs of training seeds, of abs(S) between the two networks trained on that prior with those seeds; the floor is the larger of the two priors' values. A hypothesis's interval is "above the seed floor" when it lies wholly above it. For scale: two networks differing by independent noise of standard deviation τ in H give a median abs(S) of 0.95 τ / 0.20, which is 0.0095 at G3's stability tolerance τ = 0.002.
 
 Every comparison is per pair against the reference, so nothing rests on frequentist coverage within strata.
 
 ## Hypotheses
 
-Named H-a to H-d to avoid collision with papers P1–P4. Directions and numbers are the author's bets and are **OPEN**.
+Named H-a to H-d to avoid collision with papers P1–P4. Directions and numbers are the author's bets (D71); why each sits where it does is under the table.
 
 | | Measure | Bin | Expected | Refuted if |
 | --- | --- | --- | --- | --- |
 | **H-a Faithful when informed** | median of abs(d) | Identified | below 0.01 | above 0.03 |
 | **H-b Excess prior dependence** | median E | Partial | above 0.15 | below 0.05 |
-| **H-c Leak into the identified regime** | median S_net | Identified | above 0.10 and above the seed floor | below 0.05 |
-| **H-d Interval infidelity** | median m | Flat | outside [0.80, 0.95] | inside [0.85, 0.93] |
+| **H-c Leak into the identified regime** | median E | Identified | above 0.05 and above the seed floor | below 0.02 |
+| **H-d Interval infidelity** | median m | Flat | below 0.80 | above 0.85 |
 
-In the flat bin the reference itself has a large S, above 0.5 on the Gaussian reading under The cut-offs and approaching one as c falls to zero, so excess prior dependence is not testable there; only interval fidelity is. Each hypothesis is scored per calibrator, pooled over noise levels, with the per-level breakdown reported. No aggregate verdict.
+In the flat bin the reference itself has a large S, above 0.5 on the Gaussian reading under The cut-offs and approaching one as c falls to zero, so excess prior dependence is not testable there; only interval fidelity is. Each hypothesis is scored per calibrator, pooled over noise levels, a training seed being one unit across the three levels; the per-level breakdown is reported and carries no verdict. The eight verdicts are read individually at 95% without adjustment for multiplicity, and the report says so. No aggregate verdict. A result inside the gap between Expected and Refuted is reported as Inconclusive, not stretched into a confirmation; the numbers are falsification thresholds, not targets, and no code may be tuned to reach them. *Why each number sits where it does*, a reading labelled as such. H-a: 0.01 is 0.59 of the largest posterior standard deviation the Identified bin allows (0.017, under The cut-offs) and 0.19 of prior A's; a faithful calibrator's d carries the reference's sampler error, about 0.0005 (see The calibrators), and training noise that G3 holds to 0.002, so "below 0.01" leaves five times that room; 0.03 is 1.77 posterior standard deviations at the bin's edge, and an estimate that far off where H is identified is not faithful; the 0.01 is also what G2's and G3's tolerances are built on. H-b: through the identity E = (d_B − d_A) / 0.20, E = 0.05 is a difference of 0.010 in H between the two networks' mean errors, H-a's fidelity scale, and E = 0.15 is 0.030, H-a's refutation scale; on the Gaussian reading a network that returns its prior mean scores E = c, 0.5 to 0.9 across the Partial bin, so 0.15 is a modest leak, and a network within 0.01 of the reference under both priors cannot exceed 0.10. H-c: scored on E, not on S_net, so that it compares with the reference as every other row does and tests the network's own contribution; on the Gaussian reading the reference's own shift ratio S_exact is 1 − c, 0.10 at the Identified edge, so a bet on S_net above 0.10 would have been met by Bayes' rule alone; 0.05 is 0.010 in H, H-a's scale, where the data carry at least nine times the prior's precision; 0.02 is 0.004 in H, about the two networks' combined sampler error (0.005 in E), the floor of what can be told from zero; the seed floor is a second floor for the same reason. H-d: one-sided towards overconfidence, the failure reported for amortised inference in the sources the decision sheet read, and the one that matters to a user of the interval; m = 0.80 is a network interval 0.78 times the exact width (Gaussian posterior, same centre) and 0.85 is 0.875 times, while a centre off by half a posterior standard deviation with the right width scores 0.858; intervals too wide, m above 0.95, are reported and decide nothing. For the ensemble, the central Gaussian interval of a skewed posterior scores up to 0.9225 in the limit where the posterior is prior A with the right mean and variance, which works against H-d for that calibrator and is declared here.
 
-**Null.** Both calibrators match the reference within tolerance in every bin. Then the finding is that amortised calibration is faithful here and its prior dependence is exactly Bayes' rule; the practical recommendation becomes "report the contraction next to the estimate".
+**Null.** For a calibrator, the null stands when all four of its hypotheses are Refuted; an Inconclusive verdict anywhere leaves it unproven, and it is stated per calibrator. Then the finding is that amortised calibration is faithful here and its prior dependence is exactly Bayes' rule; the practical recommendation becomes "report the contraction next to the estimate".
 
 ## Analysis plan
 
-- 95% hierarchical bootstrap over training seeds and, within seed, pairs.
+- 95% bootstrap interval for each median: every training seed is scored on the same pairs, so seeds and pairs are crossed, and each replicate resamples the five seed indices and the bin's pair indices independently with replacement and computes the statistic over the crossed selection; 2,000 replicates; percentile interval. A percentile interval over five seeds is narrower than nominal (the decision sheet's reading of Hesterberg); that is declared and not corrected. The reference's Monte Carlo error is not resampled; G2 bounds it.
 - **Confirmed**: whole interval on the expected side of the expected value. **Refuted**: whole interval beyond the refutation threshold. **Inconclusive**: otherwise.
-- Pre-specified dose-response: Spearman correlation of c with abs(d), with interval.
+- Pre-specified dose-response, per calibrator and pooled over levels: Spearman correlation of c with abs(d), with interval; expected negative, abs(d) growing as c falls; descriptive and carrying no verdict, since errors that merely scale with the posterior's width give the same sign.
 - Exploratory, labelled: fidelity against training-prior density at true H; which ensemble variance component tracks c; a two-step optimiser through G̃.
 
 ## Gates
@@ -174,7 +174,7 @@ To be written from the author's own reading before freezing. Beyond v1's papers 
 - [x] Reference sampler and acceptance criteria declared.
 - [x] Architectures and training procedure declared.
 - [x] Contraction cut-offs accepted or changed.
-- [ ] Every number in the hypotheses table defensible in the author's own words.
+- [x] Every number in the hypotheses table defensible in the author's own words.
 - [x] Gate tolerances declared; G0's scoping script committed before the scoping run, and the main run's settings written in before the main run.
 - [ ] Prior-work section written from the papers themselves.
 - [ ] OSF registration amended.
