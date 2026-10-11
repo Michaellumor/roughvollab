@@ -2602,6 +2602,139 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The prior-work section and the OSF amendment remain the author's before
     freezing; the number of test θ (line 94) is set at G2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D73** *(2026-10-11)* **P5: the reference script for gate G2 committed (code
+  and tests; nothing run on the emulator; nothing frozen).**
+  `p5_g2_reference.py` and `test_p5_g2_reference.py` implement line 68's exact
+  reference, line 143's gate and the references line 144 needs on G3's pilot
+  surfaces, as written, on the emulator of `p5_g1_emulator.py`. Nothing was run
+  on the real emulator, which does not exist until G1 is built after freezing;
+  the tests use toy emulators in memory, linear maps whose posterior is a known
+  Gaussian, and compare nothing across parameter values of the pricer.
+  - **What the script does.** The literals of lines 62, 66, 68, 81, 93, 143 and
+    144: the seeds 83 (one generator per pair, `default_rng([83, i, j])`), 79
+    and 89 (G2's four pilot points and their noise), 97 and 101 (G3's sixteen),
+    20261002 (the sealed θ draw); four chains; 10,000 burn-in and 40,000
+    sampling steps; adaptation every 500; 2.38²/4, 1/12, the floor 1e-10; R-hat
+    at most 1.01, the effective sample size of H at least 2,000, Kish's at
+    least 1,000; the grids of 32 and 48 points, the 20% extension, the
+    tolerances 0.001 and 0.01; the priors A = Beta(2.5, 9) and B = Beta(235/23,
+    376/69) on 0.02 + 0.46x, and the analytic Var_prior(A) = 0.46² × 36/2645.
+    The sampler: adaptive random-walk Metropolis in the box mapped to [0, 1]⁴,
+    the four chains vectorised, a proposal with any coordinate outside the cube
+    rejected without evaluation, the others evaluated in one call of the
+    emulator. The diagnostics: the classical split R-hat of Gelman and others,
+    √(var⁺/W) with var⁺ = (n − 1)/n·W + B/n on the chains split into halves,
+    and the between-within effective sample size by the variogram estimator,
+    ρ_t = 1 − V_t/(2 var⁺) summed to the first odd T at which ρ_{T+1} + ρ_{T+2}
+    < 0 (the initial positive sequence), n_eff = mn/(1 + 2Σρ_t), the variogram
+    computed exactly by FFT. `reference_pair`: the uniform run, its repeat with
+    doubled lengths, Kish's effective sample size under A and B from the
+    weights ∝ prior(H), the direct runs where it falls short, the weighted mean
+    and variance of H, the equal-tailed 90% interval, the means of ξ₀, c
+    against the analytic prior variance, the acceptance rate, R-hat and the
+    effective sample sizes (of every parameter, H's being the one the
+    acceptance uses), the support box of the pooled sampling samples, and the
+    seconds. G2's grids: the cell-centred 32⁴ grid over the sampled support
+    extended by 20% per side and clipped to the box, the prior-A-weighted
+    likelihood summed over cells in chunks that never hold more than 8,192
+    cells' quotes; at the largest noise level the 48³ grid in H, ν and ρ over
+    the whole box with ξ₀ on the first grid's 32 points; each compared with the
+    pair's figures under A at the written tolerance. Modes, mutually exclusive:
+    `--pilot` (G2: the 12 references, a pool of four over pairs, the grid
+    checks over the same pool, the report `output/p5_g2_report.json` with the
+    gate's verdict and the cost per posterior and per grid), `--g3-pilot` (the
+    48 references), `--test --n N --noise-seed S` (the sealed set, refused
+    without both before anything is loaded), resumable JSONL records
+    (`output/p5_g2_pilot.jsonl`, `output/p5_g3_pilot_refs.jsonl`,
+    `output/p5_ref_test.jsonl`) with the stored samples beside them, one file
+    per array written atomically as each pair finishes and a consolidated
+    compressed archive written once at the end; `load_references` and
+    `interval_prob` for the Stage 2 scripts; no flag prints the design and
+    holds.
+  - **Declared, beyond the draft's words.** The four starts are drawn as one
+    block before any step; within a step the generator draws the proposal
+    normals, then the acceptance uniforms, whether or not a proposal lies
+    inside the box. The empirical covariance at an adaptation includes the
+    chain's start; the floor of 1e-10 is applied to the diagonal after the
+    2.38²/4 scaling; the adaptation at step 10,000 is the sampling proposal; a
+    floored covariance that is still not positive definite (a chain that moved
+    along a line) has 1e-10 × I added, tenfold at a time, until it is. "Fresh
+    starts of the same generator" is read as new uniform starts from the
+    continuing stream, not a re-seeding; the direct runs under A, then B,
+    continue the same stream, each with its own single repeat with doubled
+    lengths. The sampler and the diagnostics work in unit coordinates, to which
+    R-hat and the effective sample size are invariant. The noise draws are
+    `default_rng(seed).standard_normal((n, 3, 35))`, so y[i, j] = G̃(θ_i) + s_j
+    ε[i, j]. A weighted quantile is the smallest sample value at which the
+    cumulative normalised weight reaches q; intervals are closed. The H samples
+    of each accepted run (the uniform run and any direct run) are stored as
+    16-bit integers on the box's range of H, a resolution of 7e-6, so that the
+    posterior probability under A of any interval can be computed later from
+    the dequantised samples with the weights recomputed; the scalar summaries
+    are computed on the exact samples before quantisation. The effective-sample
+    truncation is the rule as Gelman and others state it, the first odd T with
+    ρ_{T+1} + ρ_{T+2} < 0, which starts the test at the pair (ρ_2, ρ_3). The
+    sealed test set is the first N rows of `default_rng(20261002)`'s uniform
+    draw on the box, nested in N; the test set's noise seed is an argument with
+    no default, recorded in the header, until line 94's amendment declares it
+    with N; the three sets index the pair generator `default_rng([83, i, j])`
+    by their own i, as line 68 says. One tolerance serves both grids. The
+    support box is that of the accepted uniform run's pooled sampling samples.
+    The whole-box grid's ξ₀ axis is the first grid's, so it checks for a mode
+    missed in H, ν or ρ, as D66 reasoned. A reference failure among the 12
+    pilot pairs fails G2, which line 143 leaves unsaid. The default emulator is
+    the base stage's archive; a refined emulator is passed with `--emulator`,
+    and the header records the emulator's stage, commit and node counts. The
+    cost per posterior is wall time inside a worker with the pool running,
+    reported with the pool size. Beyond line 68's list, the record also holds
+    the variance and the interval under B, every attempt's diagnostics, the
+    support box and Kish's sizes. Resume: a launch appends to the record and
+    skips pairs already present whose samples are stored, doing again a pair
+    recorded without them; a launch whose set, seeds, lengths or emulator
+    (path, stage, commit, nodes) differ from the record's header refuses; the
+    report refuses if a record's surface is not the one the current emulator
+    gives; a pair that raises is recorded as an error and tried again; a
+    reference failure is a recorded status, not an error.
+  - **The tests.** Eight, in `test_p5_g2_reference.py`: the literals, with the
+    two priors' variances equal to 36/2645 and the seeds distinct from those
+    already used; R-hat and the effective sample size on synthetic chains
+    (independent normals, an AR(1) process with the known ratio (1 − φ)/(1 +
+    φ), chains shifted apart, the variogram on a hand-computed case); the
+    weighted mean, variance, quantiles, Kish's size, the interval probability,
+    the quantisation, the contraction and the prior densities on hand-built
+    numbers; the sampler on a linear emulator with short chains, each
+    parameter's mean within four Monte Carlo standard errors of the Gaussian
+    posterior's, the acceptance rate between 0.1 and 0.6, determinism under the
+    same generator, the out-of-box rejection and the adapted covariance; the
+    repeat with doubled lengths and the reference failure, with R-hat forced to
+    1.5; the reweighting to A against 400,000 exact Gaussian draws reweighted
+    the same way, the direct-run path forced by an unreachable Kish floor, the
+    grid check on the sampled support against the same yardstick, the
+    extension's clipping and the whole-box grid's shape; the draws and the
+    sealed set's nesting, the test mode's refusal without its arguments, the
+    refusal without an emulator, the no-flag hold; the record, resume, header
+    check and report on a toy pilot of two surfaces at one level with pool 1, a
+    pair recorded without its samples done again, a surface from another
+    emulator refused. The pool path loads the emulator from a file per worker
+    and cannot be exercised with an in-memory toy; the tests say so. The whole
+    suite collects 306 tests (CONTRIBUTING updated from 298). An independent
+    review of the code found four faults, fixed before the commit: the samples
+    archive was rewritten whole after every pair, not atomically, and after the
+    record line, so a crash could leave a pair recorded without its samples and
+    the rewrite would have cost hours on the sealed set; a resume did not check
+    the emulator's identity; and the quantile helper could index past the end
+    when the cumulative weight fell short of one by rounding.
+  - **Cost.** D66's arithmetic, not measured here: 200,000 emulator evaluations
+    per posterior, seconds to a minute; 1,048,576 cells per grid check and
+    3,538,944 for the whole-box grid, minutes each. G2 measures the cost per
+    posterior, which line 94's amendment then uses.
+  - **Not written.** The calibrators (G3), the draft, any run on the emulator.
+    G2's run, its output and its verdict follow the build of G1, after
+    freezing; the commit that holds the output is to be named in the draft's
+    declaration when it is made.
+  - The calibrators' script (G3) is owed next among the scripts; the prior-work
+    section and the OSF amendment remain the author's before freezing.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
