@@ -3212,6 +3212,22 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     tick at line 214; then the order of acts in the new file, the OSF acts
     being the author's; line 94's amendment after G2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D78** *(2026-10-11)* **P5 v2 draft: the prior-work box ticked on the
+  author's confirmation that the eighteen sources were read (one checklist box
+  ticks; docs only; nothing frozen).** Line 214 of
+  `docs/protocols/P5_protocol_v2_draft.md`, "Prior-work section written from
+  the papers themselves", is ticked. The author confirmed in the sitting of 11
+  October 2026 that all eighteen sources listed under Relation to prior work
+  had been read; the section (D76) was drafted from those sources and left the
+  box for that confirmation. No other line of the draft changes; the one OPEN
+  item (line 94) and the box "OSF registration amended" (line 215) stand. This
+  is step 1 of the order of acts in `docs/protocols/P5_v2_amendment.md` (D77).
+  - **Not written.** The freeze commit; anything on OSF; any change to the
+    section's text, to v1 or to the decision sheet.
+  - What remains before freezing: the freeze commit on the author's word, then
+    the OSF acts and the post-freeze commit in the order D77's file sets out;
+    line 94's amendment after G2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
