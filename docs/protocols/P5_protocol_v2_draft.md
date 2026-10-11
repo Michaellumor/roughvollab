@@ -86,7 +86,7 @@ c = 1 − Var_post(H | y) / Var_prior(H)
 | Partial | 0.5 ≤ c < 0.9 |
 | Flat | c < 0.5 |
 
-c depends only on the observed surface and the reference. Fisher information and CRB_H are reported as descriptive companions and define nothing. **OPEN — the cut-offs.**
+c depends on the observed surface, prior A and the reference, and on no network. Fisher information and CRB_H are reported as descriptive companions and define nothing. **The cut-offs** (D70). Accepted as proposed, 0.9 and 0.5. What they mean: under prior A (standard deviation 0.054) c ≥ 0.9 is a posterior standard deviation of H of at most 0.017 and c ≥ 0.5 of at most 0.038 (0.012 at 0.95, 0.027 at 0.75, 0.046 at 0.25). On a Gaussian reading of the likelihood in H, c = 0.5 is where the data and prior A carry equal precision about H, so the Flat bin is where the prior outweighs the data, and c = 0.9 is where the data carry nine times the prior's precision; each edge has a meaning of its own, which other pairs of values would not. On that reading, with the priors' variances equal (see The Beta parameters), the exact reference's own shift ratio is 1 − c: 0.10 at the Identified edge and 0.50 at the Flat edge, running towards one as c falls to zero. D65's reading of D38's figures places the three noise levels one per bin under these cut-offs (c about 0.97, 0.71 and 0.21 at D38's point). The sources the decision sheet read at source define contraction by this variance ratio and propose no formal cut-offs; one describes contraction below 0.5 as weak and values approaching one as very strong. *Conventions.* c is computed per pair from the reference's pooled sampling steps under prior A, the weighted variance of H against the analytic Var_prior(H) of The Beta parameters; it is not clipped, a negative c files under Flat by the table's inequality, and the number of such pairs is reported. Each pair is binned once, by its c as computed; the number of pairs within 0.02 of each cut-off is reported per bin (the reference's Monte Carlo error in c at 2,000 effective draws is about 0.003 at c = 0.9 and 0.016 at c = 0.5, by (1 − c)·√(2/(n − 1)) for a roughly Gaussian posterior; G2 holds c to 0.01). Each hypothesis is also re-scored with both cut-offs moved by ±0.05, reported beside the verdict and deciding nothing. Not taken: equal-occupancy bins, v1's quintiles, because the hypotheses' numbers refer to a fixed meaning of each bin and the floor under Stage 1 handles occupancy; two bins, which would remove the bin H-b is scored in; hypotheses on c as a continuous variable, which the dose-response under Analysis plan already reports; a divergence-based contraction, a different quantity.
 
 ## Test sets
 
@@ -98,7 +98,7 @@ c depends only on the observed surface and the reference. Fisher information and
 
 From the reference alone: the distribution of c per noise level, the share of pairs in each bin, and c against true (H, ν).
 
-Descriptive, with one stop rule: a bin holding fewer than 10% of pairs makes its hypotheses untestable, and they are declared so, not adjusted. **OPEN — the 10% floor.**
+Descriptive, with one stop rule (D70): a bin holding fewer than 10% of the scored pairs, pooled over the noise levels, or fewer than 100 pairs, makes its hypotheses untestable for both calibrators; that is declared from the reference alone, before any network is scored, and untestable is a fourth outcome beside the three verdicts under Analysis plan. Nothing is adjusted to fill a bin: the cut-offs, the noise levels and the number of test θ stand as written, and bin shares seen on G2's or G3's pilot surfaces decide nothing. The share is of the pooled pairs because the verdicts are pooled over noise levels; the count of 100 is chosen, not derived, as a floor for the bootstrap of a median that a share alone cannot give while the number of test θ is open (the 10% is 0.3N pairs at N test θ: 60 at N = 200, 150 at 500, 300 at 1,000; the 100 binds below N = 334). A share near 10% is itself uncertain, by about ±3 points on 300 pairs treated as independent; the rule applies to the observed share.
 
 ## Stage 2 — fidelity to the exact posterior (Q2)
 
@@ -123,7 +123,7 @@ Named H-a to H-d to avoid collision with papers P1–P4. Directions and numbers 
 | **H-c Leak into the identified regime** | median S_net | Identified | above 0.10 and above the seed floor | below 0.05 |
 | **H-d Interval infidelity** | median m | Flat | outside [0.80, 0.95] | inside [0.85, 0.93] |
 
-In the flat bin the reference itself has S near one, so excess prior dependence is not testable there; only interval fidelity is. Each hypothesis is scored per calibrator, pooled over noise levels, with the per-level breakdown reported. No aggregate verdict.
+In the flat bin the reference itself has a large S, at least 0.5 on the Gaussian reading under The cut-offs and approaching one as c falls to zero, so excess prior dependence is not testable there; only interval fidelity is. Each hypothesis is scored per calibrator, pooled over noise levels, with the per-level breakdown reported. No aggregate verdict.
 
 **Null.** Both calibrators match the reference within tolerance in every bin. Then the finding is that amortised calibration is faithful here and its prior dependence is exactly Bayes' rule; the practical recommendation becomes "report the contraction next to the estimate".
 
@@ -173,7 +173,7 @@ To be written from the author's own reading before freezing. Beyond v1's papers 
 - [x] Beta parameters accepted or changed.
 - [x] Reference sampler and acceptance criteria declared.
 - [x] Architectures and training procedure declared.
-- [ ] Contraction cut-offs accepted or changed.
+- [x] Contraction cut-offs accepted or changed.
 - [ ] Every number in the hypotheses table defensible in the author's own words.
 - [x] Gate tolerances declared; G0's scoping script committed before the scoping run, and the main run's settings written in before the main run.
 - [ ] Prior-work section written from the papers themselves.
