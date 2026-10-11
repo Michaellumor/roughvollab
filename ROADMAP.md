@@ -2083,35 +2083,45 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     and two variances of the form softplus(raw) + 1e-6, trained by Gaussian
     negative log-likelihood on the whole training set, differing by
     initialisation and shuffling, without the adversarial step; Ĥ and the ξ₀
-    estimate are the means over members, the interval as at line 72. The ratio
-    estimator: the binary-classifier variant, 39 inputs (quotes and mapped θ),
-    one logit read as log r(θ, y), trained by binary cross-entropy on each
-    batch's joint pairs against the marginal pairs made by a cyclic shift of θ
-    within the batch; its posterior under the training prior, density ∝ P(H) ·
-    r, is sampled by the reference's own sampler (line 68) with log P(H) +
-    logit as the target, the same chains, lengths, adaptation, acceptance and
-    repeat, generator `default_rng([107, p, k, i, j])`; Ĥ and the ξ₀ estimate
-    are posterior means over the 160,000 pooled steps, the interval
+    estimate are the means over members; the total variance of H is the mean of
+    the members' variances plus the variance of their means, in box units, the
+    two components reported separately, and line 72's interval is Ĥ ± 1.645
+    times its square root. The ratio estimator: the binary-classifier variant,
+    39 inputs (quotes and mapped θ), one logit read as log r(θ, y), trained by
+    binary cross-entropy on each batch's joint pairs against the marginal pairs
+    made by a cyclic shift of θ within the batch; its posterior under the
+    training prior, density ∝ P(H) · r, is sampled by the reference's own
+    sampler (line 68) with log P(H) + logit as the target, the same chains,
+    lengths, adaptation, acceptance and repeat, generator `default_rng([107, p,
+    q, i, j])`; Ĥ and the ξ₀ estimate are posterior means over the accepted
+    run's pooled steps, 160,000 or 320,000 after the repeat, the interval
     equal-tailed; a sampler failure after the repeat is the calibrator's
-    failure on the pair, excluded and counted per bin, and a bin where a
-    calibrator's failures exceed the floor of line 101 is untestable for that
-    calibrator. Optimiser: Adam, learning rate 0.001, β (0.9, 0.999), no weight
-    decay, batch 256, constant rate. Stopping: a validation set of 4,000
-    surfaces per prior and noise level from `default_rng([113, p, j])`, shared
-    by both calibrators, all seeds and all rungs; the loss on it after every
-    epoch; stop at 50 epochs without improvement or at 1,000 epochs; best
-    parameters kept; quote noise fixed per training surface. A non-finite loss
-    stops the run and is declared: at G3 the rung fails; after G3 one
-    retraining from k = 6, then the cell stands with four seeds. Seeds: five
-    per calibrator, prior and noise level, a seed being the whole calibrator;
-    seed k fixes the training draw `default_rng([109, p, j, k])` (G3's draw of
-    320,000 is k = 1) and torch's generator, seeded with 109,000,000 + 10,000·p
-    + 1,000·j + 10·k + m, m the member and 0 for the ratio estimator. Stage 2's
-    measures are formed per seed, the A and B networks of the same k paired for
-    S and E, and the seed floor is S over the ten unordered pairs of seeds at
-    the same prior. The leaf's requirements file pins torch and numpy when the
-    scripts are committed; CPU, thread count declared; bitwise reproduction
-    across machines not claimed.
+    failure on the pair at that seed, excluded from every measure using that
+    network's output, S and E at that seed included, and counted per bin, and a
+    bin where a calibrator's failed pairs exceed line 101's floor, as a share
+    of the bin's pairs, is untestable for that calibrator. Optimiser: Adam,
+    learning rate 0.001, β (0.9, 0.999), no weight decay, batch 256 with a
+    partial final batch kept, constant rate. Stopping: a validation set of
+    4,000 surfaces per prior and noise level from `default_rng([113, p, j])`,
+    shared by both calibrators, all seeds and all rungs; each calibrator's
+    training objective evaluated on it after every epoch, in its drawn order in
+    batches of 256 with the last of 160 kept and the marginal pairs formed as
+    in training; stop at 50 epochs without improvement or at 1,000 epochs; best
+    parameters kept; quote noise fixed per training surface; the rule acts per
+    ensemble member and on the one ratio estimator. A non-finite loss stops the
+    run and is declared: at G3 the rung fails; after G3 one retraining from
+    seed q = 6, which takes the failed seed's place in the pairing, then the
+    cell stands with four seeds. Seeds: five per calibrator, prior and noise
+    level, q = 1 to 5 (q, not k, which line 144 uses for the rung), a seed
+    being the whole calibrator; seed q fixes the training draw
+    `default_rng([109, p, j, q])` (G3's draw of 320,000 is q = 1) and torch's
+    generator, seeded with 109,000,000 + 10,000·p + 1,000·j + 10·q + m, m the
+    member and 0 for the ratio estimator. Stage 2's measures are formed per
+    seed, the A and B networks of the same q paired for S and E, and the seed
+    floor is abs(S) over the ten unordered pairs of seeds at the same prior.
+    The leaf's requirements file pins torch and numpy when the scripts are
+    committed; CPU, thread count declared; bitwise reproduction across machines
+    not claimed.
   - **What it rests on.** A reading, labelled as such. One trunk keeps the two
     calibrators like for like, and a fixed modest size, about 38,000 weights
     for 35 inputs and a four-dimensional target, is declared without search, as
@@ -2119,28 +2129,37 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     (`docs/protocols/P5_v2_decision_sheet.md`, item 8) read at source, the
     benchmark of Miller, Weniger and Forré used 128 hidden units in three
     residual blocks, Lakshminarayanan, Pritzel and Blundell one hidden layer of
-    50 ReLU units, and the sbi library's default classifier 50 hidden features,
-    so 3 × 128 lies within their range; no claim is made that it is best. The
-    binary classifier estimates the ratio itself, which the sheet records as
-    Miller, Weniger and Forré's point against the multi-class variant, and is
-    the nearest standard variant to the binary heads of Brigo, Huser and
-    Leonte; the balanced variant is conservative by design and the telescoping
-    one would need its own implementation and calibration step. The ratio
+    50 ReLU units, and the sbi library's default classifier 50 hidden features
+    (its depth not shown on the pages the sheet read), so 128 units is the
+    largest width among them and three layers lies between the one of
+    Lakshminarayanan, Pritzel and Blundell and the three residual blocks of
+    Miller, Weniger and Forré; no claim is made that it is best. The binary
+    classifier estimates the ratio itself, which the sheet records as Miller,
+    Weniger and Forré's point against the multi-class variant, and is the
+    nearest standard variant to the binary heads of Brigo, Huser and Leonte;
+    the balanced variant is conservative by design and the telescoping one
+    would need its own implementation and calibration step. The ratio
     estimator's posterior is sampled with the reference's own sampler rather
-    than summed on a grid for D66's reason: at 0.1 vol point the posterior is
-    narrow in ξ₀ and a fixed whole-box grid would not resolve it. Sampler error
-    of the reference's accepted size then enters Ĥ_net: by the sheet's
-    arithmetic about 0.0005 in the posterior mean of H at 1,000 effective
-    draws, less at the 2,000 the reference requires, a twentieth of H-a's 0.01.
-    Early stopping on a held-out loss touches no H output; the patience of 50
-    is the value the sheet records for Brigo, Huser and Leonte, generous
-    because D43 found fixed budgets under-training. Adam at 0.001 is Layer 3's
-    setting (D40); batch 256, the validation size and the epoch cap are chosen.
-    The arXiv pages of Hermans, Begy and Louppe (1903.04057) and
-    Lakshminarayanan, Pritzel and Blundell (1612.01474) were re-read today: the
-    first describes a learned likelihood-to-evidence ratio embedded in MCMC,
-    the second deep ensembles; the classifier form of the first and the member
-    details of the second are as the sheet records from the papers' bodies.
+    than summed on a grid for D66's reason: a whole-box grid does not resolve
+    the posterior in ξ₀ at any of the three noise levels. Sampler error of the
+    reference's accepted size then enters Ĥ_net: by the sheet's arithmetic
+    about 0.0005 in the posterior mean of H in the Identified bin at 1,000
+    effective draws, less at the 2,000 the reference requires, a twentieth of
+    H-a's 0.01, which is scored in that bin. Where the sampler fails, the pair
+    is dropped at that seed, so a bin's measures are made on survivors; the
+    per-bin failure counts are reported so that a reader can see where that
+    happened, and if failures gather in the Flat bin, H-d's m is measured on
+    the surfaces that remained. Early stopping on a held-out loss touches no H
+    output; the patience of 50 is the value the sheet records for Brigo, Huser
+    and Leonte, generous because D43 found fixed budgets under-training. Adam
+    at 0.001 is Layer 3's setting (`layer3_deep_hedging.py`, D40's engine);
+    batch 256, the validation size and the epoch cap are chosen. The arXiv
+    pages of Hermans, Begy and Louppe (1903.04057) and Lakshminarayanan,
+    Pritzel and Blundell (1612.01474) were re-read today: the first describes a
+    learned likelihood-to-evidence ratio embedded in MCMC (its abstract; the
+    description of it as a binary classifier is, as the sheet records, Miller,
+    Weniger and Forré's), the second deep ensembles, whose member details are
+    as the sheet records from that paper's body.
   - **Cost.** An estimate, unmeasured. A training step of this network at batch
     256 on the author's CPU is of the order of a millisecond or two, so an
     epoch at the top rung's check run (320,000 surfaces, 1,250 steps) is about
@@ -2155,16 +2174,23 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     estimator's sampling beside it, and that is left to the test-θ sitting. The
     pairing of seeds written at line 75 defines S, E and the seed floor of
     lines 108, 109 and 111 per seed, which the hierarchical bootstrap of line
-    132 then resamples; those lines are unchanged in wording.
+    132 then resamples; those lines are unchanged in wording. The failure rule
+    borrows line 101's floor for a second purpose; when line 101 is settled the
+    two uses are to be reconciled deliberately, not by reference. The
+    validation set is shared across seeds, so the seed floor leaves out
+    validation-set variation and understates between-run variability by that
+    much; a reading.
   - **Not decided.** The Beta parameters (line 66), the contraction cut-offs
     (line 89), the number of test θ (line 94), the 10% floor (line 101), the
     hypothesis numbers (line 117), the prior-work section.
   - **Draft.** Line 75: the OPEN item becomes the architecture, the inputs, the
     two calibrators' outputs and losses, the ratio estimator's posterior and
     its sampler, the optimiser, the stopping rule, the failure rule and the
-    seeds. Line 144: "defined with the architecture below" and "to be declared
-    below" become "under The calibrators", line 75 being above line 144. Line
-    175 ticked. No line is added or removed; 180 lines.
+    seeds. Line 144: "defined with the architecture below" becomes "defined
+    under The calibrators" and "with the first of the training seeds to be
+    declared below" becomes "the draw being that of training seed q = 1 under
+    The calibrators", line 75 being above line 144. Line 175 ticked. No line is
+    added or removed; 180 lines.
   - **Counts.** 5 items remain OPEN; "OPEN" occurs 6 times. Seven checklist
     boxes are ticked; 5 are not.
   - The Beta parameters (line 66) are owed next: the decision sheet puts its
