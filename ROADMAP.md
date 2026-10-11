@@ -1987,33 +1987,47 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
 - **D67** *(2026-10-11)* **P5 v2 draft: gate G3 written in (one OPEN item
   closes; one checklist box ticks; nothing frozen; nothing run).** Recorded in
   `docs/protocols/P5_protocol_v2_draft.md` (line 144, G3's OPEN tolerance, now
-  values; line 178 ticked). The values are a choice of the author on the
-  assistant's lean, declared as such; they rest on the draft as it stands
-  (H-a's expected value at line 121, the reference of line 68 and its
-  pilot-surface procedure, the noise levels of D65, the seeds already named)
-  and on reasoning labelled below. Nothing was trained, measured or run. v1
-  remains the registered protocol. The decision sheet is not updated.
+  values; line 178 ticked; two clauses of line 68 widened so that the reference
+  serves pilot surfaces and reports the posterior mean of ξ₀). The values are a
+  choice of the author on the assistant's lean, declared as such; they rest on
+  the draft as it stands (H-a's expected value at line 121, the reference of
+  line 68 and its pilot-surface procedure, the noise levels of D65, the seeds
+  already named) and on reasoning labelled below. Nothing was trained, measured
+  or run. v1 remains the registered protocol. The decision sheet is not
+  updated.
   - **The values.** Pilot surfaces: 48, from 16 points uniform on the box
     (`default_rng(97)`) at the three noise levels with one noise draw each
     (`default_rng(101)`), none a test surface (line 95), the exact reference
-    computed on each by the procedure of line 68. ξ₀ recovery: the slope of the
-    least-squares line of the calibrator's point estimate of ξ₀ on the true ξ₀
-    over the 48 surfaces, above 0.95 as proposed; so each calibrator estimates
-    ξ₀ as well as H. Stability: the median over the 48 surfaces of abs(d), d
-    being Ĥ_net − Ĥ_exact under the calibrator's own training prior (A for the
-    prior-A calibrator, B for the prior-B one), at training size 2n within
-    0.002 of that at n, a fifth of H-a's expected value of 0.01. Ladder:
-    training sets of 10,000 × 2^k surfaces, k = 0 to 4 (10,000 to 160,000),
-    drawn from the training prior and the noise level with the seeds under The
-    calibrators, the smaller sets nested in the larger; the first training
-    seed; n is adequate when both checks hold at n, the stability check needing
-    the run at 2n, which is made for the check only; the training-set size is
-    the smallest adequate n. Budget: 320,000 surfaces (the run at 2n for the
-    top rung) and 4 h of wall per training run on the author's machine with the
-    pool of four; a run over the wall is a failure of that rung; if no rung
-    passes, P5 stops, as line 144 says. Seeds 97 and 101 are none of the sealed
-    seed, the probe's 7, the confirmation's 61 and 62, the emulator's 73 or the
-    reference's 79, 83 and 89.
+    computed on each by the procedure of line 68, whose generator now takes i
+    from the surface's index in the pilot set; a reference failure removes that
+    surface from the gate's set and is declared. Each check runs, per
+    calibrator, over the 16 surfaces at that calibrator's noise level. ξ₀
+    recovery: the slope of the least-squares line of the calibrator's point
+    estimate of ξ₀ on the exact posterior mean of ξ₀ under the calibrator's
+    training prior, above 0.95; the regressor is the exact posterior mean and
+    not the truth because a faithful posterior mean regressed on the truth has
+    a slope below one by shrinkage, by an amount that grows with the noise, so
+    a check against the truth could fail an adequately trained calibrator at
+    0.5 vol point for a reason unrelated to training; line 68 now reports the
+    posterior means of ξ₀ under A and B. Each calibrator is to output a point
+    estimate of ξ₀ beside Ĥ. Stability: the median over the 16 surfaces of
+    abs(d), with d = Ĥ_net,P − Ĥ_exact,P for the calibrator's training prior P,
+    at training size 2n within 0.002, in absolute value, of that at n, a fifth
+    of H-a's expected bound of 0.01. Ladder: training sets of 10,000 × 2^k
+    surfaces, k = 0 to 4 (10,000 to 160,000), each the first 10,000 × 2^k
+    surfaces of a single draw of 320,000 from the training prior and the noise
+    level, the two calibrators at a prior and noise level sharing the draw,
+    with the first of the training seeds to be declared at line 75 (none is yet
+    named); n is adequate when both checks hold at n, the stability check
+    needing the run at 2n, which is made for the check only; the training-set
+    size is the smallest adequate n. Budget: that draw of 320,000 surfaces per
+    prior and noise level, and 4 h of wall per training run on the author's
+    machine with the pool of four, a run being the whole calibrator (all five
+    members of the ensemble); a rung n fails if its run at n or its check run
+    at 2n exceeds either budget; if no rung passes, P5 stops, as line 144 says.
+    Seeds 97 and 101 are none of the sealed seed, the probe's 7, the
+    confirmation's 61 and 62, the emulator's 73, G2's pilot 79 and 89, or the
+    reference's 83.
   - **What it rests on.** A reading, labelled as such. The stability tolerance
     is set against the smallest number in the hypotheses table, so that an
     inadequately trained calibrator cannot move H-a's verdict by its training
@@ -2022,26 +2036,31 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     Stage 2 makes on the test set. The factor of two is what line 144 already
     fixed ("a doubling"). The budget is chosen, not derived: the emulator makes
     surfaces free (D64), so the binding cost is the network's training on a
-    four-core laptop without a GPU (D62's record of the machine), which G3
-    measures. The ξ₀-slope check is kept as proposed because ξ₀ is the
-    parameter the record finds identified at every point and on every live
-    surface (D37, D38, D39), so a calibrator that cannot recover it has not
-    learned the surface.
+    four-core laptop (D60's record of the machine: an i7-1165G7 with 4 cores
+    and no accelerator recorded), which G3 measures. The ξ₀ check is kept, with
+    the exact posterior mean as its regressor, because ξ₀ is the parameter the
+    record finds identified wherever it has assessed it: at D38's point (D37,
+    D38) and on live BTC (D39); on ETH, D42 reports ξ₀ interior to its bound
+    and does not assess it. A calibrator that cannot recover ξ₀ has not learned
+    the surface.
   - **A consequence for the architecture sitting.** Each calibrator must output
-    a point estimate of ξ₀ beside H (the ensemble by a second output of each
-    member; the ratio estimator by its posterior mean of ξ₀); the architecture,
-    the optimiser, the stopping rule and the number of training seeds stay OPEN
-    at line 75, and that sitting is to provide the ξ₀ output.
+    a point estimate of ξ₀ beside Ĥ (the ensemble by a second output of each
+    member; the ratio estimator by its posterior mean of ξ₀), and the training
+    seeds must be named: the architecture, the optimiser, the stopping rule,
+    the ξ₀ output and the number and values of the training seeds stay OPEN at
+    line 75, and that sitting is to provide them.
   - **Not decided.** The architecture and training procedure (line 75), the
     Beta parameters (line 66), the contraction cut-offs (line 89), the 10%
     floor (line 101), the number of test θ (line 94), the hypothesis numbers
     (line 117), the prior-work section.
   - **Draft.** Line 144: the OPEN tolerance becomes the pilot surfaces, the two
-    checks with their tolerances, the ladder, the seed and the budget. Line 178
-    ticked: all four gate tolerances are declared (D59, D64, D66, D67), the
-    scoping script was committed before the scoping run (D60) and the main
-    run's settings were written in before the main run (D61). No line is added
-    or removed; 180 lines.
+    checks with their tolerances, the ladder, the seed and the budget. Line 68:
+    the reference's generator takes i from the θ's index in the set in
+    question, test or pilot, and the posterior means of ξ₀ under A and B join
+    what is reported. Line 178 ticked: all four gate tolerances are declared
+    (D59, D64, D66, D67), the scoping script was committed before the scoping
+    run (D60) and the main run's settings were written in before the main run
+    (D61). No line is added or removed; 180 lines.
   - **Counts.** 6 items remain OPEN; "OPEN" occurs 7 times. Six checklist boxes
     are ticked; 6 are not.
   - The architecture sitting (line 75) is owed next.
