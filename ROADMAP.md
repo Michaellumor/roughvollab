@@ -2065,6 +2065,111 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     are ticked; 6 are not.
   - The architecture sitting (line 75) is owed next.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D68** *(2026-10-11)* **P5 v2 draft: the calibrators' architecture and
+  training written in (one OPEN item closes; one checklist box ticks; nothing
+  frozen; nothing built).** The architecture sitting owed by D67. Recorded in
+  `docs/protocols/P5_protocol_v2_draft.md`: line 75, the OPEN architecture,
+  optimiser, stopping rule, ratio-estimation variant, posterior sample count
+  and number of training seeds, becomes values; line 175 is ticked; the two
+  phrases of line 144 that pointed "below" to line 75 now point to The
+  calibrators. The values are a choice of the author on the assistant's lean,
+  declared as such. No network was built, trained or timed; nothing is frozen.
+  - **The design.** One trunk for both calibrators: a multilayer perceptron,
+    three hidden layers of 128 units, ReLU, no normalisation or dropout,
+    PyTorch's default initialisation, declared without search. Inputs are the
+    35 quotes standardised by the training set's per-quote mean and standard
+    deviation; θ is mapped to [0, 1]⁴ as the reference maps it. The ensemble:
+    five heteroscedastic members with four outputs each, the means of H and ξ₀
+    and two variances of the form softplus(raw) + 1e-6, trained by Gaussian
+    negative log-likelihood on the whole training set, differing by
+    initialisation and shuffling, without the adversarial step; Ĥ and the ξ₀
+    estimate are the means over members, the interval as at line 72. The ratio
+    estimator: the binary-classifier variant, 39 inputs (quotes and mapped θ),
+    one logit read as log r(θ, y), trained by binary cross-entropy on each
+    batch's joint pairs against the marginal pairs made by a cyclic shift of θ
+    within the batch; its posterior under the training prior, density ∝ P(H) ·
+    r, is sampled by the reference's own sampler (line 68) with log P(H) +
+    logit as the target, the same chains, lengths, adaptation, acceptance and
+    repeat, generator `default_rng([107, p, k, i, j])`; Ĥ and the ξ₀ estimate
+    are posterior means over the 160,000 pooled steps, the interval
+    equal-tailed; a sampler failure after the repeat is the calibrator's
+    failure on the pair, excluded and counted per bin, and a bin where a
+    calibrator's failures exceed the floor of line 101 is untestable for that
+    calibrator. Optimiser: Adam, learning rate 0.001, β (0.9, 0.999), no weight
+    decay, batch 256, constant rate. Stopping: a validation set of 4,000
+    surfaces per prior and noise level from `default_rng([113, p, j])`, shared
+    by both calibrators, all seeds and all rungs; the loss on it after every
+    epoch; stop at 50 epochs without improvement or at 1,000 epochs; best
+    parameters kept; quote noise fixed per training surface. A non-finite loss
+    stops the run and is declared: at G3 the rung fails; after G3 one
+    retraining from k = 6, then the cell stands with four seeds. Seeds: five
+    per calibrator, prior and noise level, a seed being the whole calibrator;
+    seed k fixes the training draw `default_rng([109, p, j, k])` (G3's draw of
+    320,000 is k = 1) and torch's generator, seeded with 109,000,000 + 10,000·p
+    + 1,000·j + 10·k + m, m the member and 0 for the ratio estimator. Stage 2's
+    measures are formed per seed, the A and B networks of the same k paired for
+    S and E, and the seed floor is S over the ten unordered pairs of seeds at
+    the same prior. The leaf's requirements file pins torch and numpy when the
+    scripts are committed; CPU, thread count declared; bitwise reproduction
+    across machines not claimed.
+  - **What it rests on.** A reading, labelled as such. One trunk keeps the two
+    calibrators like for like, and a fixed modest size, about 38,000 weights
+    for 35 inputs and a four-dimensional target, is declared without search, as
+    line 150 requires. Of the sources the decision sheet
+    (`docs/protocols/P5_v2_decision_sheet.md`, item 8) read at source, the
+    benchmark of Miller, Weniger and Forré used 128 hidden units in three
+    residual blocks, Lakshminarayanan, Pritzel and Blundell one hidden layer of
+    50 ReLU units, and the sbi library's default classifier 50 hidden features,
+    so 3 × 128 lies within their range; no claim is made that it is best. The
+    binary classifier estimates the ratio itself, which the sheet records as
+    Miller, Weniger and Forré's point against the multi-class variant, and is
+    the nearest standard variant to the binary heads of Brigo, Huser and
+    Leonte; the balanced variant is conservative by design and the telescoping
+    one would need its own implementation and calibration step. The ratio
+    estimator's posterior is sampled with the reference's own sampler rather
+    than summed on a grid for D66's reason: at 0.1 vol point the posterior is
+    narrow in ξ₀ and a fixed whole-box grid would not resolve it. Sampler error
+    of the reference's accepted size then enters Ĥ_net: by the sheet's
+    arithmetic about 0.0005 in the posterior mean of H at 1,000 effective
+    draws, less at the 2,000 the reference requires, a twentieth of H-a's 0.01.
+    Early stopping on a held-out loss touches no H output; the patience of 50
+    is the value the sheet records for Brigo, Huser and Leonte, generous
+    because D43 found fixed budgets under-training. Adam at 0.001 is Layer 3's
+    setting (D40); batch 256, the validation size and the epoch cap are chosen.
+    The arXiv pages of Hermans, Begy and Louppe (1903.04057) and
+    Lakshminarayanan, Pritzel and Blundell (1612.01474) were re-read today: the
+    first describes a learned likelihood-to-evidence ratio embedded in MCMC,
+    the second deep ensembles; the classifier form of the first and the member
+    details of the second are as the sheet records from the papers' bodies.
+  - **Cost.** An estimate, unmeasured. A training step of this network at batch
+    256 on the author's CPU is of the order of a millisecond or two, so an
+    epoch at the top rung's check run (320,000 surfaces, 1,250 steps) is about
+    two seconds, 1,000 epochs about 35 minutes per member and under three hours
+    for the five, inside G3's 4 h; G3 measures it. The ratio estimator's
+    posterior needs 200,000 network evaluations in batches of four chains,
+    seconds per surface; with N test θ there are 3N × 2 × 5 such posteriors,
+    15,000 at N = 500 and 30,000 at N = 1,000, and the chains of many surfaces
+    can share one batch.
+  - **Consequences for other sittings.** Line 94's rule sets the number of test
+    θ from the reference's measured cost at G2; it should count the ratio
+    estimator's sampling beside it, and that is left to the test-θ sitting. The
+    pairing of seeds written at line 75 defines S, E and the seed floor of
+    lines 108, 109 and 111 per seed, which the hierarchical bootstrap of line
+    132 then resamples; those lines are unchanged in wording.
+  - **Not decided.** The Beta parameters (line 66), the contraction cut-offs
+    (line 89), the number of test θ (line 94), the 10% floor (line 101), the
+    hypothesis numbers (line 117), the prior-work section.
+  - **Draft.** Line 75: the OPEN item becomes the architecture, the inputs, the
+    two calibrators' outputs and losses, the ratio estimator's posterior and
+    its sampler, the optimiser, the stopping rule, the failure rule and the
+    seeds. Line 144: "defined with the architecture below" and "to be declared
+    below" become "under The calibrators", line 75 being above line 144. Line
+    175 ticked. No line is added or removed; 180 lines.
+  - **Counts.** 5 items remain OPEN; "OPEN" occurs 6 times. Seven checklist
+    boxes are ticked; 5 are not.
+  - The Beta parameters (line 66) are owed next: the decision sheet puts its
+    item 6 before the cut-offs and the floor.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
