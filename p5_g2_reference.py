@@ -144,14 +144,17 @@ def log_lik(thetas, y, s, em):
     return -np.sum((G - np.asarray(y, dtype=float)[None, :]) ** 2, axis=1) / (2.0 * s * s)
 
 
-def log_target(x, y, s, em, prior, box=BOX):
-    """log posterior (up to a constant) at unit-cube points x [M, 4]; −inf outside."""
+def log_target(x, y, s, em, prior, box=BOX, target=None):
+    """log posterior (up to a constant) at unit-cube points x [M, 4]; −inf outside. With
+    `target`, a callable of points in box units returning the log density, the sampler
+    serves another target with the same mechanics (the ratio estimator's posterior under
+    The calibrators uses it with log P(H) + logit)."""
     x = np.asarray(x, dtype=float).reshape(-1, 4)
     out = np.full(x.shape[0], -np.inf)
     inside = np.all((x >= 0.0) & (x <= 1.0), axis=1)
     if inside.any():
         th = unit_to_theta(x[inside], box)
-        out[inside] = log_lik(th, y, s, em) + prior_logpdf(th[:, 0], prior)
+        out[inside] = target(th) if target is not None else log_lik(th, y, s, em) + prior_logpdf(th[:, 0], prior)
     return out
 
 
@@ -179,7 +182,7 @@ def adapted_cov(steps):
     return c
 
 
-def mh_step(x, lt, L, y, s, em, prior, rng, box=BOX):
+def mh_step(x, lt, L, y, s, em, prior, rng, box=BOX, target=None):
     """One Metropolis step for every chain: z then u are drawn from rng in that order,
     whether or not a proposal lies inside the box. Returns (x, lt, accepted)."""
     n, d = x.shape
@@ -188,7 +191,7 @@ def mh_step(x, lt, L, y, s, em, prior, rng, box=BOX):
     inside = np.all((prop >= 0.0) & (prop <= 1.0), axis=1)
     lt_prop = np.full(n, -np.inf)
     if inside.any():
-        lt_prop[inside] = log_target(prop[inside], y, s, em, prior, box)
+        lt_prop[inside] = log_target(prop[inside], y, s, em, prior, box, target)
     u = rng.uniform(size=n)
     with np.errstate(divide="ignore", invalid="ignore"):
         accept = inside & (np.log(u) < lt_prop - lt)
@@ -200,19 +203,20 @@ def mh_step(x, lt, L, y, s, em, prior, rng, box=BOX):
 
 
 def run_chains(y, s, em, rng, prior="uniform", burn=BURN, sample=SAMPLE, n_chains=N_CHAINS,
-               adapt_every=ADAPT_EVERY, box=BOX):
+               adapt_every=ADAPT_EVERY, box=BOX, target=None):
     """The adaptive random-walk Metropolis of line 68. Returns a dict with the
     sampling-phase samples [n_chains, sample, 4] in unit coordinates, the acceptance rate
-    over the sampling steps pooled over chains, the final proposal covariances, lengths."""
+    over the sampling steps pooled over chains, the final proposal covariances, lengths.
+    `target` (see log_target) substitutes another log density with the same mechanics."""
     d = 4
     x = rng.uniform(size=(n_chains, d))
-    lt = log_target(x, y, s, em, prior, box)
+    lt = log_target(x, y, s, em, prior, box, target)
     cov = np.tile(SCALE * INIT_VAR * np.eye(d), (n_chains, 1, 1))
     L = np.stack([_chol_pd(c) for c in cov])
     hist = np.empty((n_chains, burn + 1, d))
     hist[:, 0] = x
     for t in range(1, burn + 1):
-        x, lt, _ = mh_step(x, lt, L, y, s, em, prior, rng, box)
+        x, lt, _ = mh_step(x, lt, L, y, s, em, prior, rng, box, target)
         hist[:, t] = x
         if t % adapt_every == 0:
             cov = np.stack([adapted_cov(hist[k, :t + 1]) for k in range(n_chains)])
@@ -220,7 +224,7 @@ def run_chains(y, s, em, rng, prior="uniform", burn=BURN, sample=SAMPLE, n_chain
     samples = np.empty((n_chains, sample, d))
     n_acc = 0
     for t in range(sample):
-        x, lt, acc = mh_step(x, lt, L, y, s, em, prior, rng, box)
+        x, lt, acc = mh_step(x, lt, L, y, s, em, prior, rng, box, target)
         samples[:, t] = x
         n_acc += int(acc.sum())
     return {"samples": samples, "acceptance": n_acc / float(n_chains * sample), "cov": cov,
@@ -358,13 +362,13 @@ def _finite(v):
     return float(v) if np.isfinite(v) else None
 
 
-def _run_with_repeat(y, s, em, rng, prior, burn, sample, box, rhat_max=RHAT_MAX, ess_min=ESS_MIN):
+def _run_with_repeat(y, s, em, rng, prior, burn, sample, box, rhat_max=RHAT_MAX, ess_min=ESS_MIN, target=None):
     """One run; on failure of the acceptance, one repeat with doubled lengths from fresh
     starts of the same generator. Returns (run or None, list of attempt records)."""
     attempts = []
     for k, (b, n) in enumerate(((burn, sample), (2 * burn, 2 * sample))):
         t0 = time.perf_counter()
-        run = run_chains(y, s, em, rng, prior, b, n, box=box)
+        run = run_chains(y, s, em, rng, prior, b, n, box=box, target=target)
         ok, diag = accept(run["samples"], rhat_max, ess_min)
         attempts.append({"attempt": k + 1, "burn": b, "sample": n, "acceptance": run["acceptance"],
                          "rhat": {d: _finite(v) for d, v in diag["rhat"].items()},
