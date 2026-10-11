@@ -1887,6 +1887,103 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     boxes are ticked; 8 are not.
   - The reference sitting (G2) is owed next.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D66** *(2026-10-11)* **P5 v2 draft: the exact reference and gate G2 written
+  in (two OPEN items close; one checklist box ticks; nothing frozen; nothing
+  run).** Recorded in `docs/protocols/P5_protocol_v2_draft.md` (line 68, the
+  OPEN item for the sampler, chains, length, R-hat ceiling and effective-sample
+  floor, now values; line 143, G2's OPEN tolerance, now values with its pilot
+  surfaces and grids; line 174 ticked). The design is a choice of the author on
+  the assistant's lean, declared as such; it rests on what the draft now fixes
+  (the box, the emulator of D64, the noise levels of D65, the priors, the
+  contraction of line 81, the measures of lines 107 to 110) and on reasoning
+  labelled below. Nothing was measured or run; the reference's script is
+  written after freezing (line 7). The number of test θ (line 94) stays OPEN:
+  it is set from the cost G2 measures. v1 remains the registered protocol. The
+  decision sheet is not updated.
+  - **The design.** Target: the posterior of θ = (H, ν, ρ, ξ₀) on the box under
+    the likelihood Gaussian with the known s on the 35 quotes of the
+    observable, log L = −Σ(y − G̃(θ))² / (2 s²), and the uniform box prior; the
+    H-marginal is what the measures use. Sampler: adaptive random-walk
+    Metropolis with a Gaussian proposal in the box mapped affinely to [0, 1]⁴;
+    one generator per pair, `default_rng([83, i, j])` for the i-th test θ and
+    the j-th noise level, serving the starts, the proposals and the acceptance
+    draws; four chains from points uniform on the box; the proposal covariance
+    2.38²/4 = 1.416 times 1/12 times the identity at the start (the variance of
+    the uniform start) and, every 500 of the 10,000 burn-in steps per chain,
+    reset to 1.416 times the empirical covariance of that chain's steps so far
+    with a floor of 1e-10 on the diagonal; 40,000 sampling steps per chain with
+    the proposal fixed; a proposal outside the box rejected. Acceptance, on the
+    sampling steps only with each chain split into halves: the classical
+    between-within split R-hat of Gelman and others (not rank-normalised) at
+    most 1.01 on each of H, ν, ρ, ξ₀; the effective sample size of H over the
+    eight half-chains, by the same between-within estimator, at least 2,000; a
+    failing run repeated once with both lengths doubled from fresh starts of
+    the same generator; a second failure recorded and declared as a reference
+    failure for that (surface, noise level) pair. Priors A and B:
+    self-normalised importance weights proportional to the prior's density of H
+    at each pooled sampling step (ν, ρ and ξ₀ being uniform under all three
+    priors), Kish's effective sample size (Σw)²/Σw² at least 1,000 under each,
+    else a direct run under that prior with the same sampler and acceptance;
+    means, variances, quantiles and interval probabilities as weighted means
+    and weighted quantiles of the pooled sampling steps. Reported per pair: the
+    posterior means of H under A and B (Ĥ_exact of lines 107 and 108), the
+    posterior variance of H under A (c, line 81), the equal-tailed 90% interval
+    under A, the posterior probability under A of any given interval (m, line
+    110), the acceptance rate, R-hat and the effective sample sizes. G2: 12
+    pilot surfaces, four points uniform on the box from `default_rng(79)` at
+    the three noise levels with one noise draw each from `default_rng(89)`,
+    none a test surface (line 95); on each, the MCMC posterior of H against a
+    brute-force grid posterior on G̃ by quadrature: a cell-centred tensor grid
+    of 32 points per dimension (1,048,576 cells) over the smallest axis-aligned
+    box containing the four chains' sampling-phase samples, each side extended
+    by 20% and clipped to the box, the posterior being the prior-A-weighted
+    likelihood summed over cells; at the largest noise level a second grid, as
+    a check against a mode the chains missed, of 48 cell-centred points in each
+    of H, ν and ρ over the whole box with ξ₀ on the 32 points of the first grid
+    (3,538,944 cells); tolerance under prior A on every pilot surface: the
+    posterior mean of H within 0.001 and c within 0.01. Seeds 79, 83 and 89 are
+    none of the sealed seed, the probe's 7, the confirmation's 61 and 62, or
+    the emulator's 73.
+  - **What it rests on.** A reading, labelled as such. The posterior is on a
+    four-dimensional box with a smooth likelihood of 35 barycentric sums over
+    9,216 nodes each (D64). Its shape at the smallest noise is narrow in ξ₀
+    (D37's sensitivity ordering, ξ₀ far above ρ, ν and H) and elongated along
+    the H↔ν valley, whose correlation was measured at the truth (D37, D38) and
+    at fitted optima (D41, D42): −0.82 to −0.91 on full surfaces, −0.92 on
+    D37's put wing. An adapted Gaussian proposal follows such a shape; a
+    uniform grid over the whole box does not resolve the ξ₀ direction at any of
+    the three noise levels (at 0.5 vol point, 48 cells over ξ₀ are each several
+    times the posterior's width there), which is why the grid check is placed
+    on the sampled support, and the whole-box grid, a check against a missed
+    mode, keeps ξ₀ on that support. The thresholds are conventional, chosen
+    here and not derived: R-hat 1.01, effective sample sizes 2,000 and 1,000,
+    four chains. The tolerances are set so that reference error cannot move a
+    verdict or a bin: 0.001 on the mean of H is a tenth of H-a's expected value
+    of 0.01 (line 121); 0.01 on c is a hundredth of its range and a tenth of
+    the narrowest proposed bin (identified, 0.1 wide). None of this is measured
+    here; G2 measures it.
+  - **Cost.** Arithmetic, not a measurement: a chain step is one evaluation of
+    G̃, 35 barycentric sums (D64), so a run of 4 × 50,000 steps is 200,000
+    evaluations, of the order of seconds to a minute per posterior on the
+    author's machine; the grid check is 1,048,576 evaluations per pilot surface
+    and 3,538,944 for the whole-box grid, minutes each, made 12 times and 4
+    times. The cost per posterior is measured at G2 and written in with the
+    test-set size (line 94); by this arithmetic the test-set size will be set
+    by the calibrators' cost, not the reference's. Line 94 is unchanged here;
+    if G2 bears this out, the amendment at line 94 should name the cost that
+    binds.
+  - **Not decided.** The number of test θ (line 94), training adequacy and G3's
+    tolerance (line 144), the Beta parameters (line 66), the contraction
+    cut-offs (line 89) and the 10% floor (line 101), the hypothesis numbers
+    (line 117), the calibrators' architecture and training (line 75), the
+    prior-work section. The reference's script and its runs follow freezing.
+  - **Draft.** Line 68: the OPEN span becomes the design. Line 143: the OPEN
+    tolerance becomes the pilot surfaces, the grids and the tolerance. Line 174
+    ticked. No line is added or removed; 180 lines.
+  - **Counts.** 7 items remain OPEN; "OPEN" occurs 8 times. Five checklist
+    boxes are ticked; 7 are not.
+  - The training-adequacy sitting (G3) is owed next.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
