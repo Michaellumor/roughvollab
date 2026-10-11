@@ -3110,6 +3110,108 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - What remains before freezing: the author's reading of the sources and the
     tick at line 214; the OSF amendment; line 94's amendment after G2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D77** *(2026-10-11)* **P5: the OSF amendment specified: what OSF allows,
+  the design (a new registration of the frozen v2 file and an update to APSF7
+  pointing to it), the statement to paste, and the order of acts at freeze
+  (docs only; nothing frozen; nothing on OSF touched).** The draft's legend
+  (line 11) says the record is the OSF registration amended with this version,
+  and D55 left the amendment as the author's act at freeze; nothing in the
+  repository said what it consists of. `docs/protocols/P5_v2_amendment.md` now
+  does, as a working aid that decides nothing. The draft is not changed by one
+  line.
+  - **What was verified at OSF, read-only, on 11 October 2026.** Registration
+    `apsf7` (DOI 10.17605/OSF.IO/APSF7) is an Open-Ended Registration of the
+    project `gdsv7`, registered 2 October 2026 at 19:08 UTC, public, review
+    state accepted, unmodified since registration (API
+    `/v2/registrations/apsf7/`), with one schema response, the original,
+    approved; the registration's `revision_state` field read `approved`, then
+    `in_progress` while a draft update the author had started existed, then
+    `approved` again after the author deleted that draft the same day, nothing
+    having been submitted. Its responses are a summary, naming the attached
+    protocol as the authoritative document and citing commit `13bca7e`, and one
+    uploaded file, `P5_protocol.md`, with recorded SHA-256
+    5b7a67e5ca83b62308907b699f0587fe1febc4894a8335ce3b8acfe3e7890132 (API
+    `/v2/schema_responses/6ac001210231cc8223157561/`). The git blob of
+    `docs/protocols/P5_protocol.md` at `13bca7e` and at `main` hashes to that
+    value exactly; the working copy differs only by the CRLF endings
+    `core.autocrlf` applies on checkout. The commit (18:22 UTC) preceded the
+    registration by 45 minutes. The Programme row's sentence that the
+    registered file is byte-identical to the committed protocol therefore
+    holds, of the blob. From OSF Support's "Welcome to Registrations &
+    Preregistrations!" (the update sections and the FAQ, paraphrased): an admin
+    contributor can start an update from the registration's overview, the
+    fields prefilled, at least one changed, a justification required, every
+    admin having 48 hours to approve or cancel before automatic approval; files
+    cannot be added or removed in an update and documents cannot be uploaded or
+    modified after submission; a document may be linked from a public project,
+    a newly submitted public registration or an outside repository; updates are
+    described as for events outside the researcher's control or unexpected
+    anomalies; a withdrawn registration cannot be reinstated. The
+    registration's own page is a browser application and showed nothing to a
+    plain fetch; the API was read instead.
+  - **The design, and why.** "Amended with this version" cannot be done by
+    attaching v2 to `apsf7`. The frozen v2 file is to be registered anew, as an
+    Open-Ended Registration from the same project with the amendment statement
+    as its summary, so that a copy sits on an independent server with a
+    timestamp and a hash as v1's does; and `apsf7` is to receive an update
+    whose summary gains one paragraph pointing to the new registration, the
+    same paragraph as its justification, so that a reader of v1's record finds
+    v2 and so that v1 stays the record of what was registered on 2 October
+    2026, not withdrawn. An update alone would leave v2 with no registered
+    copy; a new registration alone would leave `apsf7` silent. The file
+    registered is the git blob of the freeze commit (LF endings), exported with
+    `git show`, so that OSF's recorded hash can be checked against the blob as
+    v1's was. The file keeps its name, `P5_protocol_v2_draft.md`, which sixteen
+    decision entries cite by name and four more by line; the Status line, not
+    the name, is to say it is frozen. These are proposals in a working aid; the
+    acts are the author's and none has been made.
+  - **What the file holds.** The facts above with their addresses; the design;
+    the amendment statement in the Reporting line's three heads, ready to
+    paste: what changed from v1 as thirteen items, each naming the decision
+    entries that fixed it (the question, D55; the frozen emulator, D55 and D64;
+    the observable, grid, box and resolution from G0, D58, D59, D61 and D62;
+    three noise levels, D65; the Beta parameters, D69; the exact reference and
+    G2, D66; the calibrators and G3, D67 and D68; the contraction cut-offs,
+    D70; the four hypotheses and the null, D71; the crossed bootstrap, the
+    re-scoring and the analysis script, D71, D70 and D75, the verdict rule
+    being kept from v1; three v1 clauses dropped without counterpart, the
+    control at home, the optional cleaner noise level and the reason for the
+    0.20 gap, from the decision sheet's list; the prior-work section, D76; the
+    scripts committed before freezing, D59 to D62 and D72 to D75), why (D55's
+    reason), and what had been seen (the 3 October probe, D55; G0's scoping and
+    main runs, D60 to D62; nothing else, to be re-verified at the freeze commit
+    by a search of the tracked files and the output directory); a proposed
+    title for the new registration; the paragraph for the update to `apsf7`;
+    the order of acts at freeze in five steps, each marked as the author's or
+    the repository's (the tick at line 214 after the author's reading; the
+    freeze commit changing only the Status line, the legend and the OSF box's
+    words; the new registration; the update; the post-freeze commit that adds
+    the v2 DOI to line 7, ticks the OSF box and records the hashes); an empty
+    record table; and what is not Claude's to do on OSF. Placeholders in angle
+    brackets stand for the freeze commit, the hash, the date, the registration
+    id and the DOI.
+  - **Declared.** The order mirrors v1's (commit first, OSF second), so that
+    the registered file is the committed blob. The OSF box is left unticked at
+    the freeze commit and ticked only after the acts, because the file
+    registered must be the frozen one and a tick before the act would assert
+    what had not happened; the post-freeze commit is a dated amendment changing
+    two lines and saying so. The thirteen items of what changed are drawn from
+    the decision sheet's "Differences from v1", from D55 and from the entries
+    named; of the sheet's five clauses said to have no counterpart in v2, two
+    are stale, the draft now carrying "no code may be tuned to reach them"
+    (line 126, D71) and a Null paragraph (line 128), and the other three are
+    listed as dropped. The working aid carries no AI-assistance line in its
+    Status, as the decision sheet does not; the line inside the statement is
+    for OSF, where v1's registration carries one. OSF's own pages are
+    paraphrased, not quoted. The registration's `revision_state` values are
+    reported as read, the draft update's existence and deletion on the author's
+    word.
+  - **Not written.** Any line of the draft; v1; the decision sheet; anything on
+    OSF; the freeze; the tick at line 214.
+  - What remains before freezing: the author's reading of the sources and the
+    tick at line 214; then the order of acts in the new file, the OSF acts
+    being the author's; line 94's amendment after G2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
