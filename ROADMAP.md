@@ -2280,6 +2280,113 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The contraction cut-offs (line 89) are owed next, with the 10% floor (line
     101) in view, as the sheet's items 9 and 11.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D70** *(2026-10-11)* **P5 v2 draft: the contraction cut-offs accepted and
+  the 10% floor written in (two OPEN items close; one checklist box ticks;
+  nothing frozen; nothing run).** The sitting at which the decision sheet's
+  items 9 and 11 are decided, with the noise levels (D65) and the priors (D69)
+  already in place. Recorded in `docs/protocols/P5_protocol_v2_draft.md`: line
+  89, the OPEN cut-offs, becomes the accepted values with their meaning,
+  conventions and what was not taken; line 101, the OPEN floor, becomes a rule;
+  line 75's per-calibrator failure rule is reconciled with it; one clause of
+  line 126 is corrected; line 176 is ticked. The values are a choice of the
+  author on the assistant's lean, declared as such. No posterior or contraction
+  has been computed; nothing is frozen.
+  - **The values.** Cut-offs 0.9 and 0.5, as proposed. The floor: fewer than
+    10% of the scored pairs pooled over the noise levels, or fewer than 100
+    pairs, makes a bin's hypotheses untestable for both calibrators, declared
+    from the reference alone before any network is scored, a fourth outcome
+    beside the three verdicts of line 133; the pairs counted are those on which
+    the reference was accepted, and the number of distinct θ in each bin is
+    reported beside the count; nothing is adjusted to fill a bin, and bin
+    shares seen on pilot surfaces decide nothing. Conventions at line 89: c per
+    pair from the pooled sampling steps of the reference's accepted run under A
+    (importance-weighted, or the direct run under A where line 68 requires
+    one), the weighted variance Σw(H − H̄)²/Σw against the analytic
+    Var_prior(H); not clipped, a negative c filed under Flat and counted; each
+    pair binned once by its c as computed, the pairs within 0.02 of a cut-off
+    reported per bin; each hypothesis also re-scored twice, with both cut-offs
+    moved together by +0.05 (0.95 and 0.55) and by −0.05 (0.85 and 0.45), the
+    floor applied to each shifted bin, reported and deciding nothing. Line 89's
+    "c depends only on the observed surface and the reference" now names prior
+    A and says "on no network". Line 75's per-calibrator failure rule, which
+    D68 left borrowing "the share at line 101" to be reconciled once the floor
+    was settled, now applies the same two conditions per calibrator: failed
+    pairs above 10% of the bin's pairs, or leaving fewer than 100. Line 126's
+    "the reference itself has S near one" in the flat bin becomes "a large S,
+    above 0.5 on the Gaussian reading ... and approaching one as c falls to
+    zero".
+  - **What it rests on.** A reading, labelled as such. In posterior standard
+    deviations under A (0.054), c ≥ 0.9 is at most 0.017 and c ≥ 0.5 at most
+    0.038, by 0.054 × √(1 − c). On a Gaussian reading of the likelihood in H, c
+    = 0.5 is where the data and the prior carry equal precision, so Flat is
+    where the prior outweighs the data, and c = 0.9 is where the data carry
+    nine times the prior's precision; 0.5 is the one value with a meaning of
+    its own on that reading (every other c is a precision ratio c/(1 − c), 0.75
+    three times and 0.95 nineteen), and 0.9 is a round convention, a posterior
+    variance a tenth of the prior's, kept as proposed and guarded by the
+    re-scoring. With the priors' variances equal (D69) the reference's own
+    shift ratio on that reading is 1 − c, 0.10 at the Identified edge and 0.50
+    at the Flat edge, so in the Flat bin it runs from 0.5 towards one, which is
+    why line 126's "near one" is corrected; the sheet's item 9 table gave 0.07
+    to 0.12 and 0.39 to 0.56 at those edges under the proposal's unequal
+    variances. D65's reading of D38's scatter places the three noise levels one
+    per bin under these cut-offs (c about 0.97, 0.71 and 0.21 at D38's point),
+    so the cut-offs and the levels agree as proposed. The sheet read
+    Betancourt, Schad, Betancourt and Vasishth, and BayesFlow's diagnostic at
+    source: all define contraction by this variance ratio, none proposes
+    cut-offs, Schad, Betancourt and Vasishth describe contraction below 0.5 as
+    weak and values approaching one as very strong in a worked example, and
+    BayesFlow's implementation clips negative values to zero; the draft does
+    not clip, so that nothing is hidden, and counts instead. The Monte Carlo
+    error in c, (1 − c)·√(2/(n − 1)) for a roughly Gaussian posterior (the
+    sheet's formula), is about 0.004 at c = 0.9 and 0.022 at c = 0.5 at the
+    1,000 effective draws under A that line 68's Kish floor requires, and 0.003
+    and 0.016 at 2,000, line 68's figure for a direct run; so the 0.02 window
+    around each cut-off, a round figure above G2's tolerance, is of the order
+    of the error at the lower edge and between four and six times it at the
+    upper; G2 checks c to 0.01 on its pilot surfaces. The ±0.05 re-scoring is
+    added so that a verdict's dependence on the edges is visible without
+    deciding anything; it and the 100-pair count are chosen, not derived. The
+    floor is of pooled pairs because the verdicts are pooled over noise levels
+    (line 126); an absolute count is added because a share alone says nothing
+    about the bootstrap of a median while the number of test θ is open: the 10%
+    is 0.3N pairs at N test θ (60 at N = 200, 150 at 500, 300 at 1,000) and
+    below N = 334 the count governs. The floor counts pairs, not θ, because the
+    verdicts and line 132's bootstrap are over pairs within seed; 100 pairs may
+    be as few as 34 θ, which is why the distinct θ per bin are reported. The
+    sheet records Hesterberg's warning that percentile bootstrap intervals
+    under-cover in small samples, with no minimum given. A share near 10% has a
+    binomial 95% half-width of about 3.4 points on 300 pairs treated as
+    independent (the three pairs sharing a θ are not), and the rule applies to
+    the observed share. Not taken: equal-occupancy bins, v1's quintiles of
+    CRB_H, because the hypotheses' numbers refer to a fixed meaning of each bin
+    and the floor handles occupancy; two bins, which would remove the bin H-b
+    is scored in; hypotheses on c as a continuous variable, which line 134's
+    dose-response already reports; a divergence-based contraction, a different
+    quantity; a per-level floor, which would multiply the decisions the pooled
+    verdict does not need.
+  - **What changes elsewhere.** The hypothesis-numbers sitting (line 117)
+    inherits the reference's own S of 0.10 at the Identified edge and 0.50 at
+    the Flat edge on the Gaussian reading, and the ±0.05 re-scoring beside each
+    verdict. Line 75's failure rule, line 89's first sentence and line 126's
+    clause are the only wording changed outside the two OPEN spans; lines 83 to
+    87 (the bins), 93 to 95, 132 to 135 and 143 are unchanged. D63's "The 10%
+    stop rule covers either case" (its reading for the noise sitting) now
+    refers to the rule as written.
+  - **Not decided.** The number of test θ (line 94), the hypothesis numbers
+    (line 117), the prior-work section.
+  - **Draft.** Line 89: the first sentence reworded; the OPEN item becomes the
+    accepted cut-offs, their meaning, the reference's shift ratio at the edges,
+    D65's placement, the sources via the sheet, the conventions, the re-scoring
+    and what was not taken. Line 101: the OPEN floor becomes the rule with its
+    reasons. Line 75: the per-calibrator failure rule applies the floor's two
+    conditions. Line 126: one clause. Line 176 ticked. No line is added or
+    removed; 180 lines.
+  - **Counts.** 2 items remain OPEN; "OPEN" occurs 3 times. Nine checklist
+    boxes are ticked; 3 are not.
+  - The hypothesis numbers (line 117) are owed next; the number of test θ (line
+    94) waits on G2's measured cost.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
