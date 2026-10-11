@@ -2512,6 +2512,96 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     to write from the papers; the OSF amendment; the number of test θ is set at
     G2 after freezing, as line 94 says.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D72** *(2026-10-11)* **P5: the emulator script for gate G1 committed (code
+  and tests; nothing built; nothing frozen).** `p5_g1_emulator.py` and
+  `test_p5_g1_emulator.py` implement line 54's emulator and line 142's gate as
+  written, on the G0 scripts' primitives. The build is G1 and is made after
+  freezing (lines 7 and 54); this entry records the script, which lines 7 and
+  54 allow to be committed before its output. Nothing was priced at the
+  declared settings: the tests run the pricer only at cheap settings on D38's
+  point and on a small box around it, as G0's identity gate did, and compare
+  nothing across parameter values.
+  - **What the script does.** The literals of lines 39, 54, 141 and 142: the
+    box (read back from `output/p5_g0_main_criterion.json`'s taken candidate in
+    a test), nodes 16 × 8 × 6 × 12, `N_riccati` 8000 with `p5_g0_main.BASE_T`'s
+    `U_max` and node counts per maturity, the held-out draw `default_rng(73)`
+    of 200 points uniform on the box, the ratio 5 and the three noise levels.
+    Chebyshev nodes of the first kind in ascending order, Berrut and
+    Trefethen's barycentric weights, a vectorised evaluation of the
+    four-dimensional tensor-product interpolant (`evaluate_many`, chunked, for
+    G2's chains and the calibrators' training draws), the cosine transform to
+    Chebyshev coefficients along each axis and the tail rule of line 142, read
+    as the coefficients of the full tensor-product expansion: the largest
+    absolute coefficient at a dimension's highest index over all quotes and all
+    coefficient indices in the other three dimensions, the lowest index on a
+    tie (line 142's "indices in the other three dimensions" could also be read
+    as node indices of a one-axis transform; the two differ, and the full
+    expansion is what is meant here). `price_triple` prices one (H, ν, ρ) at
+    the written settings through the pilot's `solve_cf`, `make_cf`, `quote` and
+    `price_setting` with `allow_anchor=True`, three Riccati solves per maturity
+    shared across ξ₀ and strikes, the strikes anchored on each surface's own
+    ATM quote; the 35 quotes are stored by maturity then z, ascending (line
+    45). Tasks: 768 node triples with the 12 ξ₀ nodes and 200 held-out points,
+    a resumable JSONL record in the G0 scripts' shape (header with git state,
+    launches, tasks, errors), a worker pool of four, and the stop rule of line
+    54: a task with any quote that is not finite is recorded with its stage and
+    the launch stops, the pending tasks cancelled and those already running
+    recorded as they finish; a later launch on that record refuses, so the stop
+    survives a resume; the same rule is applied to a held-out point, which the
+    draft does not say and this entry declares. Resume semantics, also
+    declared: a launch appends to the record and skips labels already present;
+    a task that raises is recorded as an error and tried again; a launch whose
+    nodes, box, resolution, settings or stage differ from the record's header
+    refuses. `--assemble` refuses while any task is missing or not finite, else
+    writes the node values and nodes to `output/p5_g1_emulator.npz`, one row
+    per held-out quote to `output/p5_g1_heldout.csv`, and
+    `output/p5_g1_report.json` with e (numpy's percentile at 99, linear
+    interpolation), the maximum, the per-maturity 99th percentiles, G1's three
+    verdicts, the four tails and the refinement decision with its dimension.
+    `--refine` runs only when the base report calls for it, doubles the named
+    dimension and prices the refined triples to a second record; `--assemble
+    --stage refined` writes the refined outputs, the held-out set reused from
+    the base record (drawn once, the same points at the same settings; declared
+    here); the refined report carries no refinement decision, there being no
+    second one. `--estimate` prints D62's figure; without a flag the script
+    prints the design, runs the pilot's identity gate at the scoping base
+    (`N_riccati` 1000, `U_max` 200, 128 nodes, as G0's scripts did) and holds.
+    `load_emulator` returns G̃ for the later scripts.
+  - **The tests.** Nine, in `test_p5_g1_emulator.py`: the literals against the
+    draft and D62's record; node, weight and exactness properties; a function
+    entire in each variable recovered to 1e-8 on 9 × 7 × 5 × 8 nodes and a
+    tensor-product polynomial of lower degree to rounding, a point outside the
+    box refused; the coefficient transform on a known Chebyshev series and the
+    tail rule on a hand-built array; the pricing path equal to the pilot's
+    `run_task` quotes and anchored strikes, to `p5_g0_main.run_task_main`'s
+    base rung and to the wrapper's `model_smile_cf_T`, bit for bit, at
+    `N_riccati` 200 on D38's point (G0's identity gate), with the base settings
+    equal to `settings_for(T)["A"]` at every maturity; the held-out draw equal
+    to `default_rng(73).uniform` over the box; a quote that is not finite
+    recorded as a status that stops the launch, refuses a resume and makes
+    `assemble` refuse; a toy build on nodes 2 × 2 × 2 × 2 at `N_riccati` 200 on
+    a small box around D38's point, with resume, assembly, exactness at a node,
+    the held-out error computed with the record's box and the output schema;
+    the G1 verdicts and the refined stage's absent decision on hand-built
+    numbers. The whole suite collects 298 tests (CONTRIBUTING updated from
+    289). One implementation detail: a point within 64·eps of a node in unit
+    coordinates takes the node's value, since a node mapped to the box and back
+    lands a few ulp off on a narrow box; the interpolant is unchanged beyond
+    that scale. An independent review of the code found three faults, fixed
+    before the commit: the held-out error was evaluated with the module's box
+    rather than the record's; a resume after a recorded stop would have gone on
+    pricing; and the `.npz` file handle was not closed.
+  - **Cost.** D62's figure, not measured here: 968 sets of Riccati solves at
+    about 288 core-seconds each, about 77 core-hours, about 19 h on four
+    workers; a refinement repeats the training part at the doubled count, at
+    most 1,536 triples, about 123 core-hours more, as D64 recorded.
+  - **Not written.** The reference's script (G2), the calibrators (G3), any
+    change to the draft. The build, its output and G1's verdict follow
+    freezing; the commit that holds the output is to be named in the draft's
+    declaration of G1 when it is made.
+  - The prior-work section and the OSF amendment remain the author's before
+    freezing; the number of test θ (line 94) is set at G2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
