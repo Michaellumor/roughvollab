@@ -2878,6 +2878,144 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - The Stage 2 analysis script is owed next among the scripts; the prior-work
     section and the OSF amendment remain the author's before freezing.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D75** *(2026-10-11)* **P5: the Stage 1 and Stage 2 analysis script
+  committed (code and tests; nothing run on real outputs; nothing frozen).**
+  `p5_stage2.py` and `test_p5_stage2.py` implement lines 79 to 89 (the bins and
+  their conventions, D70), 97 to 101 (Stage 1 and the floor), 105 to 113 (the
+  measures and the seed floor), 115 to 128 (the hypotheses, their conventions
+  and the null, D71) and 130 to 134 (the bootstrap, the verdict rule, the
+  dose-response) as written, on the records of `p5_g2_reference.py` and the
+  scores of `p5_g3_calibrators.py`. The analysis is committed before any result
+  exists, which is what a pre-registration asks; the tests use synthetic
+  records in the scripts' formats.
+  - **What the script does.** Stage 1: each accepted pair binned by c under A
+    at the cut-offs 0.9 and 0.5 by the table's inequalities, a negative c under
+    Flat and counted, the pairs within 0.02 of a cut-off counted, the shares
+    pooled and per level, the distinct θ per bin, the floor of 10% of the
+    accepted pairs pooled or 100 making a bin untestable for both calibrators,
+    a reference failure removing its pair and counted; `output/p5_stage1.csv`
+    with one row per pair and `output/p5_stage1.png` (the distribution of c per
+    level and c against true H and ν) when matplotlib is present. Stage 2: per
+    calibrator, seed slot q and pair, d_A, d_B, S_net from the A- and B-trained
+    networks of the same slot, S_exact, E, and m from the stored H samples
+    through the reference script's `weights_for` and `interval_prob`; line 75's
+    exclusions (a failed network's pair excluded at that seed from every
+    measure that uses it, S and E included, the other prior's measures kept);
+    the per-calibrator failure floor (failed pairs above 10% of the bin's pairs
+    or leaving fewer than 100); the seed floor per prior and bin as the median
+    over the bin's pairs and the unordered seed pairs of abs(S), the larger
+    prior's value, a pair with a failed network left out;
+    `output/p5_stage2_cells.csv` with one row per cell. The statistic is the
+    median over the bin's (pair, seed) cells; the crossed bootstrap resamples
+    the seed indices (as many as the calibrator has) and the bin's pair indices
+    independently with replacement, a cell entering with the product of its
+    multiplicities, and takes the weighted median; 2,000 replicates; the 2.5
+    and 97.5 percentiles; the per-seed medians beside each interval. The
+    verdicts by line 133 on each one-sided row, H-c's interval also wholly
+    above the seed floor to be Confirmed, H-d's over-wide share reported;
+    Untestable where the bin is under Stage 1's floor or the calibrator's
+    failure floor; the null per calibrator (all four Refuted and H-d's interval
+    within [0.85, 0.95], else unproven); the per-level breakdown without
+    verdicts; the re-scoring at the cut-offs moved by +0.05 and by −0.05 with
+    the floors and the seed floor recomputed on the shifted bins, reported and
+    deciding nothing; the multiplicity sentence in the report; the
+    dose-response per calibrator, pooled, Spearman's correlation of c with the
+    median over seeds of abs(d_A), its interval by the same bootstrap,
+    descriptive. Everything is written to `output/p5_stage2_report.json` with
+    the inputs' headers and the git state; no flag prints the design and holds;
+    `--run` refuses without the three input files.
+  - **Declared, beyond the draft's words.** The bootstrap's generators are
+    `default_rng([127, calibrator index, row index])`, one stream per
+    (calibrator, hypothesis) so that each row is self-contained, the
+    dose-response using row index 9; 127 is a seed the draft does not name and
+    none already used; the draws are, per replicate, the pair indices then the
+    seed indices. The point estimate, the per-seed medians and every replicate
+    use the same median: the smallest value whose cumulative weight reaches
+    half the total (the lower weighted median; with unit weights and an even
+    count the lower of the two middles). The bootstrap runs on the live cells:
+    a pair with no accepted cell and a seed column with none are not resampled
+    (line 132's "the four a cell has been left with"), the live counts and any
+    replicate without a live cell being reported. The percentile interval is
+    the 2.5th and 97.5th percentiles of the replicates by numpy's default
+    interpolation. A pair's samples are read from the store under the keys the
+    reference script wrote, `<pair>_u`, `_A`, `_B`, mapped to the names
+    `weights_for` expects, and m is computed on the dequantised samples with
+    the weights recomputed, as D73 declared; m is the mass of the A-trained
+    network's interval, line 110 naming no prior. A seed slot with no score
+    rows at all for a (calibrator, prior, level) is vacant, line 75's cell left
+    with four seeds: its cells are excluded and not counted as failures; a row
+    missing while its slot has rows at that level is an incomplete scoring and
+    refused, as are colliding task labels. A calibrator's failed pair, for line
+    75's floor, is a pair on which any of its networks failed at any seed; the
+    per-cell count is reported beside it, and both counts sit on every
+    hypothesis row. Line 126's share of pairs with m above 0.95 is the share of
+    pairs whose median m over seeds exceeds 0.95, the share of cells beside it.
+    The near-cut-off counts of line 89 are split by the side of the cut-off,
+    which is the bin. The re-scoring block holds the shifted bins' intervals,
+    floors and seed floors beside the verdicts, as lines 89 and 111 ask, the
+    shifted cut-offs rounded so that no verdict rests on floating-point noise
+    at a cut-off. In the dose-response a pair with no accepted seed is left out
+    and counted, the per-pair median is the lower median over seeds, the
+    correlation in a replicate is computed on the pairs expanded by their
+    multiplicities (ties from the repeats taking average ranks), and a
+    replicate without variation or with fewer than three pairs is dropped and
+    counted. The null's "H-d's interval within [0.85, 0.95]" is read with
+    closed ends. Levels are matched by their index, never by a float. A seed
+    slot is one unit across levels and priors, so a seed-6 replacement sits in
+    the slot it replaced, per (prior, level) cell, as line 75 arranges. The
+    inputs are checked: an accepted reference without its stored samples is
+    refused, a truncated score line is skipped as the producer's reader skips
+    it while two well-formed rows under one label are refused, references and
+    scores of different sets are refused, and the number of pairs the record
+    should hold (three per test θ) is reported beside the number found. The
+    prior-A weights are computed once per pair and the dose-response's per-pair
+    medians are vectorised, so a run at N = 1,000 test θ takes minutes; the
+    store is read into memory, about 1 GB at 3,000 pairs. Line 135's
+    exploratory items are not implemented here; they belong to a later,
+    declared script. The figure is descriptive and decides nothing.
+  - **The tests.** Eight, in `test_p5_stage2.py`: the literals against the
+    draft and the seed's novelty; the binning at the written and the shifted
+    cut-offs, the window counts, negative c, the floor by share and by count
+    (the count governing below N = 334), the distinct θ; the measures on
+    hand-built numbers with line 109's identity, m against a direct weighted
+    count on a toy sample store, line 75's exclusions on a pair with a failed
+    network, the failure floor; the seed floor on hand-built estimates; the
+    weighted median, the crossed bootstrap (a constant statistic, a dead seed
+    column and a dead pair left out, determinism under the seed, the
+    multiplicities, the point and the replicates on one median convention) and
+    the per-seed medians; the verdict rule on every row including H-c's floor
+    clause, H-d's one-sided form, the over-wide interval and the ends of the
+    gap; the vacant slot and the incomplete scoring; an end-to-end run on
+    synthetic reference and score files in the scripts' formats, a
+    prior-dependent bias planted off the Identified bin and over-narrow
+    intervals in the Flat bin, with one reference failure and one network
+    failure, checking the counts, the four verdicts in the planted directions
+    (H-a Confirmed, H-b Confirmed, H-c Refuted, H-d Confirmed), the re-scoring
+    through the binning, the dose-response's sign, the CSVs, the figure,
+    determinism and the hold and refusal paths; and a thin set on which every
+    bin is under the floor and every row is Untestable. The whole suite
+    collects 324 tests (CONTRIBUTING updated from 316). Two independent reviews
+    of the code, one on the statistics against lines 79 to 135 and one on the
+    software against the producing scripts' formats, found faults fixed before
+    the commit: a vacant seed slot was read as a failure of every pair and
+    tripped line 75's floor; the point estimate and the replicates used
+    different median conventions; a dead seed column was still resampled; the
+    over-wide share was over cells, not pairs; the re-scoring wrote verdicts
+    without the recomputed floors; the near-cut-off counts were not per bin;
+    the shifted cut-offs carried floating-point noise; colliding score labels
+    would have dropped rows silently; the prior-A weights were recomputed for
+    every cell and the dose-response looped over pairs in Python, about an hour
+    at the real sizes between them; a missing sample surfaced as a bare error;
+    and the collision guard conflicted with the producer's tolerance for a
+    truncated line.
+  - **Not written.** Line 135's exploratory analyses; any run on real outputs,
+    which follow the sealed set's references and scoring after freezing; the
+    draft.
+  - Every script the draft needs now exists: G1's build, G2's reference, G3's
+    calibrators and the analysis. What remains before freezing is the author's:
+    the prior-work section (line 158) and the OSF amendment; line 94's
+    amendment follows G2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
