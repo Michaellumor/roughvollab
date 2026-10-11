@@ -3016,6 +3016,100 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     the prior-work section (line 158) and the OSF amendment; line 94's
     amendment follows G2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D76** *(2026-10-11)* **P5: the prior-work section drafted from sources read
+  at their addresses (docs only; nothing frozen; the checklist box left for the
+  author).** Line 158 of `docs/protocols/P5_protocol_v2_draft.md`, the
+  placeholder under Relation to prior work, is replaced by the section: deep
+  calibration of rough volatility (v1's papers re-read), the pricer's
+  foundations and the correlation range, identifiability of H from a surface,
+  Bayesian prior-sensitivity analysis, unfaithful and misspecified amortised
+  posteriors, the novelty claim limited to (i) and (ii) as the placeholder
+  fixed it, and a list of the sources read with how each was read. Nothing else
+  in the draft changes; the box "Prior-work section written from the papers
+  themselves" (line 179 before this change, 214 after it) stays unticked.
+  - **What the section says.** Horvath, Muguruza and Tomas learn the pricing
+    map and calibrate through it with an optimiser, attaching no uncertainty,
+    and Bayer and Stemper, read as an abstract, pair an optimiser with a
+    network on the implied-volatility map; Bayer, Horvath, Muguruza, Stemper
+    and Tomas add an MCMC analysis through the surrogate for rough Bergomi, no
+    prior distribution being given in the text and no second prior, Fisher
+    information or Cramér–Rao bound appearing; Brigo, Huser and Leonte learn
+    the rough Heston posterior by telescoping ratio estimation under a uniform
+    prior on a box (H in (0.05, 0.45), ρ in (−0.95, −0.10)) from a 63-quote
+    surface, attribute each parameter's contraction to cells of the surface,
+    describe reweighting to a second prior at inference time without an
+    experiment found applying it, check coverage by simulation from the
+    training prior and use no exact reference. El Euch and Rosenbaum's Theorem
+    4.1 is stated for ρ in (−1/√2, 1/√2] while the box runs to −0.90; Abi
+    Jaber, Larsson and Pulido's Theorem 7.1 covers ρ in [−1, 1] and is stated
+    to generalise some of El Euch and Rosenbaum's main results; labelled as a
+    reading of the theorem statements. Hager and Kreher's analyticity of the
+    Riccati solution in H is recorded as a statement about the map, not its
+    inverse. Gelman and co-authors' Section 6.3 lists the routes to prior
+    sensitivity without a spacing rule; Kallioinen and co-authors'
+    power-scaling is a local perturbation with a 0.05 threshold; Elsemüller and
+    co-authors amortise over a family of power-scaled priors without a
+    reference posterior. Hermans and co-authors' overconfidence and the
+    prior-returning estimator's nominal coverage, Delaunoy and co-authors'
+    balancing and its collapse to the prior, Lueckmann and co-authors'
+    reference posteriors by rejection sampling and classifier tests, Talts and
+    co-authors' within-prior check, and the misspecification strand (Schmitt
+    and co-authors, a shifted prior among the cases detected; Cannon, Ward and
+    Schmon; Ward and co-authors) are set out with what each tests, and P5's
+    difference stated: the forward model well specified and shared by the
+    calibrators and the reference, the prior shifted by a stated amount, the
+    measure an exact posterior per surface, stratified by contraction.
+    Lakshminarayanan, Pritzel and Blundell is the ensemble's source, a
+    non-Bayesian alternative. The claim closes on (i) and (ii) and nothing
+    else.
+  - **Read at source.** Eighteen sources at their arXiv addresses on 11 October
+    2026, listed in the section with what was read of each: the abstract page
+    for every one (identifier, version, date, any journal reference or
+    comment); the HTML text for Horvath, Muguruza and Tomas (to Section 4.2),
+    Bayer, Horvath, Muguruza, Stemper and Tomas (whole; the figures are
+    images), Brigo, Huser and Leonte (whole), Gelman and co-authors (Sections
+    5.9 and 6.3), Elsemüller and co-authors (to Section 5), Hermans and
+    co-authors, Delaunoy and co-authors, Lueckmann and co-authors, Talts and
+    co-authors, Schmitt and co-authors (to Section 4), Cannon, Ward and Schmon,
+    Ward and co-authors and Lakshminarayanan, Pritzel and Blundell (whole); the
+    PDF text, extracted locally, for El Euch and Rosenbaum (Theorem 4.1), Abi
+    Jaber, Larsson and Pulido (Section 7) and Kallioinen and co-authors (whole,
+    the HTML rendering being absent); the abstract alone for Bayer and Stemper
+    and Hager and Kreher. Four findings against v1 are recorded in the section
+    rather than silently carried, each labelled as a reading: Bayer and
+    co-authors' text gives no prior distribution, v1's "uniform prior on a
+    truncated box" being a reading of the training ranges, and the values of H
+    v1 reads from Figures 6 and 7 are not stated in the text and were not
+    checked, the figures being images; the same paper defines a Jacobian of the
+    pricing map for its optimiser (Section 2), so v1's and D54's "none computes
+    a Jacobian" holds only as none computing one to ask what the surface
+    identifies; Horvath, Muguruza and Tomas report error in implied-volatility
+    space in the sections read, not v1's "price-space error"; and the arXiv
+    page of Bayer and co-authors shows no journal reference, so v1's "published
+    2025" is not re-verified. Hernandez (2016) is on SSRN, which refused the
+    request; it stays on v1's record and is marked not re-read. The identifier
+    first tried for Ward and co-authors resolved to an unrelated paper and was
+    corrected from the arXiv listing. The verification log with every
+    statement's pinpoint was kept outside the repository.
+  - **Declared, beyond the draft's words.** The section is drafted by Claude
+    from the sources, not from the author's own reading, which the placeholder
+    named as its condition; the draft's Reporting line already discloses AI
+    drafting with the commitments the author's on freezing, and the box (line
+    214 after this change) is left for the author to tick after reading the
+    listed sources. The section's first paragraph says both. A sources list is
+    added inside the section, in the decision sheet's format, because the draft
+    has no reference list and the sheet is not modified; the sheet's Sources
+    remain the record for the other sections. Two sources beyond the sheet's
+    are added (Cannon, Ward and Schmon; Ward and co-authors), both read whole
+    and both on the misspecification topic the placeholder required. The
+    correlation-range note and the reweighting note the sheet left for this
+    section are carried in. Dates of reading are given so that a later version
+    of any source is distinguishable from what was read.
+  - **Not written.** The tick at line 214; the OSF amendment; any change to v1,
+    the decision sheet or the rest of the draft; any run.
+  - What remains before freezing: the author's reading of the sources and the
+    tick at line 214; the OSF amendment; line 94's amendment after G2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
