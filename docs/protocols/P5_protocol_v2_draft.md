@@ -211,5 +211,5 @@ Drafted with AI assistance (Claude) from the sources listed at the end of this s
 - [x] Contraction cut-offs accepted or changed.
 - [x] Every number in the hypotheses table defensible in the author's own words.
 - [x] Gate tolerances declared; G0's scoping script committed before the scoping run, and the main run's settings written in before the main run.
-- [ ] Prior-work section written from the papers themselves.
+- [x] Prior-work section written from the papers themselves.
 - [ ] OSF registration amended.
