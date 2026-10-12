@@ -3228,6 +3228,93 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     the OSF acts and the post-freeze commit in the order D77's file sets out;
     line 94's amendment after G2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D79** *(2026-10-12)* **P5 v2 draft: D78's confirmation withdrawn and the
+  prior-work box unticked; the AI-use line redrafted as a declaration (docs
+  only; nothing frozen; nothing on OSF).** Two corrections on the author's
+  instruction before any freeze. First, D78 over-claimed: the author had read
+  the abstracts of most of the eighteen sources, not their full texts, and the
+  confirmation it recorded is withdrawn; line 214 of
+  `docs/protocols/P5_protocol_v2_draft.md` returns to unticked, and the author
+  reads the sources in full before confirming again. D78 stays in the log as
+  written, the log being append-only; this entry is its correction. Second,
+  line 200, the one-line AI disclosure under Reporting and disclosure, is
+  redrafted as a declaration of generative-AI use in line with the University
+  of Oxford's Policy for using generative AI in research (version 1.1, 7
+  September 2026, read on 5 October 2026 as recorded below), under the heads
+  the author asked for (tool and version, dates, what the tool did, what the
+  author did, checks, limitations, records), and after the form of the Oxford
+  Mathematical Institute's examples for research students ("Declaration of
+  Generative AI Use - Examples",
+  https://www.maths.ox.ac.uk/system/files/attachments/GenAI_PGR_declaration_examples.pdf,
+  read on 12 October 2026: a compliance statement, what is the candidate's own,
+  the tools with provider, model and date, the uses task by task, what the tool
+  was not used for, a confidentiality statement, retention of prompts and
+  outputs), so that a reader sees what the tool did and did not do and that the
+  prose is not presented as the author's own writing. The form is borrowed with
+  two departures the line itself states: no compliance statement, this being a
+  research record and not a thesis, and the opposite of the examples' sentence
+  that the final prose is the candidate's own. The freeze commit planned on 12
+  October was not made; its uncommitted edits were discarded. The order of acts
+  in `docs/protocols/P5_v2_amendment.md` stands at step 1 again.
+  - **The declaration, and what each sentence rests on.** The tool, Claude
+    (Anthropic) through Claude Code, with Claude Fable 5.1 named for the
+    sittings of 11 and 12 October 2026, the model this session reports for
+    itself and nothing in the repository shows; earlier sittings are dated in
+    the log without a model version, which is why none is claimed for them. The
+    uses listed are those the log records: the drafting of the document's text
+    from the author's decisions (D55 to D71, D76, the last saying the section
+    is drafted by Claude from the sources); the literature search and reading
+    at source (D76; D54's "literature search" names no searcher and is read as
+    the tool's by its closing line); the candidate values proposed by the tool
+    and accepted or changed by the author, which D64 to D71 record as "a choice
+    of the author on the assistant's lean" and D58, D59 and D61 as "as
+    proposed"; the scripts and tests (D59 to D62, D72 to D75), the test suites
+    and numerical checks run in the sittings on the author's machine (D69, D70,
+    D72 to D75) and the independent review passes (D73 to D77); the
+    decision-log entries, every one from D54 closing with the AI-assistance
+    line; and the 3 October probe (D55). The author's part rests on the same
+    record: the values chosen by the author (the entries above), each sitting's
+    change confirmed by the author in the sitting before its commit, a
+    confirmation that lives in the session transcript and in each entry's
+    closing line rather than as a quoted word in the log; the G0 pilot run by
+    the author on his machine (D60, D62); the reading of the sources an act the
+    author performs himself, outstanding. The transcripts: Claude Code keeps
+    session files under the author's user directory (four exist for this
+    repository on 12 October 2026, the current session's opened on 31 August
+    2026) and prunes them after 30 days by default, so the line says retention
+    is the author's to arrange; the 3 October probe ran in a claude.ai chat
+    (D55), and which other sittings, if any, were held there rather than in
+    Claude Code is not recorded, so the line speaks of each by where it was
+    held. The confidentiality sentence rests on the sittings having used the
+    repository's committed files, which are public, and the author's own words.
+    The sentence that the prose is AI-drafted and author-confirmed and not
+    presented as the author's own writing is the point of the redraft. The
+    University's research policy and the MPLS Division's page for research
+    students were read on 5 October 2026 in a sitting whose reading is recorded
+    in the assistant's notes outside the repository, not in the log: on that
+    reading the University's page says a declaration of substantive use could
+    include the tool's name, version, date and use, and the Division's page
+    asks for the tool's name and version, its publisher and a brief description
+    of use, and does not permit substantive AI-written prose in a thesis; this
+    document is a research record, not a thesis or an application text, and the
+    line says what it is. The papers' "Use of generative AI" sections, aligned
+    with the Division's format on 25 July 2026 (commit `5a48243`), say AI gave
+    drafting and editing support for manuscript text with the final wording
+    approved by the author; they are not changed by this entry, and the
+    difference of wording between them and this line is noted here for the
+    author.
+  - **Matched elsewhere.** The OSF summary text in
+    `docs/protocols/P5_v2_amendment.md` carried the old one-line form; it now
+    points to the declaration in the document. The first sentence of the
+    prior-work section (line 158), which names the tool and the date of its
+    reading, stands, and its clause that the box is left unticked is true
+    again.
+  - **Not written.** The freeze; anything on OSF; v1; the decision sheet; the
+    papers' declarations; any run.
+  - What remains before freezing: the author's reading of the eighteen sources
+    in full and the tick at line 214 on his confirmation; then the order of
+    acts in D77's file from step 2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

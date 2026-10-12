@@ -48,7 +48,7 @@ Why: so that the test falls on the part that is uncertain, the calibrator's fide
 
 What had been seen when version 2 was frozen: a timing and finiteness probe of the pricer on 3 October 2026, run outside the author's machine and not in the repository (D55); the scoping run of gate G0 on 9 October 2026 (UTC) and its main run with its confirmation on 10 October 2026, both on the author's machine from committed scripts with their output committed (D60 to D62), which fixed the box, the grid and the resolution; and nothing else. No emulator, reference posterior, trained network or test surface existed, which is to be verified at the freeze commit by a search of the repository's tracked files and its output directory. Every number in the hypotheses was fixed before any of those objects existed.
 
-Drafted with AI assistance (Claude), disclosed in the document; the commitments are the author's on freezing.
+Use of generative AI in drafting this document is declared in it, under Reporting and disclosure; the ideas, decisions and commitments are the author's on freezing.
 
 **Paragraph for the update to APSF7 (added to the summary; entered as the justification).**
 
