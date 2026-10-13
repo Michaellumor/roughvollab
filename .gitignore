@@ -234,3 +234,6 @@ arXiv/
 !docs/protocols/*_draft*.md
 README_draft.md
 ROADMAP_additions_draft.md
+
+# Local copies of Claude Code session transcripts (the sittings' record named in the P5 protocol); never committed
+claude_sessions/
