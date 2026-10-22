@@ -38,13 +38,24 @@ G3 (line 144): per calibrator, prior and level, on the 16 pilot surfaces at that
 whose reference (p5_g2_reference.py --g3-pilot) was accepted: the least-squares slope of
 the calibrator's ξ₀ estimate on the exact posterior mean of ξ₀ under P above 0.95, and
 the median of |Ĥ_net,P − Ĥ_exact,P| at 2n within 0.002 of that at n; training sets the
-first 10,000 × 2^k of the draw, k = 0 to 4; the smallest n at which both hold; the run
-at 2n made for the check only (it is the next rung's run, except at the top); budget
-320,000 surfaces and 4 h of wall per run, the whole calibrator; a rung whose run at n or
-2n exceeds either fails; none passing stops P5.
+first 10,000 × 2^k of the draw, k = 0 to 4, every rung run; the largest n at which both
+hold and the runs at n and 2n are within the budget (D81); the run at 2n made for the
+check only (it is the next rung's run, except at the top); budget 320,000 surfaces and
+4 h of wall per run, the whole calibrator; a rung whose run at n or 2n exceeds either
+fails. Each (calibrator, prior, level) cell passes or fails on its own: a failed cell's
+seeds are not trained, and Stage 2 loses that level for every measure needing its
+network; P5 stops only if every cell of both calibrators fails (D81). The cost of scoring
+both calibrators on the test set's 1,200 pairs (five seeds each) is projected from the
+pilot predictions at each passing cell's n, against G2's budget of 1,344 core-hours; above
+it, P5 stops (D81). The ratio estimator's sampler runs at the reference's lengths, which
+G2's retry doubles if it is needed (line 75, D81). The test set is scored only after Stage 1
+has been declared from its references (p5_stage2.py --stage1) and has not stopped P5; the
+scores' header records that Stage 1 output's digest and the networks to be scored (D81).
 
 Nothing here runs before G1 and G2 after freezing; the tests use toy emulators in
-memory and skip without torch. The core stays torch-free (requirements-p5.txt).
+memory and skip without torch. The core stays torch-free (requirements-p5.txt). Run from
+the command line, the script refuses numpy and scipy other than the leaf's on the author's
+machine (p5_g1_emulator.LEAF_VERSIONS) unless --allow-other-versions, recorded (D81).
 
 Usage (from the repository root, in .venv-p5, after G1 and G2):
     py p5_g3_calibrators.py                 the design; holds
@@ -456,19 +467,68 @@ def budget_ok(run, n, budget_surfaces=BUDGET_SURFACES, wall=BUDGET_WALL_S):
 
 
 def predict_rows(run, rows, burn=R.BURN, sample=R.SAMPLE, rhat_max=R.RHAT_MAX, ess_min=R.ESS_MIN):
-    """(H_hat, xi0_hat) per pilot surface, or None where the ratio estimator failed."""
+    """(H_hat, xi0_hat) per pilot surface, or None where the ratio estimator failed; the
+    failures; and the cost of the predictions (the seconds, and for the ratio estimator each
+    posterior's sampler runs), from which the scoring cost is projected (D81)."""
+    t0 = time.perf_counter()
+    if not rows:                                            # no accepted pilot reference at the level: the cell fails
+        return [], [], {"seconds": 0.0, "n": 0, "attempts": None if run["kind"] == "ensemble" else [],
+                        **({} if run["kind"] == "ensemble" else {"burn": int(burn), "sample": int(sample)})}
     if run["kind"] == "ensemble":
         pr = ensemble_predict(run, np.stack([r["y"] for r in rows]))
-        return [(float(pr["H_hat"][k]), float(pr["xi0_hat"][k])) for k in range(len(rows))], []
-    preds, fails = [], []
+        cost = {"seconds": time.perf_counter() - t0, "n": len(rows), "attempts": None}
+        return [(float(pr["H_hat"][k]), float(pr["xi0_hat"][k])) for k in range(len(rows))], [], cost
+    preds, fails, attempts = [], [], []
     for r in rows:
         po = nre_posterior(run, r["y"], r["i"], burn, sample, rhat_max, ess_min)
+        attempts.append(po["attempts"])
         if po["status"] != "ok":
             preds.append(None)
             fails.append(r["i"])
         else:
             preds.append((po["H_hat"], po["xi0_hat"]))
-    return preds, fails
+    return preds, fails, {"seconds": time.perf_counter() - t0, "n": len(rows), "attempts": attempts,
+                          "burn": int(burn), "sample": int(sample)}
+
+
+def scoring_projection(cells, threads, n_test=R.N_TEST, n_seeds=N_SEEDS, budget_core_h=R.BUDGET_CORE_H):
+    """The projected cost of scoring both calibrators on the test set (line 143, D81): per
+    passing cell, its n_test pairs at each of n_seeds seeds, from the pilot predictions of
+    its network at n*: the ratio estimator's posteriors by p5_g2_reference.project_cost
+    (the median seconds per run of the adopted lengths times the mean runs per posterior,
+    repeats counted), the ensemble's by its seconds per surface; each at `threads` cores,
+    the torch threads a scoring process holds. In core-hours, against the budget. A passing
+    cell whose cost cannot be projected leaves the projection incomplete, and an incomplete
+    projection is no go (D81)."""
+    per_cell, total, missing = {}, 0.0, []
+    for key, c in cells.items():
+        if not c.get("passed"):
+            continue
+        cost = c.get("cost_at_n_star") or {}
+        n_items = int(n_test) * int(n_seeds)
+        if c["calibrator"] == "nre":
+            p = R.project_cost(cost.get("attempts") or [], n_items, int(cost.get("burn", R.BURN)) + int(cost.get("sample", R.SAMPLE)),
+                               cores=threads)
+        else:
+            sec = cost.get("seconds")
+            per = sec / cost["n"] if sec is not None and cost.get("n") else None
+            p = {"seconds_per_surface": per, "n_items": n_items, "cores": float(threads),
+                 "projected_core_hours": n_items * per * float(threads) / 3600.0 if per is not None else None}
+        per_cell[key] = p
+        if p["projected_core_hours"] is None:
+            missing.append(key)
+        else:
+            total += p["projected_core_hours"]
+    return {"per_cell": per_cell, "projected_core_hours": total, "budget_core_hours": budget_core_h,
+            "complete": not missing, "cells_not_projected": missing, "go": bool(not missing and total <= budget_core_h),
+            "n_test": int(n_test), "n_seeds": int(n_seeds), "threads": int(threads)}
+
+
+def _override_line(path, versions, mode):
+    """A call under --allow-other-versions is recorded in the record it writes to, resumed or
+    new, as well as in a new record's header (D81)."""
+    if versions and versions.get("override"):
+        append_line(path, {"kind": "launch", "mode": mode, "utc": utc_now(), "versions": versions})
 
 
 def ladder_record(run, extra=None):
@@ -496,17 +556,26 @@ def get_or_train(kind, prior, j, q, n, theta, eps, s, em, val, jsonl_path, nets_
 
 def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=THREADS_DEFAULT, ladder=LADDER,
            n_block=DRAW_N, n_valid=N_VALID, levels=NOISE_LEVELS, priors=("A", "B"), calibrators=CALIBRATORS,
-           train_kw=None, post_kw=None, budget_surfaces=BUDGET_SURFACES, wall=BUDGET_WALL_S):
+           train_kw=None, post_kw=None, budget_surfaces=BUDGET_SURFACES, wall=BUDGET_WALL_S, versions=None,
+           budget_core_h=R.BUDGET_CORE_H):
     """The ladder of line 144 for every (calibrator, prior, level): the runs at n_k and 2n_k
     (the latter the next rung's run, except at the top), the two checks on the pilot
-    surfaces, the budgets, the smallest passing n. Resumable: a run in the record with its
-    networks saved is reused. Writes the report; returns it."""
+    surfaces, the budgets, every rung run, the largest passing n (D81). Each cell passes or
+    fails on its own; `passed` is every cell passing, `p5_stops` every cell failing or the
+    scoring cost projected above the budget (D81). Torch runs at `threads` threads, for the
+    predictions as for the training, on a fresh run as on a resumed one. Resumable: a run in
+    the record with its networks saved is reused. Writes the report; returns it."""
     jsonl_path, nets_dir, report_path = jsonl_path or PATHS["ladder"], nets_dir or PATHS["nets_g3"], report_path or PATHS["report"]
     train_kw, post_kw = dict(train_kw or {}), dict(post_kw or {})
     train_kw.setdefault("wall_budget", wall)
+    if _HAS_TORCH:
+        torch.set_num_threads(int(threads))
+    v = versions or E.version_check(E.LEAF_VERSIONS, check=False)
     hdr, launches, tasks = read_jsonl(jsonl_path)
     if hdr is None:
-        append_line(jsonl_path, header("g3", threads, {"ladder": list(ladder), "n_block": n_block, "n_valid": n_valid}))
+        append_line(jsonl_path, header("g3", threads, {"ladder": list(ladder), "n_block": n_block, "n_valid": n_valid,
+                                                       "post_kw": post_kw}, v))
+    _override_line(jsonl_path, v, "g3")
     cells, stops = {}, []
     for prior in priors:
         for s in levels:
@@ -516,8 +585,14 @@ def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=T
             val = validation_block(prior, j, n_valid)
             for kind in calibrators:
                 cell = {"calibrator": kind, "prior": prior, "j": j, "s": float(s), "n_pilot": len(rows),
-                        "removed_references": removed, "rungs": [], "n_star": None, "passed": False}
-                runs = {}
+                        "removed_references": removed, "rungs": [], "n_star": None, "passed": False,
+                        "cost_at_n_star": None}
+                runs, preds = {}, {}
+
+                def predicted(nn):                                  # each network's predictions made once
+                    if nn not in preds:
+                        preds[nn] = predict_rows(runs[nn], rows, **post_kw)
+                    return preds[nn]
                 for k, n in enumerate(ladder):
                     n2 = 2 * n
                     for nn in (n, n2):
@@ -532,9 +607,10 @@ def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=T
                             "status_n": runs[n]["status"], "status_2n": runs[n2]["status"],
                             "seconds_n": runs[n]["seconds"], "seconds_2n": runs[n2]["seconds"]}
                     if rung["budget_n"] and rung["budget_2n"]:
-                        pred_n, fails_n = predict_rows(runs[n], rows, **post_kw)
-                        pred_2, fails_2 = predict_rows(runs[n2], rows, **post_kw)
-                        rung.update(g3_checks(pred_n, pred_2, rows), failures_n=fails_n, failures_2n=fails_2)
+                        pred_n, fails_n, cost_n = predicted(n)
+                        pred_2, fails_2, _ = predicted(n2)
+                        rung.update(g3_checks(pred_n, pred_2, rows), failures_n=fails_n, failures_2n=fails_2,
+                                    cost_n=cost_n)
                     else:
                         rung.update(passed=False, reason=f"budget: run at n {runs[n]['status']} {runs[n]['seconds']:.0f}s, "
                                                          f"at 2n {runs[n2]['status']} {runs[n2]['seconds']:.0f}s")
@@ -543,17 +619,30 @@ def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=T
                     print(f"  G3 {kind} {prior} j={j} n={n}: " + ("passed" if rung["passed"] else "not passed")
                           + f" (slope={rung.get('slope')}, |d| {rung.get('median_abs_d_n')} -> {rung.get('median_abs_d_2n')})",
                           flush=True)
-                    if rung["passed"]:
-                        cell["n_star"], cell["passed"] = n, True
-                        break
-                if not cell["passed"]:
-                    stops.append(f"{kind} {prior} j={j}")
+                passing = [r for r in cell["rungs"] if r["passed"]]
+                if passing:                                         # the largest n at which both hold (D81)
+                    top = max(passing, key=lambda r: r["n"])
+                    cell["n_star"], cell["passed"], cell["cost_at_n_star"] = top["n"], True, top.get("cost_n")
+                else:
+                    stops.append(f"{kind}_{prior}_j{j}")
                 cells[f"{kind}_{prior}_j{j}"] = cell
+    proj = scoring_projection(cells, threads, budget_core_h=budget_core_h)
+    passing_cells = sorted(k for k, c in cells.items() if c["passed"])
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
-    report = {"gate": "G3", "passed": not stops, "p5_stops": bool(stops), "cells_not_passing": stops, "cells": cells,
+    report = {"gate": "G3", "passed": not stops, "cells_not_passing": stops, "cells_passing": passing_cells,
+              "p5_stops": bool(not passing_cells or not proj["go"]),
+              "p5_stops_reason": ("every cell of both calibrators failed (line 144)" if not passing_cells else
+                                  "the scoring cost could not be projected for a passing cell (line 143)"
+                                  if not proj["complete"] else
+                                  "the projected cost of scoring the test set is above the budget (line 143)"
+                                  if not proj["go"] else None),
+              "scoring_projection": proj, "cells": cells,
               "ladder": list(ladder), "budget_surfaces": budget_surfaces, "budget_wall_s": wall, "slope_min": SLOPE_MIN,
-              "stability_tol": STABILITY_TOL, "threads": int(threads), "commit": commit, "clean_tree": clean,
-              "utc": utc_now()}
+              "stability_tol": STABILITY_TOL, "threads": int(threads), "post_kw": post_kw, "commit": commit,
+              "clean_tree": clean, "versions": v, "utc": utc_now(),
+              "note": "passed: every cell passed; p5_stops: no cell passed, or the scoring cost is over the budget; "
+                      "a failed cell's seeds are not trained and Stage 2 loses that level for every measure needing "
+                      "its network (D81)"}
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, indent=1, allow_nan=False)
@@ -563,8 +652,9 @@ def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=T
 # --------------------------------------------------------------------------- #
 # After G3: the seeds (line 75) and the scoring of a set
 # --------------------------------------------------------------------------- #
-def header(mode, threads, extra=None):
+def header(mode, threads, extra=None, versions=None):
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
+    v = versions or E.version_check(E.LEAF_VERSIONS, check=False)
     return dict({"kind": "header", "script": os.path.basename(__file__), "mode": mode, "commit": commit,
                  "clean_tree": clean, "hidden": list(HIDDEN), "n_members": N_MEMBERS, "lr": LR, "betas": list(BETAS),
                  "batch": BATCH, "patience": PATIENCE, "max_epochs": MAX_EPOCHS, "var_floor": VAR_FLOOR,
@@ -575,27 +665,33 @@ def header(mode, threads, extra=None):
                  "n_seeds": N_SEEDS, "priors": {k: list(v) for k, v in PRIOR_AB.items()},
                  "noise_levels": list(NOISE_LEVELS), "threads": int(threads),
                  "torch": torch.__version__ if _HAS_TORCH else None, "python": platform.python_version(),
-                 "numpy": np.__version__, "platform": platform.platform(), "cpu_count": os.cpu_count(),
-                 "utc_created": utc_now()}, **(extra or {}))
+                 "numpy": v["numpy"], "scipy": v["scipy"], "versions": v, "platform": platform.platform(),
+                 "cpu_count": os.cpu_count(), "utc_created": utc_now()}, **(extra or {}))
 
 
 def train_seeds(em, report, jsonl_path=None, nets_dir=None, nets_g3=None, threads=THREADS_DEFAULT, n_block=DRAW_N,
-                n_valid=N_VALID, seeds=range(2, N_SEEDS + 1), train_kw=None):
-    """Seeds q = 2..5 at n* per cell (q = 1's run is the ladder's), without the wall budget
-    of G3 (line 144's budget is the gate's). A non-finite loss is retrained once per cell
-    from seed value 6, which takes the failed seed's place; a second failure leaves that
-    slot empty, the cell standing with four seeds (line 75). Returns {cell: {n_star,
-    seeds: {slot q: run label}, empty_slots}}."""
+                n_valid=N_VALID, seeds=range(2, N_SEEDS + 1), train_kw=None, versions=None):
+    """Seeds q = 2..5 at n* per passing cell (q = 1's run is the ladder's), without the wall
+    budget of G3 (line 144's budget is the gate's); a cell that failed G3 is not trained
+    (D81). A non-finite loss is retrained once per cell from seed value 6, which takes the
+    failed seed's place; a second failure leaves that slot empty, the cell standing with
+    four seeds (line 75). Returns {cell: {n_star, seeds: {slot q: run label}, empty_slots}}
+    for the passing cells."""
     jsonl_path, nets_dir, nets_g3 = jsonl_path or PATHS["train"], nets_dir or PATHS["nets"], nets_g3 or PATHS["nets_g3"]
     train_kw = dict(train_kw or {})
     train_kw.setdefault("wall_budget", float("inf"))
-    if not report.get("passed"):
-        raise SystemExit("G3 has not passed: the seeds are not trained (line 144)")
+    passing = [k for k, c in report.get("cells", {}).items() if c.get("passed")]
+    if not passing:
+        raise SystemExit("G3 has not passed in any cell: P5 stops and no seeds are trained (line 144)")
+    if report.get("p5_stops"):
+        raise SystemExit(f"G3 has not passed with a go: P5 stops ({report.get('p5_stops_reason')}); no seeds are trained")
     hdr, launches, tasks = read_jsonl(jsonl_path)
     if hdr is None:
-        append_line(jsonl_path, header("train", threads))
+        append_line(jsonl_path, header("train", threads, {"cells_passing": passing}, versions))
+    _override_line(jsonl_path, versions, "train")
     out = {}
-    for key, cell in report["cells"].items():
+    for key in passing:
+        cell = report["cells"][key]
         kind, prior, j, n = cell["calibrator"], cell["prior"], cell["j"], cell["n_star"]
         s = cell["s"]
         val = validation_block(prior, j, n_valid)
@@ -626,18 +722,40 @@ def train_seeds(em, report, jsonl_path=None, nets_dir=None, nets_g3=None, thread
     return out
 
 
+def scored_networks(trained):
+    """The networks a scoring run covers, [calibrator, prior, level j, slot q], from the
+    seeds trained for the passing cells (an empty slot is not listed); the scores' header
+    carries the list and Stage 2 checks the scoring against it (D81)."""
+    return sorted([key.split("_")[0], key.split("_")[1], int(key.split("_j")[1]), int(q)]
+                  for key, cell in trained.items() for q in cell["seeds"])
+
+
 def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path=None, threads=THREADS_DEFAULT,
-              post_kw=None):
+              post_kw=None, versions=None, refs_path=None, stage1_dir=None):
     """Every calibrator at every (prior, level, seed) on the set's surfaces at its level:
     per pair the outputs of line 75; `q` is the seed's slot (a seed-6 replacement carries
-    q6 in its run label). Resumable by (run label, pair label)."""
+    q6 in its run label). Resumable by (run label, pair label). The test set is scored only
+    after Stage 1 has been declared from its references and has not stopped P5 (line 101,
+    D81): the header records the Stage 1 output's digest of the references, checked on
+    resume and by Stage 2; it also lists the networks to be scored, every passing cell's
+    seeds, against which Stage 2 checks that the scoring is complete (D81)."""
+    out_path, post_kw = out_path or scores_path(set_name), dict(post_kw or {})
+    stage1 = None
+    if set_name == "test":
+        import p5_stage2 as S2
+        stage1 = S2.require_stage1(refs_path or R.SETS["test"]["jsonl"], stage1_dir)
+    hdr, launches, done = read_jsonl(out_path)
+    if stage1 is not None and hdr is not None and hdr.get("stage1_refs_digest") != stage1["refs_digest"]:
+        raise SystemExit(f"scoring refused: {_rel(out_path)} was begun after another Stage 1 output (line 101)")
     require_torch()
     torch.set_num_threads(int(threads))
     nets_dir, nets_g3 = nets_dir or PATHS["nets"], nets_g3 or PATHS["nets_g3"]
-    out_path, post_kw = out_path or scores_path(set_name), dict(post_kw or {})
-    hdr, launches, done = read_jsonl(out_path)
+    expected = scored_networks(trained)
     if hdr is None:
-        append_line(out_path, header("score", threads, {"set": set_name}))
+        append_line(out_path, header("score", threads, {"set": set_name, "post_kw": post_kw, "expected": expected,
+                                                        "stage1_refs_digest": stage1["refs_digest"] if stage1 else None},
+                                     versions))
+    _override_line(out_path, versions, "score")
     n_new = 0
     for key, cell in trained.items():
         kind, prior, j = key.split("_")[0], key.split("_")[1], int(key.split("_j")[1])
@@ -669,15 +787,18 @@ def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path
 
 
 # --------------------------------------------------------------------------- #
-def main(argv=None):
+def main(argv=None, check_versions=False):
     ap = argparse.ArgumentParser(description="P5 gate G3 calibrators (see module docstring)")
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--g3", action="store_true", help="the ladder of line 144 and the report")
-    mode.add_argument("--train", action="store_true", help="seeds 2 to 5 at the adequate n per cell, after G3")
+    mode.add_argument("--train", action="store_true", help="seeds 2 to 5 at the adequate n per passing cell, after G3")
     mode.add_argument("--score", default=None, choices=("g3", "test"), help="the calibrators' outputs on a set")
     ap.add_argument("--emulator", default=EMULATOR_PATH)
     ap.add_argument("--threads", type=int, default=THREADS_DEFAULT, help="torch threads for training and scoring; recorded")
+    ap.add_argument("--allow-other-versions", action="store_true",
+                    help="run with numpy or scipy other than p5_g1_emulator.LEAF_VERSIONS; recorded (D81)")
     a = ap.parse_args(argv)
+    vers = E.version_check(E.LEAF_VERSIONS, a.allow_other_versions, os.path.basename(__file__), check=check_versions)
     print("=== P5 G3 calibrators ===", flush=True)
     print(f"  trunk {HIDDEN} ReLU; members {N_MEMBERS}; Adam lr={LR} betas={BETAS}; batch {BATCH}; patience {PATIENCE}; "
           f"cap {MAX_EPOCHS}; validation {N_VALID}; seeds train {SEED_TRAIN} valid {SEED_VALID} nre {SEED_NRE}", flush=True)
@@ -696,11 +817,16 @@ def main(argv=None):
     if a.g3 or a.score == "g3" or a.train:
         if not os.path.exists(refs_path):
             raise SystemExit(f"no G3 pilot references at {_rel(refs_path)}: run p5_g2_reference.py --g3-pilot first")
+    st = R.require_g2()                                         # the reference's lengths, for the ratio estimator (D81)
+    post_kw = {"burn": st["burn"], "sample": st["sample"]}
     if a.g3:
         _, _, refs = read_jsonl(refs_path)
-        rep = run_g3(em, refs, threads=a.threads)
-        print(f"=== G3: {'passed' if rep['passed'] else 'NOT passed; P5 stops (line 144)'}; "
-              f"cells not passing: {rep['cells_not_passing']} ===", flush=True)
+        rep = run_g3(em, refs, threads=a.threads, post_kw=post_kw, versions=vers)
+        print(f"=== G3: cells passing {rep['cells_passing']}; not passing {rep['cells_not_passing']}; scoring projected at "
+              f"{rep['scoring_projection']['projected_core_hours']:.1f} core-hours"
+              f"{'' if rep['scoring_projection']['complete'] else ' (incomplete)'}; "
+              + ("P5 stops: " + str(rep["p5_stops_reason"]) if rep["p5_stops"] else "P5 goes on with the passing cells")
+              + " ===", flush=True)
         for key, c in rep["cells"].items():
             print(f"  {key}: n* = {c['n_star']} ({len(c['rungs'])} rungs; {len(c['removed_references'])} references removed)",
                   flush=True)
@@ -709,7 +835,7 @@ def main(argv=None):
     with open(PATHS["report"], encoding="utf-8") as f:
         rep = json.load(f)
     if a.train:
-        trained = train_seeds(em, rep, threads=a.threads)
+        trained = train_seeds(em, rep, threads=a.threads, versions=vers)
         with open(os.path.join(OUT_DIR, "p5_calibrators_trained.json"), "w", encoding="utf-8") as f:
             json.dump(trained, f, indent=1)
         print(f"  trained seeds per cell written: {_rel(os.path.join(OUT_DIR, 'p5_calibrators_trained.json'))}", flush=True)
@@ -721,9 +847,9 @@ def main(argv=None):
         if not os.path.exists(set_refs):
             raise SystemExit(f"no references for the set {a.score} at {_rel(set_refs)}")
         _, _, refs = read_jsonl(set_refs)
-        n = score_set(a.score, refs, em, trained, threads=a.threads)
+        n = score_set(a.score, refs, em, trained, threads=a.threads, post_kw=post_kw, versions=vers)
         print(f"  scored {n} new (run, pair) results -> {_rel(scores_path(a.score))}", flush=True)
 
 
 if __name__ == "__main__":
-    main()
+    main(check_versions=True)

@@ -10,8 +10,11 @@ the path of p5_g0_main.py at the resolution and inversion settings written in un
 Gates (N_riccati 8000; U_max 790, 500, 350, 250, 180 with 504, 320, 224, 160, 112 nodes),
 each surface's strikes anchored on its own ATM quote at that setting: the pilot's
 solve_cf / make_cf / quote / price_setting, unchanged, three Riccati solves per
-(H, ν, ρ, T) shared across strikes and ξ₀. A training quote that is not finite stops
-the build (line 54). The held-out set is 200 points uniform on the box from numpy's
+(H, ν, ρ, T) shared across strikes and ξ₀. A training or held-out point with a quote that
+is not finite is priced once more at N_riccati 16000 with the same inversion settings,
+its quotes then taken from that pricing (the triple is solved again; its other surfaces
+keep their quotes); a quote still not finite stops the build and P5 (line 54, D81). The
+held-out set is 200 points uniform on the box from numpy's
 default_rng(73), priced the same way; the emulator error e of G1 is the 99th percentile
 over their 7,000 quotes of |G̃ − G|, with the maximum and the per-maturity 99th
 percentiles beside it. G1: Q1 is claimed at a noise level s only where e ≤ s / 5. If e
@@ -20,8 +23,14 @@ once in the dimension whose Chebyshev coefficient tail is largest and the build 
 at the new nodes; there is no second refinement (line 142).
 
 The build is G1 and is made after freezing (lines 7 and 54). This file is committed
-before it; its tests run the pricer only at cheap settings on D38's point, as G0's
-identity gate did, and compare nothing across parameter values.
+before it; its tests run the pricer at cheap settings on D38's point, as G0's identity gate
+did, and one of them builds a 2 × 2 × 2 × 2 toy interpolant from the pricer at N_riccati 200
+on a small box near D38's point, which is not the emulator of the design (declared, D81).
+
+Run from the command line, the script refuses numpy and scipy versions other than the core
+interpreter's on the author's machine on 22 October 2026 (CORE_VERSIONS) unless
+--allow-other-versions is given; the versions and any override are recorded in the header
+(D81). Imports, tests and CI are unaffected.
 
 Usage (from the repository root):
     py -3 p5_g1_emulator.py                 design, identity gate at the scoping base (N_riccati 1000, 128 nodes), estimate; holds
@@ -70,6 +79,7 @@ DIMS = ("H", "nu", "rho", "xi0")
 BOX = {"H": (0.02, 0.48), "nu": (0.05, 0.35), "rho": (-0.90, -0.70), "xi0": (0.04, 0.25)}   # D62's box (line 39)
 NODES = (16, 8, 6, 12)                              # first-kind Chebyshev nodes per dimension (line 54)
 N_RICCATI = 8000                                    # the resolution at every maturity (line 141, D62)
+N_REPRICE = 16000                                   # the one re-pricing of a point with a quote not finite (line 54, D81)
 BASE_T = M.BASE_T                                   # T -> (U_max, n_nodes): 790/504 ... 180/112 (line 141)
 SEED_HELDOUT = 73                                   # the held-out draw (line 54)
 N_HELDOUT = 200
@@ -80,6 +90,33 @@ POOL_DEFAULT = 4
 N_QUOTES = len(TS) * len(VUS)                       # 35, ordered by maturity then z, both ascending (line 45)
 
 OUT_DIR = P.OUT_DIR
+
+# The environments the runs use (D81): the core interpreter for G1, G2 and Stage 1 and 2, the
+# P5 leaf (.venv-p5, requirements-p5.txt) for G3; as installed on the author's machine on
+# 22 October 2026. numpy's generator streams are fixed by seed only together with its version.
+CORE_VERSIONS = {"numpy": "2.4.4", "scipy": "1.17.1"}
+LEAF_VERSIONS = {"numpy": "2.5.4", "scipy": "1.18.1"}
+
+
+def versions_now():
+    import scipy
+    return {"numpy": np.__version__, "scipy": scipy.__version__}
+
+
+def version_check(expected, allow=False, script=None, check=True):
+    """The installed numpy and scipy against `expected`, for a script's output header:
+    {numpy, scipy, expected, checked, override, mismatch}. With `check` (a command-line
+    run), a mismatch is refused unless `allow` (--allow-other-versions), which is recorded
+    as the override. Without `check` (a call from a test or another script) nothing is
+    refused and the record says so."""
+    now = versions_now()
+    bad = {k: [now[k], v] for k, v in expected.items() if now[k] != v}
+    if check and bad and not allow:
+        raise SystemExit(f"{script or 'this script'} refused: "
+                         + "; ".join(f"{k} {a} is installed, {b} is expected" for k, (a, b) in bad.items())
+                         + ". The draws are fixed by seed only together with these versions (D81); "
+                           "--allow-other-versions runs anyway and is recorded.")
+    return dict(now, expected=dict(expected), checked=bool(check), override=bool(check and bad and allow), mismatch=bad)
 
 
 def paths(stage="base"):
@@ -283,40 +320,66 @@ def run_job(job, N=N_RICCATI, settings=None, Ts=TS, vus=VUS):
                 utc=utc_now())
 
 
+def run_job_with_reprice(job, kw, reprice_n=N_REPRICE):
+    """The job at its settings; if any quote is not finite, the job is priced once more at
+    N_riccati reprice_n with the same inversion settings (one set of Riccati solves serves
+    every ξ₀ of a triple), and each point, a surface (H, ν, ρ, ξ₀), with a quote not finite
+    takes all its quotes from that pricing; the triple's other surfaces keep theirs (line 54,
+    D81). Returns (record, first), `first` the record of the first pricing, kept for the
+    log, or None when it was finite. The record keeps the first pricing's N and per-maturity
+    detail, with `repriced_xi0` (the surfaces re-priced), `N_reprice` and `per_T_reprice`;
+    its seconds are both pricings'."""
+    rec = run_job(job, **kw)
+    if rec["all_finite"] or reprice_n is None:
+        return rec, None
+    rec2 = run_job(job, **dict(kw, N=int(reprice_n)))
+    bad = [i for i, xi in enumerate(rec["quotes"]) if any(v is None for row in xi for v in row)]
+    out = dict(rec, quotes=[rec2["quotes"][i] if i in bad else rec["quotes"][i] for i in range(len(rec["quotes"]))],
+               status=[rec2["status"][i] if i in bad else rec["status"][i] for i in range(len(rec["status"]))],
+               seconds_total=rec["seconds_total"] + rec2["seconds_total"], repriced=True, repriced_xi0=bad,
+               N_reprice=int(reprice_n), per_T_reprice=rec2["per_T"])
+    out["all_finite"] = all(v is not None for xi in out["quotes"] for row in xi for v in row)
+    return out, dict(rec, kind="first_attempt")
+
+
 def _worker(args):
-    job, kw = args
-    return run_job(job, **kw)
+    job, kw, reprice_n = args
+    return run_job_with_reprice(job, kw, reprice_n)
 
 
-def header(pool, nodes_per_dim=NODES, box=BOX, stage="base", N=N_RICCATI, settings=None):
-    import scipy
+def header(pool, nodes_per_dim=NODES, box=BOX, stage="base", N=N_RICCATI, settings=None, versions=None):
     settings = settings or BASE_T
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
+    v = versions or version_check(CORE_VERSIONS, check=False)
     return {"kind": "header", "script": os.path.basename(__file__), "commit": commit, "clean_tree": clean,
             "stage": stage, "box": {d: list(box[d]) for d in DIMS}, "nodes": list(nodes_per_dim), "N": int(N),
-            "base_T": {str(float(T)): [float(v[0]), int(v[1])] for T, v in settings.items()},
+            "n_reprice": N_REPRICE,
+            "base_T": {str(float(T)): [float(v_[0]), int(v_[1])] for T, v_ in settings.items()},
             "seed_heldout": SEED_HELDOUT, "n_heldout": N_HELDOUT, "ratio": RATIO, "noise_levels": list(NOISE_LEVELS),
             "n_train": int(np.prod(nodes_per_dim[:3])), "n_surfaces": int(np.prod(nodes_per_dim)),
             "TS": list(TS), "z": [float(z) for z in VUS], "S0": float(S0), "r": float(R), "kappa": float(KAPPA),
             "d38_point": list(D38_POINT), "cost_per_triple_s": COST_PER_TRIPLE_S,
-            "python": platform.python_version(), "numpy": np.__version__, "scipy": scipy.__version__,
+            "python": platform.python_version(), "numpy": v["numpy"], "scipy": v["scipy"], "versions": v,
             "platform": platform.platform(), "machine": platform.machine(), "cpu_count": os.cpu_count(),
             "pool": int(pool), "utc_created": utc_now()}
 
 
-def launch(pool, jobs, jsonl_path, header_obj, task_kwargs=None, stop_on_nonfinite=True):
+def launch(pool, jobs, jsonl_path, header_obj, task_kwargs=None, stop_on_nonfinite=True, reprice_n=N_REPRICE):
     """The pool over `jobs`, skipping labels already in the jsonl. One line per finished
-    task. A task whose quotes are not all finite is recorded and, with stop_on_nonfinite,
-    stops the launch (line 54: a training quote that is not finite stops the build): the
-    pending tasks are cancelled, those already running are recorded as they finish, and
-    the stop is recorded; a later launch on that record refuses. A task that raises is
-    recorded as task_error and is tried again on resume. Returns (n_done, stopped_at)."""
+    task. A task whose quotes are not all finite is priced once more at N_riccati
+    `reprice_n` with the same inversion settings (line 54, D81), the first pricing kept
+    as a "first_attempt" line and the second recorded as the task; if a quote is still not
+    finite, with stop_on_nonfinite, the launch stops (the build and P5 stop): the pending
+    tasks are cancelled, those already running are recorded as they finish, and the stop
+    is recorded; a later launch on that record refuses. A task that raises is recorded as
+    task_error and is tried again on resume. Returns (n_done, stopped_at)."""
     task_kwargs = task_kwargs or {}
+    header_obj = dict(header_obj, n_reprice=reprice_n)          # the re-pricing this launch applies, recorded
     hdr, launches, done = read_jsonl(jsonl_path)
     if hdr is None:
         append_line(jsonl_path, header_obj)
     else:
-        for key in ("nodes", "box", "N", "base_T", "stage"):
+        for key in ("nodes", "box", "N", "base_T", "stage", "n_reprice"):
             if hdr.get(key) != header_obj.get(key):
                 raise SystemExit(f"launch refused: {_rel(jsonl_path)} was started with {key}={hdr.get(key)!r}, "
                                  f"this call has {header_obj.get(key)!r}")
@@ -327,59 +390,67 @@ def launch(pool, jobs, jsonl_path, header_obj, task_kwargs=None, stop_on_nonfini
                              "the build stopped there (line 54)")
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
     append_line(jsonl_path, {"kind": "launch", "utc": utc_now(), "pool": int(pool), "n_done_before": len(done),
-                             "commit": commit, "clean_tree": clean})
+                             "commit": commit, "clean_tree": clean, "versions": header_obj.get("versions")})
     todo = [j for j in jobs if j["label"] not in done]
     print(f"\n=== RUN: {len(todo)} tasks to do ({len(done)} already in {_rel(jsonl_path)}), pool={pool} ===", flush=True)
     t0 = time.time()
     state = {"n": 0, "n_err": 0, "stopped_at": None}
 
-    def take(job, rec, err):
-        """Record one result; True when the launch must stop."""
+    def take(job, out, err):
+        """Record one result (the first pricing too, when the point was re-priced); True when
+        the launch must stop."""
         if err is not None:
             state["n_err"] += 1
             append_line(jsonl_path, {"kind": "task_error", "task": job["label"], "utc": utc_now(), "error": repr(err)})
             print(f"  task {job['label']} raised {err!r}; recorded, continuing", flush=True)
             return False
+        rec, first = out
+        if first is not None:
+            append_line(jsonl_path, first)
+            print(f"  {rec['task']}: a quote not finite at N_riccati {first['N']}; re-priced once at {rec['N_reprice']}, "
+                  f"surfaces {rec['repriced_xi0']} (all_finite={rec['all_finite']})", flush=True)
         append_line(jsonl_path, rec)
         state["n"] += 1
         print(f"  [{state['n']:3d}/{len(todo)}] {rec['task']} ({rec['role']}): all_finite={rec['all_finite']} "
               f"task={rec['seconds_total']:.0f}s elapsed={(time.time() - t0) / 60:.1f}min", flush=True)
         if stop_on_nonfinite and not rec["all_finite"]:
             state["stopped_at"] = rec["task"]
-            append_line(jsonl_path, {"kind": "stop", "task": rec["task"], "utc": utc_now(),
-                                     "reason": "a quote that is not finite stops the build (line 54)"})
-            print(f"  STOP: {rec['task']} has a quote that is not finite; the build stops (line 54)", flush=True)
+            reason = ("a quote that is not finite after the one re-pricing at N_riccati "
+                      f"{reprice_n} stops the build, and P5 (line 54, D81)" if reprice_n is not None else
+                      "a quote that is not finite stops the build (line 54)")
+            append_line(jsonl_path, {"kind": "stop", "task": rec["task"], "utc": utc_now(), "reason": reason})
+            print(f"  STOP: {rec['task']}: {reason}", flush=True)
             return True
         return False
 
     if pool == 1:                                       # in this process: no pool, same record
         for job in todo:
             try:
-                rec, err = _worker((job, task_kwargs)), None
+                out, err = _worker((job, task_kwargs, reprice_n)), None
             except Exception as e:
-                rec, err = None, e
-            if take(job, rec, err):
+                out, err = None, e
+            if take(job, out, err):
                 break
     else:
         ex = ProcessPoolExecutor(max_workers=pool)
         try:
-            futs = {ex.submit(_worker, (job, task_kwargs)): job for job in todo}
+            futs = {ex.submit(_worker, (job, task_kwargs, reprice_n)): job for job in todo}
             for fut in as_completed(futs):
                 job = futs[fut]
                 try:
-                    rec, err = fut.result(), None
+                    out, err = fut.result(), None
                 except Exception as e:
-                    rec, err = None, e
-                if take(job, rec, err):
+                    out, err = None, e
+                if take(job, out, err):
                     ex.shutdown(wait=False, cancel_futures=True)
                     for f2, j2 in futs.items():          # tasks already running finish and are recorded
                         if f2 is fut or f2.cancelled():
                             continue
                         try:
-                            r2, e2 = f2.result(), None
+                            o2, e2 = f2.result(), None
                         except Exception as e:
-                            r2, e2 = None, e
-                        take(j2, r2, e2)
+                            o2, e2 = None, e
+                        take(j2, o2, e2)
                     break
         except BaseException:
             print("\n  stopping: pending tasks cancelled; re-run to resume", flush=True)
@@ -457,10 +528,10 @@ def assess(values, thetas, G, box=BOX, Ts=TS, vus=VUS, ratio=RATIO, levels=NOISE
 
 
 def assemble(stage="base", nodes_per_dim=None, base_paths=None, stage_paths=None, n_heldout=N_HELDOUT,
-             Ts=TS, vus=VUS):
+             Ts=TS, vus=VUS, versions=None):
     """Read the stage's record, refuse unless complete and finite, write the .npz, the
-    held-out CSV and the report. The held-out points are read from the base record for
-    either stage (drawn once). Returns the report."""
+    held-out CSV and the report (with the numpy and scipy of this call, D81). The held-out
+    points are read from the base record for either stage (drawn once). Returns the report."""
     bp, sp = base_paths or paths("base"), stage_paths or paths(stage)
     hdr, launches, train, _ = read_stage(sp["jsonl"])
     _, _, _, held = read_stage(bp["jsonl"])
@@ -501,6 +572,9 @@ def assemble(stage="base", nodes_per_dim=None, base_paths=None, stage_paths=None
               "base_T": hdr["base_T"], "seed_heldout": SEED_HELDOUT, "ratio": RATIO, "noise_levels": list(NOISE_LEVELS),
               **rep, "seconds_train_total": float(sum(r["seconds_total"] for r in train.values())),
               "seconds_heldout_total": float(sum(r["seconds_total"] for r in held.values())),
+              "n_reprice": hdr.get("n_reprice"),
+              "repriced_points": sorted(k for k, r in list(train.items()) + list(held.items()) if r.get("repriced")),
+              "versions": versions or version_check(CORE_VERSIONS, check=False),
               "record_commit": hdr.get("commit"), "assembled_commit": commit, "assembled_clean_tree": clean,
               "launches": launches, "utc_assembled": utc_now(),
               "files": {k: _rel(v) for k, v in sp.items()}}
@@ -542,7 +616,7 @@ def estimate(nodes_per_dim=NODES, n_heldout=N_HELDOUT, pool=POOL_DEFAULT, per_tr
     return {"n_sets": n_sets, "core_hours": core_h, "wall_hours": core_h / pool, "per_triple_s": per_triple_s}
 
 
-def main(argv=None):
+def main(argv=None, check_versions=False):
     ap = argparse.ArgumentParser(description="P5 gate G1 emulator (see module docstring)")
     ap.add_argument("--run", action="store_true", help="price the node triples and the held-out points (resumable)")
     ap.add_argument("--assemble", action="store_true", help="write the .npz, the held-out CSV and the report")
@@ -550,7 +624,10 @@ def main(argv=None):
     ap.add_argument("--estimate", action="store_true", help="print the cost estimate from D62 and exit; no pricing")
     ap.add_argument("--stage", default="base", choices=("base", "refined"))
     ap.add_argument("--pool", type=int, default=POOL_DEFAULT)
+    ap.add_argument("--allow-other-versions", action="store_true",
+                    help="run with numpy or scipy other than CORE_VERSIONS; recorded (D81)")
     a = ap.parse_args(argv)
+    vers = version_check(CORE_VERSIONS, a.allow_other_versions, os.path.basename(__file__), check=check_versions)
 
     if a.estimate:
         e = estimate(pool=a.pool)
@@ -558,7 +635,7 @@ def main(argv=None):
               f"{e['core_hours']:.1f} core-hours, {e['wall_hours']:.1f} h on {a.pool} workers (unmeasured here)", flush=True)
         return
     if a.assemble:
-        rep = assemble(a.stage)
+        rep = assemble(a.stage, versions=vers)
         print(f"=== G1 ({a.stage}): e = {rep['e_p99']:.6f} (max {rep['max_abs']:.6f}) over {rep['n_quotes']} held-out quotes ===",
               flush=True)
         for s, v in rep["verdicts"].items():
@@ -579,7 +656,7 @@ def main(argv=None):
         print(f"=== refinement: {rep['refine_dimension']} doubled -> nodes {nodes}; {len(jobs)} triples ===", flush=True)
         e = estimate(nodes, 0, a.pool)
         print(f"  estimate: {e['core_hours']:.1f} core-hours, {e['wall_hours']:.1f} h on {a.pool} workers", flush=True)
-        n, stopped = launch(a.pool, jobs, paths("refined")["jsonl"], header(a.pool, nodes, stage="refined"))
+        n, stopped = launch(a.pool, jobs, paths("refined")["jsonl"], header(a.pool, nodes, stage="refined", versions=vers))
         if not stopped:
             print("  now run --assemble --stage refined", flush=True)
         return
@@ -603,10 +680,10 @@ def main(argv=None):
         print("\nHOLD: nothing priced. Run with --run to build (G1 is run after freezing, line 7).", flush=True)
         return
     jobs = train_jobs() + heldout_jobs()
-    n, stopped = launch(a.pool, jobs, paths("base")["jsonl"], header(a.pool))
+    n, stopped = launch(a.pool, jobs, paths("base")["jsonl"], header(a.pool, versions=vers))
     if not stopped:
         print("  now run --assemble", flush=True)
 
 
 if __name__ == "__main__":
-    main()
+    main(check_versions=True)

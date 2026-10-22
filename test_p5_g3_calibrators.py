@@ -315,3 +315,177 @@ def test_entry_points_hold_and_refuse():
     else:
         with pytest.raises(SystemExit, match="torch is not in this environment"):
             C.main(["--g3", "--emulator", "no_such_file.npz"])
+
+
+# ---- D81: per-cell pass or fail, the largest n within budget, the scoring cost (numpy only, with stand-ins) ----
+def _fake_ladder(monkeypatch, d_by_n, slope_by_kind, seconds_by_n=None):
+    """Stand-ins for training and prediction, so that G3's logic runs without torch: a run
+    is a record; a network trained at n predicts Ĥ = Ĥ_exact + d_by_n[n] and ξ₀ with the
+    kind's slope; the ratio estimator's prediction carries one sampler run per surface."""
+    calls = {"train": [], "predict": []}
+
+    def fake_train(kind, prior, j, q, n, theta, eps, s, em, val, jsonl_path, nets_dir, threads, train_kw):
+        calls["train"].append((kind, prior, j, q, n))
+        secs = (seconds_by_n or {}).get(n, 1.0)
+        return {"label": C.run_label(kind, prior, j, q, n), "kind": kind, "prior": prior, "j": j, "q": q, "n": n,
+                "status": "ok", "seconds": secs}, True
+
+    def fake_predict(run, rows, burn=R.BURN, sample=R.SAMPLE, rhat_max=R.RHAT_MAX, ess_min=R.ESS_MIN):
+        calls["predict"].append((run["kind"], run["n"]))
+        preds = [(r["H_exact"] + d_by_n[run["n"]], slope_by_kind[run["kind"]] * r["xi0_exact"]) for r in rows]
+        if run["kind"] == "ensemble":
+            return preds, [], {"seconds": 0.02, "n": len(rows), "attempts": None}
+        return preds, [], {"seconds": 1.0, "n": len(rows), "burn": burn, "sample": sample,
+                           "attempts": [[{"burn": burn, "sample": sample, "seconds": 2.0}] for _ in rows]}
+    monkeypatch.setattr(C, "get_or_train", fake_train)
+    monkeypatch.setattr(C, "predict_rows", fake_predict)
+    return calls
+
+
+def _g3_refs(n=4, j_ref=1):
+    return {f"g3_{i:04d}_{j_ref}": {"set": "g3", "task": f"g3_{i:04d}_{j_ref}", "i": i, "j": j_ref, "status": "ok",
+                                    "theta": [0.1, 0.2, -0.8, 0.1], "y": [0.2] * 35,
+                                    "under": {p: {"mean_H": 0.1 + 0.05 * i, "mean_xi0": 0.05 + 0.04 * i} for p in "AB"}}
+            for i in range(n)}
+
+
+def test_g3_cells_pass_on_their_own_at_the_largest_n_within_budget(tmp_path, monkeypatch):
+    """Line 144 (D81): every rung is run; a cell's training-set size is the largest n at which
+    both checks hold and the runs at n and 2n are within the budget; each (calibrator, prior,
+    level) cell passes or fails on its own; P5 stops only if every cell fails."""
+    d_by_n = {100: 0.010, 200: 0.0085, 400: 0.0080}               # |d| moves 0.0015, then 0.0005: both rungs stable
+    calls = _fake_ladder(monkeypatch, d_by_n, {"ensemble": 1.0, "nre": 0.5})   # the ratio estimator misses ξ₀'s slope
+    paths = {"jsonl": str(tmp_path / "l.jsonl"), "nets": str(tmp_path / "n"), "report": str(tmp_path / "g3.json")}
+    rep = C.run_g3(LinearEm(), _g3_refs(), paths["jsonl"], paths["nets"], paths["report"], threads=1, ladder=(100, 200),
+                   n_block=400, n_valid=16, levels=(0.003,), priors=("A",), post_kw={"burn": 10, "sample": 40})
+    ens, nre = rep["cells"]["ensemble_A_j2"], rep["cells"]["nre_A_j2"]
+    assert len(ens["rungs"]) == 2 and all(r["passed"] for r in ens["rungs"])           # both rungs run, both pass
+    assert ens["passed"] and ens["n_star"] == 200                                        # the largest, not the smallest
+    assert not nre["passed"] and nre["n_star"] is None and len(nre["rungs"]) == 2
+    assert rep["passed"] is False and rep["p5_stops"] is False                          # one cell failing does not stop P5
+    assert rep["cells_passing"] == ["ensemble_A_j2"] and rep["cells_not_passing"] == ["nre_A_j2"]
+    assert sorted(set(calls["predict"])) == sorted(calls["predict"])                    # each network predicted once
+    assert ens["cost_at_n_star"] == {"seconds": 0.02, "n": 4, "attempts": None}
+    # a run over the wall budget at 2n fails that rung, so the largest n within budget is the smaller one
+    calls2 = _fake_ladder(monkeypatch, d_by_n, {"ensemble": 1.0, "nre": 1.0}, seconds_by_n={400: 5 * 3600.0})
+    rep2 = C.run_g3(LinearEm(), _g3_refs(), str(tmp_path / "l2.jsonl"), paths["nets"], str(tmp_path / "g3b.json"), threads=1,
+                    ladder=(100, 200), n_block=400, n_valid=16, levels=(0.003,), priors=("A",),
+                    post_kw={"burn": 10, "sample": 40})
+    assert all(c["n_star"] == 100 for c in rep2["cells"].values()) and rep2["passed"] and not rep2["p5_stops"]
+    assert rep2["cells"]["ensemble_A_j2"]["rungs"][1]["passed"] is False and "budget" in rep2["cells"]["ensemble_A_j2"]["rungs"][1]["reason"]
+    # every cell failing stops P5
+    _fake_ladder(monkeypatch, d_by_n, {"ensemble": 0.5, "nre": 0.5})
+    rep3 = C.run_g3(LinearEm(), _g3_refs(), str(tmp_path / "l3.jsonl"), paths["nets"], str(tmp_path / "g3c.json"), threads=1,
+                    ladder=(100, 200), n_block=400, n_valid=16, levels=(0.003,), priors=("A",),
+                    post_kw={"burn": 10, "sample": 40})
+    assert rep3["p5_stops"] is True and rep3["cells_passing"] == [] and "every cell" in rep3["p5_stops_reason"]
+
+
+def test_g3_scoring_cost_projection_and_per_cell_seeds(tmp_path, monkeypatch):
+    """Line 143's budget at G3 (D81): the projected cost of scoring both calibrators on the test
+    set's pairs, five seeds each, against 1,344 core-hours; the seeds of a passing cell only."""
+    cells = {"nre_A_j1": {"calibrator": "nre", "passed": True,
+                          "cost_at_n_star": {"burn": 10000, "sample": 40000, "n": 2, "seconds": 0.0,
+                                             "attempts": [[{"burn": 10000, "sample": 40000, "seconds": 20.0}],
+                                                          [{"burn": 10000, "sample": 40000, "seconds": 30.0},
+                                                           {"burn": 20000, "sample": 80000, "seconds": 100.0}]]}},
+             "ensemble_A_j1": {"calibrator": "ensemble", "passed": True, "cost_at_n_star": {"seconds": 0.04, "n": 16}},
+             "nre_B_j1": {"calibrator": "nre", "passed": False, "cost_at_n_star": None}}
+    pr = C.scoring_projection(cells, threads=4)
+    nre = pr["per_cell"]["nre_A_j1"]
+    assert nre["median_unit_s"] == 30.0 and nre["mean_units"] == 2.0                    # units 1 and 1 + 2; seconds 20, 30, 50
+    assert abs(nre["projected_core_hours"] - 400 * 5 * 30.0 * 2.0 * 4 / 3600) < 1e-9
+    assert abs(pr["per_cell"]["ensemble_A_j1"]["projected_core_hours"] - 400 * 5 * 0.0025 * 4 / 3600) < 1e-12
+    assert "nre_B_j1" not in pr["per_cell"] and pr["go"] and pr["budget_core_hours"] == 1344.0
+    cells["nre_A_j1"]["cost_at_n_star"]["attempts"][0][0]["seconds"] = 2000.0                 # far too slow: no go
+    cells["nre_A_j1"]["cost_at_n_star"]["attempts"][1][0]["seconds"] = 2000.0
+    assert C.scoring_projection(cells, threads=4)["go"] is False
+    # the seeds: the passing cell's only; none when P5 stops
+    calls = _fake_ladder(monkeypatch, {100: 0.010, 200: 0.0085, 400: 0.0080}, {"ensemble": 1.0, "nre": 0.5})
+    rep = C.run_g3(LinearEm(), _g3_refs(), str(tmp_path / "l.jsonl"), str(tmp_path / "n"), str(tmp_path / "g3.json"),
+                   threads=1, ladder=(100, 200), n_block=400, n_valid=16, levels=(0.003,), priors=("A",),
+                   post_kw={"burn": 10, "sample": 40})
+    calls["train"].clear()
+    trained = C.train_seeds(LinearEm(), rep, jsonl_path=str(tmp_path / "t.jsonl"), nets_dir=str(tmp_path / "n2"),
+                            nets_g3=str(tmp_path / "n"), threads=1, n_block=400, n_valid=16, seeds=(2, 3))
+    assert set(trained) == {"ensemble_A_j2"} and trained["ensemble_A_j2"]["n_star"] == 200
+    assert {c[0] for c in calls["train"]} == {"ensemble"} and {c[3] for c in calls["train"]} == {2, 3}   # the failed cell untrained
+    with pytest.raises(SystemExit, match="P5 stops"):
+        C.train_seeds(LinearEm(), dict(rep, p5_stops=True, p5_stops_reason="cost"), jsonl_path=str(tmp_path / "t2.jsonl"))
+    assert set(C.header("g3", 1)["versions"]) >= {"numpy", "scipy", "expected", "override"}
+    assert C.header("g3", 1)["versions"]["expected"] == E.LEAF_VERSIONS
+
+
+def test_g3_fails_closed_and_records_an_override(tmp_path, monkeypatch):
+    """A level with no accepted pilot reference fails its cell rather than stopping the run; a
+    passing cell whose scoring cost cannot be projected makes the projection incomplete and
+    no go; a projected cost above the budget stops P5 through run_g3; a run under
+    --allow-other-versions is recorded in the record it writes to and in the report; the
+    command line refuses other numpy and scipy versions; the scores' header lists the
+    networks scored (D81)."""
+    for kind in ("ensemble", "nre"):
+        preds, fails, cost = C.predict_rows({"kind": kind}, [], burn=10, sample=40)
+        assert preds == [] and fails == [] and cost["n"] == 0
+        assert C.g3_checks(preds, preds, [])["passed"] is False
+    cells = {"ensemble_A_j1": {"calibrator": "ensemble", "passed": True, "cost_at_n_star": None},
+             "ensemble_A_j2": {"calibrator": "ensemble", "passed": True, "cost_at_n_star": {"seconds": 0.04, "n": 16}}}
+    pr = C.scoring_projection(cells, threads=1)
+    assert pr["complete"] is False and pr["cells_not_projected"] == ["ensemble_A_j1"] and pr["go"] is False
+    _fake_ladder(monkeypatch, {100: 0.010, 200: 0.0085, 400: 0.0080}, {"ensemble": 1.0, "nre": 1.0})
+    over = E.version_check({"numpy": "0.0.0", "scipy": "0.0.0"}, allow=True, check=True)
+    jl = str(tmp_path / "l.jsonl")
+    rep = C.run_g3(LinearEm(), _g3_refs(), jl, str(tmp_path / "n"), str(tmp_path / "g3.json"), threads=1,
+                   ladder=(100, 200), n_block=400, n_valid=16, levels=(0.003,), priors=("A",),
+                   post_kw={"burn": 10, "sample": 40}, versions=over, budget_core_h=1e-9)
+    assert rep["cells_passing"] and rep["p5_stops"] is True and "above the budget" in rep["p5_stops_reason"]
+    assert rep["versions"]["override"] is True and rep["scoring_projection"]["complete"] is True
+    lines = [json.loads(l) for l in Path(jl).read_text(encoding="utf-8").splitlines()]
+    assert [l["kind"] for l in lines[:2]] == ["header", "launch"] and lines[1]["versions"]["override"] is True
+    C.run_g3(LinearEm(), _g3_refs(), jl, str(tmp_path / "n"), str(tmp_path / "g3.json"), threads=1, ladder=(100, 200),
+             n_block=400, n_valid=16, levels=(0.003,), priors=("A",), post_kw={"burn": 10, "sample": 40})
+    assert sum(1 for l in Path(jl).read_text(encoding="utf-8").splitlines() if '"launch"' in l) == 1   # no override, no line
+    assert C.scored_networks({"ensemble_A_j1": {"seeds": {"1": "a", "3": "b"}}, "nre_B_j3": {"seeds": {1: "c", 2: "d"}}}) == \
+        [["ensemble", "A", 1, 1], ["ensemble", "A", 1, 3], ["nre", "B", 3, 1], ["nre", "B", 3, 2]]
+    assert "main(check_versions=True)" in inspect.getsource(C).split("__main__")[-1]
+    monkeypatch.setattr(E, "LEAF_VERSIONS", {"numpy": "0.0.0", "scipy": "0.0.0"})
+    C.main([])                                                                             # a call: nothing refused
+    with pytest.raises(SystemExit, match="refused: numpy"):
+        C.main([], check_versions=True)
+    C.main(["--allow-other-versions"], check_versions=True)
+
+
+def test_the_test_set_is_scored_only_after_stage1(tmp_path):
+    """Line 101 (D81): scoring the test set refuses without Stage 1's output for its
+    references, with one made from other references, or one that stopped P5; a scores file
+    begun after another Stage 1 output is refused on resume; the header records the Stage
+    1 output's digest (with torch present; without it, the scoring stops for want of torch
+    once Stage 1 is in order)."""
+    import p5_stage2 as S2
+    refs = tmp_path / "refs.jsonl"
+    refs.write_text(json.dumps({"kind": "header", "set": "test", "n_points": 1}) + "\n"
+                    + json.dumps({"kind": "task", "task": "test_0000_0", "status": "ok"}) + "\n", encoding="utf-8")
+    out = tmp_path / "scores.jsonl"
+    kw = dict(out_path=str(out), threads=1, refs_path=str(refs), stage1_dir=str(tmp_path / "s1"))
+    with pytest.raises(SystemExit, match="no Stage 1 output"):
+        C.score_set("test", {}, None, {}, **kw)
+    (tmp_path / "s1").mkdir()
+    s1 = tmp_path / "s1" / "p5_stage1_report.json"
+    s1.write_text(json.dumps({"refs_digest": "0" * 64, "p5_stops": False}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="other references"):
+        C.score_set("test", {}, None, {}, **kw)
+    s1.write_text(json.dumps({"refs_digest": S2.refs_digest(str(refs)), "p5_stops": True}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="P5 stopped at Stage 1"):
+        C.score_set("test", {}, None, {}, **kw)
+    s1.write_text(json.dumps({"refs_digest": S2.refs_digest(str(refs)), "p5_stops": False}), encoding="utf-8")
+    out.write_text(json.dumps({"kind": "header", "mode": "score", "set": "test", "stage1_refs_digest": "f" * 64}) + "\n",
+                   encoding="utf-8")
+    with pytest.raises(SystemExit, match="begun after another Stage 1 output"):
+        C.score_set("test", {}, None, {}, **kw)
+    out.unlink()
+    if C._HAS_TORCH:
+        assert C.score_set("test", {}, None, {}, **kw) == 0
+        h = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
+        assert h["stage1_refs_digest"] == S2.refs_digest(str(refs)) and h["expected"] == []
+    else:
+        with pytest.raises(SystemExit, match="torch"):
+            C.score_set("test", {}, None, {}, **kw)

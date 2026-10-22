@@ -206,3 +206,133 @@ def test_g1_verdicts_and_assess_on_hand_built_numbers():
     c4 = E.cheb_coeffs_4d(V)                                                                 # linear: four first-order terms
     assert np.allclose(np.abs(c4[..., 0]).sum(), abs(c4[0, 0, 0, 0, 0]) + abs(c4[1, 0, 0, 0, 0]) + abs(c4[0, 1, 0, 0, 0])
                        + abs(c4[0, 0, 1, 0, 0]) + abs(c4[0, 0, 0, 1, 0]), atol=1e-12)
+
+
+# ---- D81: the one re-pricing at N_riccati 16000; the versions ----
+def test_a_point_with_a_quote_not_finite_is_repriced_once_at_16000(tmp_path, monkeypatch):
+    """Line 54 (D81): a training or held-out point with a quote that is not finite is priced
+    once more at N_riccati 16000 with the same inversion settings and its quotes taken from
+    that pricing; the first pricing is kept in the log; a quote still not finite stops the
+    build and P5."""
+    jl = str(tmp_path / "t.jsonl")
+    orig = E.price_triple
+    calls = []
+
+    def flaky_price(H, nu, rho, xi0s, N=None, settings=None, Ts=E.TS, vus=E.VUS):
+        calls.append((round(H, 4), N, settings))
+        rec = orig(0.10, 0.35, -0.70, xi0s, N=200, settings=CHEAP_T, Ts=(0.10,), vus=VUS3)
+        rec["N"] = N
+        if H > 0.11 and N != 16000:                                    # one triple fails below the re-pricing resolution
+            rec["quotes"][0][0][1] = None
+            rec["status"][0][0][1] = "riccati_nonfinite"
+            rec["all_finite"] = False
+        return rec
+    monkeypatch.setattr(E, "price_triple", flaky_price)
+    jobs = E.train_jobs((2, 1, 1, 1), TOY_BOX)
+    hdr = E.header(1, (2, 1, 1, 1), TOY_BOX)
+    n, stopped = E.launch(1, jobs, jl, hdr, task_kwargs={"N": 8000, "settings": CHEAP_T, "Ts": (0.10,), "vus": VUS3})
+    assert stopped is None and n == 2                                                          # the build goes on
+    assert [c[1] for c in calls] == [8000, 8000, 16000] and calls[2][2] is CHEAP_T            # once, the same inversion settings
+    assert E.N_REPRICE == 16000 == 2 * E.N_RICCATI
+    assert hdr["n_reprice"] == 16000 and set(hdr["versions"]) >= {"numpy", "scipy", "expected", "override"}
+    h, launches, train, held = E.read_stage(jl)
+    rec = train["N01_00_00"]
+    assert rec["all_finite"] and rec["repriced"] is True and rec["N_reprice"] == 16000 and rec["N"] == 8000
+    assert rec["repriced_xi0"] == [0]                                                          # its one surface
+    lines = [json.loads(l) for l in Path(jl).read_text(encoding="utf-8").splitlines()]
+    first = [l for l in lines if l["kind"] == "first_attempt"]
+    assert len(first) == 1 and first[0]["task"] == "N01_00_00" and first[0]["all_finite"] is False
+    assert not any(l["kind"] == "stop" for l in lines) and train["N00_00_00"].get("repriced") is None
+    assert E.check_complete([j["label"] for j in jobs], train, "train") == []
+    # with the re-pricing switched off, the old rule: the first quote not finite stops the build
+    jl2 = str(tmp_path / "t2.jsonl")
+    n2, stopped2 = E.launch(1, jobs, jl2, hdr, task_kwargs={"N": 8000, "settings": CHEAP_T, "Ts": (0.10,), "vus": VUS3},
+                            reprice_n=None)
+    assert stopped2 == "N01_00_00"
+    stop = [json.loads(l) for l in Path(jl2).read_text(encoding="utf-8").splitlines()][-1]
+    assert stop["kind"] == "stop" and "16000" not in stop["reason"]
+
+
+def test_only_the_surfaces_not_finite_take_the_repricing_and_a_second_failure_stops(tmp_path, monkeypatch):
+    """Line 54 (D81), read per point: of a triple priced again at 16000, only the surfaces
+    (H, ν, ρ, ξ₀) with a quote not finite take the new quotes and the others keep theirs;
+    the record's seconds are both pricings'; the header records the re-pricing the launch
+    applies, and the assembly records it, the re-priced points and its own versions. A
+    quote still not finite after the re-pricing stops the build and P5, and a later launch
+    on that record refuses."""
+    orig = E.price_triple
+    still_bad = {"on": False}
+
+    def flaky(H, nu, rho, xi0s, N=None, settings=None, Ts=E.TS, vus=E.VUS):
+        rec = orig(0.10, 0.35, -0.70, xi0s, N=200, settings=CHEAP_T, Ts=(0.10,), vus=VUS3)
+        rec["N"] = N
+        if N == 16000:                                                  # the re-pricing's quotes, marked
+            rec["quotes"] = [[[None if v is None else v + 1e-6 for v in row] for row in xi] for xi in rec["quotes"]]
+        if len(xi0s) == 2 and H > 0.11 and (N != 16000 or still_bad["on"]):   # one triple's second surface
+            rec["quotes"][1][0][1] = None
+            rec["status"][1][0][1] = "riccati_nonfinite"
+            rec["all_finite"] = False
+        return rec
+    monkeypatch.setattr(E, "price_triple", flaky)
+    nodes = (2, 1, 1, 2)
+    kw = {"N": 8000, "settings": CHEAP_T, "Ts": (0.10,), "vus": VUS3}
+    jobs = E.train_jobs(nodes, TOY_BOX) + E.heldout_jobs(73, 2, TOY_BOX)
+    sp = {"jsonl": str(tmp_path / "b.jsonl"), "npz": str(tmp_path / "b.npz"), "csv": str(tmp_path / "b.csv"),
+          "report": str(tmp_path / "b.json")}
+    n, stopped = E.launch(1, jobs, sp["jsonl"], E.header(1, nodes, TOY_BOX), task_kwargs=kw)
+    assert stopped is None and n == 4
+    h, launches, train, held = E.read_stage(sp["jsonl"])
+    rec = train["N01_00_00"]
+    base = orig(0.10, 0.35, -0.70, rec["xi0s"], N=200, settings=CHEAP_T, Ts=(0.10,), vus=VUS3)
+    assert rec["repriced"] is True and rec["repriced_xi0"] == [1] and rec["N"] == 8000 and rec["N_reprice"] == 16000
+    assert rec["quotes"][0] == base["quotes"][0]                                         # the finite surface keeps its quotes
+    assert np.allclose(np.array(rec["quotes"][1], dtype=float), np.array(base["quotes"][1], dtype=float) + 1e-6,
+                       rtol=0, atol=1e-12) and rec["all_finite"] and "per_T_reprice" in rec
+    first = [json.loads(l) for l in Path(sp["jsonl"]).read_text(encoding="utf-8").splitlines() if '"first_attempt"' in l]
+    assert len(first) == 1 and rec["seconds_total"] > first[0]["seconds_total"]          # both pricings' seconds
+    assert h["n_reprice"] == 16000 and train["N00_00_00"].get("repriced") is None
+    rep = E.assemble("base", nodes, base_paths=sp, stage_paths=sp, n_heldout=2, Ts=(0.10,), vus=VUS3,
+                     versions=E.version_check(E.CORE_VERSIONS, check=False))
+    assert rep["repriced_points"] == ["N01_00_00"] and rep["n_reprice"] == 16000
+    assert set(rep["versions"]) >= {"numpy", "scipy", "expected", "override"}
+    # a quote still not finite at 16000 stops the build and P5; a later launch refuses
+    still_bad["on"] = True
+    jl2 = str(tmp_path / "s.jsonl")
+    n2, stopped2 = E.launch(1, jobs, jl2, E.header(1, nodes, TOY_BOX), task_kwargs=kw)
+    assert stopped2 == "N01_00_00"
+    lines = [json.loads(l) for l in Path(jl2).read_text(encoding="utf-8").splitlines()]
+    assert [l["kind"] for l in lines if l.get("task") == "N01_00_00"] == ["first_attempt", "task", "stop"]
+    assert "16000" in lines[-1]["reason"] and "P5" in lines[-1]["reason"]
+    with pytest.raises(SystemExit, match="the record holds a quote that is not finite"):
+        E.launch(1, jobs, jl2, E.header(1, nodes, TOY_BOX), task_kwargs=kw)
+    jl3 = str(tmp_path / "off.jsonl")                                                    # the header records what is applied
+    E.launch(1, jobs[:1], jl3, E.header(1, nodes, TOY_BOX), task_kwargs=kw, reprice_n=None)
+    assert json.loads(Path(jl3).read_text(encoding="utf-8").splitlines()[0])["n_reprice"] is None
+
+
+def test_the_version_guard_records_and_refuses(monkeypatch):
+    """Each P5 script's command-line entry point checks numpy and scipy against the versions
+    on the author's machine and refuses others unless --allow-other-versions, recorded; a
+    call from a test or another script refuses nothing (D81)."""
+    import inspect
+    import scipy
+    assert E.CORE_VERSIONS == {"numpy": "2.4.4", "scipy": "1.17.1"} and E.LEAF_VERSIONS == {"numpy": "2.5.4", "scipy": "1.18.1"}
+    now = {"numpy": np.__version__, "scipy": scipy.__version__}
+    rec = E.version_check(now, check=True)
+    assert rec["override"] is False and rec["mismatch"] == {} and rec["checked"] is True and rec["numpy"] == now["numpy"]
+    other = {"numpy": "0.0.1", "scipy": now["scipy"]}
+    with pytest.raises(SystemExit, match="numpy .* is installed, 0.0.1 is expected"):
+        E.version_check(other, check=True, script="x.py")
+    rec2 = E.version_check(other, allow=True, check=True)
+    assert rec2["override"] is True and rec2["mismatch"] == {"numpy": [now["numpy"], "0.0.1"]}
+    rec3 = E.version_check(other, check=False)
+    assert rec3["override"] is False and rec3["checked"] is False and rec3["mismatch"] == {"numpy": [now["numpy"], "0.0.1"]}
+    for mod in ("p5_g1_emulator", "p5_g2_reference", "p5_g3_calibrators", "p5_stage2"):
+        src = inspect.getsource(__import__(mod))
+        assert "main(check_versions=True)" in src.split("__main__")[-1], mod                  # the command line only
+        assert "--allow-other-versions" in src, mod
+    monkeypatch.setattr(E, "CORE_VERSIONS", {"numpy": "0.0.0", "scipy": "0.0.0"})
+    E.main(["--estimate"])                                                                      # a call: nothing refused
+    with pytest.raises(SystemExit, match="refused"):
+        E.main(["--estimate"], check_versions=True)
+    E.main(["--estimate", "--allow-other-versions"], check_versions=True)
