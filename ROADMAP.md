@@ -3315,6 +3315,35 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     in full and the tick at line 214 on his confirmation; then the order of
     acts in D77's file from step 2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D80** *(2026-10-22)* **P5 v2 draft: the prior-work box ticked on the
+  author's confirmation that the full texts of the eighteen sources were read
+  (one checklist box ticks; docs only; nothing frozen).** Line 214 of
+  `docs/protocols/P5_protocol_v2_draft.md`, "Prior-work section written from
+  the papers themselves", is ticked. D79 had withdrawn D78's confirmation, the
+  abstracts having been read in most cases, and returned the box to unticked;
+  the author confirmed on 22 October 2026 that the full texts of all eighteen
+  sources listed under Relation to prior work have now been read. No other line
+  of the draft changes; the one OPEN item (line 94) and the box "OSF
+  registration amended" (line 215) stand. This is step 1 of the order of acts
+  in `docs/protocols/P5_v2_amendment.md` (D77).
+  - **Two clauses this tick makes stale, left to the freeze commit.** Line 158
+    says the prior-work box is one "which this draft leaves unticked", and the
+    declaration at line 200 says the author's reading is "outstanding at the
+    time of writing". Both described the draft before this commit. They are
+    corrected in the freeze commit (issue #226), which already planned the
+    change to line 158, so that this commit touches line 214 alone, as the
+    author asked; the interval is declared here.
+  - **The model of this sitting.** This sitting ran on Claude Opus 5.5, the
+    model the session reports for itself and nothing in the repository shows.
+    The declaration at line 200 names Claude Fable 5.1 for the sittings of 11
+    and 12 October 2026 only; the freeze commit is the place to extend it to
+    the later sittings.
+  - **Not written.** The freeze commit; anything on OSF; any change to the
+    section's text, to v1 or to the decision sheet.
+  - What remains before freezing: the freeze commit on the author's word (issue
+    #226), then the OSF acts and the post-freeze commit in the order D77's file
+    sets out; line 94's amendment after G2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
