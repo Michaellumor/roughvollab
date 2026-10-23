@@ -295,6 +295,9 @@ def test_only_the_surfaces_not_finite_take_the_repricing_and_a_second_failure_st
                      versions=E.version_check(E.CORE_VERSIONS, check=False))
     assert rep["repriced_points"] == ["N01_00_00"] and rep["n_reprice"] == 16000
     assert set(rep["versions"]) >= {"numpy", "scipy", "expected", "override"}
+    assert rec["N_by_xi0"] == [8000, 16000] and "per_T_reprice" in rec["reprice_note"]            # which surfaces (D82)
+    with pytest.raises(SystemExit, match="exists; a re-run needs the old file moved aside"):       # nothing written over (D82)
+        E.assemble("base", nodes, base_paths=sp, stage_paths=sp, n_heldout=2, Ts=(0.10,), vus=VUS3)
     # a quote still not finite at 16000 stops the build and P5; a later launch refuses
     still_bad["on"] = True
     jl2 = str(tmp_path / "s.jsonl")
@@ -336,3 +339,73 @@ def test_the_version_guard_records_and_refuses(monkeypatch):
     with pytest.raises(SystemExit, match="refused"):
         E.main(["--estimate"], check_versions=True)
     E.main(["--estimate", "--allow-other-versions"], check_versions=True)
+
+
+def _toy_stage(tmp_path, stage, refine=False, stop=False, complete=True):
+    """A hand-built stage of G1 on disk (no pricing): its record, its emulator file and, when
+    complete, its report; `stop` writes the stop line of a quote still not finite."""
+    d = tmp_path / stage
+    d.mkdir(parents=True)
+    p = {"jsonl": str(d / "tasks.jsonl"), "npz": str(d / "emulator.npz"), "csv": str(d / "heldout.csv"),
+         "report": str(d / "report.json")}
+    lines = [{"kind": "header", "stage": stage}, {"kind": "task", "task": "N00_00_00", "all_finite": True}]
+    if stop:
+        lines.append({"kind": "stop", "task": "N00_00_01", "reason": "a quote not finite after the re-pricing"})
+    Path(p["jsonl"]).write_text("".join(json.dumps(x) + "\n" for x in lines), encoding="utf-8")
+    np.savez(p["npz"], values=np.full((2, 1, 1, 2, 3), 0.2 + (0.01 if stage == "refined" else 0.0)))
+    if complete:
+        Path(p["report"]).write_text(json.dumps({"stage": stage, "nodes": [2, 1, 1, 2], "n_train": 2, "n_heldout": 2,
+                                                 "e_p99": 0.0003, "verdicts": {}, "refine": refine}), encoding="utf-8")
+    return p
+
+
+def test_require_g1_names_the_build_g1_passes_and_refuses_otherwise(tmp_path):
+    """Line 142 (D82): G̃ for everything after G1 is the refined build when the base report
+    calls for the refinement and the base build otherwise; a stage that stopped, or one
+    missing or incomplete, is refused; the command line refuses an --emulator naming another
+    file; the emulator's hash is the .npz's SHA-256, and records that meet must carry equal
+    hashes; no file is written over."""
+    import hashlib
+    with pytest.raises(SystemExit, match="no emulator: G1's base build is missing or incomplete"):
+        E.require_g1({"jsonl": str(tmp_path / "x.jsonl"), "npz": str(tmp_path / "x.npz"),
+                      "report": str(tmp_path / "x.json")}, None)
+    base = _toy_stage(tmp_path / "a", "base")
+    assert E.require_g1(base, {"jsonl": "-", "npz": "-", "report": "-"}) == base["npz"]          # no refinement called for
+    b2 = _toy_stage(tmp_path / "b", "base", refine=True)
+    with pytest.raises(SystemExit, match="calls for the one refinement and the refined build is missing"):
+        E.require_g1(b2, {"jsonl": str(tmp_path / "none.jsonl"), "npz": str(tmp_path / "none.npz"),
+                          "report": str(tmp_path / "none.json")})
+    r2 = _toy_stage(tmp_path / "b", "refined")
+    assert E.require_g1(b2, r2) == r2["npz"]                                                       # the refined build is G̃
+    r3 = _toy_stage(tmp_path / "c", "refined", stop=True)
+    with pytest.raises(SystemExit, match="refined build stopped at N00_00_01"):
+        E.require_g1(b2, r3)
+    b4 = _toy_stage(tmp_path / "d", "base", stop=True)
+    with pytest.raises(SystemExit, match="base build stopped at N00_00_01.*stops P5"):
+        E.require_g1(b4, r2)
+    b5 = _toy_stage(tmp_path / "e", "base", complete=False)
+    with pytest.raises(SystemExit, match="base build is missing or incomplete"):
+        E.require_g1(b5, r2)
+    Path(base["report"]).write_text(json.dumps({"stage": "base", "nodes": [2, 1, 1, 2], "n_train": 3, "n_heldout": 2,
+                                                "e_p99": 0.0003, "verdicts": {}}), encoding="utf-8")
+    with pytest.raises(SystemExit, match="missing or incomplete"):                                 # its counts do not add up
+        E.require_g1(base, r2)
+    assert E.emulator_for_run(None, b2, r2) == r2["npz"] == E.emulator_for_run(r2["npz"], b2, r2)
+    with pytest.raises(SystemExit, match="is not G̃"):
+        E.emulator_for_run(b2["npz"], b2, r2)                                                      # the base build, refused
+    info = E.emulator_info(r2["npz"])
+    assert info["sha256"] == hashlib.sha256(Path(r2["npz"]).read_bytes()).hexdigest() and E.sha256_file("nothing") is None
+    h = info["sha256"]
+    assert E.require_same_emulator({"a": h, "b": h}, "x") == h
+    with pytest.raises(SystemExit, match="x refused: the emulator hashes differ"):
+        E.require_same_emulator({"a": h, "b": E.emulator_info(b2["npz"])["sha256"]}, "x")
+    with pytest.raises(SystemExit, match="x refused: no emulator hash in b"):
+        E.require_same_emulator({"a": h, "b": None}, "x")
+    with pytest.raises(SystemExit, match="y refused: .* exists; a re-run needs the old file moved aside"):
+        E.refuse_overwrite([r2["report"], str(tmp_path / "absent.json")], "y")
+    E.refuse_overwrite([str(tmp_path / "absent.json"), None], "y")                                 # nothing there: no refusal
+    ver = E.version_check(E.versions_now(), allow=True, check=True, torch_expected="0.0.0")         # torch checked when asked
+    assert ver["expected"]["torch"] == "0.0.0" and set(ver["mismatch"]) == {"torch"} and ver["override"] is True
+    with pytest.raises(SystemExit, match="torch .* is installed, 0.0.0 is expected"):
+        E.version_check(E.versions_now(), check=True, torch_expected="0.0.0", script="x.py")
+    assert E.LEAF_TORCH == "2.14.1" and "torch" not in E.version_check(E.versions_now(), check=False)   # only when asked

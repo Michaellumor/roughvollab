@@ -3768,6 +3768,317 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     author's re-ticking of the seven reopened boxes and the review box; then
     the order of acts from step 2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D82** *(2026-10-23)* **P5 v2 draft: the second pre-freeze review's fixes
+  (G1 binding what follows, the forward model in the hash list, a rule for
+  disagreement, G3's complete pilot record, exact declarations, fixed values
+  and overrides, no record written over, G2's full cost; docs and code; nothing
+  frozen; nothing run on real outputs).**
+  - **Summary.** The second review, of PR #234, found D81's answers in place
+    and v2 ready to freeze after small fixes, with no redesign. The author
+    decided: #234 merged as reviewed and the fixes in D82; both review records
+    in `docs/protocols/`; the registration to hold the files the freeze binds;
+    D5 kept, its cost stated. Now G1's outcome binds what follows and G̃'s hash
+    travels with every record; the forward model is hashed and runs after
+    freezing need a clean tree at the hashes; the text governs where it speaks;
+    G3 needs a complete pilot record; the declarations are exact; N, the noise
+    seed and the overrides are fixed and no record is written over. Left: that
+    review's check of this diff, the author's re-ticking, the freeze.
+  - **The review and its record.** The second, shorter review called for by
+    step 1 of the amendment file's order of acts, made late on 22 October 2026
+    (UTC) in a claude.ai chat configured for Claude Opus 5.5, on PR #234 at
+    head `3ddf92a`: an independent referee, a code-against-protocol audit and
+    the session's own checks, all read-only; no P5 script, test or pricer was
+    run and no P5 output opened, the only computations being the referee's
+    standalone arithmetic and a hash of the first record. Verdict: freeze after
+    small fixes; no redesign; five changes needed before freezing (items 1 to
+    5) and eight worth making in the same round (items 6 to 13). Its record,
+    `docs/protocols/P5_v2_second_review_2026-10-22.md` (SHA-256 `740daca1`…,
+    checked against the hash the author gave), is added unchanged, and the
+    first, `docs/protocols/P5_v2_prefreeze_review_2026-10-22.md` (`29e73ceb`…),
+    is moved beside it with `git mv`, unchanged; draft lines 200 and 215 cite
+    the new path. Before this sitting the author merged #234 as reviewed
+    (`f5a8257`), which brings in `3598211`, `64bdd4d` and `3ddf92a` and nothing
+    else since `b11063b`, the merge's tree equal to `3ddf92a`'s; the branch was
+    then deleted locally and on origin.
+  - **The author's decisions.** Made on 23 October 2026, each on the
+    assistant's lean, and the author's. 1, order: #234 merged as reviewed, the
+    fixes in this entry with the record, so that what was reviewed and what was
+    merged stay the same. 2, records: both review records in `docs/protocols/`,
+    the first moved with `git mv`, the second added beside it, both unchanged.
+    3, OSF: the new registration holds, beside the protocol, the files the
+    freeze binds (the six P5 scripts, the forward-model modules, both
+    requirements files and `ROADMAP.md`), each as its git blob at the freeze
+    commit. 4, D5 stands, its full cost stated in the text.
+  - **Item 1, G1 binds what follows.** `require_g1` (`p5_g1_emulator.py:216`)
+    returns G̃'s path, the refined build when the base report calls for the
+    refinement and the base build otherwise; it refuses, citing lines 54 and
+    142, when the base stage stopped on a quote still not finite after the
+    re-pricing (`stage_stopped`, :186), when the base report or emulator is
+    missing or is not a complete assembly of that stage, and when the
+    refinement called for stopped, is missing or is incomplete. From the
+    command line G2 and G3 take G̃ from it and refuse an `--emulator` naming
+    another file (`emulator_for_run`, :245; `p5_g2_reference.py:1090`;
+    `p5_g3_calibrators.py:872`); functions called from tests may still be given
+    an emulator. The emulator's path and the SHA-256 of its `.npz`
+    (`emulator_info`, :158) are recorded in every reference record's header
+    (G2's pilot, the retry, G3's pilot, the test set; `p5_g2_reference.py:709`,
+    a resume refusing a changed file, :779), in G2's reports (:971) and status
+    (:1023), in G3's record and report, in the training record, in the scores'
+    header and in Stage 1's and Stage 2's reports (`p5_stage2.py:424`, :859).
+    G3 refuses a G3-pilot record made with another emulator than G̃
+    (`require_pilot`, `p5_g3_calibrators.py:553`); Stage 1 (the references
+    against G2's hash in their header, `p5_stage2.py:398`), the scoring of the
+    test set (G̃, the references, G3's report and Stage 1,
+    `p5_g3_calibrators.py:805`) and Stage 2 (the references, the scores, G3's
+    report and Stage 1's output, `p5_stage2.py:859`) refuse unless every hash
+    they read is present and all are equal (`require_same_emulator`,
+    `p5_g1_emulator.py:163`). Draft line 142 gains the sentence: if the build
+    is repeated, the refined build is G̃ for everything after G1, the scripts
+    refusing any other, and a stop at the refined stage stops P5 as at the
+    base. Tests on hand-built toy builds and synthetic records: refinement
+    called for, the refined path returned; a stopped stage refused; a
+    mismatched hash refused, in G1, G3 and Stage 2.
+  - **Item 2, the hash list covers the forward model.** The module-level
+    imports of the six scripts, found by parsing their source with `ast`
+    (nothing imported), reach five repository modules, `rough_heston_cf.py`,
+    `layer4_calibrate_surface.py`, `layer4_calibrate.py`, `rough_heston.py` and
+    `roughvol_core.py`, the five the review expected and no other. Two imports
+    sit inside functions: `p5_g3_calibrators.score_set` imports `p5_stage2`,
+    already listed; `layer4_calibrate.model_smile_lift` imports
+    `rough_heston_lifted` and `layer4_convergence`, and by grep that function's
+    only caller is `exp_lift`, an experiment in the same file
+    (`layer4_calibrate.py:292–302`) that no P5 code calls, P5 taking only
+    `KAPPA_FIXED` from that module and `layer4_calibrate_surface` never naming
+    the function; the two are excluded and draft line 137 says why. Line 137
+    and step 2 of the amendment file list the five, as hashes of git blobs
+    (LF), with the record table's row; line 137 also says that every run after
+    freezing is made from a clean tree, one with no modified tracked file (the
+    headers' clean-tree field, which ignores untracked output), at a commit
+    where each listed file has its listed hash, any other run being declared
+    and its output not used.
+  - **Item 3, a rule for disagreement.** Draft line 137 now opens: where this
+    document speaks, it governs; where it is silent, the scripts at the freeze
+    commit govern, as D72 to D75, D81 and D82 read them, a later entry
+    superseding an earlier one; a disagreement between text and script found
+    after freezing is corrected by a dated amendment before any run it affects.
+    Line 144 adds the third stop the code makes, a passing cell whose scoring
+    cost cannot be projected counting as no go; line 101 reads "before any
+    network scores the test set", as amendment line 46 and the code have it.
+    The binding statements under Objects, Test sets, Gates and Analysis plan
+    were then read against the scripts once more (a reading, this sitting's):
+    beyond the two the review named, the text disagreed with the code on the
+    seeds a cell may be left with (lines 75 and 132; item 13), on G3's budget,
+    which line 143 called the same as G2's (item 11), and on the count of G2's
+    comparisons (item 9); each is corrected in the text, and no other was
+    found.
+  - **Item 4, G3 refuses an incomplete pilot record.** `require_pilot`
+    (`p5_g3_calibrators.py:553`) refuses unless all 48 G3-pilot pairs (16
+    surfaces at 3 levels) are recorded, accepted or failed, in a record made
+    with G̃; the command line calls it for G3, the training of seeds and the
+    scoring of the G3 set (:879), and line 144 says so. Tested on a synthetic
+    record.
+  - **Item 5, the declarations made exact.** An inventory of what the P5 test
+    suites compute was made by reading the six test files, not running them:
+    the sampler, grids and reweighting on toy linear maps and the analysis on
+    synthetic records; the pricer at cheap settings, the G0 tests at D38's (H,
+    ν, ρ) at ξ₀ 0.02, 0.04 and 0.25 and both G0 test files at (0.02, 1.00,
+    −0.99), the G1 tests at D38's (H, ν, ρ) with ξ₀ in [0.04, 0.06]; two toy
+    interpolants from the pricer, the 2 × 2 × 2 × 2 build on the small box
+    (`test_p5_g1_emulator.py:157–188`) and the 2 × 1 × 1 × 2 build at D38's (H,
+    ν, ρ) with ξ₀ near 0.043 and 0.057 (D81's test, now at :256–313); the
+    design's unsealed draws in memory on toy maps (73; 79, 89 and 139; 131, 137
+    and 149; 97 and 101; `[83, i, j]` for small i and j; prefixes of 109 and
+    113); the committed G0 criterion file read by one G1 test; small networks
+    with the design's trunk trained on a toy linear map by the torch tests.
+    Rewritten from it: draft line 7 (no emulator, reference posterior or
+    trained network of the design before freezing; the tests build toy ones);
+    line 15 (the inventory; nothing printed or committed, pytest 9.1.1,
+    installed in both environments, keeping by default the `tmp_path` folders
+    of its last three sessions, `tmp_path_retention_count` 3 with the policy
+    all, read from its installed source; D81's own runs; the second review;
+    this sitting's runs; both records by their new paths); line 22 (the first
+    review read the G0 output's fields, row counts and the criterion file's
+    settings; the second opened none of it; both records by their new paths);
+    line 200 (the second review's sitting and model, this sitting's, the
+    decisions, D1 to D5 and "limits" after the first review and four after the
+    second, the second review among what the tool did, both reviews' chats
+    among the records); amendment lines 45 and 50, both records cited by their
+    paths, so that "and nothing else" holds.
+  - **Item 6, fixed values and overrides.** `--test` refuses an `--n` other
+    than 400 or a `--noise-seed` other than 20261022 before any draw
+    (`p5_g2_reference.py:1078`), its help saying so. Draft line 137 states when
+    the version override may be used: only when a pinned version cannot be
+    installed on the author's machine, each use declared in a dated amendment
+    before the run's output is read. G3's command line also checks torch,
+    2.14.1 with the local build tag aside (`LEAF_TORCH`,
+    `p5_g1_emulator.py:104`; `version_check`'s `torch_expected`, :119;
+    `p5_g3_calibrators.py:860`).
+  - **Item 7, no record is overwritten.** Every report a P5 script writes
+    refuses to write over an existing file (`refuse_overwrite`,
+    `p5_g1_emulator.py:177`): G1's report, CSV and emulator (:676), G2's
+    reports (`p5_g2_reference.py:950`, after the record's own checks and before
+    any grid), G3's report (`p5_g3_calibrators.py:608`, before any training),
+    the list of trained seeds (:899), Stage 1's report and CSV
+    (`p5_stage2.py:393`) and Stage 2's report and cells CSV (:863, before the
+    stored samples are read). A re-run needs the old file moved aside by hand,
+    the move declared; line 141 extends "every run made is declared" from G0 to
+    every stage after freezing.
+  - **Item 8, resumed runs.** A resumed G3 compares the record's header with
+    the call (the ladder, the draw, the validation size, the sampler's lengths,
+    the emulator's hash), and a resumed training the passing cells and the
+    emulator's hash, before any saved network is reused (`_check_resume`,
+    `p5_g3_calibrators.py:543`, used at :620 and :738), as G1's launch does.
+  - **Item 9, G2's text (D5's full cost).** By standalone arithmetic (`math`
+    and `statistics` only), on line 89's Gaussian reading, the tolerance in
+    force at 1,000 and 2,000 effective draws: on c, 0.090 and 0.063 at c = 0.5
+    and 0.018 and 0.013 at c = 0.9, four standard errors governing in each,
+    which allows a posterior standard deviation off by up to 8.9% and 6.3% and
+    so moves m by up to about 0.030 and 0.021 (a reading, through the
+    interval's width); on the 5% and 95% quantiles, 0.0045 and 0.0032 at the
+    Identified edge (posterior standard deviation 0.017) and 0.0102 and 0.0072
+    at the Flat edge (0.038), which by line 143's reading moves one tail's mass
+    by about 0.028 and 0.019 and m by up to about 0.055 and 0.039 at either
+    edge; 120 comparisons pass together with probability 0.992 on a correct
+    sampler; a bias at the tolerance in force passes half the time, one a
+    standard error beyond it about 16%. Written in: line 89, "above G2's
+    absolute tolerance on c" and the tolerance on c at 1,000 effective draws;
+    line 132, what G2 bounds (it checks the reference's Monte Carlo error
+    against grid posteriors, which at the floors catches gross errors and does
+    not bound it to H-d's precision); line 143, 120 comparisons in place of
+    about 90, the bias sentence corrected, the full cost above, that G2 at four
+    standard errors is a check for gross errors (a missed mode, an unmixed
+    chain, a bug) and does not certify the reference at the floors to the
+    precision H-d's numbers, 0.05 apart, need, that the effective sample size
+    of H serves the variance and the quantiles as well as the mean, that the
+    standard deviation and c in the formulas are the MCMC figures' own, and
+    that the grid's quadrature error is outside the rule. D5 itself is
+    unchanged.
+  - **Item 10, "well covered".** Line 136: a mass of 0.001 is about 10 of a
+    network's training surfaces at n = 10,000 and about 160 at n = 160,000, the
+    ends of G3's ladder. Line 134 and Stage 2: the dose-response is also
+    reported on the well-covered pairs, deciding nothing (`p5_stage2.py:891`,
+    on the primary's bootstrap stream, row 9).
+  - **Item 11, stops.** Line 197: when P5 stops at G1, G2, G3 or Stage 1, what
+    is reported is the stop, its reason and the records up to it, in a dated
+    decision-log entry; no hypothesis is scored, and nothing is re-run or tuned
+    beyond the retries the text specifies. Line 143: G3 has a budget of its own
+    of 1,344 core-hours, separate from G2's, as the code has it.
+  - **Item 12, the retry's streams.** Lines 68 and 143: the retry's pairs are
+    keyed `[83, i, j]` as the first attempt's, i counted within the retry's
+    set, so that its chains at the fixed points start where the first attempt's
+    did and draw the same proposals, only the noise differing; this errs
+    towards stopping. No change to the code.
+  - **Item 13, small items.** Line 141: what the characteristic function's
+    modulus decided in D61 (`U_max` = 250/√T and the ξ₀ floor) replaces
+    "decides nothing". Lines 75 and 132 and the training's docstring
+    (`p5_g3_calibrators.py:720`): each failure after the one retraining leaves
+    a slot empty, so a third leaves three seeds. `p5_stage2.py:66`: the
+    docstring's streams read `[127, calibrator, row]`. The re-priced G1 record
+    gains `N_by_xi0`, per surface the N its quotes come from, and a note that
+    the re-priced surfaces take their quotes, strikes and ATM vols from
+    `per_T_reprice` (`p5_g1_emulator.py:466`). Amendment step 1 names draft
+    lines 15 and 22 beside line 200, and records that the second review was
+    made and that its session checks this diff after the merge.
+  - **Decision 3, in the amendment file.** The design: the registration holds
+    the protocol and the files it binds, each the git blob at the freeze commit
+    (LF) exported with `git show <freeze-commit>:<file>`. OSF's help, read on
+    23 October 2026 at
+    https://help.osf.io/article/229-select-a-registration-template (read-only;
+    the address https://help.osf.io/article/158-create-a-preregistration served
+    the same page): a registration made from a project or component archives
+    every file in its storage with it, up to 5 GB in all; files cannot be added
+    or removed in an update, and documents cannot be uploaded or changed after
+    submission; the page does not say whether one question of the form takes
+    several files. Proposed, therefore (a reading of the help): a component of
+    `gdsv7` holding exactly the exported files, and the registration made from
+    it, so that it archives them and nothing else. The summary names the bound
+    files; step 2's hash list adds the five modules and says that the hashes
+    are of git blobs with LF endings and that the hash of `p5_g0_pilot.py` is
+    not that of the version the scoping run used (D81); step 2 exports and
+    hashes every bound file, `ROADMAP.md` included; step 3 makes the component
+    and registers it; step 5 compares the hash OSF reports for each file with
+    its blob's; the record table gains the modules, a row for the exported
+    files' hashes and the OSF row for every file. The change list gains a
+    bullet for this entry.
+  - **Code and tests.** In the four scripts, as itemised above. Five new tests,
+    each failing on `main`'s scripts (`f5a8257`) and passing on these: G1's
+    `require_g1` and its companions on hand-built toy builds; G2's fixed test
+    set and G̃ before any draw or run, with the hash through the records, the
+    resume and the report; G3's complete pilot record made with G̃; G3's
+    resumes and its report not written over; Stage 2's hashes where records
+    meet and the well-covered dose-response. Three earlier tests were
+    strengthened, each failing on `main`'s scripts and passing on these (D81's
+    per-surface re-pricing test: `N_by_xi0` and the assembly not written over;
+    D81's test-set scoring test: the hashes; D81's Stage 1 test: Stage 2 not
+    written over). Existing tests adapted, because what they did is what this
+    entry refuses: a re-run onto an existing report now moves the old one aside
+    first, as a declared re-run must (the end-to-end Stage 2 test, the toy G3
+    ladder test, both older than D81, and D81's Stage 1 and G3 cost tests);
+    D81's hand-off test stands in G̃'s path for the command line; the Stage 2
+    fixture's headers carry a stand-in emulator hash, as every real record
+    will; D81's test-set scoring test gives its stand-in Stage 1 output a hash.
+    The two existing tests that check a refusal of `--test` now replace the
+    sealed set's drawing functions with ones that fail if called, as the brief
+    requires of a test that checks a refusal. `CONTRIBUTING.md` counts 348.
+  - **What was run.** No P5 script was run from its command line; the tests ran
+    the scripts' functions on toy maps, synthetic records and hand-built files,
+    and the pricer at cheap settings, as line 15 declares; no test drew from
+    the sealed streams, the drawing functions replaced by failing ones wherever
+    a test reaches `--test`. In the core interpreter (Python 3.14.3, numpy
+    2.4.4, scipy 1.17.1): the G1, G2 and G3 test files, 39 passed and 5 skipped
+    (the torch tests), and the Stage 2 file, 15 passed, while the changes were
+    written; the five new and three strengthened tests against `main`'s
+    scripts, all eight failing; the whole suite on the final code, 341 passed
+    and 7 skipped (the torch tests) of 348, in 17 minutes, the six P5 files
+    within it 71 passed and 5 skipped. In `.venv-p5` (numpy 2.5.4, scipy
+    1.18.1, torch 2.14.1+cpu): the calibrators' tests, 16 passed. Beside them:
+    standalone arithmetic for item 9 (`math` and `statistics`, nothing from the
+    repository); a parse of the six scripts' and five modules' imports with
+    `ast`, which imported nothing; greps; pytest's version and its `tmp_path`
+    defaults read from its installed source; OSF's help read with a fetch. No
+    scratch script called the scripts' functions; no committed P5 output was
+    opened.
+  - **Declared, beyond the brief's words.** Readings of this sitting, each
+    marked here. `require_g1` reads "incomplete" as a report that is not a
+    complete assembly of its stage (its stage named and its node and training
+    counts consistent) or an emulator file missing, the record's own
+    completeness being assemble's check. `emulator_for_run` compares paths, so
+    a copy of G̃ elsewhere is refused. G3's command line also checks G3's
+    report against G̃ before training, and the scoring of the G3 set compares
+    G̃, G3's report and the G3-pilot references. Stage 1 compares the
+    references' hash with G2's as their header carries it, and a missing hash
+    anywhere is refused rather than passed. The overwrite refusals come after a
+    script's own record checks, so that those refusals keep their messages, and
+    before any computation; G1's covers its emulator file too. A resumed G3
+    compares neither threads nor versions (threads change timing, not the
+    design; a version change is the override's, recorded); torch's local build
+    tag is set aside. The amendment's change list gains a bullet for this
+    entry, and its step 1 records the state of the second review. The
+    re-reading's three further disagreements (item 3). The second review's "the
+    four decisions" in D81's own text are stale, as below.
+  - **Earlier entries now stale, not edited.** D81 says the first record "is
+    committed unchanged at the repository's root" (ROADMAP 3368); it now sits
+    in `docs/protocols/`, unchanged. D81 says that line 200 adds "the four
+    decisions" (ROADMAP 3745); line 200 now names five after the first review,
+    with "limits", and four after the second.
+  - **The checklist.** No box is ticked or unticked. The review box (line 215)
+    gains the second record and this entry, unticked. A ticked box whose
+    section changed: the contraction cut-offs (line 211), whose paragraph, line
+    89, now says "G2's absolute tolerance on c" and gives the tolerance in
+    force at 1,000 effective draws; unticking it is the author's call. The grid
+    (205), the noise levels (206) and the prior-work section (214) are
+    untouched. No draft line was added or removed, so no draft line number
+    changed.
+  - **Not written.** Anything on OSF; the freeze; v1; the decision sheet; D81
+    and every earlier entry; any tick; any run of a P5 script from its command
+    line; the review's points outside the brief (the outputs force-added by
+    hand, minor; G1's restriction on Q1 still unread by code, D81's reporting
+    gap).
+  - What remains before freezing: the second review's session checks this
+    entry's diff against items 1 to 13 after the merge; the author re-ticks the
+    seven reopened boxes and the review box; then the order of acts from step
+    2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

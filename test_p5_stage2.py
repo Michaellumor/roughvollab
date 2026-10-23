@@ -191,6 +191,8 @@ def test_verdict_rule_on_every_row_and_the_null():
 
 
 N_SYNTH = 150                                                                            # per level; 449 accepted pairs
+EM_SHA = "e" * 64                                                                        # a stand-in for G̃'s hash (D82)
+EM_INFO = {"path": "output/p5_g1_emulator.npz", "sha256": EM_SHA}
 
 
 def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, plant=True, faithful=False, lost=(),
@@ -202,12 +204,13 @@ def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, 
     faithful (d near 0, E near 0, the exact 90% interval, so m near 0.90). `lost` names the
     (calibrator, prior, level j from 1) cells that failed G3: they get no scores and the G3
     report written beside the files marks them failed (D81). `fail_refs` adds reference
-    failures at (i, j from 0)."""
+    failures at (i, j from 0). Every header carries the same stand-in emulator hash (D82)."""
     rng = np.random.default_rng(seed)
     refs_path, samples_path, scores_path = (str(tmp_path / n) for n in ("refs.jsonl", "refs.npz", "scores.jsonl"))
     g3_path = str(tmp_path / "g3_report.json")
     append_line(refs_path, {"kind": "header", "set": "test", "n_points": n_points or n_per_level,
-                            "seeds": {"points": 20261002, "noise": 1}})
+                            "seeds": {"points": 20261002, "noise": 1}, "emulator": EM_INFO["path"],
+                            "emulator_sha256": EM_SHA, "g2": {"passed": True, "emulator_sha256": EM_SHA}})
     stores = {}
     pairs = []
     for i in range(n_per_level):
@@ -238,7 +241,8 @@ def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, 
     expected = sorted([cal, prior, j, q] for cal in S.CALIBRATORS for prior in S.PRIORS for j in (1, 2, 3)
                       if (cal, prior, j) not in lost for q in slots)              # the producer's list of networks (D81)
     append_line(scores_path, {"kind": "header", "mode": "score", "set": "test", "threads": 1, "expected": expected,
-                              "stage1_refs_digest": S.refs_digest(refs_path)})    # as made after Stage 1 on these references
+                              "stage1_refs_digest": S.refs_digest(refs_path),    # as made after Stage 1 on these references
+                              "emulator": EM_INFO})
     for cal in S.CALIBRATORS:
         for q in slots:
             for lab, i, j, c, mA, mB, sd in pairs:
@@ -258,7 +262,7 @@ def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, 
                                               "H_hat": H_hat, "xi0_hat": 0.1, "lo": H_hat - width, "hi": H_hat + width})
     Path(g3_path).write_text(json.dumps({"gate": "G3", "cells": {f"{cal}_{prior}_j{j}": {"passed": (cal, prior, j) not in lost}
                                                                  for cal in S.CALIBRATORS for prior in S.PRIORS
-                                                                 for j in (1, 2, 3)}}), encoding="utf-8")
+                                                                 for j in (1, 2, 3)}, "emulator": EM_INFO}), encoding="utf-8")
     return {"refs": refs_path, "samples": samples_path, "scores": scores_path, "g3_report": g3_path}
 
 
@@ -303,6 +307,7 @@ def test_end_to_end_on_synthetic_inputs(tmp_path, capsys):
     assert len(failed) == 3 and all(r["calibrator"] == "nre" and r["q"] == "2" and r["E"] == "" and r["dA"] != "" for r in failed)
     json.dumps(json.loads(Path(out_dir, "p5_stage2_report.json").read_text(encoding="utf-8")), allow_nan=False)
     assert Path(out_dir, "p5_stage1.png").exists() == S._HAS_MPL
+    _aside(out_dir)                                                                     # a re-run moves the report aside (D82)
     rep2 = S.run(inputs, out_dir, n_boot=150)
     assert rep2["verdicts"] == rep["verdicts"] and rep2["stage2"]["ensemble"]["hypotheses"]["H-a"]["interval"] == ens["hypotheses"]["H-a"]["interval"]
     S.main([])
@@ -344,6 +349,15 @@ def test_floors_and_untestable_rows_on_a_thin_bin(tmp_path):
 
 
 # ---- D81: the null, Stage 1 alone, the secondary analysis, G3's per-cell losses, the failure stop ----
+def _aside(out_dir):
+    """What a re-run needs (D82): Stage 2's report and cells CSV moved aside, the earlier
+    copies of a previous move replaced."""
+    for name in ("p5_stage2_report.json", "p5_stage2_cells.csv"):
+        p = Path(out_dir, name)
+        if p.exists():
+            p.replace(p.with_name(p.name + ".aside"))
+
+
 def _scored(inputs, n_boot=120, lost=None):
     """Stage 2's machinery on the files without the run's input checks: the hypotheses at the
     written cut-offs (the null's test runs on code that predates run_stage1)."""
@@ -415,6 +429,9 @@ def test_stage1_alone_from_the_references_and_stage2_refuses_without_it(tmp_path
     S.run(inputs, out, n_boot=5)                                        # with it, Stage 2 runs
     with open(inputs["refs"], "a", encoding="utf-8") as f:              # a re-run with nothing to do appends a launch line:
         f.write(json.dumps({"kind": "launch", "utc": "later"}) + "\n")  # the records Stage 1 read are unchanged
+    with pytest.raises(SystemExit, match="exists; a re-run needs the old file moved aside"):   # no report written over (D82)
+        S.run(inputs, out, n_boot=5)
+    _aside(out)
     S.run(inputs, out, n_boot=5)
     refs_text, scores_text = Path(inputs["refs"]).read_text(encoding="utf-8"), Path(inputs["scores"]).read_text(encoding="utf-8")
     Path(inputs["refs"]).write_text(refs_text.replace('"task": "test_0000_0"', '"task": "test_0000_0", "note": "edited"'),
@@ -438,6 +455,7 @@ def test_stage1_alone_from_the_references_and_stage2_refuses_without_it(tmp_path
     s1_edit = json.loads(s1_text)
     s1_edit["stage1"]["bins"]["Flat"]["untestable"] = not s1_edit["stage1"]["bins"]["Flat"]["untestable"]
     s1_path.write_text(json.dumps(s1_edit), encoding="utf-8")
+    _aside(out)
     with pytest.raises(SystemExit, match="its Stage 1 differs"):        # the declaration stands as made
         S.run(inputs, out, n_boot=5)
     s1_path.write_text(s1_text, encoding="utf-8")
@@ -543,3 +561,45 @@ def test_stage1_from_the_command_line_with_an_empty_bin(tmp_path, capsys):
     for b in ("Partial", "Flat"):
         v = rep["stage1"]["bins"][b]
         assert v["count"] == 0 and v["n_well_covered"] == 0 and v["share_well_covered"] is None and v["untestable"]
+
+
+def test_the_emulator_hashes_must_agree_where_records_meet(tmp_path):
+    """Line 142 (D82): Stage 1 refuses references whose header carries no emulator hash, or
+    one other than G2's, records the hash and writes nothing over; Stage 2 refuses when the
+    references, the scores, G3's report and Stage 1's output do not carry one hash, and
+    records it. The dose-response is also reported on the well-covered pairs (line 134)."""
+    inputs = _write_inputs(tmp_path, n_per_level=40, plant=False)
+    lines = Path(inputs["refs"]).read_text(encoding="utf-8").splitlines()
+    hdr = json.loads(lines[0])
+
+    def with_header(h):
+        Path(inputs["refs"]).write_text("\n".join([json.dumps(h)] + lines[1:]) + "\n", encoding="utf-8")
+    with_header(dict(hdr, emulator_sha256=None))
+    with pytest.raises(SystemExit, match="Stage 1 refused: no emulator hash in test references"):
+        S.run_stage1(inputs, str(tmp_path / "o1"))
+    with_header(dict(hdr, g2={"passed": True, "emulator_sha256": "f" * 64}))
+    with pytest.raises(SystemExit, match="Stage 1 refused: the emulator hashes differ"):
+        S.run_stage1(inputs, str(tmp_path / "o1"))
+    with_header(hdr)
+    out = str(tmp_path / "o")
+    assert S.run_stage1(inputs, out)["emulator"]["sha256"] == EM_SHA
+    with pytest.raises(SystemExit, match="Stage 1 refused: .* exists; a re-run needs the old file moved aside"):
+        S.run_stage1(inputs, out)
+    s_lines = Path(inputs["scores"]).read_text(encoding="utf-8").splitlines()
+    s_other = dict(json.loads(s_lines[0]), emulator={"path": "x", "sha256": "f" * 64})
+    Path(inputs["scores"]).write_text("\n".join([json.dumps(s_other)] + s_lines[1:]) + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="Stage 2 refused: the emulator hashes differ"):
+        S.run(inputs, out, n_boot=5)
+    Path(inputs["scores"]).write_text("\n".join(s_lines) + "\n", encoding="utf-8")
+    g3 = json.loads(Path(inputs["g3_report"]).read_text(encoding="utf-8"))
+    Path(inputs["g3_report"]).write_text(json.dumps(dict(g3, emulator=None)), encoding="utf-8")
+    with pytest.raises(SystemExit, match="Stage 2 refused: no emulator hash in G3 report"):
+        S.run(inputs, out, n_boot=5)
+    Path(inputs["g3_report"]).write_text(json.dumps(g3), encoding="utf-8")
+    rep = S.run(inputs, out, n_boot=20)
+    assert rep["emulator"]["sha256"] == EM_SHA
+    _, pairs, _, _ = S.load_refs(inputs["refs"], inputs["samples"])
+    n_wc = sum(1 for p in pairs.values() if p["well_covered"])
+    dr = rep["secondary"]["dose_response"]
+    assert set(dr) == set(S.CALIBRATORS) and all(v["n_pairs"] <= n_wc for v in dr.values())
+    assert "about 160 at n = 160,000" in rep["secondary"]["covered_means"]
