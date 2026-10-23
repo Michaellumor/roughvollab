@@ -4240,6 +4240,111 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     v1; the decision sheet. Nothing of P5 was run in this sitting; CI runs the
     tests on the pull request's head.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D86** *(2026-10-23)* **P5 v2: the post-freeze commit (registered on OSF as
+  `695fw`; the registration in the Status line, the last box ticked and the
+  record filled; docs only).**
+  - **Summary.** Version 2, frozen at `59ca589`, is registered on OSF as
+    `695fw` (DOI 10.17605/OSF.IO/695FW), archiving the 15 exported files, each
+    equal to its blob; APSF7 now points to it. This commit adds the
+    registration to line 7, ticks the last box and fills the amendment file's
+    record. Nothing of P5 has been run.
+  - **The changes.** Draft line 7 gains one sentence at its end: "Registered on
+    OSF on 23 October 2026 as https://doi.org/10.17605/OSF.IO/695FW; the
+    registered file is this file at the freeze commit, before this sentence and
+    the tick of the last box were added (D86)." Line 216's box, "OSF
+    registration amended", is ticked, nothing else on the line changing. No
+    other line moved: the draft stays at 216 lines, and the protocol's blob at
+    the freeze commit, the registered file, still hashes to `41255dbd`…, as
+    listed below. In the amendment file the value cells of the table under
+    Record are filled: the freeze commit, the protocol's hash, the freeze date,
+    the registration's id, DOI and date, the update's approval, and pointers to
+    the hashes below; nothing else in that file changes.
+  - **The registration.** OSF `695fw`, an Open-Ended Registration of the
+    component `n4x9j` (titled "P5 protocol v2: frozen files", inside `gdsv7`,
+    by the author's account, the component not being publicly readable),
+    registered at 18:11:59 UTC on 23 October 2026, approved by the author,
+    public and not embargoed; DOI 10.17605/OSF.IO/695FW. Its title and summary
+    are as the amendment file proposed, the summary equal, character for
+    character, to that file's lines 29 to 53 at the freeze commit, each with
+    its newline, with the three placeholders filled (the freeze commit, the
+    protocol's hash, 23 October 2026) and the backticks removed. MIT; the five
+    subjects of v1; nine tags. This sitting's checks 1 to 4, GET requests to
+    OSF's public API only (the registration, its identifiers, its subjects and
+    the files of its archive), found it public and not pending approval,
+    embargoed, withdrawn or archiving, registered from `n4x9j` under licence
+    `563c1cf88c5e4a3877f9e972` (MIT License) on 2026-10-23T18:11:59.269108,
+    with that DOI, title and summary, and one folder, "Archive of OSF Storage",
+    holding exactly 15 files, each with OSF's size and SHA-256 equal to its git
+    blob's at the freeze commit:
+    - `P5_protocol_v2_draft.md`, 102,963 bytes,
+      `41255dbd288ecd03325701ab3018b716268380f4335eac858768dcfde42b9a80`
+    - `p5_g0_pilot.py`, 46,221 bytes,
+      `5a592624559c5dad30a3a8ef80deff1d0196e37427460ffc9985459f9d7970cd`
+    - `p5_g0_main.py`, 39,975 bytes,
+      `fa8706dc4028ebceaf8ad7f646030f25f2768a2877869e751109e75dad85fbc1`
+    - `p5_g1_emulator.py`, 45,062 bytes,
+      `2c81a92aa584e8edae02d2e82e089842259da4d9c9a36d9b36a481b725d2b04c`
+    - `p5_g2_reference.py`, 62,681 bytes,
+      `507674572a5f8487fbb37bad386356dfcad119c1e1b9a32000319bb7171e065d`
+    - `p5_g3_calibrators.py`, 52,924 bytes,
+      `c3b5e4298fb3f5e771cd8c9f95ac64b283ca6609ea61fd1cb7662ac16897dc31`
+    - `p5_stage2.py`, 62,493 bytes,
+      `5f196a44153fd4db994359329c0f0246b7dbda41127a4d8bd11ebcf9e56d1159`
+    - `rough_heston_cf.py`, 13,784 bytes,
+      `6b8fb570e444378db153fb83cc64269bb657d169772baf655364a8198fd7bb2f`
+    - `layer4_calibrate_surface.py`, 13,347 bytes,
+      `7776be7f0d2035a682369b1cacca478bd00289e493554db02a54bab2833d9331`
+    - `layer4_calibrate.py`, 15,033 bytes,
+      `c627572722ac4b2775c69b0013b2c5dd3fc4a4c845f845a4d6308b684c947597`
+    - `rough_heston.py`, 11,455 bytes,
+      `659062ff1027907279bcf5b3f02e47de37d075be9ae0f144a6472d65ab06006d`
+    - `roughvol_core.py`, 7,023 bytes,
+      `7fa98797451364dec119672a99d8a4c25da44287e8f1f2193702849391666982`
+    - `requirements.txt`, 40 bytes,
+      `48061e7fa7686b876b0221aaf663c6576c4aacc7227c1bb192d6250c5d037494`
+    - `requirements-p5.txt`, 1,117 bytes,
+      `85a2d7e9f279641ac8ca7663fd91ee2c87701452d10ba5634fbfc314ace12dd9`
+    - `ROADMAP.md`, 384,843 bytes,
+      `d16aed2e627dab6749a5084ab0a758c508638c82994efe25909286dbd3d40f47`
+  - **The update to APSF7.** Schema response `6adba890da2bf2b3c80a0949`,
+    submitted at 18:41:48 UTC and approved at 18:41:54 UTC (its last
+    modification) on 23 October 2026: the amendment file's paragraph for the
+    update, with the freeze date, `695FW`, the DOI's address, the freeze commit
+    and the protocol's hash filled in and the backticks removed, placed at the
+    top of the summary, v1's text unchanged below it after a blank line, and
+    entered as the justification; only the summary changed
+    (`updated_response_keys`); the uploaded file, `P5_protocol.md`, keeps its
+    SHA-256 `5b7a67e5`…; APSF7 is public and not withdrawn. Check 5, GET
+    requests only, read this from APSF7's schema responses: two, both approved,
+    the earlier `6ac001210231cc8223157561` last modified on 2 October 2026.
+  - **How it went on OSF.** The author's account, from his screens and from OSF
+    pages read in his browser and checked by the session that guided him; only
+    `695fw`, its files and APSF7 can be read publicly. All times UTC, on 23
+    October 2026. A first component named "P5 protocol v2: frozen files" was
+    created at 13:19 and received the 15 files at 13:49; a draft from it, on
+    the OSF Preregistration template (created at 14:01:28), was never
+    submitted. A second component, `usjn7`, was created empty at 14:21:06 and
+    registered as `phkqc` at 14:47:14; no files having been archived, the
+    author cancelled it within OSF's approval window at 15:12. Both of these
+    components have since been deleted by the author. A third component,
+    `n4x9j`, was created at 16:35:25 and registered as `n45wa` at 16:57:00
+    before any file had been uploaded to it; the author cancelled that
+    submission at 17:39:33. The 15 exported files were uploaded to `n4x9j`
+    between 17:49:38 and 17:49:45, their SHA-256 values, read from OSF's API
+    before resubmission, all equal to the blobs'; the same draft was then
+    resubmitted and became `695fw`, whose public record gives 17:49:45 as its
+    last modification. Neither `phkqc` nor `n45wa` was approved or made public;
+    each went back to a draft when it was cancelled.
+  - **Who did what.** The OSF acts were the author's. The second review's
+    session guided them and checked them read-only: the component's file list
+    before resubmission, as pasted by the author, and the public API after
+    approval. This sitting re-read the public API, also read-only.
+  - **The box.** Box 216 is ticked on the author's word.
+  - **Not written.** Any P5 run, which none of this starts; any other box; v1;
+    the decision sheet; D85 and every earlier entry. The places in the
+    repository that still describe v2 as a draft or unregistered, or v1 as the
+    registered protocol, are listed for the author and not changed.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
