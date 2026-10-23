@@ -201,16 +201,16 @@ Drafted with AI assistance (Claude) from the sources listed at the end of this s
 
 ## Before freezing
 
-- [ ] Prior-knowledge section checked against the ROADMAP entries it cites, and G0's pilot declared in it.
+- [x] Prior-knowledge section checked against the ROADMAP entries it cites, and G0's pilot declared in it.
 - [x] Grid and observable convention chosen (the observable is chosen; the grid, the box and the resolution are written in from G0's main run, D62).
 - [x] Noise levels accepted or changed.
-- [ ] Emulator form and gate declared.
-- [ ] Beta parameters accepted or changed.
-- [ ] Reference sampler and acceptance criteria declared.
-- [ ] Architectures and training procedure declared.
+- [x] Emulator form and gate declared.
+- [x] Beta parameters accepted or changed.
+- [x] Reference sampler and acceptance criteria declared.
+- [x] Architectures and training procedure declared.
 - [x] Contraction cut-offs accepted or changed.
-- [ ] Every number in the hypotheses table defensible in the author's own words.
-- [ ] Gate tolerances declared; G0's scoping script committed before the scoping run, and the main run's settings written in before the main run.
+- [x] Every number in the hypotheses table defensible in the author's own words.
+- [x] Gate tolerances declared; G0's scoping script committed before the scoping run, and the main run's settings written in before the main run.
 - [x] Prior-work section written from the papers themselves.
-- [ ] Independent review before freezing, with findings and fixes recorded (the pre-freeze review of 22 October 2026, `docs/protocols/P5_v2_prefreeze_review_2026-10-22.md`, and D81; the second, shorter review of D81's changes, `docs/protocols/P5_v2_second_review_2026-10-22.md`, and D82).
+- [x] Independent review before freezing, with findings and fixes recorded (the pre-freeze review of 22 October 2026, `docs/protocols/P5_v2_prefreeze_review_2026-10-22.md`, and D81; the second, shorter review of D81's changes, `docs/protocols/P5_v2_second_review_2026-10-22.md`, and D82).
 - [ ] OSF registration amended.
