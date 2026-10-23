@@ -4079,6 +4079,54 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     seven reopened boxes and the review box; then the order of acts from step
     2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D83** *(2026-10-23)* **P5 v2 draft: the check of D82 and the eight boxes
+  ticked on the author's word (a rounding; the check declared; docs only;
+  nothing frozen).**
+  - **Summary.** Before #236's merge, the second review's session checked D82's
+    diff read-only: items 1 to 13 done; two small points, a rounding (0.090 for
+    0.089, draft lines 89 and 143) and step 1's "after the merge", both
+    corrected here; the check declared. The eight boxes are ticked on the
+    author's word (`fd58e8b`). Left: steps 2 to 5, from the freeze commit.
+  - **The check.** Made on 23 October 2026 by the session that made the second
+    review (D82), read-only, on D82's diff at #236's head `df1394b`, before the
+    merge; the merge, `ba5acef`, has the same tree (`443ec9e`), checked here.
+    It read the diff, the files at that head and the OSF help page the
+    amendment file cites (its line 14); it ran nothing and opened no P5 output.
+    The repository holds no other record of it; this entry records it from the
+    author's brief. It found items 1 to 13 done as specified, in text and code,
+    and two small points. The tolerance in force on c at c = 0.5 and 1,000
+    effective draws is 4 × 0.5 × √(2/999) = 0.08949, 0.089 to three places, as
+    line 143's 8.9% already has it; lines 89 and 143 gave 0.090, a rounding of
+    0.0895, and now give 0.089, nothing else on them changing. Step 1 of the
+    amendment file had the check made after the merge; it now says before, on
+    the head whose tree the merge equals. The check is declared in draft lines
+    15 and 200 and in the amendment file's line 51.
+  - **The author's ticks.** Boxes 204, 207 to 210, 212, 213 and 215, the seven
+    boxes D81 reopened and the review box, are ticked in `fd58e8b`, made in
+    this sitting on the author's word: his edit in GitHub's editor had not
+    reached the repository, no commit on any branch of origin having touched
+    the draft since D82's, and the author then asked for the ticks to be made
+    here. That commit changes those eight boxes and nothing else. Box 211, the
+    cut-offs, stays ticked by the author's choice: D82 did not change the
+    cut-offs, and on line 89 only corrected a justification and added figures.
+    The rounding touches the sections of boxes 211 and 213 and is a rounding
+    only. The ticks are their own commit; this entry follows in the same pull
+    request.
+  - **Stale, not edited.** D82's "0.090" (ROADMAP line 3933) and its plan to
+    make the check "after the merge" (lines 3981 and 4078). The second review's
+    record gives 0.090 too (its line 197); records stay as committed.
+  - **Declared, beyond the brief's words.** Step 1 asks an entry with fixes to
+    bring draft lines 15, 22 and 200 and the review box up to date. Line 200
+    also gains this sitting in its list of models ("D82's and D83's sittings,
+    on 23 October 2026, ran on Claude Opus 5.5 in Claude Code"), the model the
+    session reports for itself; line 22 stays true as it is, the check having
+    opened no P5 output; line 215 keeps the text the author ticked. The brief
+    had the author ticking the boxes in GitHub's editor; they were ticked here,
+    as above.
+  - **Not written.** The freeze; anything on OSF; D82 and every earlier entry;
+    v1; the decision sheet. Nothing of P5 was run in this sitting and no P5
+    output opened; CI runs the tests on the pull request's head.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
