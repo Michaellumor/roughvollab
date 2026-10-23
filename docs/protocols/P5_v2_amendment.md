@@ -70,15 +70,15 @@ Each step is the author's ("author") or a repository commit made on the author's
 
 | Item | Value |
 |---|---|
-| Freeze commit | `<freeze-commit>` |
-| SHA-256 of the blob | `<sha256>` |
-| Freeze date (UTC) | `<freeze-date>` |
+| Freeze commit | `59ca589eedfa21427bee654ee007f90baf2c3c0e` |
+| SHA-256 of the blob | `41255dbd288ecd03325701ab3018b716268380f4335eac858768dcfde42b9a80` |
+| Freeze date (UTC) | 23 October 2026 |
 | SHA-256 of the six P5 scripts, the five forward-model modules and the two requirements files | in the Status line (line 7) at the freeze commit |
-| SHA-256 of each file exported for the registration, `ROADMAP.md` included | |
-| v2 registration id and DOI | `<v2-id>`, `<v2-doi>` |
-| v2 date registered (UTC) | |
-| Hashes OSF reports for the registered files | |
-| Update to APSF7 approved (UTC) | |
+| SHA-256 of each file exported for the registration, `ROADMAP.md` included | listed in D86 |
+| v2 registration id and DOI | `695fw`, https://doi.org/10.17605/OSF.IO/695FW |
+| v2 date registered (UTC) | 23 October 2026, 18:11:59 |
+| Hashes OSF reports for the registered files | in D86, each equal to its blob's |
+| Update to APSF7 approved (UTC) | 23 October 2026, 18:41:54 |
 
 ## What is not Claude's to do
 
