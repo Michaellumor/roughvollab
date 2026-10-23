@@ -4345,6 +4345,41 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     repository that still describe v2 as a draft or unregistered, or v1 as the
     registered protocol, are listed for the author and not changed.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D87** *(2026-10-23)* **P5 v2: the living documents that still called v2 a
+  draft brought up to date (the ROADMAP's P5 paragraph; the status lines of the
+  amendment file and the decision sheet; docs only).**
+  - **Summary.** After D86, three living documents still called v2 a draft or
+    v1 the registered protocol. The ROADMAP's P5 paragraph is replaced, and the
+    status lines of the amendment file and the decision sheet each gain a
+    sentence on what has happened since. The frozen draft and the files it
+    binds are untouched; nothing of P5 has been run.
+  - **The changes.** 1, `ROADMAP.md`, the P5 bullet under Publication seeds
+    (lines 4394 to 4406 before this entry was added): replaced. The new
+    paragraph gives v1's freeze and registration (APSF7), v2's freeze at
+    `59ca589` and registration as `695fw` with the files it binds, APSF7
+    pointing to it, v2's question and design in one sentence, that G0 alone has
+    been run and G1 is next, and the targets of the P5 seed, unchanged. It
+    gives no date for G1, by design, so the build timing that v1's paragraph
+    carried over from the seed (its earliest build, summer 2027) is no longer
+    stated. Each claim was checked against the frozen draft and the log: the
+    two-step optimiser through G̃ is among the exploratory, labelled analyses
+    (draft line 135); G0 is the only gate run, `output/` holding only its seven
+    files and the log recording no later run; the targets are the seed's as it
+    stood before v1 (`13bca7e^`). 2, `docs/protocols/P5_v2_amendment.md` line
+    7: its text kept, one sentence appended ("Since written: …"), giving the
+    freeze, the registration, the update to APSF7 and the filled record table
+    (D86, D87). 3, `docs/protocols/P5_v2_decision_sheet.md` line 5: its text
+    kept, one sentence appended ("Since written: …"), giving that every OPEN
+    item was decided and every box ticked, and the freeze and the registration
+    superseding v1, to which APSF7 points (D86, D87).
+  - **Left as they are, by design.** The frozen draft's own wording, its file
+    name, "this draft" and line 11's "amended with this version", which only a
+    dated amendment could change; v1's Status line; `requirements-p5.txt`'s
+    reference to the draft's file, a registered file; log entries D55 to D86
+    and the review records, which are history.
+  - **Not written.** Anything on OSF; any P5 run; any box; D86 and every
+    earlier entry.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -4391,19 +4426,21 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   reframe still pending. Target: arXiv q-fin.CP / math.NA. *(Foundational;
   Layer 4 convergence.)*
 
-- **P5 (protocol frozen 2026-10-02) — "Does a learned calibrator know what it
-  cannot know?"** Pre-registered in `docs/protocols/P5_protocol.md`, committed
-  before any P5 code exists. The design evolved from this seed's original
-  framing — re-running P1's audit through a two-step surrogate — to the
-  question the literature search showed is open: whether one-step calibrators,
-  a deep ensemble and a neural-ratio posterior, return their training prior
-  along flat directions, tested by prior swap and by coverage under prior
-  shift against P1's Fisher geometry. The two-step surrogate survives as an
-  exploratory baseline. Build timing and targets unchanged.
-  Independently registered on OSF: https://doi.org/10.17605/OSF.IO/APSF7
-  — the registered file is byte-identical to the committed protocol.
-  Under amendment: a v2 draft, `docs/protocols/P5_protocol_v2_draft.md`, is
-  recorded in D55; v1 remains the registered protocol until v2 is frozen.
+- **P5 (protocol v1 frozen 2026-10-02; v2 frozen and registered 2026-10-23) —
+  "Does a learned calibrator know what it cannot know?"** Pre-registered. v1,
+  `docs/protocols/P5_protocol.md`, was frozen before any P5 code existed and
+  registered on OSF as https://doi.org/10.17605/OSF.IO/APSF7. v2,
+  `docs/protocols/P5_protocol_v2_draft.md`, supersedes it: frozen at `59ca589`
+  and registered as https://doi.org/10.17605/OSF.IO/695FW with the files it
+  binds, each byte-identical to its blob; APSF7 points to it and is not
+  withdrawn (D55, D77, D86). v2 asks whether a learned calibrator, a deep
+  ensemble or a neural ratio estimator, is more prior-driven than the exact
+  posterior under its own training prior, scoring each against that posterior
+  on a frozen Chebyshev emulator of the rough Heston surface, with gates G0 to
+  G3, three noise levels and two priors on H; a two-step optimiser through the
+  emulator remains an exploratory, labelled analysis. G0 has been run, nothing
+  after it; G1 is next. Targets unchanged: arXiv q-fin.CP, then SIFIN,
+  Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it

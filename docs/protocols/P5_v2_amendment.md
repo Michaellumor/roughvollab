@@ -4,7 +4,7 @@ Michael Lumor
 
 ## Status
 
-A working aid for the author (D77, 11 October 2026). It decides nothing and freezes nothing, and nothing on OSF has been touched. The text under "The amendment statement" is for the author to paste on OSF at freeze, with the placeholders in angle brackets filled from the record table; the acts under "The order of acts at freeze" are the author's where so marked. The protocol is `docs/protocols/P5_protocol_v2_draft.md`; v1 is `docs/protocols/P5_protocol.md`, registered as OSF APSF7 (https://doi.org/10.17605/OSF.IO/APSF7).
+A working aid for the author (D77, 11 October 2026). It decides nothing and freezes nothing, and nothing on OSF has been touched. The text under "The amendment statement" is for the author to paste on OSF at freeze, with the placeholders in angle brackets filled from the record table; the acts under "The order of acts at freeze" are the author's where so marked. The protocol is `docs/protocols/P5_protocol_v2_draft.md`; v1 is `docs/protocols/P5_protocol.md`, registered as OSF APSF7 (https://doi.org/10.17605/OSF.IO/APSF7). Since written: v2 was frozen at `59ca589` and, by the acts below, registered on OSF as `695fw` (https://doi.org/10.17605/OSF.IO/695FW) on 23 October 2026, with APSF7 updated to point to it; the record table is filled (D86, D87).
 
 ## What the registration is, and what OSF allows
 
