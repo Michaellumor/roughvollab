@@ -24,7 +24,10 @@ at any level, P5 stops at Stage 1 (D81). The output records a digest of the refe
 records (refs_digest); the scoring of the test set (p5_g3_calibrators.py --score test)
 refuses to start without this output, and records its digest in the scores' header; Stage
 2 refuses to run without it, made from the same references, and refuses scores not made
-after it or not covering every network their header lists (D81).
+after it or not covering every network their header lists (D81). The references, Stage 1's
+output, G3's report and the scores carry G̃'s SHA-256, and Stage 1 and Stage 2 refuse when
+the hashes they read are missing or differ; neither writes over an existing report or CSV
+(D82).
 
 Stage 2 (lines 105 to 113): per calibrator, seed q and pair, d_P = Ĥ_net,P − Ĥ_exact,P;
 S = (Ĥ_B − Ĥ_A) / 0.20 for the network (the A- and B-trained networks of the same seed
@@ -60,7 +63,8 @@ Analysis plan (lines 132 to 134): the point estimate is the median over the bin'
 (pair, seed) cells; the crossed bootstrap resamples the seed indices (five, or the four a
 cell has) and the bin's pair indices independently with replacement, a cell entering with
 the product of its multiplicities, and takes the weighted median; 2,000 replicates from
-default_rng(127) (the seed is this script's, declared in D75); the 2.5 and 97.5
+default_rng([127, calibrator, row]) (the seed is this script's, declared in D75; the
+dose-response's row is 9); the 2.5 and 97.5
 percentiles; the per-seed medians beside each interval. Confirmed: the whole interval on
 the expected side of the expected value; Refuted: the whole interval beyond the
 refutation threshold; Inconclusive otherwise. The re-scoring moves both cut-offs by
@@ -380,11 +384,18 @@ def run_stage1(inputs=None, out_dir=None, versions=None):
     bin, with Stage 1 on the well-covered set declared beside it for the secondary
     analysis; the reference-failure report and its stop rule; the CSV and the figure.
     Records the references' digest (refs_digest), which the scoring of the test set and
-    Stage 2 check, and the file's SHA-256 beside it. Refuses an incomplete record."""
+    Stage 2 check, and the file's SHA-256 beside it. Refuses an incomplete record, an
+    existing report or CSV (no record written over), and references whose header carries no
+    emulator hash or another one than G2's (line 142, D82); records the emulator."""
     inputs, paths = dict(DEFAULT_INPUTS, **(inputs or {})), out_paths(out_dir)
     if not os.path.exists(inputs["refs"]):
         raise SystemExit(f"no refs at {_rel(inputs['refs'])}: the test set's references follow G2 after freezing")
+    EM.refuse_overwrite([paths["stage1_report"], paths["stage1_csv"]], "Stage 1")
     ref_hdr, pairs, _, failures, fail_recs = load_refs(inputs["refs"], None, check_samples=False, details=True)
+    named = {"test references": (ref_hdr or {}).get("emulator_sha256")}
+    if (ref_hdr or {}).get("g2") is not None:
+        named["G2's report, in the references' header"] = ref_hdr["g2"].get("emulator_sha256")
+    EM.require_same_emulator(named, "Stage 1")
     if not pairs:
         raise SystemExit("no accepted reference pairs")
     n_points = int(ref_hdr["n_points"]) if ref_hdr and ref_hdr.get("n_points") else None
@@ -410,10 +421,11 @@ def run_stage1(inputs=None, out_dir=None, versions=None):
               "untestable_secondary": [b for b in BINS if s1_wc["bins"][b]["untestable"]],
               "refs": _rel(inputs["refs"]), "refs_digest": refs_digest(inputs["refs"]),
               "refs_sha256": sha256_of(inputs["refs"]), "refs_header": ref_hdr,
+              "emulator": {"path": ref_hdr.get("emulator"), "sha256": ref_hdr.get("emulator_sha256")},
               "files": {k: _rel(paths[k]) for k in ("stage1_report", "stage1_csv", "stage1_png")},
               "commit": commit, "clean_tree": clean, "python": platform.python_version(),
               "numpy": v["numpy"], "scipy": v["scipy"], "versions": v, "utc": utc_now(),
-              "note": "declared from the references alone, before any network is scored (line 101)"}
+              "note": "declared from the references alone, before any network scores the test set (line 101)"}
     os.makedirs(os.path.dirname(paths["stage1_report"]), exist_ok=True)
     text = json.dumps(report, indent=1, allow_nan=False)
     with open(paths["stage1_report"], "w", encoding="utf-8") as f:
@@ -802,7 +814,10 @@ def run(inputs=None, out_dir=None, rng_seed=SEED_BOOT, n_boot=N_BOOT, calibrator
     references; where P5 stopped at Stage 1; without the samples or the scores; on sets that
     differ; without Stage 1's output for these references (require_stage1); on scores not
     made after that output, or not covering every network their header lists; without G3's
-    report, or on scores that disagree with its cells (D81)."""
+    report, or on scores that disagree with its cells (D81); when the references, the
+    scores, G3's report and Stage 1's output do not all carry one emulator hash; and before
+    any measure is computed, when its report or cells CSV exists (no record is written over)
+    (D82). The dose-response is also reported on the well-covered pairs, deciding nothing."""
     inputs, paths = dict(DEFAULT_INPUTS, **(inputs or {})), out_paths(out_dir)
     if not os.path.exists(inputs["refs"]):
         raise SystemExit(f"no refs at {_rel(inputs['refs'])}: the test set's references and scores follow the runs after freezing")
@@ -841,6 +856,11 @@ def run(inputs=None, out_dir=None, rng_seed=SEED_BOOT, n_boot=N_BOOT, calibrator
         g3 = json.load(f)
     lost = g3_lost_levels(g3, calibrators)
     check_scores_against_g3(present, lost, calibrators)
+    emulator_sha = EM.require_same_emulator({"test references": (ref_hdr or {}).get("emulator_sha256"),
+                                             "scores": ((score_hdr or {}).get("emulator") or {}).get("sha256"),
+                                             "G3 report": (g3.get("emulator") or {}).get("sha256"),
+                                             "Stage 1 output": (s1_rep.get("emulator") or {}).get("sha256")}, "Stage 2")
+    EM.refuse_overwrite([paths["report"], paths["cells_csv"]], "Stage 2")
     ref_hdr, pairs, stores, failures = load_refs(inputs["refs"], inputs["samples"])     # the stored samples, read last
     if not pairs:
         raise SystemExit("no accepted reference pairs")
@@ -867,7 +887,10 @@ def run(inputs=None, out_dir=None, rng_seed=SEED_BOOT, n_boot=N_BOOT, calibrator
     secondary = {"label": SECONDARY_LABEL, "n_pairs": len(wc), "share_of_accepted": len(wc) / len(pairs),
                  "stage1": sec_res["stage1"], "calibrators": sec_res["calibrators"],
                  "verdicts": {cal: {h: r["verdict"] for h, r in v["hypotheses"].items()}
-                              for cal, v in sec_res["calibrators"].items()}}
+                              for cal, v in sec_res["calibrators"].items()},
+                 "dose_response": dose_response(wc, cells, slots, rng_seed, n_boot, calibrators),   # decides nothing (D82)
+                 "covered_means": "a mass of 0.001 is about 10 of a network's training surfaces at n = 10,000 and "
+                                  "about 160 at n = 160,000 (line 136, D82)"}
     dr = dose_response(pairs, cells, slots, rng_seed, n_boot, calibrators)
     write_cells(cells, bins, paths["cells_csv"])                       # Stage 1's CSV and figure stay as declared
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
@@ -880,6 +903,7 @@ def run(inputs=None, out_dir=None, rng_seed=SEED_BOOT, n_boot=N_BOOT, calibrator
               "g3_levels_lost": {f"{c}_{p}": js for (c, p), js in lost.items()},
               "stage1_output": {"file": _rel(paths["stage1_report"]), "refs_digest": s1_rep.get("refs_digest"),
                                 "refs_sha256": s1_rep.get("refs_sha256"), "made_utc": s1_rep.get("utc")},
+              "emulator": {"path": (ref_hdr or {}).get("emulator"), "sha256": emulator_sha},
               "multiplicity": "the eight verdicts are read individually at 95% without adjustment (line 126)",
               "bootstrap": {"n_boot": n_boot, "seed": rng_seed, "streams": "default_rng([seed, calibrator index, row index]); "
                                                                             "the dose-response uses row index 9",

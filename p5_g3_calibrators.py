@@ -52,17 +52,26 @@ G2's retry doubles if it is needed (line 75, D81). The test set is scored only a
 has been declared from its references (p5_stage2.py --stage1) and has not stopped P5; the
 scores' header records that Stage 1 output's digest and the networks to be scored (D81).
 
+From the command line the emulator is G̃, the build G1 passes (p5_g1_emulator.require_g1),
+and an --emulator naming another file is refused; G3 and the training of seeds run only on
+a complete G3-pilot record (all 48 pairs) made with G̃; a resumed G3 or training reuses
+saved networks only when its record's header matches the call, the emulator included; the
+report and the list of trained seeds are not written over; the scoring refuses when G̃,
+the set's references, G3's report and (for the test set) Stage 1's output name different
+emulators (D82).
+
 Nothing here runs before G1 and G2 after freezing; the tests use toy emulators in
 memory and skip without torch. The core stays torch-free (requirements-p5.txt). Run from
-the command line, the script refuses numpy and scipy other than the leaf's on the author's
-machine (p5_g1_emulator.LEAF_VERSIONS) unless --allow-other-versions, recorded (D81).
+the command line, the script refuses numpy, scipy and torch other than the leaf's on the
+author's machine (p5_g1_emulator.LEAF_VERSIONS and LEAF_TORCH) unless
+--allow-other-versions, recorded (D81, D82).
 
 Usage (from the repository root, in .venv-p5, after G1 and G2):
     py p5_g3_calibrators.py                 the design; holds
     py p5_g3_calibrators.py --g3            the ladder, the checks, output/p5_g3_report.json
     py p5_g3_calibrators.py --train         seeds 2 to 5 at the adequate n per cell, after G3
     py p5_g3_calibrators.py --score SET     the calibrators' outputs on a set (g3 | test)
-    options: --emulator PATH, --threads K (torch threads for training and scoring; default 4; recorded)
+    options: --emulator PATH (G̃ by default; another file is refused), --threads K (torch threads; default 4; recorded)
 Outputs (output/ is git-ignored; force-added by name after a run):
     output/p5_g3_ladder.jsonl, output/p5_g3_report.json, output/p5_g3/<run>.pt and .json
     output/p5_calibrators.jsonl, output/p5_calibrators/<run>.pt and .json
@@ -531,6 +540,32 @@ def _override_line(path, versions, mode):
         append_line(path, {"kind": "launch", "mode": mode, "utc": utc_now(), "versions": versions})
 
 
+def _check_resume(hdr, current, keys, path):
+    """A resumed run reuses saved networks only when its record was begun with the same
+    settings `keys` and the same emulator as this call (D82), as G1's launch checks its own."""
+    pairs = [(k, hdr.get(k), current.get(k)) for k in keys]
+    pairs.append(("emulator sha256", (hdr.get("emulator") or {}).get("sha256"), (current.get("emulator") or {}).get("sha256")))
+    for k, was, now in pairs:
+        if was != now:
+            raise SystemExit(f"resume refused: {_rel(path)} was begun with {k}={was!r}, this call has {now!r} (D82)")
+
+
+def require_pilot(hdr, tasks, emulator_sha=None, n_points=R.N_G3_POINTS, n_levels=len(NOISE_LEVELS)):
+    """G3 and the training of seeds run only on a complete G3-pilot record (line 144, D82):
+    all 48 pairs (16 surfaces at 3 levels) recorded, accepted or failed, and, when
+    `emulator_sha` is given, the record made with that emulator (its header's SHA-256)."""
+    want = {f"g3_{i:04d}_{j}" for i in range(int(n_points)) for j in range(int(n_levels))}
+    have = {lab for lab, r in tasks.items() if r.get("set") == "g3"} & want
+    if hdr is None or len(have) < len(want):
+        missing = sorted(want - have)
+        raise SystemExit(f"G3 refused: the G3-pilot record holds {len(have)} of its {len(want)} pairs (missing "
+                         f"{', '.join(missing[:3])}{' and more' if len(missing) > 3 else ''}); G3 and the seeds run "
+                         "only once every pair is recorded, accepted or failed (line 144, D82)")
+    if emulator_sha is not None and hdr.get("emulator_sha256") != emulator_sha:
+        raise SystemExit("G3 refused: the G3-pilot record was made with another emulator than G̃ (line 142, D82)")
+    return True
+
+
 def ladder_record(run, extra=None):
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
     rec = {"kind": "task", "record": "run", "task": run["label"], "calibrator": run["kind"], "prior": run["prior"], "j": run["j"],
@@ -557,24 +592,32 @@ def get_or_train(kind, prior, j, q, n, theta, eps, s, em, val, jsonl_path, nets_
 def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=THREADS_DEFAULT, ladder=LADDER,
            n_block=DRAW_N, n_valid=N_VALID, levels=NOISE_LEVELS, priors=("A", "B"), calibrators=CALIBRATORS,
            train_kw=None, post_kw=None, budget_surfaces=BUDGET_SURFACES, wall=BUDGET_WALL_S, versions=None,
-           budget_core_h=R.BUDGET_CORE_H):
+           budget_core_h=R.BUDGET_CORE_H, emulator=None):
     """The ladder of line 144 for every (calibrator, prior, level): the runs at n_k and 2n_k
     (the latter the next rung's run, except at the top), the two checks on the pilot
     surfaces, the budgets, every rung run, the largest passing n (D81). Each cell passes or
     fails on its own; `passed` is every cell passing, `p5_stops` every cell failing or the
     scoring cost projected above the budget (D81). Torch runs at `threads` threads, for the
     predictions as for the training, on a fresh run as on a resumed one. Resumable: a run in
-    the record with its networks saved is reused. Writes the report; returns it."""
+    the record with its networks saved is reused, once the record's header matches this
+    call's (the ladder, the draw, the validation size, the sampler's lengths, the emulator);
+    an existing report is not written over, the refusal coming before any training (D82).
+    `emulator` is G̃'s {path, sha256} (p5_g1_emulator.emulator_info), recorded. Writes the
+    report; returns it."""
     jsonl_path, nets_dir, report_path = jsonl_path or PATHS["ladder"], nets_dir or PATHS["nets_g3"], report_path or PATHS["report"]
+    E.refuse_overwrite([report_path], "G3")
     train_kw, post_kw = dict(train_kw or {}), dict(post_kw or {})
     train_kw.setdefault("wall_budget", wall)
     if _HAS_TORCH:
         torch.set_num_threads(int(threads))
     v = versions or E.version_check(E.LEAF_VERSIONS, check=False)
+    current = header("g3", threads, {"ladder": list(ladder), "n_block": n_block, "n_valid": n_valid, "post_kw": post_kw,
+                                     "emulator": emulator}, v)
     hdr, launches, tasks = read_jsonl(jsonl_path)
     if hdr is None:
-        append_line(jsonl_path, header("g3", threads, {"ladder": list(ladder), "n_block": n_block, "n_valid": n_valid,
-                                                       "post_kw": post_kw}, v))
+        append_line(jsonl_path, current)
+    else:
+        _check_resume(hdr, json.loads(json.dumps(current)), ("ladder", "n_block", "n_valid", "post_kw"), jsonl_path)
     _override_line(jsonl_path, v, "g3")
     cells, stops = {}, []
     for prior in priors:
@@ -639,7 +682,7 @@ def run_g3(em, refs, jsonl_path=None, nets_dir=None, report_path=None, threads=T
               "scoring_projection": proj, "cells": cells,
               "ladder": list(ladder), "budget_surfaces": budget_surfaces, "budget_wall_s": wall, "slope_min": SLOPE_MIN,
               "stability_tol": STABILITY_TOL, "threads": int(threads), "post_kw": post_kw, "commit": commit,
-              "clean_tree": clean, "versions": v, "utc": utc_now(),
+              "clean_tree": clean, "versions": v, "emulator": emulator, "utc": utc_now(),
               "note": "passed: every cell passed; p5_stops: no cell passed, or the scoring cost is over the budget; "
                       "a failed cell's seeds are not trained and Stage 2 loses that level for every measure needing "
                       "its network (D81)"}
@@ -670,13 +713,15 @@ def header(mode, threads, extra=None, versions=None):
 
 
 def train_seeds(em, report, jsonl_path=None, nets_dir=None, nets_g3=None, threads=THREADS_DEFAULT, n_block=DRAW_N,
-                n_valid=N_VALID, seeds=range(2, N_SEEDS + 1), train_kw=None, versions=None):
+                n_valid=N_VALID, seeds=range(2, N_SEEDS + 1), train_kw=None, versions=None, emulator=None):
     """Seeds q = 2..5 at n* per passing cell (q = 1's run is the ladder's), without the wall
     budget of G3 (line 144's budget is the gate's); a cell that failed G3 is not trained
     (D81). A non-finite loss is retrained once per cell from seed value 6, which takes the
-    failed seed's place; a second failure leaves that slot empty, the cell standing with
-    four seeds (line 75). Returns {cell: {n_star, seeds: {slot q: run label}, empty_slots}}
-    for the passing cells."""
+    failed seed's place; every later failure in the cell leaves its slot empty, so that a
+    second failure leaves the cell with four seeds and a third with three (line 75, D82).
+    A resumed training reuses saved networks only when the record's header matches this
+    call's (the passing cells, the emulator) (D82). Returns {cell: {n_star, seeds: {slot q:
+    run label}, empty_slots}} for the passing cells."""
     jsonl_path, nets_dir, nets_g3 = jsonl_path or PATHS["train"], nets_dir or PATHS["nets"], nets_g3 or PATHS["nets_g3"]
     train_kw = dict(train_kw or {})
     train_kw.setdefault("wall_budget", float("inf"))
@@ -685,9 +730,12 @@ def train_seeds(em, report, jsonl_path=None, nets_dir=None, nets_g3=None, thread
         raise SystemExit("G3 has not passed in any cell: P5 stops and no seeds are trained (line 144)")
     if report.get("p5_stops"):
         raise SystemExit(f"G3 has not passed with a go: P5 stops ({report.get('p5_stops_reason')}); no seeds are trained")
+    current = header("train", threads, {"cells_passing": passing, "emulator": emulator}, versions)
     hdr, launches, tasks = read_jsonl(jsonl_path)
     if hdr is None:
-        append_line(jsonl_path, header("train", threads, {"cells_passing": passing}, versions))
+        append_line(jsonl_path, current)
+    else:
+        _check_resume(hdr, json.loads(json.dumps(current)), ("cells_passing",), jsonl_path)
     _override_line(jsonl_path, versions, "train")
     out = {}
     for key in passing:
@@ -731,14 +779,17 @@ def scored_networks(trained):
 
 
 def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path=None, threads=THREADS_DEFAULT,
-              post_kw=None, versions=None, refs_path=None, stage1_dir=None):
+              post_kw=None, versions=None, refs_path=None, stage1_dir=None, emulator=None, hashes=None):
     """Every calibrator at every (prior, level, seed) on the set's surfaces at its level:
     per pair the outputs of line 75; `q` is the seed's slot (a seed-6 replacement carries
     q6 in its run label). Resumable by (run label, pair label). The test set is scored only
     after Stage 1 has been declared from its references and has not stopped P5 (line 101,
     D81): the header records the Stage 1 output's digest of the references, checked on
     resume and by Stage 2; it also lists the networks to be scored, every passing cell's
-    seeds, against which Stage 2 checks that the scoring is complete (D81)."""
+    seeds, against which Stage 2 checks that the scoring is complete (D81). `emulator` is
+    G̃'s {path, sha256}, recorded in the header; `hashes` ({source: SHA-256}: G̃, the set's
+    references, G3's report), with Stage 1's for the test set, must all agree, else the
+    scoring is refused before any network is loaded (line 142, D82)."""
     out_path, post_kw = out_path or scores_path(set_name), dict(post_kw or {})
     stage1 = None
     if set_name == "test":
@@ -747,14 +798,19 @@ def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path
     hdr, launches, done = read_jsonl(out_path)
     if stage1 is not None and hdr is not None and hdr.get("stage1_refs_digest") != stage1["refs_digest"]:
         raise SystemExit(f"scoring refused: {_rel(out_path)} was begun after another Stage 1 output (line 101)")
+    if hashes is not None or stage1 is not None:
+        named = dict(hashes or {})
+        if stage1 is not None:
+            named["Stage 1 output"] = (stage1.get("emulator") or {}).get("sha256")
+        E.require_same_emulator(named, f"the scoring of the set {set_name}")
     require_torch()
     torch.set_num_threads(int(threads))
     nets_dir, nets_g3 = nets_dir or PATHS["nets"], nets_g3 or PATHS["nets_g3"]
     expected = scored_networks(trained)
     if hdr is None:
         append_line(out_path, header("score", threads, {"set": set_name, "post_kw": post_kw, "expected": expected,
-                                                        "stage1_refs_digest": stage1["refs_digest"] if stage1 else None},
-                                     versions))
+                                                        "stage1_refs_digest": stage1["refs_digest"] if stage1 else None,
+                                                        "emulator": emulator}, versions))
     _override_line(out_path, versions, "score")
     n_new = 0
     for key, cell in trained.items():
@@ -793,12 +849,15 @@ def main(argv=None, check_versions=False):
     mode.add_argument("--g3", action="store_true", help="the ladder of line 144 and the report")
     mode.add_argument("--train", action="store_true", help="seeds 2 to 5 at the adequate n per passing cell, after G3")
     mode.add_argument("--score", default=None, choices=("g3", "test"), help="the calibrators' outputs on a set")
-    ap.add_argument("--emulator", default=EMULATOR_PATH)
+    ap.add_argument("--emulator", default=None,
+                    help="G̃ is the build G1 passes (p5_g1_emulator.require_g1); another file is refused (D82)")
     ap.add_argument("--threads", type=int, default=THREADS_DEFAULT, help="torch threads for training and scoring; recorded")
     ap.add_argument("--allow-other-versions", action="store_true",
-                    help="run with numpy or scipy other than p5_g1_emulator.LEAF_VERSIONS; recorded (D81)")
+                    help="run with numpy, scipy or torch other than p5_g1_emulator.LEAF_VERSIONS and LEAF_TORCH; "
+                         "recorded (D81, D82)")
     a = ap.parse_args(argv)
-    vers = E.version_check(E.LEAF_VERSIONS, a.allow_other_versions, os.path.basename(__file__), check=check_versions)
+    vers = E.version_check(E.LEAF_VERSIONS, a.allow_other_versions, os.path.basename(__file__), check=check_versions,
+                           torch_expected=E.LEAF_TORCH)
     print("=== P5 G3 calibrators ===", flush=True)
     print(f"  trunk {HIDDEN} ReLU; members {N_MEMBERS}; Adam lr={LR} betas={BETAS}; batch {BATCH}; patience {PATIENCE}; "
           f"cap {MAX_EPOCHS}; validation {N_VALID}; seeds train {SEED_TRAIN} valid {SEED_VALID} nre {SEED_NRE}", flush=True)
@@ -810,18 +869,18 @@ def main(argv=None, check_versions=False):
               flush=True)
         return
     require_torch()
-    if not os.path.exists(a.emulator):
-        raise SystemExit(f"no emulator at {_rel(a.emulator)}: G1 is built after freezing (line 54)")
-    em = E.load_emulator(a.emulator)
+    em_path = E.emulator_for_run(a.emulator)                    # G̃, the build G1 passes (line 142, D82)
+    em, info = E.load_emulator(em_path), E.emulator_info(em_path)
     refs_path = R.SETS["g3"]["jsonl"]
     if a.g3 or a.score == "g3" or a.train:
         if not os.path.exists(refs_path):
             raise SystemExit(f"no G3 pilot references at {_rel(refs_path)}: run p5_g2_reference.py --g3-pilot first")
+        p_hdr, _, p_refs = read_jsonl(refs_path)
+        require_pilot(p_hdr, p_refs, info["sha256"])           # all 48 pairs, made with G̃ (D82)
     st = R.require_g2()                                         # the reference's lengths, for the ratio estimator (D81)
     post_kw = {"burn": st["burn"], "sample": st["sample"]}
     if a.g3:
-        _, _, refs = read_jsonl(refs_path)
-        rep = run_g3(em, refs, threads=a.threads, post_kw=post_kw, versions=vers)
+        rep = run_g3(em, p_refs, threads=a.threads, post_kw=post_kw, versions=vers, emulator=info)
         print(f"=== G3: cells passing {rep['cells_passing']}; not passing {rep['cells_not_passing']}; scoring projected at "
               f"{rep['scoring_projection']['projected_core_hours']:.1f} core-hours"
               f"{'' if rep['scoring_projection']['complete'] else ' (incomplete)'}; "
@@ -834,20 +893,26 @@ def main(argv=None, check_versions=False):
         return
     with open(PATHS["report"], encoding="utf-8") as f:
         rep = json.load(f)
+    g3_sha = (rep.get("emulator") or {}).get("sha256")
+    trained_path = os.path.join(OUT_DIR, "p5_calibrators_trained.json")
     if a.train:
-        trained = train_seeds(em, rep, threads=a.threads, versions=vers)
-        with open(os.path.join(OUT_DIR, "p5_calibrators_trained.json"), "w", encoding="utf-8") as f:
+        E.refuse_overwrite([trained_path], "seed training")
+        E.require_same_emulator({"G̃": info["sha256"], "G3 report": g3_sha}, "seed training")
+        trained = train_seeds(em, rep, threads=a.threads, versions=vers, emulator=info)
+        with open(trained_path, "w", encoding="utf-8") as f:
             json.dump(trained, f, indent=1)
-        print(f"  trained seeds per cell written: {_rel(os.path.join(OUT_DIR, 'p5_calibrators_trained.json'))}", flush=True)
+        print(f"  trained seeds per cell written: {_rel(trained_path)}", flush=True)
         return
     if a.score:
-        with open(os.path.join(OUT_DIR, "p5_calibrators_trained.json"), encoding="utf-8") as f:
+        with open(trained_path, encoding="utf-8") as f:
             trained = json.load(f)
         set_refs = R.SETS[a.score]["jsonl"]
         if not os.path.exists(set_refs):
             raise SystemExit(f"no references for the set {a.score} at {_rel(set_refs)}")
-        _, _, refs = read_jsonl(set_refs)
-        n = score_set(a.score, refs, em, trained, threads=a.threads, post_kw=post_kw, versions=vers)
+        s_hdr, _, refs = read_jsonl(set_refs)
+        hashes = {"G̃": info["sha256"], "G3 report": g3_sha, f"{a.score} references": (s_hdr or {}).get("emulator_sha256")}
+        n = score_set(a.score, refs, em, trained, threads=a.threads, post_kw=post_kw, versions=vers, emulator=info,
+                      hashes=hashes)
         print(f"  scored {n} new (run, pair) results -> {_rel(scores_path(a.score))}", flush=True)
 
 

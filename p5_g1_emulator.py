@@ -20,7 +20,11 @@ over their 7,000 quotes of |G̃ − G|, with the maximum and the per-maturity 99
 percentiles beside it. G1: Q1 is claimed at a noise level s only where e ≤ s / 5. If e
 exceeds s / 5 at the smallest level (0.1 vol point, so 0.0002), the node count is doubled
 once in the dimension whose Chebyshev coefficient tail is largest and the build repeated
-at the new nodes; there is no second refinement (line 142).
+at the new nodes; there is no second refinement (line 142). G̃ for everything after G1 is
+the build G1 passes: require_g1() returns the refined build when the base report calls for
+the refinement and the base build otherwise, and refuses a stage that stopped or is
+incomplete; G2 and G3 take their emulator from it on the command line, and every later
+record carries its SHA-256 (line 142, D82). No report, CSV or emulator is written over (D82).
 
 The build is G1 and is made after freezing (lines 7 and 54). This file is committed
 before it; its tests run the pricer at cheap settings on D38's point, as G0's identity gate
@@ -56,6 +60,7 @@ import sys
 import csv
 import json
 import time
+import hashlib
 import argparse
 import platform
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -96,27 +101,36 @@ OUT_DIR = P.OUT_DIR
 # 22 October 2026. numpy's generator streams are fixed by seed only together with its version.
 CORE_VERSIONS = {"numpy": "2.4.4", "scipy": "1.17.1"}
 LEAF_VERSIONS = {"numpy": "2.5.4", "scipy": "1.18.1"}
+LEAF_TORCH = "2.14.1"                               # the leaf's torch, its local build tag (+cpu) aside (D82)
 
 
-def versions_now():
+def versions_now(torch_too=False):
     import scipy
-    return {"numpy": np.__version__, "scipy": scipy.__version__}
+    out = {"numpy": np.__version__, "scipy": scipy.__version__}
+    if torch_too:
+        try:
+            import torch
+            out["torch"] = torch.__version__.split("+")[0]
+        except Exception:
+            out["torch"] = None
+    return out
 
 
-def version_check(expected, allow=False, script=None, check=True):
-    """The installed numpy and scipy against `expected`, for a script's output header:
-    {numpy, scipy, expected, checked, override, mismatch}. With `check` (a command-line
-    run), a mismatch is refused unless `allow` (--allow-other-versions), which is recorded
-    as the override. Without `check` (a call from a test or another script) nothing is
-    refused and the record says so."""
-    now = versions_now()
-    bad = {k: [now[k], v] for k, v in expected.items() if now[k] != v}
+def version_check(expected, allow=False, script=None, check=True, torch_expected=None):
+    """The installed numpy and scipy (and torch, when `torch_expected` is given) against
+    `expected`, for a script's output header: {numpy, scipy, [torch,] expected, checked,
+    override, mismatch}. With `check` (a command-line run), a mismatch is refused unless
+    `allow` (--allow-other-versions), which is recorded as the override. Without `check` (a
+    call from a test or another script) nothing is refused and the record says so."""
+    now = versions_now(torch_expected is not None)
+    exp = dict(expected, **({"torch": torch_expected} if torch_expected is not None else {}))
+    bad = {k: [now[k], v] for k, v in exp.items() if now[k] != v}
     if check and bad and not allow:
         raise SystemExit(f"{script or 'this script'} refused: "
                          + "; ".join(f"{k} {a} is installed, {b} is expected" for k, (a, b) in bad.items())
                          + ". The draws are fixed by seed only together with these versions (D81); "
                            "--allow-other-versions runs anyway and is recorded.")
-    return dict(now, expected=dict(expected), checked=bool(check), override=bool(check and bad and allow), mismatch=bad)
+    return dict(now, expected=dict(exp), checked=bool(check), override=bool(check and bad and allow), mismatch=bad)
 
 
 def paths(stage="base"):
@@ -125,6 +139,117 @@ def paths(stage="base"):
             "npz": os.path.join(OUT_DIR, f"p5_g1{suf}_emulator.npz"),
             "csv": os.path.join(OUT_DIR, f"p5_g1{suf}_heldout.csv"),
             "report": os.path.join(OUT_DIR, f"p5_g1{suf}_report.json")}
+
+
+# --------------------------------------------------------------------------- #
+# G̃ for everything after G1 (D82): which build, its hash, the checks where records meet
+# --------------------------------------------------------------------------- #
+def sha256_file(path):
+    """The SHA-256 of a file's bytes, or None when there is no such file."""
+    if not path or not os.path.exists(path):
+        return None
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def emulator_info(path):
+    """The emulator a run uses, for its output header: the path and the SHA-256 of the .npz."""
+    return {"path": _rel(path) if path else None, "sha256": sha256_file(path)}
+
+
+def require_same_emulator(hashes, where):
+    """Refuses unless every emulator hash `where` reads ({source: SHA-256}) is present and
+    all are equal (line 142, D82); returns the hash."""
+    missing = sorted(k for k, v in hashes.items() if not v)
+    if missing:
+        raise SystemExit(f"{where} refused: no emulator hash in {', '.join(missing)}; every record after G1 carries "
+                         "G̃'s (line 142, D82)")
+    if len(set(hashes.values())) > 1:
+        raise SystemExit(f"{where} refused: the emulator hashes differ ("
+                         + "; ".join(f"{k} {v[:12]}" for k, v in sorted(hashes.items())) + "); everything after G1 "
+                         "uses G̃ (line 142, D82)")
+    return next(iter(hashes.values()))
+
+
+def refuse_overwrite(files, what):
+    """No record is written over (D82): refuses when any of `files` exists. A re-run needs the
+    old file moved aside by hand, and the move declared (line 141)."""
+    there = [p for p in files if p and os.path.exists(p)]
+    if there:
+        raise SystemExit(f"{what} refused: {', '.join(_rel(p) for p in there)} exists; a re-run needs the old file moved "
+                         "aside by hand, and the move declared (line 141, D82)")
+
+
+def stage_stopped(jsonl_path):
+    """The task at which a stage's launch stopped on a quote still not finite after the
+    re-pricing (its "stop" line), or None."""
+    if not os.path.exists(jsonl_path):
+        return None
+    stop = None
+    with open(jsonl_path, encoding="utf-8") as f:
+        for line in f:
+            try:
+                obj = json.loads(line)
+            except ValueError:
+                continue
+            if obj.get("kind") == "stop":
+                stop = obj.get("task")
+    return stop
+
+
+def _stage_report(p, stage):
+    """The stage's report if it and its .npz are there and it is a complete assembly of that
+    stage (assemble writes it only from a complete, finite record), else None."""
+    if not (os.path.exists(p["report"]) and os.path.exists(p["npz"])):
+        return None
+    with open(p["report"], encoding="utf-8") as f:
+        rep = json.load(f)
+    need = ("stage", "nodes", "n_train", "n_heldout", "e_p99", "verdicts")
+    if any(k not in rep for k in need) or rep["stage"] != stage or rep["n_train"] != int(np.prod(rep["nodes"][:3])):
+        return None
+    return rep
+
+
+def require_g1(base=None, refined=None):
+    """G̃, the emulator G1 passes to everything after it (lines 54 and 142, D82): the refined
+    build when the base report calls for the one refinement, the base build otherwise.
+    Refuses when the base build stopped on a quote still not finite after the re-pricing,
+    when its report is missing or incomplete, and when the refinement called for stopped, is
+    missing or is incomplete. `base` and `refined` are paths(stage) dicts (the defaults are
+    output/'s). Returns the path of G̃'s .npz."""
+    base, refined = base or paths("base"), refined or paths("refined")
+    stop = stage_stopped(base["jsonl"])
+    if stop:
+        raise SystemExit(f"no emulator: G1's base build stopped at {stop} on a quote still not finite after the "
+                         f"re-pricing at N_riccati {N_REPRICE}, which stops P5 (line 54)")
+    rep = _stage_report(base, "base")
+    if rep is None:
+        raise SystemExit(f"no emulator: G1's base build is missing or incomplete (no complete report and emulator at "
+                         f"{_rel(base['report'])}); G̃ is the build G1 passes (lines 54, 142)")
+    if not rep.get("refine"):
+        return base["npz"]
+    stop = stage_stopped(refined["jsonl"])
+    if stop:
+        raise SystemExit(f"no emulator: G1's refined build stopped at {stop} on a quote still not finite after the "
+                         f"re-pricing at N_riccati {N_REPRICE}, which stops P5 as at the base (lines 54, 142)")
+    if _stage_report(refined, "refined") is None:
+        raise SystemExit(f"no emulator: the base report calls for the one refinement and the refined build is missing "
+                         f"or incomplete (no complete report and emulator at {_rel(refined['report'])}); after it the "
+                         "refined build is G̃ (line 142)")
+    return refined["npz"]
+
+
+def emulator_for_run(given=None, base=None, refined=None):
+    """The command line's emulator (D82): G̃ from require_g1(), and a refusal of an --emulator
+    that names another file."""
+    g = require_g1(base, refined)
+    if given and os.path.normcase(os.path.abspath(given)) != os.path.normcase(os.path.abspath(g)):
+        raise SystemExit(f"refused: --emulator {given} is not G̃, the build G1 passes ({_rel(g)}); everything after G1 "
+                         "uses G̃ (line 142, D82)")
+    return g
 
 
 # --------------------------------------------------------------------------- #
@@ -327,8 +452,9 @@ def run_job_with_reprice(job, kw, reprice_n=N_REPRICE):
     takes all its quotes from that pricing; the triple's other surfaces keep theirs (line 54,
     D81). Returns (record, first), `first` the record of the first pricing, kept for the
     log, or None when it was finite. The record keeps the first pricing's N and per-maturity
-    detail, with `repriced_xi0` (the surfaces re-priced), `N_reprice` and `per_T_reprice`;
-    its seconds are both pricings'."""
+    detail, with `repriced_xi0` (the surfaces re-priced), `N_by_xi0` (per surface, the N its
+    quotes come from), `N_reprice` and `per_T_reprice`, which holds the strikes and ATM vols of
+    the re-priced surfaces; its seconds are both pricings' (D82)."""
     rec = run_job(job, **kw)
     if rec["all_finite"] or reprice_n is None:
         return rec, None
@@ -337,7 +463,10 @@ def run_job_with_reprice(job, kw, reprice_n=N_REPRICE):
     out = dict(rec, quotes=[rec2["quotes"][i] if i in bad else rec["quotes"][i] for i in range(len(rec["quotes"]))],
                status=[rec2["status"][i] if i in bad else rec["status"][i] for i in range(len(rec["status"]))],
                seconds_total=rec["seconds_total"] + rec2["seconds_total"], repriced=True, repriced_xi0=bad,
-               N_reprice=int(reprice_n), per_T_reprice=rec2["per_T"])
+               N_by_xi0=[int(reprice_n) if i in bad else int(rec["N"]) for i in range(len(rec["quotes"]))],
+               N_reprice=int(reprice_n), per_T_reprice=rec2["per_T"],
+               reprice_note="per_T is the first pricing's; the surfaces in repriced_xi0 take their quotes, strikes and "
+                            "ATM vols from per_T_reprice")
     out["all_finite"] = all(v is not None for xi in out["quotes"] for row in xi for v in row)
     return out, dict(rec, kind="first_attempt")
 
@@ -544,6 +673,7 @@ def assemble(stage="base", nodes_per_dim=None, base_paths=None, stage_paths=None
     if problems:
         raise SystemExit("assemble refused:\n  " + "\n  ".join(problems[:20])
                          + (f"\n  ... {len(problems) - 20} more" if len(problems) > 20 else ""))
+    refuse_overwrite([sp.get("npz"), sp.get("csv"), sp.get("report")], "assemble")           # no record written over (D82)
     box = {d: tuple(hdr["box"][d]) for d in DIMS}
     nq = len(Ts) * len(vus)
     V = values_from(train, nodes_per_dim, nq, stage)

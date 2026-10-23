@@ -207,6 +207,7 @@ def test_draws_surfaces_and_the_sealed_set(tmp_path, monkeypatch):
     assert g3.shape == (16, 4) and not np.array_equal(g3[:4], pts)
     assert R.cell_centres(0.0, 1.0, 4).tolist() == [0.125, 0.375, 0.625, 0.875]
     monkeypatch.setitem(R.SETS, "g2", dict(R.SETS["g2"], report=str(tmp_path / "no_g2.json")))
+    _no_sealed_draws(monkeypatch)                                                     # a draw would fail the test (D82)
     with pytest.raises(SystemExit, match="G2 has not passed"):
         R.main(["--test", "--emulator", "no_such_file.npz"])                          # refused before any load (D81)
     with pytest.raises(SystemExit, match="no emulator"):
@@ -408,8 +409,21 @@ def test_g2_pilot_set_fixed_points_retry_and_go_no_go(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match="G2 has not passed"):
         R.main(["--g3-pilot", "--emulator", "no_such_file.npz"])
     rep(first, True, True, 1)
+    _no_sealed_draws(monkeypatch)                                                    # a draw would fail the test (D82)
     with pytest.raises(SystemExit, match="no emulator"):                             # past G2's gate, the emulator is needed
         R.main(["--test", "--emulator", "no_such_file.npz"])
+
+
+def _no_sealed_draws(monkeypatch):
+    """The sealed test set's drawing functions replaced by ones that fail if called, so that
+    a refusal is seen to come before any draw (D82)."""
+    def fail(*a, **k):
+        raise AssertionError("a draw from the sealed test set was attempted")
+    orig = R.noise_draws
+    monkeypatch.setattr(R, "test_points", fail)
+    monkeypatch.setattr(R, "test_noise", fail)
+    monkeypatch.setattr(R, "noise_draws",
+                        lambda seed, n, *a, **k: fail() if int(seed) == R.SEED_TEST_NOISE else orig(seed, n, *a, **k))
 
 
 class _NoDraw:
@@ -497,6 +511,7 @@ def test_the_retry_and_the_hand_off_of_g2s_lengths(tmp_path, monkeypatch, toy_em
         return {"attempt": k["attempt"], "passed": False, "go": True, "n_reference_failures": 0,
                 "projection": {"projected_core_hours": 1.0}, "pairs": []}
     monkeypatch.setattr(R, "get_emulator", lambda path=None: toy_emulator)
+    monkeypatch.setattr(E, "require_g1", lambda base=None, refined=None: "no_such_file.npz")     # G̃ stands in (D82)
     monkeypatch.setattr(R, "run_set", fake_run_set)
     monkeypatch.setattr(R, "g2_report", fake_report)
     monkeypatch.setattr(R, "test_points", lambda n=R.N_TEST, box=R.BOX: calls["draws"].append(("theta", n)) or np.zeros((n, 4)))
@@ -571,3 +586,40 @@ def test_g2_tolerances_are_at_least_four_monte_carlo_standard_errors():
     big["neff"]["A"] = 1.0e6                                                              # a large n_eff: the absolute values govern
     assert all(cmp(big)["tol"][k] == absolute[k] for k in ("d_mean", "d_c", "d_q05", "d_q95"))
     assert cmp(big, dm=0.0018)["passed"] is False
+
+
+def test_the_test_set_and_the_emulator_are_fixed_before_any_draw_or_run(tmp_path, monkeypatch, toy_emulator):
+    """Lines 93 and 142 (D82): --test refuses an N other than 400 or a noise seed other than
+    20261022 before any draw; from the command line the emulator is G̃ (require_g1) and an
+    --emulator naming another file is refused before any run; every reference record and
+    G2's report carry the emulator's SHA-256, a resume with a changed emulator file is
+    refused, G2's status hands the hash on, and no G2 report is written over."""
+    _no_sealed_draws(monkeypatch)
+    with pytest.raises(SystemExit, match="the test set is N = 400 with noise seed 20261022"):
+        R.main(["--test", "--n", "300"])
+    with pytest.raises(SystemExit, match="the test set is N = 400 with noise seed 20261022"):
+        R.main(["--test", "--noise-seed", "7"])
+    em_file = tmp_path / "em.npz"
+    np.savez(em_file, stage=np.array("base"), commit=np.array("x"), values=np.zeros((2, 1, 1, 2, 3)))
+    monkeypatch.setattr(E, "require_g1", lambda base=None, refined=None: str(em_file))
+    with pytest.raises(SystemExit, match="is not G̃"):
+        R.main(["--pilot", "--emulator", str(tmp_path / "other.npz")])
+    paths = {"jsonl": str(tmp_path / "r.jsonl"), "samples": str(tmp_path / "r.npz"), "report": str(tmp_path / "r.json")}
+    kw = {"burn": 300, "sample": 900, "kish_min": 50.0, "rhat_max": 1.5, "ess_min": 20.0}
+    args = (np.array([CENTRE]), R.noise_draws(89, 1), toy_emulator, 1, paths, str(em_file), {"points": 79, "noise": 89},
+            (0.003,), kw)
+    jobs = R.run_set("g2", *args)
+    hdr = R.load_references(paths["jsonl"])[0]
+    assert hdr["emulator_sha256"] == E.sha256_file(str(em_file)) and hdr["emulator_sha256"] is not None
+    rep = R.g2_report(jobs, paths, toy_emulator, 1, (0.003,), grid_n=4, whole_n=4)
+    assert rep["emulator"]["sha256"] == hdr["emulator_sha256"]
+    with pytest.raises(SystemExit, match="report refused: .* exists; a re-run needs the old file moved aside"):
+        R.g2_report(jobs, paths, toy_emulator, 1, (0.003,), grid_n=4, whole_n=4)
+    first = tmp_path / "g2.json"
+    first.write_text(json.dumps({"gate": "G2", "passed": True, "go": True, "attempt": 1, "lengths": {"burn": 10, "sample": 40},
+                                 "budget_core_hours": 1344.0, "projection": {"projected_core_hours": 1.0},
+                                 "emulator": rep["emulator"]}), encoding="utf-8")
+    assert R.g2_status(str(first), str(tmp_path / "no_retry.json"))["emulator_sha256"] == hdr["emulator_sha256"]
+    np.savez(em_file, stage=np.array("base"), commit=np.array("x"), values=np.ones((2, 1, 1, 2, 3)))   # another file
+    with pytest.raises(SystemExit, match="launch refused: .* emulator_sha256"):
+        R.run_set("g2", *args)

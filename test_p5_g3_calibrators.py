@@ -249,6 +249,7 @@ def test_toy_g3_ladder_end_to_end(tmp_path):
     assert runs[0].startswith("ensemble_p1_j2_q1_n") and all(Path(paths["nets"], k + ".pt").exists() for k in runs)
     assert hdr["ladder"] == [64, 128] and hdr["n_block"] == 256
     json.dumps(json.loads(Path(paths["report"]).read_text(encoding="utf-8")), allow_nan=False)
+    Path(paths["report"]).rename(paths["report"] + ".aside")                               # a re-run moves it aside (D82)
     rep2 = C.run_g3(**kw)                                                                   # resume: every run reused
     assert len(R.read_jsonl(paths["jsonl"])[2]) == len(tasks) and rep2["cells"]["nre_A_j2"]["rungs"][0]["n"] == 64
     # the refusal without a passed G3
@@ -441,6 +442,7 @@ def test_g3_fails_closed_and_records_an_override(tmp_path, monkeypatch):
     assert rep["versions"]["override"] is True and rep["scoring_projection"]["complete"] is True
     lines = [json.loads(l) for l in Path(jl).read_text(encoding="utf-8").splitlines()]
     assert [l["kind"] for l in lines[:2]] == ["header", "launch"] and lines[1]["versions"]["override"] is True
+    Path(tmp_path, "g3.json").rename(tmp_path / "g3.first.json")                       # a re-run moves the report aside (D82)
     C.run_g3(LinearEm(), _g3_refs(), jl, str(tmp_path / "n"), str(tmp_path / "g3.json"), threads=1, ladder=(100, 200),
              n_block=400, n_valid=16, levels=(0.003,), priors=("A",), post_kw={"burn": 10, "sample": 40})
     assert sum(1 for l in Path(jl).read_text(encoding="utf-8").splitlines() if '"launch"' in l) == 1   # no override, no line
@@ -459,13 +461,16 @@ def test_the_test_set_is_scored_only_after_stage1(tmp_path):
     references, with one made from other references, or one that stopped P5; a scores file
     begun after another Stage 1 output is refused on resume; the header records the Stage
     1 output's digest (with torch present; without it, the scoring stops for want of torch
-    once Stage 1 is in order)."""
+    once Stage 1 is in order). The emulator hashes it reads, Stage 1's among them, must all
+    agree (D82)."""
     import p5_stage2 as S2
     refs = tmp_path / "refs.jsonl"
     refs.write_text(json.dumps({"kind": "header", "set": "test", "n_points": 1}) + "\n"
                     + json.dumps({"kind": "task", "task": "test_0000_0", "status": "ok"}) + "\n", encoding="utf-8")
     out = tmp_path / "scores.jsonl"
-    kw = dict(out_path=str(out), threads=1, refs_path=str(refs), stage1_dir=str(tmp_path / "s1"))
+    g = "e" * 64                                                                          # a stand-in for G̃'s hash
+    kw = dict(out_path=str(out), threads=1, refs_path=str(refs), stage1_dir=str(tmp_path / "s1"),
+              hashes={"G̃": g, "test references": g, "G3 report": g})
     with pytest.raises(SystemExit, match="no Stage 1 output"):
         C.score_set("test", {}, None, {}, **kw)
     (tmp_path / "s1").mkdir()
@@ -476,12 +481,18 @@ def test_the_test_set_is_scored_only_after_stage1(tmp_path):
     s1.write_text(json.dumps({"refs_digest": S2.refs_digest(str(refs)), "p5_stops": True}), encoding="utf-8")
     with pytest.raises(SystemExit, match="P5 stopped at Stage 1"):
         C.score_set("test", {}, None, {}, **kw)
-    s1.write_text(json.dumps({"refs_digest": S2.refs_digest(str(refs)), "p5_stops": False}), encoding="utf-8")
+    s1.write_text(json.dumps({"refs_digest": S2.refs_digest(str(refs)), "p5_stops": False, "emulator": {"sha256": g}}),
+                  encoding="utf-8")
     out.write_text(json.dumps({"kind": "header", "mode": "score", "set": "test", "stage1_refs_digest": "f" * 64}) + "\n",
                    encoding="utf-8")
     with pytest.raises(SystemExit, match="begun after another Stage 1 output"):
         C.score_set("test", {}, None, {}, **kw)
     out.unlink()
+    with pytest.raises(SystemExit, match="the emulator hashes differ"):                  # one hash not G̃'s (D82)
+        C.score_set("test", {}, None, {}, **dict(kw, hashes=dict(kw["hashes"], **{"G3 report": "f" * 64})))
+    with pytest.raises(SystemExit, match="no emulator hash in test references"):
+        C.score_set("test", {}, None, {}, **dict(kw, hashes=dict(kw["hashes"], **{"test references": None})))
+    assert not out.exists()                                                               # refused before any header
     if C._HAS_TORCH:
         assert C.score_set("test", {}, None, {}, **kw) == 0
         h = json.loads(out.read_text(encoding="utf-8").splitlines()[0])
@@ -489,3 +500,51 @@ def test_the_test_set_is_scored_only_after_stage1(tmp_path):
     else:
         with pytest.raises(SystemExit, match="torch"):
             C.score_set("test", {}, None, {}, **kw)
+
+
+# ---- D82: a complete pilot record made with G̃; resumed runs; nothing written over ----
+def test_g3_needs_a_complete_pilot_record_made_with_g_tilde():
+    """Line 144 (D82): G3 and the training of seeds run only when all 48 G3-pilot pairs (16
+    surfaces at 3 levels) are recorded, accepted or failed, and the record was made with G̃."""
+    g = "e" * 64
+    hdr = {"kind": "header", "set": "g3", "n_points": 16, "emulator_sha256": g}
+    tasks = {f"g3_{i:04d}_{j}": {"set": "g3", "status": "ok" if (i + j) % 5 else "reference_failure"}
+             for i in range(16) for j in range(3)}
+    assert C.require_pilot(hdr, tasks, g) is True                                         # failures count as recorded
+    gone = tasks.pop("g3_0007_2")
+    with pytest.raises(SystemExit, match="holds 47 of its 48 pairs \\(missing g3_0007_2\\)"):
+        C.require_pilot(hdr, tasks, g)
+    tasks["g3_0007_2"] = gone
+    with pytest.raises(SystemExit, match="made with another emulator than G̃"):
+        C.require_pilot(hdr, tasks, "f" * 64)
+    with pytest.raises(SystemExit, match="holds 0 of its 48 pairs"):
+        C.require_pilot(None, {}, g)
+    assert C.require_pilot(hdr, dict(tasks, g3_0016_0={"set": "g3", "status": "ok"}), g) is True   # extra pairs ignored
+
+
+def test_g3_resumes_only_on_a_matching_record_and_writes_nothing_over(tmp_path, monkeypatch):
+    """Line 144 (D82): G3 refuses to write over its report, the refusal coming before any
+    training; a resumed G3 or seed training reuses saved networks only when the record's
+    header matches the call, the emulator included; the emulator is recorded."""
+    _fake_ladder(monkeypatch, {100: 0.010, 200: 0.0085, 400: 0.0080}, {"ensemble": 1.0, "nre": 1.0})
+    A, B = {"path": "output/a.npz", "sha256": "a" * 64}, {"path": "output/a.npz", "sha256": "b" * 64}
+    jl, rp, nets = str(tmp_path / "l.jsonl"), str(tmp_path / "g3.json"), str(tmp_path / "n")
+    kw = dict(threads=1, ladder=(100, 200), n_block=400, n_valid=16, levels=(0.003,), priors=("A",),
+              post_kw={"burn": 10, "sample": 40})
+    rep = C.run_g3(LinearEm(), _g3_refs(), jl, nets, rp, emulator=A, **kw)
+    assert rep["emulator"] == A and json.loads(Path(jl).read_text(encoding="utf-8").splitlines()[0])["emulator"] == A
+    with pytest.raises(SystemExit, match="G3 refused: .* exists; a re-run needs the old file moved aside"):
+        C.run_g3(LinearEm(), _g3_refs(), jl, nets, rp, emulator=A, **kw)
+    Path(rp).rename(rp + ".aside")
+    with pytest.raises(SystemExit, match="resume refused: .* emulator sha256"):
+        C.run_g3(LinearEm(), _g3_refs(), jl, nets, rp, emulator=B, **kw)
+    with pytest.raises(SystemExit, match="resume refused: .* post_kw"):
+        C.run_g3(LinearEm(), _g3_refs(), jl, nets, rp, emulator=A, **dict(kw, post_kw={"burn": 20, "sample": 80}))
+    rep2 = C.run_g3(LinearEm(), _g3_refs(), jl, nets, rp, emulator=A, **kw)                # the same call resumes
+    assert rep2["cells_passing"] == rep["cells_passing"] and not rep2["p5_stops"]
+    tj = str(tmp_path / "t.jsonl")
+    tkw = dict(jsonl_path=tj, nets_dir=str(tmp_path / "n2"), nets_g3=nets, threads=1, n_block=400, n_valid=16, seeds=(2,))
+    C.train_seeds(LinearEm(), rep2, emulator=A, **tkw)
+    assert json.loads(Path(tj).read_text(encoding="utf-8").splitlines()[0])["emulator"] == A
+    with pytest.raises(SystemExit, match="resume refused: .* emulator sha256"):
+        C.train_seeds(LinearEm(), rep2, emulator=B, **tkw)

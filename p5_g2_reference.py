@@ -61,10 +61,14 @@ set get the same reference, only once G2 has passed with a go (line 144, line 93
 set is N = 400 θ, the first 400 rows of default_rng(20261002)'s uniform draw on the box,
 with noise default_rng(20261022).standard_normal((400, 3, 35)) (line 93, D81).
 
-Nothing here runs before freezing: the emulator (output/p5_g1_emulator.npz) is built at
-G1 after freezing, and this script needs it. The tests use toy emulators in memory. Run
-from the command line, the script refuses numpy and scipy other than the core
-interpreter's (p5_g1_emulator.CORE_VERSIONS) unless --allow-other-versions, recorded (D81).
+Nothing here runs before freezing: the emulator is built at G1 after freezing, and this
+script needs it. From the command line the emulator is G̃, the build G1 passes
+(p5_g1_emulator.require_g1: the refined build when the base report calls for it), and an
+--emulator naming another file is refused; every record and report carries G̃'s SHA-256
+(D82). --test refuses an N other than 400 or a noise seed other than 20261022 before any
+draw, and no report is written over (D82). The tests use toy emulators in memory. Run from
+the command line, the script refuses numpy and scipy other than the core interpreter's
+(p5_g1_emulator.CORE_VERSIONS) unless --allow-other-versions, recorded (D81).
 
 Usage (from the repository root, after G1):
     py -3 p5_g2_reference.py                   the design; holds
@@ -72,7 +76,7 @@ Usage (from the repository root, after G1):
     py -3 p5_g2_reference.py --pilot-retry     the one retry, only after a failed first attempt
     py -3 p5_g2_reference.py --g3-pilot        the 48 references of G3's pilot surfaces, after G2
     py -3 p5_g2_reference.py --test            the sealed set, N = 400, after G2
-    options: --emulator PATH (default output/p5_g1_emulator.npz), --pool K (default 4)
+    options: --emulator PATH (G̃ by default; another file is refused), --pool K (default 4)
 
 Outputs (output/ is git-ignored; the files are force-added by name after a run):
     output/p5_g2_pilot.jsonl, output/p5_g2_pilot_samples.npz, output/p5_g2_report.json
@@ -702,6 +706,7 @@ def header(set_name, pool, emulator_path, n_points, seeds, extra=None, versions=
     return dict({"kind": "header", "script": os.path.basename(__file__), "commit": commit, "clean_tree": clean,
                  "set": set_name, "n_points": int(n_points), "seeds": seeds, "seed_ref": SEED_REF,
                  "emulator": _rel(emulator_path), "emulator_meta": em_meta,
+                 "emulator_sha256": E.sha256_file(emulator_path),          # G̃'s hash, checked where records meet (D82)
                  "box": {d: list(BOX[d]) for d in DIMS}, "noise_levels": list(NOISE_LEVELS),
                  "n_chains": N_CHAINS, "burn": BURN, "sample": SAMPLE, "adapt_every": ADAPT_EVERY,
                  "scale": SCALE, "init_var": INIT_VAR, "diag_floor": DIAG_FLOOR,
@@ -771,7 +776,7 @@ def launch(pool, jobs, jsonl_path, samples_path, header_obj, task_kwargs=None):
     if hdr is None:
         append_line(jsonl_path, header_obj)
     else:
-        for key in ("set", "n_points", "seeds", "burn", "sample", "emulator", "emulator_meta", "lengths"):
+        for key in ("set", "n_points", "seeds", "burn", "sample", "emulator", "emulator_meta", "emulator_sha256", "lengths"):
             if hdr.get(key) != header_obj.get(key):
                 raise SystemExit(f"launch refused: {_rel(jsonl_path)} was started with {key}={hdr.get(key)!r}, "
                                  f"this call has {header_obj.get(key)!r}")
@@ -942,6 +947,7 @@ def g2_report(jobs, paths, em, pool, levels=NOISE_LEVELS, grid_n=GRID_N, whole_n
             continue
         grid_jobs.append((len(out) - 1, (job, rec, dict(kw, whole=(job["j"] == j_max),
                                                         **({"emulator_path": emulator_path} if pool != 1 else {})))))
+    E.refuse_overwrite([paths["report"]], "report")                    # the retry and the go key on it (D82)
     if pool == 1:
         results = [(idx, _grid_job(args)) for idx, args in grid_jobs]
     else:
@@ -962,6 +968,7 @@ def g2_report(jobs, paths, em, pool, levels=NOISE_LEVELS, grid_n=GRID_N, whole_n
     commit, clean = git_state(os.path.dirname(os.path.abspath(__file__)))
     report = {"gate": "G2", "attempt": int(attempt), "lengths": {"burn": int(lengths[0]), "sample": int(lengths[1])},
               "passed": bool(all_pass), "n_pairs": len(jobs), "n_reference_failures": n_fail,
+              "emulator": {"path": (hdr or {}).get("emulator"), "sha256": (hdr or {}).get("emulator_sha256")},
               "tolerance": {"mean_H": tol_mean, "c": tol_c, "quantiles_H_A": tol_q, "mean_H_B": tol_mean,
                             "mc_k": TOL_MC_K, "rule": "the larger of the value and mc_k Monte Carlo standard errors of "
                                                       "the MCMC figure, per pair and quantity (D81)"},
@@ -997,7 +1004,7 @@ def g2_status(first_report=None, retry_report=None):
     first_report = first_report or SETS["g2"]["report"]
     retry_report = retry_report or SETS["g2r"]["report"]
     out = {"passed": False, "p5_stops": False, "retry_due": False, "attempt": None, "burn": None, "sample": None,
-           "go": None, "projected_core_hours": None, "reason": None}
+           "go": None, "projected_core_hours": None, "emulator_sha256": None, "reason": None}
     r1 = _load_json(first_report)
     if r1 is None:
         return dict(out, reason=f"G2 has not been run: no report at {_rel(first_report)}")
@@ -1012,7 +1019,8 @@ def g2_status(first_report=None, retry_report=None):
                                                               "retry: P5 stops (line 143)")
         r = r2
     out.update(attempt=int(r.get("attempt", 1)), burn=int(r["lengths"]["burn"]), sample=int(r["lengths"]["sample"]),
-               go=bool(r.get("go")), projected_core_hours=(r.get("projection") or {}).get("projected_core_hours"))
+               go=bool(r.get("go")), projected_core_hours=(r.get("projection") or {}).get("projected_core_hours"),
+               emulator_sha256=(r.get("emulator") or {}).get("sha256"))       # the passing attempt's G̃ (D82)
     if not r.get("go"):
         return dict(out, p5_stops=True, reason=f"G2's projected cost of the test set's references, "
                                                f"{out['projected_core_hours']} core-hours, is above "
@@ -1039,10 +1047,11 @@ def main(argv=None, check_versions=False):
                       help="G2's one retry, with doubled lengths on fresh surfaces, only after a failed first attempt")
     mode.add_argument("--g3-pilot", action="store_true", help="the 48 references of G3's pilot surfaces, after G2")
     mode.add_argument("--test", action="store_true", help="the sealed test set (N = 400), after G2")
-    ap.add_argument("--n", type=int, default=N_TEST, help="number of test θ (line 93: 400; any other value is recorded)")
+    ap.add_argument("--n", type=int, default=N_TEST, help="number of test θ (line 93: 400; any other value is refused, D82)")
     ap.add_argument("--noise-seed", type=int, default=SEED_TEST_NOISE,
-                    help="the test set's noise seed (line 93: 20261022; any other value is recorded)")
-    ap.add_argument("--emulator", default=EMULATOR_PATH)
+                    help="the test set's noise seed (line 93: 20261022; any other value is refused, D82)")
+    ap.add_argument("--emulator", default=None,
+                    help="G̃ is the build G1 passes (p5_g1_emulator.require_g1); another file is refused (D82)")
     ap.add_argument("--pool", type=int, default=POOL_DEFAULT)
     ap.add_argument("--allow-other-versions", action="store_true",
                     help="run with numpy or scipy other than p5_g1_emulator.CORE_VERSIONS; recorded (D81)")
@@ -1066,6 +1075,9 @@ def main(argv=None, check_versions=False):
     if not (a.pilot or a.pilot_retry or a.g3_pilot or a.test):
         print("\nHOLD: nothing run. --pilot needs the emulator built at G1 after freezing (line 54).", flush=True)
         return
+    if a.test and (a.n != N_TEST or a.noise_seed != SEED_TEST_NOISE):                   # before any draw (D82)
+        raise SystemExit(f"refused: the test set is N = {N_TEST} with noise seed {SEED_TEST_NOISE} (line 93); this call "
+                         f"has --n {a.n} --noise-seed {a.noise_seed}")
     st = None
     if a.pilot_retry:
         r1 = _load_json(SETS["g2"]["report"])
@@ -1075,15 +1087,16 @@ def main(argv=None, check_versions=False):
             raise SystemExit("refused: G2 passed its checks on the first attempt; there is no retry (line 143)")
     if a.g3_pilot or a.test:
         st = require_g2()
-    em = get_emulator(a.emulator)
+    em_path = E.emulator_for_run(a.emulator)                                            # G̃, the build G1 passes (D82)
+    em = get_emulator(em_path)
     if a.pilot or a.pilot_retry:
         retry = bool(a.pilot_retry)
         set_name = "g2r" if retry else "g2"
         lengths = (2 * BURN, 2 * SAMPLE) if retry else (BURN, SAMPLE)
         pts, eps, seeds = g2_surfaces(retry)
-        jobs = run_set(set_name, pts, eps, em, a.pool, SETS[set_name], a.emulator, seeds,
+        jobs = run_set(set_name, pts, eps, em, a.pool, SETS[set_name], em_path, seeds,
                        task_kwargs={"burn": lengths[0], "sample": lengths[1]}, versions=vers)
-        rep = g2_report(jobs, SETS[set_name], em, a.pool, emulator_path=a.emulator, lengths=lengths,
+        rep = g2_report(jobs, SETS[set_name], em, a.pool, emulator_path=em_path, lengths=lengths,
                         attempt=2 if retry else 1, versions=vers)
         print(f"=== G2 attempt {rep['attempt']}: checks {'passed' if rep['passed'] else 'NOT passed'}; reference failures "
               f"{rep['n_reference_failures']}; projected {rep['projection']['projected_core_hours']} core-hours for the "
@@ -1098,12 +1111,12 @@ def main(argv=None, check_versions=False):
         return
     if a.g3_pilot:
         pts, eps = pilot_points(SEED_G3_POINTS, N_G3_POINTS), noise_draws(SEED_G3_NOISE, N_G3_POINTS)
-        run_set("g3", pts, eps, em, a.pool, SETS["g3"], a.emulator, {"points": SEED_G3_POINTS, "noise": SEED_G3_NOISE},
+        run_set("g3", pts, eps, em, a.pool, SETS["g3"], em_path, {"points": SEED_G3_POINTS, "noise": SEED_G3_NOISE},
                 task_kwargs={"burn": st["burn"], "sample": st["sample"]}, extra_header={"g2": st}, versions=vers)
         return
     if a.test:
         pts, eps = test_points(a.n), noise_draws(a.noise_seed, a.n)
-        run_set("test", pts, eps, em, a.pool, SETS["test"], a.emulator, {"points": SEED_TEST, "noise": int(a.noise_seed)},
+        run_set("test", pts, eps, em, a.pool, SETS["test"], em_path, {"points": SEED_TEST, "noise": int(a.noise_seed)},
                 task_kwargs={"burn": st["burn"], "sample": st["sample"]},
                 extra_header={"n_test": int(a.n), "n_test_written": N_TEST, "noise_seed_written": SEED_TEST_NOISE, "g2": st},
                 versions=vers)
