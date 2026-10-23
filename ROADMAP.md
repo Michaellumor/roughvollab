@@ -4219,6 +4219,27 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     sitting and no P5 output opened; CI runs the tests on the pull request's
     head.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D85** *(2026-10-23)* **P5 v2 draft: D84's three decisions declared in line
+  200, and boxes 210 and 214 kept ticked (one clause; docs only; nothing
+  frozen).** The author asked that line 200's account of what the author did
+  list D84's three decisions, as it lists those made after the two reviews, and
+  kept boxes 210 and 214 ticked. #238 was merged at 09:06 UTC on 23 October
+  2026, before the clause could be pushed to it, so it comes in this entry.
+  - **The change.** Draft line 200, under what the author did: "after the
+    second, four (D82)" is followed by "; after the check of the literature,
+    three (D84)". The same line's list of sittings and models gains D85's
+    sitting, on Claude Opus 5.5, the model the session reports for itself, as
+    step 1 of the amendment file asks and as D83 and D84 did. No other line of
+    the draft, and nothing in the amendment file, changes; the draft stays at
+    216 lines.
+  - **The boxes.** The author keeps boxes 210 (architectures and training) and
+    214 (prior work) ticked, on 23 October 2026: D84 added framing to the
+    first's section and a fuller account of a paper he had read to the
+    second's, and nothing in the design changed. No box is ticked or unticked.
+  - **Not written.** The freeze; anything on OSF; D84 and every earlier entry;
+    v1; the decision sheet. Nothing of P5 was run in this sitting; CI runs the
+    tests on the pull request's head.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
