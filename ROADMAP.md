@@ -3344,6 +3344,430 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     #226), then the OSF acts and the post-freeze commit in the order D77's file
     sets out; line 94's amendment after G2.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D81** *(2026-10-22)* **P5 v2 draft: pre-freeze fixes after an independent
+  review (the null, the extrapolation confound, the reweighting floor, G2's
+  scope, failure and tolerances, the test set fixed at N = 400, the gate
+  failures, G3's training size, precedence and binding, the declarations; docs
+  and code; nothing frozen; nothing run on real outputs).**
+  - **Summary.** The review of 22 October 2026 found v2 not ready to freeze,
+    needing no redesign: a faithful calibrator could never meet the null;
+    full-set verdicts mix extrapolation with prior dependence; the reweighting
+    floor, G2, the test set's size, the gates' failure paths, precedence and
+    some declarations were loose or missing. The author decided: a secondary
+    analysis on well-covered pairs, the limitation stated; N = 400, G2 a go or
+    no-go on cost; one retry at G1 and G2, then P5 stops, G3 per cell; G3 at
+    the largest affordable n; G2's tolerances at least four Monte Carlo
+    standard errors. The draft, the amendment file, the scripts and the tests
+    now match. Left: the second review, eight boxes to re-tick, the freeze.
+  - **The review.** An independent review, made at the author's request on 22
+    October 2026 in a claude.ai chat on Claude Opus 5.5 on a clone of `main` at
+    `b11063b` (a referee's read, a code-against-protocol audit and that
+    sitting's own checks, all read-only; no P5 script, test or pricer was run,
+    the audit's only computations being counts of the rows and fields of the
+    committed G0 output), found v2 not ready to freeze and needing no redesign.
+    Its record, `P5_v2_prefreeze_review_2026-10-22.md`, is committed unchanged
+    at the repository's root. This entry records the author's decisions on it
+    and every change made in answer, item by item, in
+    `docs/protocols/P5_protocol_v2_draft.md`,
+    `docs/protocols/P5_v2_amendment.md`, the four P5 scripts still to be run,
+    their tests and `requirements-p5.txt`, with what two independent read-only
+    readers of those changes found in this sitting and what was changed for it.
+    Seven checklist boxes are reopened and a box for the independent review is
+    added; a second, shorter review of these changes and the freeze follow.
+  - **The author's decisions.** Given in the author's brief of 22 October 2026
+    as the author's, made on the assistant's lean. D1, the confound: both a
+    secondary analysis on well-covered pairs and the limitation stated. D2, the
+    test set: N = 400, fixed now; G2 becomes a go or no-go on cost. D3, gate
+    failures: one pre-specified retry for G1 and G2, then P5 stops; in G3
+    passing cells proceed and failed cells are untestable. D4, G3's size: the
+    largest n on the ladder that passes and fits the budget. After the hold of
+    this sitting, also the author's, on the assistant's lean: D5, G2's
+    tolerances: each becomes the larger of its absolute value and four Monte
+    Carlo standard errors (B4); and "separates" becomes "limits" in lines 66,
+    126, 136 and 170, as the text reader proposed, the word having been the
+    assistant's, not the author's. The review's proposals on the null and the
+    reweighting floor were taken as the review put them; its proposal on
+    precedence (the scripts at the freeze commit with the readings of D72 to
+    D75, the hashes of the six scripts and both requirements files, and the
+    numpy version, listed in the frozen text) with the brief's additions:
+    scipy's version, D81's readings, the listing under Status (placed inside
+    the Status line, so that no line is renumbered) and the scripts' refusal of
+    other versions.
+  - **B1, the null.** Line 128: the null stands for a calibrator when H-a is
+    Confirmed, H-b, H-c and H-d are Refuted and H-d's interval lies wholly
+    within [0.85, 0.95]; as written before, all four Refuted, a faithful
+    calibrator could never meet it. The analysis script reads the null so; a
+    test plants a faithful calibrator (d near 0, E near 0, m near 0.90), on
+    which the null stands, and an unfaithful one, on which it does not.
+  - **B2, the extrapolation confound (D1).** The coverage covariate, per pair
+    and per prior P, is the mass P puts on the equal-tailed 90% interval of H
+    under the exact posterior under P; a pair is well covered when both masses
+    are at least 0.001 (line 99; the reference reports both, line 68). Before
+    it was written in, the arithmetic the author asked for, on the priors only:
+    for a Gaussian posterior centred at the true H, 49.7% of uniform test H is
+    well covered at the Identified edge's standard deviation (0.017; H from
+    0.120 to 0.348) and 64.9% at the Flat edge's (0.038; 0.085 to 0.383), 597
+    and 779 of the 1,200 pairs at N = 400, both above the 300 below which the
+    author asked the work to stop. The secondary analysis, a new bullet under
+    Analysis plan, re-scores H-a to H-d on the well-covered pairs with the same
+    measures, thresholds, floors, bootstrap and verdict rule, reported beside
+    the primary verdicts and labelled secondary; the null is read on the
+    primary verdicts only. The limitation is stated in line 66 (replacing "that
+    is the design and not a defect", with the training counts at the largest
+    training size: about 3,150 of an A-trained network's surfaces where half
+    the test θ lie, H at or above 0.25, thinning to about 15 above 0.36, and
+    about 18 of a B-trained network's below 0.12, those two regions holding 48%
+    of the test θ), in the reading of H-b and H-c (line 126, with the surfaces
+    within 0.034 of the truth: about 1,700 at H = 0.30 and 10 at 0.40 under A,
+    about 1,300 at 0.15 and 60 at 0.10 under B) and in novelty claim (ii) (line
+    170); every count by arithmetic on the priors.
+  - **B3, the reweighting floor.** Line 68: reweighting is accepted under a
+    prior when (Kish's (Σw)²/Σw² / the number of pooled sampling steps) × the
+    effective sample size of H is at least 1,000, else a direct run. Lines 89
+    and 126, which rest on 1,000 effective draws under A and on the sampler
+    error that follows from them, hold literally under this rule and are
+    unchanged on that point.
+  - **B4, G2 (D2, D3).** Line 143: the tolerance adds the posterior mean of H
+    under B within 0.001 by the route the pair used, and A's 5% and 95%
+    quantiles of H within 0.002, the grids computing the posterior under B and
+    A's quantiles from the same likelihood evaluations (the quantile read from
+    each H cell's mass spread uniformly over the cell). The arithmetic behind
+    0.002, written in as a reading: at the Identified edge a quantile error of
+    0.002 moves one tail's mass by 0.012, so m by at most 0.024 (0.873 to 0.922
+    for a nominal 0.90), and at the Flat edge, where H-d is scored, by at most
+    0.011. Two fixed pilot points, H = 0.04 and H = 0.46 at the box's centre in
+    ν, ρ and ξ₀ (0.20, −0.80, 0.145), noise `default_rng(139)`: 18 pilot
+    surfaces. On failure, one retry with burn-in and sampling doubled on fresh
+    surfaces (points `default_rng(131)`, noise `default_rng(137)`, the fixed
+    points' noise `default_rng(149)`); if it passes, the doubled lengths serve
+    every later run; if it fails, P5 stops. The go or no-go: the projected cost
+    of the 1,200 test pairs' references against 1,344 core-hours (G0's two
+    weeks of four cores); the same budget and rule at G3 for scoring both
+    calibrators. The tolerance is checked on every pilot surface on its first
+    grid and, at the largest noise level, on the second as well; a reference
+    failure on any pilot surface fails the gate, D73's reading, now written in.
+    D5, the author's decision after this sitting's hold: each tolerance is the
+    larger of its absolute value and four Monte Carlo standard errors of the
+    MCMC figure, the error from the effective sample size n_eff of the run the
+    figure came from ((Kish / pooled steps) × the ESS of H for a reweighted
+    figure, the ESS of H for a direct run) by line 89's Gaussian reading: the
+    posterior standard deviation over √n_eff for a mean, (1 − c)·√(2 / (n_eff −
+    1)) for c, √(q(1 − q) / n_eff) / (φ(z_q) / the posterior standard
+    deviation) for the q quantile; on every comparison, the whole-box grid's
+    included (lines 89 and 143, with a reading of why four). What prompted it,
+    by the same reading: under the absolute values alone every one of the 18
+    surfaces had to meet c within 0.01, and at c ≈ 0.21 (the 0.5 level at D38's
+    point) c's error is about 0.035 at 1,000 effective draws, 0.011 at 10,000
+    and 0.008 at 20,000, so the six surfaces at that level met it together with
+    probability about 0.0001, 0.06 and 0.25 (at c ≈ 0.5, 0.002, 0.36 and 0.76),
+    the new 0.002 and 0.001 behaving alike near the floors; and under D3 a
+    second failure stops P5. Under the rule, recomputed by the same reading:
+    each comparison passes with probability at least 0.99994, exactly that
+    where four standard errors govern; the six c checks at either of those
+    levels pass together with probability 0.9996 at every n_eff; all 90
+    comparisons on the first grids pass with probability at least 0.994 (0.992
+    counting the second grid's 30 as if independent, which they are not,
+    sharing the MCMC figures). The grid's own quadrature error is outside the
+    rule: under about 0.0008 on the quantiles, by arithmetic on a Gaussian. The
+    price is resolution where n_eff is low: at 1,000 effective draws the
+    tolerance on a mean is 0.0022 at the Identified edge and 0.0048 at the Flat
+    edge, and on a 5% quantile 0.0045 and 0.0102, so that a bias of 0.005 in a
+    Flat-edge mean passes about 44% of the time and one of 0.010 almost never;
+    at 10,000 effective draws the absolute values govern at the Identified
+    edge.
+  - **B5, the test set (D2).** Lines 93 and 94: N = 400 test θ, 1,200 pairs; θ
+    the first 400 rows of `default_rng(20261002).uniform` over the box, shape
+    (400, 4), columns H, ν, ρ, ξ₀; noise
+    `default_rng(20261022).standard_normal((400, 3, 35))`, indexed by θ, level
+    (0.1, 0.3, 0.5) and quote; the OPEN marker removed; the test set's
+    references computed only after G2 has passed. Line 101 updated for N = 400
+    (the 10%, 120 pairs, governs; a share near 10% uncertain by about ±1.7
+    points on 1,200 pairs, where it said ±3.4 on 300); line 11 says no item is
+    open (line 7, the Status line, never named one).
+  - **Gate failures (D3; the review's non-blocking item 6 and the audit's first
+    finding of code not in the protocol).** G1 (lines 54, 142): a training or
+    held-out point with a quote that is not finite is priced once more at
+    `N_riccati` 16000 with the same inversion settings, its quotes then taken
+    from that pricing (the text's addition: the brief named the re-pricing, not
+    where the quotes come from), a training point being one surface, so that
+    the other surfaces of its triple keep their quotes; a quote still not
+    finite stops P5; the refinement on e > s/5 stays the build's one
+    refinement. G3 (line 144): each (calibrator, prior, level) cell passes or
+    fails on its own; a failed cell's seeds are not trained; every measure
+    needing a failed network loses that level for that calibrator, the other
+    levels pooled as before, with line 75's floors and the seed floor taken on
+    their pairs; a hypothesis left with no level for a calibrator is untestable
+    for it; P5 stops only if every cell of both calibrators fails.
+  - **G3's training size (D4; the review's non-blocking item 1).** Line 144:
+    the largest n on the ladder at which both checks hold and the runs at n and
+    2n are within the budget, every rung being run.
+  - **B6, precedence and binding.** A second new bullet under Analysis plan:
+    wherever the document is silent, the procedure is that of the P5 scripts at
+    the freeze commit, with the readings D72 to D75 and D81 declare; their
+    SHA-256 hashes, with those of the two requirements files, and the numpy and
+    scipy versions the runs use (with torch's for the calibrators), are
+    appended to the Status line at freezing, so that no line is renumbered; any
+    change after freezing is a dated amendment. Written in explicitly: the
+    bootstrap's seed and streams, `default_rng([127, c, r])`, r = 9 for the
+    dose-response (line 132); m from the 90% interval of the network trained
+    under A (line 110); the ensemble's variance over members with divisor 5,
+    the variance of the equally weighted mixture (line 75); a pair failed for a
+    calibrator if any of its networks failed on it (line 75); a failed direct
+    run under A or B a reference failure (line 68); the generators' index
+    bases, the reference's i and j from 0 and the ratio estimator's i from 0
+    and j from 1 (lines 68, 75); the training draw's layout as D74 reads it
+    (line 75); G1's tail rule as D72 reads it, the full tensor-product
+    expansion and ties to the first dimension (line 142).
+  - **B7, the declarations.** Under What was known before freezing: line 15
+    announces them and declares the P5 test suites, the G1 test that builds a 2
+    × 2 × 2 × 2 toy interpolant from the pricer at `N_riccati` 200 on a small
+    box near D38's point included, and line 7 is qualified accordingly; line 20
+    declares the second probe of 3 October 2026, from the review's record; line
+    21 the scoping run's classical-Heston known answers (up to 0.098 in vol, 29
+    to 30 of 350 rows lacking an implied vol on one side, D60); line 22 that
+    the main run computed no known answer at its adopted settings, and that the
+    G0 output holds quotes on v2's observable at the five values of H in every
+    lattice cell inside the box (8,680 rows with a finite base quote at all
+    five, the review's count), the noise levels, prior B, the cut-offs and the
+    hypothesis numbers having been fixed after it was committed, with the log's
+    record that it was not used for identifiability and was read by scripts
+    outside the repository.
+  - **G0's test-suite condition (the review's non-blocking item 5).** The whole
+    suite was run on 22 October 2026 on the author's machine, in the core
+    interpreter (Python 3.14.3, numpy 2.4.4, scipy 1.17.1), at commit `b11063b`
+    before any change of this entry: 317 passed and 7 skipped (the torch
+    tests), of 324 collected, in 14 minutes. Line 141 says the condition was
+    not recorded at G0 and was checked on this date.
+  - **Stale text and small corrections (the review's non-blocking items 2, 3,
+    4, 7, 8 and 9).** Line 126: 32% becomes 36%, B's 1st percentile being at H
+    = 0.1875 under the adopted B. Line 141: the emulator design is no longer
+    said to be not yet fixed. Lines 158 and 200: the clauses D80 left for the
+    freeze commit are corrected here, so that the freeze commit changes only
+    what the amendment file's step 2 lists; line 200 names the model of each
+    later sitting (this one and D80's on Claude Opus 5.5 in Claude Code; the
+    review on Claude Opus 5.5 in a claude.ai chat) and adds the review and the
+    second probe to what the tool did. Line 50: Q2 is exact up to the Monte
+    Carlo error of the reference and, for the ratio estimator, of its own
+    sampler. Line 89: Fisher information and CRB_H are no longer promised as
+    descriptive companions; nothing computes them. Line 101: reference failures
+    are reported by noise level and by true (H, ν), and above 10% of a level's
+    test pairs (more than 40 of its 400) at any level P5 stops at Stage 1. The
+    amendment file: the summary's open-item sentence dropped; a bullet for
+    these changes in the change list; the items on the reference, the
+    hypotheses and code before freezing brought into line; "What had been seen"
+    brought into line with the declarations; steps 1 and 2 of the order of acts
+    rewritten, step 2 carrying the hash list; one row added to the record.
+  - **Layout.** The two new bullets under Analysis plan take the place of the
+    blank lines around the Gates heading, so that lines 1 to 135 and every line
+    from 141 on keep their numbers, which the scripts cite; the Gates heading
+    moves from line 137 to 139 and the Pilots paragraph from 139 to 140, which
+    no script cites; the checklist gains one line before the OSF box, which
+    becomes line 216; the draft grows from 215 to 216 lines. Neither later pass
+    (the readers', the author's answers after the hold) adds or removes a line.
+  - **The checklist.** Reopened, unticked for the author to re-tick once each
+    can be defended: the prior-knowledge section (declarations added); the
+    emulator and its gate (the re-pricing, the tail rule); the Beta parameters
+    (line 66's statement of the confound); the reference sampler and acceptance
+    (the reweighting rule, the retry, the failure and index rules); the
+    architectures and training (the divisor, the failed-pair rule, the draw's
+    layout, the generator's base, the per-cell gate, the largest n); the
+    hypotheses table (the null, the limitation, the 36%); the gate tolerances
+    (G2's tolerance and failure path, G1's and G3's rules, G0's test-suite
+    condition). The criterion: a box is reopened where the text it vouches for
+    changed in substance, which reopens the Beta parameters although they did
+    not move, line 66 now stating the confound and the training counts. Kept
+    ticked, as their substance did not move: the grid and observable; the noise
+    levels; the contraction cut-offs (line 89 loses only the descriptive
+    companions and gains a pointer to G2's tolerance); the prior-work section
+    (line 158's clause is a fact about the box, and the limitation added to
+    claim (ii) concerns P5's own design, not the reading of a source). Added,
+    unticked: an independent review before freezing, with findings and fixes
+    recorded. These are proposals; the boxes are the author's.
+  - **Code and tests.** `p5_g1_emulator.py`: the one re-pricing at 16000 in the
+    pool's worker, the first pricing kept in the log, the stop; the shared
+    version check. `p5_g2_reference.py`: the 90% interval under B and both
+    coverage masses per pair; the (Kish / steps) × ESS rule; G2's added
+    tolerance, each tolerance at least four Monte Carlo standard errors (D5),
+    the fixed points, the retry (`--pilot-retry`), the go or no-go and the
+    status that `--g3-pilot`, `--test` and G3 read; N = 400 and the noise seed
+    as `--test`'s defaults. `p5_g3_calibrators.py`: per-cell pass or fail, the
+    largest n within budget with each network predicted once, the scoring
+    cost's projection, seeds trained for passing cells only, the ratio
+    estimator's sampler at the reference's lengths. `p5_stage2.py`: the null; a
+    Stage-1-only run (`--stage1`) from the references alone, before any score,
+    which the scoring of the test set and Stage 2 require and check by a digest
+    of the reference records (below); the coverage shares; the secondary
+    analysis; G3's per-cell losses read from G3's report and checked against
+    the scores; the reference-failure report and stop. Each script's
+    command-line entry point, and not its import, records numpy and scipy in
+    its output header and refuses versions other than the author's on 22
+    October 2026 (the core interpreter numpy 2.4.4 and scipy 1.17.1 for G1, G2
+    and Stage 1 and 2; the P5 leaf numpy 2.5.4 and scipy 1.18.1 for G3) unless
+    `--allow-other-versions`, which is recorded; `requirements-p5.txt` pins
+    scipy 1.18.1 beside numpy and torch, so that a leaf rebuilt from it passes
+    that check. Nineteen new tests: thirteen written with the changes, five for
+    the findings of this sitting's code reader (below) and one for D5; all
+    nineteen fail on `b11063b`'s scripts, the last six and the five earlier new
+    tests they strengthened also fail on the D81 scripts as they stood before
+    the readers, and all pass on these. Four existing tests were adapted
+    because the behaviour they pinned is what this entry changes: G2's grid
+    pass rule, G2's refusal of `--test` without a noise seed, and the two Stage
+    2 end-to-end runs, which now run Stage 1 first and carry a G3 report; their
+    other assertions are unchanged. A fault the new tests found is fixed: the
+    dose-response failed when a calibrator had no accepted cell at all, which
+    the per-cell rule makes possible.
+  - **This sitting's readers.** Two independent read-only readers were run on
+    these changes before this entry was finished, one on the code and tests
+    against the brief, one on the text against the brief, the review and the
+    log. Taken up from the code reader: the calibrator's floors were taken over
+    every level although a hypothesis pools only the levels G3 kept, so a
+    verdict could rest on about 20 pairs, and they are now taken on the kept
+    levels' pairs, G3's reason given first when no level is left; the first
+    version of the test of the test set's definition drew the sealed θ and
+    noise (What was run), and it now checks the definitions through a recorder
+    that draws nothing; a run under `--allow-other-versions` was not recorded
+    when it resumed a record, and now G2's launch lines carry the versions,
+    G3's records gain a line for such a run and its report the versions, and
+    G1's assembly records them; `--stage1` failed on an empty bin, now reported
+    as none well covered of none, with no share; nothing stopped the test set
+    being scored before Stage 1, and now the scoring requires Stage 1's output
+    for its references and records that output's digest, which Stage 2 checks,
+    the digest being of the reference records rather than of the file, so that
+    a re-run of the references that only appends a launch line leaves Stage 1
+    standing; an interrupted scoring could be read as empty seed slots, and now
+    the scores' header lists the networks to be scored and Stage 2 refuses a
+    record short of them; G1's re-pricing took every surface of a re-priced
+    triple from the second pricing, now only the surfaces with a quote not
+    finite (line 54's "point"); G3's predictions ran at one torch thread on a
+    resumed run and at `--threads` on a fresh one, the projection counting both
+    at `--threads`, and torch is now set to `--threads` before predicting; a
+    level with no accepted pilot reference stopped the ensemble's prediction
+    with an error, and its cell now fails; a passing cell whose scoring cost
+    could not be projected counted as zero, and the projection is now
+    incomplete and no go; G2's report took its lengths from the call, now from
+    the record, a different call refused; `requirements-p5.txt` left scipy
+    unpinned (above). Smaller: Stage 2 checks Stage 1 and G3's report before
+    reading the stored samples, no longer rewrites Stage 1's CSV and figure,
+    and reads no null on the shifted re-scoring; G1's header records the
+    re-pricing a launch applies, and its assembly counts both pricings'
+    seconds; G3's report names cells in one form. Kept: G2's header keeps
+    `burn` and `sample` at the written values, an existing test pinning them,
+    its `lengths` recording the lengths in force; the existing G3 ladder test's
+    bound on the number of rungs, still true. Not tested: G3's use of G2's
+    lengths in its entry point, which needs torch and an emulator file. Taken
+    up from the text reader: the review's three passes named; lines 66 and 126
+    said "almost no" training surfaces where that holds only at the far end,
+    now reworded with counts; line 15 says that the G0 and G1 tests run the
+    pricer at cheap settings at D38's point (G0's pilot test also at (0.02,
+    1.00, −0.99)) and declares the sealed draws; line 22 says what the review
+    counted and cites D65 for identifiability and D64 for smoothness; lines 41
+    and 141 say which 3 October probe; line 54's clause on G0's box is back in
+    place; lines 68 and 75 point to G2's doubled lengths and line 75 names the
+    scipy pin; line 99 gains a colon; line 101 says of which test pairs the
+    failure share is taken; line 136 says how the secondary verdicts are read;
+    line 137 places the hash list inside the Status line with torch's version
+    and says which versions are refused; line 141's record of the suite is
+    reworded; line 143 says the second grid serves the largest noise level
+    only; line 144 takes the floors on the kept levels' pairs; line 200 names
+    the review's three passes and the chats; in the amendment file, "What had
+    been seen" gains the timing of D65 and D69 to D71, the scripts outside the
+    repository, the sealed draws and the review's counts, step 1 provides for
+    recording the second review and step 2 places the hash list inside the
+    Status line; and this entry is corrected where its first draft overreached
+    (where the decisions were made, precedence as the review put it, lines 7
+    and 11, the layout's line numbers). The two points the readers left for the
+    author were decided after the hold: G2's tolerances against Monte Carlo
+    error (D5, under B4), and the text reader's point that "separates"
+    overstates, a pair being well covered with as few as about 160 of a
+    network's training surfaces in its interval at the largest training size
+    and about 10 at the smallest, so that the restriction limits extrapolation
+    rather than removing it ("limits", under The author's decisions).
+  - **What was run.** Tests only, and arithmetic on the priors and on a
+    Gaussian. No P5 script was run from its command line. The tests ran the
+    scripts' functions on toy maps and synthetic records, with the exceptions
+    line 15 declares: the pricer at cheap settings, the G1 test's toy
+    interpolant, and the first version of one new G2 test, which called the
+    functions that draw the sealed test θ and noise and compared their output
+    with a second draw, in memory, in each run of the G2 tests on the D81 code
+    until this sitting's code reader found it, the whole suite's run included;
+    that test passed each time, so pytest printed none of the values, and
+    nothing was saved; it was then replaced (above). The whole suite at
+    `b11063b` (above); the thirteen first new tests against `b11063b`'s
+    scripts, all failing; the six P5 test files on the D81 code before the
+    readers, 60 passed and 5 skipped in the core interpreter, and the
+    calibrators' 12 passed in `.venv-p5`; the whole suite on that code, 330
+    passed and 7 skipped of 337, in 15 minutes; after the readers' fixes, the
+    eighteen new tests then written against `b11063b`'s scripts, all failing,
+    and the five new and the four strengthened against the D81 scripts as they
+    stood before the fixes, all failing; the six P5 test files, 65 passed and 5
+    skipped in the core interpreter, the calibrators' 14 passed in `.venv-p5`,
+    and the whole suite, 335 passed and 7 skipped of 342, in 36 minutes; after
+    D5, its test and the grid test it strengthened against both earlier sets of
+    scripts, all failing; on the final code, the whole suite, 336 passed and 7
+    skipped (the torch tests), in 35 minutes, the six P5 test files within it
+    66 passed and 5 skipped, and the calibrators' 14 passed in `.venv-p5`; 343
+    tests collected, CONTRIBUTING updated from 324. The readers ran the six P5
+    test files with the sealed-draw test deselected (the code reader: 59 passed
+    and 5 skipped in the core interpreter, the calibrators' 12 passed in
+    `.venv-p5`), a script of the code reader's own on synthetic Stage 2
+    records, a check of torch's default thread count, and arithmetic on the
+    priors and on a Gaussian. Two scratch scripts outside the repository called
+    the scripts' functions on the tests' own inputs only: one ran G2's sampler
+    and grid check on the G2 tests' toy linear map, as those tests do, to
+    compare the grid's quantiles and mean under B with direct draws from that
+    map's Gaussian posterior; one scored the Stage 2 tests' synthetic faithful
+    records, to read H-d's interval while the faithful test was written.
+  - **Declared, beyond the brief's words.** Precedence names D81 beside D72 to
+    D75, as this entry's code readings need the same standing; the hash list
+    includes the two requirements files, as the review proposed. The version
+    check applies to the four scripts still to be run; the two G0 scripts,
+    which have run and whose output headers record numpy and scipy, are not
+    changed. The ratio estimator's sampler follows the retry's doubled lengths
+    (line 75's "the same lengths"). G3's pilot references, like the test set's,
+    wait for G2 to pass with a go. A cost above the budget at G2 stops P5
+    without a retry, doubled lengths only raising the cost. The projection is
+    the median seconds of one run of the lengths in force times the mean runs
+    per pair, the seconds a pool worker's with one BLAS thread, as G0 read
+    them; the scoring's seconds are counted at the scoring process's torch
+    threads. Stage 1 refuses a record short of the pairs its header declares;
+    Stage 2 refuses unless its Stage 1 declarations stand as made. The
+    secondary analysis uses the primary's bootstrap streams and recomputes the
+    floors within the well-covered set, at the written cut-offs only. The
+    reference-failure share is of a level's test pairs, N from the record's
+    header, and "exceed" is strictly above; the failure report's grid is five
+    bins of true H by three of ν. G3's report keeps `passed` for every cell
+    passing and carries the new rule in `p5_stops`. Line 143 writes in D73's
+    reading that a reference failure on any pilot surface fails the gate; line
+    54 says where the re-priced quotes come from, a training point read as one
+    surface; lines 101 and 144 carry this sitting's readings (Stage 1 required
+    by the scoring of the test set as well as by Stage 2; the floors on the
+    kept levels' pairs); line 75 names the scipy pin; line 200 adds, under What
+    the author did, the four decisions; step 2 of the amendment file names
+    torch's version beside numpy's and scipy's. The scoring of the test set
+    records Stage 1's digest and the networks it is to score; a projection that
+    cannot be completed is no go; a run under the override is recorded in a
+    record it resumes. The hash list binds the scripts as they stand at the
+    freeze commit: `p5_g0_pilot.py` changed after the scoping run (`99aa4d5`, a
+    `ladder` argument whose default keeps the old behaviour), so its listed
+    hash will not be that of the version the scoping output's header names
+    (`d394b08`); G0's runs are bound by their records. D5's errors use the MCMC
+    figures' own posterior standard deviations and c; an n_eff below 2, which
+    the acceptance criteria exclude, is taken as 2; the rule widens the
+    tolerance for the sampler's error only, the grid's quadrature error staying
+    outside it.
+  - **Not written.** Anything on OSF; the freeze; v1; the decision sheet; any
+    run on real outputs; the review's non-blocking item 10 (the percentile
+    bootstrap over five seeds runs narrow), which the draft already declares
+    and the author's brief did not take up; the audit's note that no code
+    downstream reads G1's restriction on Q1, a reporting gap; and D72's
+    sentence that the tests compare nothing across parameter values, which the
+    toy interpolant contradicts and line 15 now replaces, the log being
+    append-only.
+  - What remains before freezing: the second, shorter review of these changes,
+    recorded as step 1 of the amendment file's order of acts provides; the
+    author's re-ticking of the seven reopened boxes and the review box; then
+    the order of acts from step 2.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

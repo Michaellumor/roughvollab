@@ -193,15 +193,21 @@ def test_verdict_rule_on_every_row_and_the_null():
 N_SYNTH = 150                                                                            # per level; 449 accepted pairs
 
 
-def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, plant=True):
+def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, plant=True, faithful=False, lost=(),
+                  fail_refs=(), n_points=None):
     """Synthetic reference and score files in the scripts' formats: c spread over the three
     bins by level, the networks' Ĥ near the exact means with a prior-dependent bias in the
     weaker bins, one reference failure and one network failure (one θ's three pairs,
-    for the ratio estimator under B at slot 2) planted."""
+    for the ratio estimator under B at slot 2) planted. With `faithful`, the networks are
+    faithful (d near 0, E near 0, the exact 90% interval, so m near 0.90). `lost` names the
+    (calibrator, prior, level j from 1) cells that failed G3: they get no scores and the G3
+    report written beside the files marks them failed (D81). `fail_refs` adds reference
+    failures at (i, j from 0)."""
     rng = np.random.default_rng(seed)
     refs_path, samples_path, scores_path = (str(tmp_path / n) for n in ("refs.jsonl", "refs.npz", "scores.jsonl"))
-    append_line(refs_path, {"kind": "header", "set": "test", "n_points": n_per_level, "seeds": {"points": 20261002, "noise": 1}})
-    append_line(scores_path, {"kind": "header", "mode": "score", "set": "test", "threads": 1})
+    g3_path = str(tmp_path / "g3_report.json")
+    append_line(refs_path, {"kind": "header", "set": "test", "n_points": n_points or n_per_level,
+                            "seeds": {"points": 20261002, "noise": 1}})
     stores = {}
     pairs = []
     for i in range(n_per_level):
@@ -211,39 +217,55 @@ def _write_inputs(tmp_path, n_per_level=N_SYNTH, slots=(1, 2, 3, 4, 5), seed=5, 
             lab = f"test_{i:04d}_{j}"
             mA, mB = theta[0] + rng.normal(0, 0.002), theta[0] + (1 - c) * 0.2 + rng.normal(0, 0.002)
             sd = 0.054 * np.sqrt(max(1 - c, 1e-3))
-            status = "reference_failure" if (plant and i == 3 and j == 1) else "ok"
+            status = "reference_failure" if ((plant and i == 3 and j == 1) or (i, j) in set(fail_refs)) else "ok"
             rec = {"kind": "task", "task": lab, "set": "test", "i": i, "j": j, "s": float(s), "status": status, "theta": theta,
                    "y": [0.2] * 35, "c_A": c, "seed": [83, i, j], "runs": {}, "kish": {}, "direct": [],
                    "under": {"A": {"mean_H": mA, "var_H": sd ** 2, "q05_H": mA - 1.645 * sd, "q95_H": mA + 1.645 * sd,
                                    "mean_xi0": 0.1, "source": "reweighted"},
-                             "B": {"mean_H": mB, "var_H": sd ** 2, "q05_H": 0, "q95_H": 1, "mean_xi0": 0.1, "source": "reweighted"}},
+                             "B": {"mean_H": mB, "var_H": sd ** 2, "q05_H": mB - 1.645 * sd, "q95_H": mB + 1.645 * sd,
+                                   "mean_xi0": 0.1, "source": "reweighted"}},
                    "seconds": 1.0}
+            if faithful:                                        # the exact A posterior is the stored sample itself
+                rec["direct"], rec["under"]["A"]["source"] = ["A"], "direct"
             append_line(refs_path, rec)
             if status == "ok":
                 stores[f"{lab}_u"] = R.quantise_H(np.clip(rng.normal(mA, sd, 20000), 0.02, 0.48))
+                if faithful:
+                    stores[f"{lab}_A"] = stores[f"{lab}_u"]
             pairs.append((lab, i, j, c, mA, mB, sd))
     np.savez_compressed(samples_path, **stores)
+    lost = set(lost)
+    expected = sorted([cal, prior, j, q] for cal in S.CALIBRATORS for prior in S.PRIORS for j in (1, 2, 3)
+                      if (cal, prior, j) not in lost for q in slots)              # the producer's list of networks (D81)
+    append_line(scores_path, {"kind": "header", "mode": "score", "set": "test", "threads": 1, "expected": expected,
+                              "stage1_refs_digest": S.refs_digest(refs_path)})    # as made after Stage 1 on these references
     for cal in S.CALIBRATORS:
         for q in slots:
             for lab, i, j, c, mA, mB, sd in pairs:
                 for prior, mean in (("A", mA), ("B", mB)):
+                    if (cal, prior, j + 1) in lost:
+                        continue                                                       # a cell that failed G3: no networks
                     run_label = f"{cal}_p{1 if prior == 'A' else 2}_j{j + 1}_q{q}_n10000"     # the producer's run label
                     if plant and cal == "nre" and prior == "B" and q == 2 and i == 5:
                         append_line(scores_path, {"kind": "task", "task": f"{run_label}|{lab}", "run": run_label, "pair": lab,
                                                   "calibrator": cal, "prior": prior, "j": j + 1, "q": q, "i": i, "status": "failure"})
                         continue
-                    leak = 0.0 if c >= 0.9 else 0.08 * (1 - c)                        # a prior-dependent bias off the identified bin
+                    leak = 0.0 if (faithful or c >= 0.9) else 0.08 * (1 - c)        # a prior-dependent bias off the identified bin
                     H_hat = mean + (leak if prior == "B" else -leak) + rng.normal(0, 0.001)
-                    width = 1.645 * sd * (1.0 if c >= 0.5 else 0.7)                   # too narrow in the flat bin
+                    width = 1.645 * sd * (1.0 if (faithful or c >= 0.5) else 0.7)     # too narrow in the flat bin
                     append_line(scores_path, {"kind": "task", "task": f"{run_label}|{lab}", "run": run_label, "pair": lab,
                                               "calibrator": cal, "prior": prior, "j": j + 1, "q": q, "i": i, "status": "ok",
                                               "H_hat": H_hat, "xi0_hat": 0.1, "lo": H_hat - width, "hi": H_hat + width})
-    return {"refs": refs_path, "samples": samples_path, "scores": scores_path}
+    Path(g3_path).write_text(json.dumps({"gate": "G3", "cells": {f"{cal}_{prior}_j{j}": {"passed": (cal, prior, j) not in lost}
+                                                                 for cal in S.CALIBRATORS for prior in S.PRIORS
+                                                                 for j in (1, 2, 3)}}), encoding="utf-8")
+    return {"refs": refs_path, "samples": samples_path, "scores": scores_path, "g3_report": g3_path}
 
 
 def test_end_to_end_on_synthetic_inputs(tmp_path, capsys):
     inputs = _write_inputs(tmp_path)
     out_dir = str(tmp_path / "out")
+    S.run_stage1(inputs, out_dir)                                                        # Stage 1 first, from the references (D81)
     rep = S.run(inputs, out_dir, n_boot=150)
     s1 = rep["stage1"]
     n_acc = 3 * N_SYNTH - 1
@@ -313,8 +335,211 @@ def test_end_to_end_on_synthetic_inputs(tmp_path, capsys):
 
 def test_floors_and_untestable_rows_on_a_thin_bin(tmp_path):
     inputs = _write_inputs(tmp_path, n_per_level=20, plant=False)                        # 60 pairs: every bin under 100
+    S.run_stage1(inputs, str(tmp_path / "out"))                                          # Stage 1 first (D81)
     rep = S.run(inputs, str(tmp_path / "out"), n_boot=50)
     for cal in S.CALIBRATORS:
         assert all(r["verdict"] == "Untestable" and r["untestable_reason"] == "stage 1 floor" for r in rep["stage2"][cal]["hypotheses"].values())
         assert not rep["null"][cal]["stands"] and rep["null"][cal]["all_four_refuted"] is False
     assert all(v["untestable"] for v in rep["stage1"]["bins"].values())
+
+
+# ---- D81: the null, Stage 1 alone, the secondary analysis, G3's per-cell losses, the failure stop ----
+def _scored(inputs, n_boot=120, lost=None):
+    """Stage 2's machinery on the files without the run's input checks: the hypotheses at the
+    written cut-offs (the null's test runs on code that predates run_stage1)."""
+    hdr, pairs, stores, failures = S.load_refs(inputs["refs"], inputs["samples"])
+    _, scores, slots, present = S.load_scores(inputs["scores"])
+    cells = S.measures(pairs, scores, stores, slots, present=present)
+    kw = {} if lost is None else {"lost": lost}
+    return S.score_hypotheses(pairs, cells, slots, n_boot=n_boot, n_failures=len(failures), **kw)[0]
+
+
+def test_the_null_stands_for_a_faithful_calibrator_and_not_for_an_unfaithful_one(tmp_path):
+    """Line 128 (D81): H-a Confirmed, H-b, H-c and H-d Refuted, H-d's interval within
+    [0.85, 0.95]. A planted faithful calibrator (d near 0, E near 0, m near 0.90) meets it;
+    the planted unfaithful one does not."""
+    good = _scored(_write_inputs(tmp_path / "good", faithful=True, plant=False))
+    for cal in S.CALIBRATORS:
+        v = {h: r["verdict"] for h, r in good["calibrators"][cal]["hypotheses"].items()}
+        assert v == {"H-a": "Confirmed", "H-b": "Refuted", "H-c": "Refuted", "H-d": "Refuted"}, (cal, v)
+        hd = good["calibrators"][cal]["hypotheses"]["H-d"]
+        assert 0.85 <= hd["interval"][0] and hd["interval"][1] <= 0.95 and abs(hd["point"] - 0.90) < 0.02
+        assert good["calibrators"][cal]["null"]["stands"] is True
+    bad = _scored(_write_inputs(tmp_path / "bad"))
+    for cal in S.CALIBRATORS:
+        assert bad["calibrators"][cal]["null"]["stands"] is False
+
+
+def test_null_reading_on_hand_built_verdicts():
+    """v1's rule (all four Refuted) is not the null any more (line 128, D81)."""
+    refuted4 = {"H-a": "Refuted", "H-b": "Refuted", "H-c": "Refuted", "H-d": "Refuted"}
+    faithful = {"H-a": "Confirmed", "H-b": "Refuted", "H-c": "Refuted", "H-d": "Refuted"}
+    nr = S.null_reading(refuted4, [0.88, 0.92])
+    assert nr["stands"] is False and nr["all_four_refuted"] is True
+    assert S.null_reading(faithful, [0.85, 0.95])["stands"] is True                      # closed ends
+    assert S.null_reading(faithful, [0.86, 0.96])["stands"] is False                     # over-wide: not within the band
+    assert S.null_reading(dict(faithful, **{"H-c": "Inconclusive"}), [0.88, 0.92])["stands"] is False
+    assert S.null_reading(dict(faithful, **{"H-b": "Untestable"}), [0.88, 0.92])["stands"] is False
+    assert S.null_reading(faithful, None)["stands"] is False
+
+
+def test_stage1_alone_from_the_references_and_stage2_refuses_without_it(tmp_path):
+    inputs = _write_inputs(tmp_path)
+    for k in ("samples", "scores", "g3_report"):                       # Stage 1 needs no samples, scores or G3 report
+        Path(inputs[k]).rename(inputs[k] + ".away")
+    out = str(tmp_path / "s1")
+    rep1 = S.run_stage1({"refs": inputs["refs"]}, out)
+    for k in ("samples", "scores", "g3_report"):
+        Path(inputs[k] + ".away").rename(inputs[k])
+    s1 = rep1["stage1"]
+    assert s1["n_accepted"] == 3 * N_SYNTH - 1 and rep1["reference_failures"]["n_failures"] == 1
+    assert rep1["refs_sha256"] == S.sha256_of(inputs["refs"]) and not rep1["p5_stops"]
+    assert rep1["refs_digest"] == S.refs_digest(inputs["refs"])
+    assert set(rep1["untestable_both_calibrators"]) == {b for b in S.BINS if s1["bins"][b]["untestable"]}
+    hdr, pairs, _, _ = S.load_refs(inputs["refs"], inputs["samples"])
+    for b in S.BINS:                                                    # the share well covered per bin, from the references
+        labs = [lab for lab, p in pairs.items() if S.bin_of(p["c"]) == b]
+        n_wc = sum(1 for lab in labs if pairs[lab]["well_covered"])
+        assert s1["bins"][b]["n_well_covered"] == n_wc and rep1["coverage"]["per_bin"][b]["n"] == n_wc
+    assert 0 < rep1["coverage"]["n_well_covered"] < len(pairs) and rep1["coverage"]["cover_min"] == 0.001
+    assert rep1["coverage"]["secondary_stage1"]["n_accepted"] == rep1["coverage"]["n_well_covered"]
+    for lab, p in pairs.items():                                        # the covariate: each prior's mass on its 90% interval
+        assert all(0.0 <= p["coverage"][q] <= 1.0 for q in S.PRIORS)
+        assert p["well_covered"] == (p["coverage"]["A"] >= 0.001 and p["coverage"]["B"] >= 0.001)
+    rows = list(csv.DictReader(Path(out, "p5_stage1.csv").read_text(encoding="utf-8").splitlines()))
+    assert {"cover_A", "cover_B", "well_covered"} <= set(rows[0]) and len(rows) == len(pairs)
+    assert set(rep1["versions"]) >= {"numpy", "scipy", "expected", "override"}
+    # Stage 2 refuses without Stage 1's output, or with one made from other references
+    with pytest.raises(SystemExit, match="no Stage 1 output"):
+        S.run(inputs, str(tmp_path / "elsewhere"), n_boot=5)
+    S.run(inputs, out, n_boot=5)                                        # with it, Stage 2 runs
+    with open(inputs["refs"], "a", encoding="utf-8") as f:              # a re-run with nothing to do appends a launch line:
+        f.write(json.dumps({"kind": "launch", "utc": "later"}) + "\n")  # the records Stage 1 read are unchanged
+    S.run(inputs, out, n_boot=5)
+    refs_text, scores_text = Path(inputs["refs"]).read_text(encoding="utf-8"), Path(inputs["scores"]).read_text(encoding="utf-8")
+    Path(inputs["refs"]).write_text(refs_text.replace('"task": "test_0000_0"', '"task": "test_0000_0", "note": "edited"'),
+                                    encoding="utf-8")
+    with pytest.raises(SystemExit, match="other references"):           # a pair's record changed
+        S.run(inputs, out, n_boot=5)
+    Path(inputs["refs"]).write_text(refs_text, encoding="utf-8")
+    hdr_line, rest = scores_text.split("\n", 1)
+    Path(inputs["scores"]).write_text(hdr_line.replace(S.refs_digest(inputs["refs"]), "0" * 64) + "\n" + rest, encoding="utf-8")
+    with pytest.raises(SystemExit, match="not made after this Stage 1 output"):
+        S.run(inputs, out, n_boot=5)
+    gone = [l for l in rest.splitlines() if '"calibrator": "ensemble", "prior": "A", "j": 1, "q": 5' in l]
+    assert len(gone) == sum(1 for lab in pairs if lab.endswith("_0"))
+    Path(inputs["scores"]).write_text(hdr_line + "\n" + "".join(l + "\n" for l in rest.splitlines() if l not in gone),
+                                      encoding="utf-8")
+    with pytest.raises(SystemExit, match="the scoring is incomplete"):  # a slot not scored is not read as an empty one
+        S.run(inputs, out, n_boot=5)
+    Path(inputs["scores"]).write_text(scores_text, encoding="utf-8")
+    s1_path = Path(out, "p5_stage1_report.json")
+    s1_text = s1_path.read_text(encoding="utf-8")
+    s1_edit = json.loads(s1_text)
+    s1_edit["stage1"]["bins"]["Flat"]["untestable"] = not s1_edit["stage1"]["bins"]["Flat"]["untestable"]
+    s1_path.write_text(json.dumps(s1_edit), encoding="utf-8")
+    with pytest.raises(SystemExit, match="its Stage 1 differs"):        # the declaration stands as made
+        S.run(inputs, out, n_boot=5)
+    s1_path.write_text(s1_text, encoding="utf-8")
+    # reference failures above 10% at a level stop P5 at Stage 1, and Stage 2 then refuses
+    many = _write_inputs(tmp_path / "many", n_per_level=40, plant=False, fail_refs={(i, 2) for i in range(5)})
+    rep_m = S.run_stage1(many, str(tmp_path / "m"))
+    lv = rep_m["reference_failures"]["by_level"]["0.005"]
+    assert lv["n_failures"] == 5 and lv["n_test_pairs"] == 40 and rep_m["p5_stops"]
+    assert rep_m["reference_failures"]["levels_over"] == ["0.005"]
+    assert sum(map(sum, rep_m["reference_failures"]["by_true_H_nu"]["counts"])) == 5
+    with pytest.raises(SystemExit, match="P5 stopped at Stage 1"):
+        S.run(many, str(tmp_path / "m"), n_boot=5)
+    four = _write_inputs(tmp_path / "four", n_per_level=40, plant=False, fail_refs={(i, 2) for i in range(4)})
+    assert not S.run_stage1(four, str(tmp_path / "f"))["p5_stops"]                    # 10% exactly does not exceed it
+    short = _write_inputs(tmp_path / "short", n_per_level=20, plant=False, n_points=25)
+    with pytest.raises(SystemExit, match="not complete"):
+        S.run_stage1(short, str(tmp_path / "sh"))
+
+
+def test_secondary_analysis_and_g3_cells_that_failed(tmp_path):
+    inputs = _write_inputs(tmp_path, lost={("nre", "B", 2)})         # the level that holds the Partial pairs here
+    out = str(tmp_path / "out")
+    S.run_stage1(inputs, out)
+    rep = S.run(inputs, out, n_boot=60)
+    hdr, pairs, _, _ = S.load_refs(inputs["refs"], inputs["samples"])
+    sec = rep["secondary"]
+    assert sec["n_pairs"] == sum(1 for p in pairs.values() if p["well_covered"]) and "secondary" in sec["label"]
+    assert set(sec["verdicts"]) == set(S.CALIBRATORS) and all(v["null"]["stands"] is None for v in sec["calibrators"].values())
+    assert sec["stage1"]["n_accepted"] == sec["n_pairs"] and all(isinstance(r["stands"], bool) for r in rep["null"].values())
+    nre, ens = rep["stage2"]["nre"]["hypotheses"], rep["stage2"]["ensemble"]["hypotheses"]
+    assert nre["H-b"]["levels_pooled"] == [1, 3] and nre["H-c"]["levels_pooled"] == [1, 3]       # E needs the B network
+    assert nre["H-a"]["levels_pooled"] == [1, 2, 3] and nre["H-d"]["levels_pooled"] == [1, 2, 3]  # A's networks all passed
+    assert ens["H-b"]["levels_pooled"] == [1, 2, 3] and rep["g3_levels_lost"] == {"nre_B": [2]}
+    assert "lost" in nre["H-c"]["per_level"]["0.003"] and "lost" not in nre["H-d"]["per_level"].get("0.003", {})
+    n_partial = sum(1 for p in pairs.values() if S.bin_of(p["c"]) == "Partial")
+    n_partial_13 = sum(1 for p in pairs.values() if S.bin_of(p["c"]) == "Partial" and p["j"] in (1, 3))
+    assert nre["H-b"]["n_pairs"] == n_partial_13 < n_partial == ens["H-b"]["n_pairs"]
+    # the floors are taken on the kept levels' pairs: too few Partial pairs at levels 1 and 3 for the ratio estimator
+    assert n_partial_13 < 100 and nre["H-b"]["failure_floor"]["n_pairs"] == n_partial_13
+    assert nre["H-b"]["verdict"] == "Untestable" and nre["H-b"]["untestable_reason"] == "calibrator failure floor"
+    assert rep["stage2"]["nre"]["failure_floor"]["Partial"]["n_pairs"] == n_partial               # every level, reported
+    assert nre["H-c"]["failure_floor"]["n_pairs"] == nre["H-c"]["n_pairs"] >= 100 and nre["H-c"]["verdict"] != "Untestable"
+    assert ens["H-b"]["verdict"] != "Untestable" and ens["H-b"]["failure_floor"]["n_pairs"] == n_partial
+    # every level of the ratio estimator under A lost: its hypotheses are untestable for it, the ensemble's not
+    allA = _write_inputs(tmp_path / "allA", lost={("nre", "A", 1), ("nre", "A", 2), ("nre", "A", 3)})
+    S.run_stage1(allA, str(tmp_path / "a"))
+    repA = S.run(allA, str(tmp_path / "a"), n_boot=40)
+    assert all(r["verdict"] == "Untestable" and "G3" in r["untestable_reason"] for r in repA["stage2"]["nre"]["hypotheses"].values())
+    assert repA["stage2"]["ensemble"]["hypotheses"]["H-a"]["verdict"] != "Untestable" and not repA["null"]["nre"]["stands"]
+    assert repA["dose_response"]["nre"]["n_pairs"] == 0 and repA["dose_response"]["nre"]["spearman"] is None   # no cell left
+    # scores for a cell that failed G3, or none for a cell that passed, are refused
+    g3 = json.loads(Path(inputs["g3_report"]).read_text(encoding="utf-8"))
+    g3["cells"]["ensemble_A_j1"]["passed"] = False
+    Path(inputs["g3_report"]).write_text(json.dumps(g3), encoding="utf-8")
+    with pytest.raises(SystemExit, match="failed G3"):
+        S.run(inputs, out, n_boot=5)
+    g3["cells"]["ensemble_A_j1"]["passed"], g3["cells"]["nre_B_j2"]["passed"] = True, True
+    Path(inputs["g3_report"]).write_text(json.dumps(g3), encoding="utf-8")
+    with pytest.raises(SystemExit, match="passed G3"):
+        S.run(inputs, out, n_boot=5)
+    del g3["cells"]["nre_B_j2"]
+    Path(inputs["g3_report"]).write_text(json.dumps(g3), encoding="utf-8")
+    with pytest.raises(SystemExit, match="no cell nre_B_j2"):
+        S.run(inputs, out, n_boot=5)
+
+
+def test_entry_point_records_and_guards_the_versions(tmp_path, monkeypatch, capsys):
+    """Run from the command line (check_versions), the script refuses numpy and scipy other
+    than the core interpreter's unless --allow-other-versions, which is recorded (D81);
+    called from a test, nothing is refused."""
+    import inspect
+    import p5_g1_emulator as EM
+    assert "main(check_versions=True)" in inspect.getsource(S).split("__main__")[-1]
+    monkeypatch.setattr(EM, "CORE_VERSIONS", {"numpy": "0.0.0", "scipy": "0.0.0"})
+    S.main([])                                                                          # a call, not a command-line run
+    with pytest.raises(SystemExit, match="refused: numpy .* is installed, 0.0.0 is expected"):
+        S.main([], check_versions=True)
+    S.main(["--allow-other-versions"], check_versions=True)                            # the override runs
+    inputs = _write_inputs(tmp_path, n_per_level=20, plant=False)
+    S.main(["--stage1", "--refs", inputs["refs"], "--out-dir", str(tmp_path / "o"), "--allow-other-versions"],
+           check_versions=True)
+    rep = json.loads(Path(tmp_path, "o", "p5_stage1_report.json").read_text(encoding="utf-8"))
+    assert rep["versions"]["override"] is True and rep["versions"]["expected"] == {"numpy": "0.0.0", "scipy": "0.0.0"}
+    assert rep["versions"]["mismatch"]["numpy"][1] == "0.0.0" and rep["numpy"] == np.__version__
+    assert "HOLD" in capsys.readouterr().out
+
+
+def test_stage1_from_the_command_line_with_an_empty_bin(tmp_path, capsys):
+    """A bin with no pair (here every c at 0.95, so Partial and Flat are empty) is reported as
+    0 pairs well covered of 0, its share left undefined, and the command line prints it
+    without failing; the bin is untestable under the floor (D81)."""
+    inputs = _write_inputs(tmp_path, n_per_level=40, plant=False)
+    text = Path(inputs["refs"]).read_text(encoding="utf-8").splitlines()
+    recs = [json.loads(l) for l in text]
+    for r in recs:
+        if r.get("kind") == "task":
+            r["c_A"] = 0.95
+    Path(inputs["refs"]).write_text("".join(json.dumps(r) + "\n" for r in recs), encoding="utf-8")
+    S.main(["--stage1", "--refs", inputs["refs"], "--out-dir", str(tmp_path / "o")])
+    out = capsys.readouterr().out
+    assert "Identified 120" in out and "Partial 0" in out and "well covered n/a" in out
+    rep = json.loads(Path(tmp_path, "o", "p5_stage1_report.json").read_text(encoding="utf-8"))
+    for b in ("Partial", "Flat"):
+        v = rep["stage1"]["bins"][b]
+        assert v["count"] == 0 and v["n_well_covered"] == 0 and v["share_well_covered"] is None and v["untestable"]
