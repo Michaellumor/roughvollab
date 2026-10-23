@@ -2,7 +2,7 @@
 
 ## Status
 
-A working aid for the author. It is not a protocol and it decides nothing. No item below is decided, no checklist box is ticked and nothing is frozen. v1 (`docs/protocols/P5_protocol.md`, OSF https://doi.org/10.17605/OSF.IO/APSF7) remains the registered protocol (D55). Prepared on 4 October 2026; the decisions are the author's.
+A working aid for the author. It is not a protocol and it decides nothing. No item below is decided, no checklist box is ticked and nothing is frozen. v1 (`docs/protocols/P5_protocol.md`, OSF https://doi.org/10.17605/OSF.IO/APSF7) remains the registered protocol (D55). Prepared on 4 October 2026; the decisions are the author's. Since written: every OPEN item was decided in the draft and every box ticked, and v2 was frozen at `59ca589` and registered on OSF as `695fw` (https://doi.org/10.17605/OSF.IO/695FW) on 23 October 2026, superseding v1; APSF7 points to it and is not withdrawn (D86, D87).
 
 The sheet takes each item the v2 draft (`docs/protocols/P5_protocol_v2_draft.md`) marks OPEN and sets beside it what is being chosen, what the repository already shows, what the literature does, what each option costs, and the question the author must be able to answer before freezing.
 
