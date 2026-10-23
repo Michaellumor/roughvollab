@@ -4127,6 +4127,98 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     v1; the decision sheet. Nothing of P5 was run in this sitting and no P5
     output opened; CI runs the tests on the pull request's head.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D84** *(2026-10-23)* **P5 v2 draft: prior work and the novelty claim before
+  the freeze (Bayer and co-authors' ridge and Appendix A; claim (ii) limited to
+  rough-volatility calibration; the ratio estimator's framing; docs only;
+  nothing frozen).**
+  - **Summary.** After D83 the second review's session checked the literature
+    behind the novelty claim, read-only: claim (i) stands; claim (ii) was too
+    broad; the prior-work section lacked Bayer and co-authors' ridge and
+    Appendix A; the ratio estimator lacked its framing. Four text changes
+    follow, on the author's decisions. Left: the freeze.
+  - **The check.** Made on 23 October 2026, after D83, by the session that made
+    the second review (D82), with two read-only research agents on the web and
+    the session's own reading of the load-bearing passages at source, Bayer and
+    co-authors' at the address the section gives; it ran nothing. The
+    repository holds no other record of it; this entry records it from the
+    author's brief.
+  - **What it found.** Claim (i) stands, the closest works being Brigo, Huser
+    and Leonte (arXiv 2609.31570) and Bayer and co-authors (arXiv 1908.08806).
+    Claim (ii) was too broad as written. The prior-work section left out Bayer
+    and co-authors' ridge sentence (Section 5.3) and their Appendix A. The
+    framing of the ratio estimator was missing.
+  - **The four changes.** 1, draft line 160: after "the figures being images
+    that were not read.", a sentence on Section 5.3's ridge and one on Appendix
+    A; line 164's item on Bayer and co-authors gains the ridge (Section 5.3;
+    Figure 6). 2, draft lines 168 and 170: claim (ii) is limited to the
+    calibration of a rough volatility model, and line 170 gains a sentence on
+    general simulation-based-inference work, which the section does not survey
+    and claim (ii) does not extend to; amendment line 44, the Prior work
+    bullet, is limited likewise and gains D84. 3, draft line 75: the ratio the
+    classifier learns at its optimum depends on the training prior only through
+    a factor in y, so an exact ratio gives the exact posterior under P and any
+    excess prior dependence beyond Monte Carlo error is error in the learned
+    ratio. It agrees with the code: `nre_loss` (`p5_g3_calibrators.py:235`)
+    trains on balanced joint and rolled pairs under binary cross-entropy, and
+    `nre_target` (:400) samples log P(H) + logit. 4, draft line 200: the
+    literature check under what the tool did, and D84's sitting, on Claude Opus
+    5.5, the model the session reports for itself, in the list of sittings and
+    models.
+  - **The author's decisions.** Made on 23 October 2026, each on the
+    assistant's lean, and the author's. 1: the four changes, before the freeze.
+    2: no reweighted ratio estimator (trained under A, reweighted to B) as a
+    comparator, which would be a design change at the freeze; it may come later
+    as an exploratory analysis labelled as not pre-registered. 3: the general
+    simulation-based-inference works are not cited in the protocol; this entry
+    names them as pointers instead.
+  - **Pointers, not cited in the protocol.** PriorGuide, Yang and co-authors,
+    arXiv 2510.13763: the session read its abstract, and an agent reported from
+    the text its evaluation against reference posteriors under shifted priors.
+    Srivastava, Hazra and Dubbaku, arXiv 2609.25145: read at the level of the
+    abstract. Betancourt, arXiv 1803.08393, whose posterior-contraction
+    diagnostic is a precedent for stratifying by contraction: read only through
+    an agent's report. This sitting checked each number, its authors and its
+    title on its arXiv page.
+  - **Boxes.** None is ticked or unticked. Box 214 (prior work) stays ticked:
+    the new sentences on Bayer and co-authors come from a source the author
+    read in full before D80; line 170's new sentence rests on the pointers
+    above as read there, cites none of them (decision 3) and so carries no
+    pinpoint, and the limits on claim (ii) only narrow it. Change 3 touches the
+    section of box 210 (architectures and training), adding framing and
+    changing nothing in the design. Unticking either box is the author's call.
+  - **Declared, beyond the brief's words.** This sitting read Section 5.3 and
+    Appendix A of arXiv 1908.08806v1, the only version, through arXiv's HTML
+    rendering (ar5iv) on 23 October 2026, and an independent read-only reader
+    checked the text against the brief, that rendering, the arXiv PDF, the code
+    and the arXiv pages. Line 160 keeps two qualifiers of Section 5.3 that the
+    brief left out (the level sets are in the (η, H) and (η, ρ) plots; on SPX
+    the effect cannot be confirmed at first glance), and follows Appendix A
+    where the brief did not: there the market scenarios that cannot all be
+    trained on are why the route does not generalise to every setting, the
+    poorly understood inverse map is why it is harder to justify for risk
+    management, and the failure out of sample is on surfaces rough Bergomi did
+    not generate, the network calibrating sharply on its own (Figure 8). "Since
+    the sources above were read" became "beyond the sources above", the
+    section's sources having been read on 11 October 2026 and both pointers to
+    that work, PriorGuide (October 2025) and Srivastava, Hazra and Dubbaku
+    (September 2026), being older. Box 214's reason is narrowed to the
+    sentences on Bayer and co-authors. On line 75 the density sentence ends at
+    its parenthesis, so that the new sentences follow it, and the sampler
+    clause opens "The ratio estimator's posterior is sampled"; "up to its
+    sampler's Monte Carlo error" became "up to Monte Carlo error", E and m
+    carrying the reference's error too, and the next sentence carries the
+    qualifier; "is largest" became "is expected to be largest", tied to the
+    extrapolation the secondary analysis limits (lines 136 and 170). Line 200's
+    clause takes a verb and names the session ("later that day in that session,
+    made a read-only check") instead of repeating the date.
+  - **Not written.** The freeze; anything on OSF; D83 and every earlier entry;
+    v1; the decision sheet; a reweighted ratio estimator; any change to draft
+    lines 15 and 22 or amendment line 51, which declare what had been run and
+    seen of P5 before freezing, the check having been of the literature and
+    having run nothing (line 200 declares it). Nothing of P5 was run in this
+    sitting and no P5 output opened; CI runs the tests on the pull request's
+    head.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
