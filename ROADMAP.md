@@ -4453,6 +4453,13 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
       `cbd75656d39a65e663eca0f9801110820bcb87300c517d4b2ceb1db6e4052a56`
     - `output/p5_g1_report.json`, 2,350 bytes,
       `959d959dbc52cb125094bfa20b9f0c526e17efb3dd8cb01e7b0c17adc9b212d5`
+  - **Two tests updated.** On this entry's first commit CI failed two tests in
+    `test_p5_g2_reference.py`, which expected the refusal "no emulator" because
+    `output/` held no G1 build; they now point `p5_g1_emulator.paths` at an
+    empty temporary folder for that refusal, with one new assertion that, G̃
+    being committed, a file other than G̃ is refused before any load, and the
+    failing run drew nothing sealed, both tests blocking sealed draws and their
+    refusals coming before any load.
   - **What was seen.** G1's output only: the node values and the held-out
     errors, read by the assembly and by this sitting's checks. No reference
     posterior, network or test surface exists yet, and nothing about the
