@@ -4660,6 +4660,66 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Not written.** Any v3 work (the v3 plan follows as D91); any change to
     the draft, v1, the decision sheet or earlier entries.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D91** *(2026-10-25)* **P5 v3: the plan committed
+  (`docs/protocols/P5_v3_plan.md`), with the author's answers to its eleven
+  decisions (docs only).**
+  - **Summary.** The plan for v3, a working aid that decides nothing, is
+    committed as agreed and unedited. The author's answers to its eleven
+    decisions are its leans, all eleven, and with them its list of what v3 does
+    not change and the study's verdict rule bind the study. Only the stop
+    notice (D90) precedes it.
+  - **The answers.** 1, the sampler: candidate (A) first, (B) a declared
+    fallback. 2, where (A) runs: once per sampler run, inside `run_chains`. 3,
+    the ratio estimator's posterior: the gradient route, run on stand-in
+    targets in the study. 4, G1: G̃ adopted without re-running G1. 5, G2: fresh
+    seeds and the retry's start clause dropped; the tolerances, the one retry
+    at doubled lengths and the budget unchanged. 6, order: the pool fix before
+    the study, in its own commit (D92), these answers binding the study. 7,
+    review: an independent review before the freeze, plus D94's transcription
+    check. 8, the stop notice before any v3 work, with its own entry: done
+    (D90). 9, v3's records under new names, v2's G2 files left in place. 10,
+    the OSF component: the 15 files of v2's kind at the freeze commit plus G̃,
+    the G2 records and the study's record cited by path and blob hash. 11,
+    timing: the study during term, the freeze in November, G2 in December, and
+    no date for G3 and the training until G3's first rung has shown a training
+    time.
+  - **What binds.** The plan's list under What v3 does not change, and its
+    development study's verdict rule: a pass needs all 36 pairs accepted, every
+    comparison within tolerance and the projected cost within the budget; a
+    failure is reported by its kind; at most one declared revision of (A),
+    changing only the constants of its steps 1 to 5, or a move to (B), is
+    allowed before the study is run again, and if that also fails no v3 draft
+    is written. The D-numbers of its Order of acts (D92 to D97, and the freeze
+    commit without an entry) are the plan's and may shift.
+  - **How the plan was made.** The first version was written on 25 October
+    2026, after D89, in the session that guides the author. This Claude Code
+    session checked it read-only against the frozen draft, the scripts, the
+    tests and the committed G2 output: four independent reviewers (facts, code,
+    method, process), an adversarial verifier for each reviewer's findings and
+    a completeness critic, nine agents on Claude Fable 5.1 run from this
+    session on Claude Opus 5.5; no script was run and no sealed seed touched.
+    Of 51 findings one was refuted, and the critic added ten. The corrected
+    copy, committed here, fixes among others R-hat (25.9 on the retry, not 14),
+    the claim that a rebuild of G̃ would match it byte for byte (the `.npz`
+    records its build commit), the retry's start clause in lines 68 and 143,
+    the scope of (B) and the checklist boxes, and adds Decisions 2, 3, 6, 9 and
+    10. Figures the review computed from the raw records are not in the plan,
+    by the convention for working aids. The committed blob, LF, byte for byte
+    the copy the author agreed:
+    - `docs/protocols/P5_v3_plan.md`, 24,444 bytes,
+      `658824f014626a375c3c76b117fca426885d84769076ba1a72c0d574c33adfa3`
+  - **What was seen.** Nothing new: the plan reads the frozen draft, D88, D89
+    and the committed G2 output, and its review read the same files and the
+    code, read-only. No posterior was computed and nothing was sampled or
+    drawn.
+  - **Who did what.** The author agreed the plan and gave the answers. The
+    first version came from the session that guides the author; the review and
+    the corrected copy came from this Claude Code session on Claude Opus 5.5,
+    its agents on Claude Fable 5.1.
+  - **Not written.** The plan's file is not edited to record the answers, as
+    its opening paragraph says; no code, script, test or protocol text changes;
+    nothing on OSF.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
