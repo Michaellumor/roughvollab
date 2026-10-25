@@ -4611,6 +4611,55 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     registered before any run; any change to the draft, v1, the decision sheet
     or earlier entries.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D90** *(2026-10-25)* **P5 v2: the stop notice posted on OSF (`695fw`
+  updated; docs only).**
+  - **Summary.** The author updated `695fw` on 25 October 2026 with a notice of
+    P5 v2's stop at G2 (D89), placed at the top of its summary above v2's
+    unchanged summary and entered as the justification, as for APSF7 (D86). The
+    registration stays public and is not withdrawn. No v3 work precedes this
+    entry.
+  - **The update.** Schema response `6ade09278faa7545598a0050`, created at
+    13:50:31 UTC, submitted at 13:56:39 UTC and approved at 13:56:56 UTC on 25
+    October 2026 (its submit and approve actions; the approval is its last
+    modification). Only the summary changed (`updated_response_keys`); the
+    response's uploaded-file entries are unchanged. The paragraph, as it stands
+    at the top of the summary:
+    > Stopped on 25 October 2026 at gate G2 (protocol line 143). The exact
+    > reference's sampler failed its acceptance criteria on G2's pilot surfaces
+    > on the first attempt (9 of 18 pairs) and on the one retry the protocol
+    > allows, at doubled lengths (5 of 18), the failures concentrated at the
+    > lowest noise level, 0.1 volatility point. As line 197 requires, the stop,
+    > its reason and the records up to it are reported in decision-log entry
+    > D89 of ROADMAP.md, merged at commit
+    > dc54c0e0a2fccfee106601d48e928ba20f72ac28 of
+    > https://github.com/Michaellumor/roughvollab. G2's records are committed
+    > under output/: p5_g2_pilot.jsonl, p5_g2_pilot_samples.npz and
+    > p5_g2_report.json for the first attempt, and p5_g2r_pilot.jsonl,
+    > p5_g2r_pilot_samples.npz and p5_g2r_report.json for the retry, with their
+    > SHA-256 listed in D89. No hypothesis was scored: the sealed test set was
+    > never drawn, no network was trained, and nothing after G2 was run. This
+    > registration remains the record of what was registered on 23 October 2026
+    > and is not withdrawn. A version 3 of the protocol is being developed. Its
+    > changed reference sampler is designed on the pilot surfaces already seen,
+    > which it will declare as such. It will be registered separately before
+    > any of its gates is run, and this registration will then be updated to
+    > point to it.
+  - **The readback.** GET requests only, OSF's public API: `695fw` has two
+    schema responses, both approved, the original `6adba36f29130ee140f7c6d4`
+    (23 October 2026) and the update. The update's summary is the paragraph, a
+    blank line and v2's summary exactly, with one newline added at the end; its
+    justification is the paragraph with three apostrophes typographic (’)
+    rather than straight ('). Neither difference changes the text. A first
+    draft of the update, which replaced the summary with the paragraph instead
+    of placing the paragraph above it, was seen on its review page and not
+    submitted.
+  - **What was seen.** Nothing new: the notice restates D89.
+  - **Who did what.** The author posted and approved the update on OSF. The
+    notice's text and its placement were drafted, and the update read back, in
+    the Claude Code session of D89, on Claude Opus 5.5.
+  - **Not written.** Any v3 work (the v3 plan follows as D91); any change to
+    the draft, v1, the decision sheet or earlier entries.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
