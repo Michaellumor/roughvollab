@@ -4793,6 +4793,301 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Not written.** The sampler's start and first proposal (D94), the
     development study (D93), any protocol text.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D93** *(2026-10-25)* **P5 v3: the development study's script and settings
+  committed before the run (`p5_v3_study.py` and its tests; code and tests;
+  nothing run on real data).**
+  - **Summary.** The development study of candidate (A) (the plan, D91) now
+    has its script, `p5_v3_study.py`, and its settings, committed before any
+    run, as G0's scoping script was. The author confirmed in Plan Mode that
+    this entry is the script and the settings alone: he runs the study from
+    the merged `main`, so that its record carries that commit, and the output
+    and the verdict are recorded in D94; the plan's D94 to D97 become D95 to
+    D98. The script sits outside the six frozen P5 scripts and changes none of
+    them. Nothing here ran on real data: the tests use toy emulators, and the
+    hold mode loads no emulator.
+  - **The script.** `p5_v3_study.py` calls `p5_g2_reference.py` as committed
+    after D92 for everything but the start and the first proposal:
+    `reference_pair`, `_run_with_repeat`, `accept`, the reweighting rule and
+    the direct runs, `grid_check`, `whole_box_check`, `g2_report`, `header`
+    and `launch`. Only `run_chains` is replaced, by `candidate_run_chains`, a
+    function with its signature and return. Candidate (A) runs once per
+    sampler run, inside it (Decision 2). Its draws from the run's generator
+    come in this order: one block of 16 × 4 uniforms for the optimiser's
+    starts (`N_STARTS` 16); one block of 4 × 4 standard normals for the start
+    perturbations; then the proposals and acceptance draws by `mh_step`, as v2
+    draws them. Step 1, the modes: `scipy.optimize.least_squares` on r(x) = (y
+    − G̃(θ(x)))/s from the 16 starts, method `trf`, bounds [0, 1]⁴, jac
+    `2-point`, with the settings below; each start's exit status, evaluations
+    and cost are recorded. Step 2, the kept solutions: in order of log-target
+    from the best, a solution is kept when its unit distance to every solution
+    already kept exceeds `DISTINCT` 0.01 and its Laplace mass, log f + ½ log
+    det Σ, is within `MASS_LOG` log 10⁴ of the largest mass among the
+    solutions, up to `KEEP_MAX` four; m and the starts reaching each kept
+    solution are reported, and a start whose solution reached none is counted
+    as elsewhere. Step 3, Σ = (JᵀJ)⁻¹ from J's singular values, V S⁻² Vᵀ,
+    never by inverting JᵀJ; for a direct run Σ_P = (JᵀJ + diag(κ, 0, 0, 0))⁻¹
+    with κ = −∂² log P/∂x_H² = (a−1)/u² + (b−1)/(1−u)², from the singular
+    values of J stacked with the row √κ e₁ᵀ; the eigenvalues clipped to
+    [`EIG_LO` 1e-10, `EIG_HI` 1/12] and the count clipped recorded; Σ_A and
+    Σ_B at each kept solution are recorded too, for the ratio estimator's
+    route. For a direct run under prior A or B each kept solution is first
+    polished by L-BFGS-B on ½Σr² − log P(x_H), the gradient Jᵀr plus the
+    prior's analytic gradient (a−1)/u − (b−1)/(1−u), J by the bounded 2-point
+    difference, H's bounds `EPS_H` = 1e-6 inside the faces, and Σ_P is taken
+    at the polished solution. Step 4, chain k starts at kept solution k mod m
+    plus `_chol_pd(4 Σ_s) z_k`, Σ_s being Σ with its eigenvalues capped at
+    `PERTURB_CAP` 0.0025 (`PERTURB_MULT` 4), clipped to the box, or to [ε, 1 −
+    ε] in H for a direct run, the coordinates clipped counted. Step 5, the
+    first proposal is 2.38²/4 · Σ of the chain's solution; the burn-in with
+    its adaptation every 500 steps on the chain's whole history, the sampling
+    phase, the lengths, the acceptance, the repeat, the reweighting rule, the
+    direct runs and the quantised storage are v2's, unchanged. The diagnostics
+    the plan's report needs and v2's attempt records do not hold are appended
+    to a per-process list and written into the pair's record as `candidate`,
+    one entry per sampler run: the acceptance over each chain's first 500
+    burn-in steps; m and the starts per kept solution; the optimiser's
+    statuses; Σ's eigenvalues and the number clipped; the polish's status; the
+    raw and clipped chain starts and the number of coordinates clipped; the
+    optimiser's seconds; and the sampling proposal's covariance against each
+    chain's sample covariance, as the generalised eigenvalues of the pair and
+    the ratio of traces.
+  - **The gradient route (Decision 3).** With a `target` the candidate takes a
+    callable object with `grad_unit(x)` and `sigma` (a plain callable is
+    refused with a TypeError, so v2's target mechanics are never run with the
+    candidate by accident): the modes by L-BFGS-B from the same 16 starts with
+    that gradient, H's bounds ε inside the faces, the keep rule with Σ =
+    `sigma` for every solution, and the starts and first proposal from
+    `sigma`, the record's Σ_P, a preconditioner only. The study runs it on two
+    stand-in targets per pair and prior P: the pair's own log-target under P,
+    log P(H) + log L, whose accepted run must be within G2's tolerances of the
+    record's figures under P (`_compare` with the D81 rule, on P's own
+    quantities: the mean of H, c and the two quantiles under A, the mean of H
+    under B); and the same target displaced in H by `DISPLACE_H` 0.02 towards
+    the centre of the range, −inf where the displaced point leaves the box,
+    for which the shift of the posterior mean is reported beside the
+    acceptance. The stand-in's gradient is the bounded 2-point finite
+    difference of its log-target in unit coordinates, step √ε·max(1, |x|),
+    because G̃ has no derivative routine; G3's route supplies the network's
+    autograd gradient, which the stand-in does not test. Σ_P comes from the
+    pair's study record: the accepted direct run's Σ at its best solution when
+    the pair's figures under P are direct, else the uniform run's Σ with P's
+    curvature added. The generators are `default_rng([107, p, 0, i, j])` for
+    the own target and `default_rng([107, p, 0, i, j, 1])` for the displaced
+    one: G3's family (line 75), with p the prior's index as
+    `p5_g3_calibrators` has it and q = 0, a training seed no run uses (q runs
+    from 1 to 6).
+  - **Installed inside each worker.** The study's pool worker,
+    `_study_worker`, is a module-level function of the study module: in its
+    own process it sets `p5_g2_reference.run_chains` to the candidate, clears
+    the diagnostics list, calls `p5_g2_reference._worker` (captured at import,
+    so the wrapper never calls itself), and attaches the list to the record.
+    `launch` is called with `p5_g2_reference._worker` replaced by it in the
+    parent, so under spawn the executor pickles `p5_v3_study._study_worker` by
+    name and the worker process installs the candidate on its first call;
+    under fork and at pool 1 the same function runs. `_run_with_repeat` looks
+    `run_chains` up as the module's global, so every run, repeat and direct
+    run uses the candidate (D92's review point).
+  - **The runs, on `--run`.** The pre-flight: the versions against the pinned
+    ones (refused unless `--allow-other-versions`, recorded); G̃ by
+    `emulator_for_run` (an `--emulator` naming another file is refused before
+    any load); v2's two records read, their headers' emulator hash equal to
+    G̃'s; the sealed seeds refused wherever a seed is read; the study's report
+    must not exist. The 36 pairs are the `task` lines of
+    `output/p5_g2_pilot.jsonl` and `output/p5_g2r_pilot.jsonl`: v2's label,
+    set, i, j, s, θ and y, each keyed `default_rng([83, i, j])` through
+    `reference_pair`, so that the 36 pairs share 18 streams; a declared check
+    binds them to G̃ and v2's seeds: each pair's θ and y must equal
+    `g2_surfaces(retry)` priced through G̃ (atol 1e-12). Phase 1, the
+    references at v2's base lengths, 10,000 and 40,000, with the one repeat at
+    doubled lengths, at pool 4, by `launch`: resumable, samples before
+    records, nothing written over. The header is `p5_g2_reference.header`'s
+    (commit, clean tree, versions, G̃'s SHA-256, v2's constants) with the
+    script's name, the sources' paths and SHA-256 (of their bytes with LF line
+    endings, the committed blobs' hashes as D89 lists them), the candidate's
+    constants, the stand-ins' settings and the verdict rule; the constants go
+    into `lengths` as well, so that `launch` refuses a resume with other
+    constants, as it refuses other lengths. Phase 2, `g2_report` over the
+    record: `grid_check` on every accepted pair, `whole_box_check` at s =
+    0.005, v2's tolerances and the D81 rule, and the projection of the test
+    set's 1,200 references against 1,344 core-hours, the optimiser's seconds
+    inside each run's seconds and so inside `project_cost`; written to
+    `output/p5v3_study_checks.json`, read back and not rewritten if present
+    (its `gate` key is the function's label; the study runs no gate). Phase 3,
+    at every noise level, on the whole-box grid of line 143 (48 points in H, ν
+    and ρ, ξ₀ on the first grid's 32 points), the share of the posterior mass
+    under A in cells whose (H, ν, ρ) centre lies outside the first grid's box,
+    one `mass` line per pair, compared with nothing. Phase 4, the stand-ins,
+    one `standin` line each. Phase 5, the verdict and the report,
+    `output/p5v3_study_report.json`, written once: pass when all 36 pairs are
+    accepted, every comparison is within tolerance and the projection is
+    within the budget; else fail, each run not accepted labelled
+    non-adaptation (acceptance below 1%, or R-hat above 1.1) or slow mixing
+    (R-hat within 1.01 and an effective size of H below 2,000), a run fitting
+    neither labelled as such; a grid miss recomputes the pair's first grid at
+    64 points per dimension through `_grid_job`. The gradient route's outcome,
+    every own stand-in accepted and within tolerance, is reported beside the
+    verdict, not inside it. The report carries the per-pair figures the plan
+    lists, the 14 pairs v2 failed beside v2's own attempts at the lengths each
+    ran (one and two times the study's for the first attempt's nine, two and
+    four for the retry's five), the projection, the mass shares, the stand-ins
+    and the provenance. The records are `output/p5v3_study.jsonl`,
+    `_samples.npz` (with its `_parts` folder), `_checks.json` and
+    `_report.json`: never v2's paths, never `p5v3_g2_*`. Phases 3 and 4 skip
+    the pairs and runs already in the record, so a run interrupted anywhere
+    resumes.
+  - **Hold mode.** With no flag the script prints the design, every setting,
+    the 36 pairs with their keys and v2 statuses, the record names and a cost
+    estimate from v2's two G2 reports, and runs nothing: no emulator is loaded
+    and nothing is written. Run from the command line in this sitting (`py -3
+    p5_v3_study.py`, with Python's bytecode writing off), it listed the 36
+    pairs and estimated, from a median of 35.1 s per 50,000 steps over both
+    attempts' runs and 4.39 such units per pair, 1.5 core-hours of sampling,
+    1.7 for the first grids, 1.9 for the whole-box checks, 5.8 for the mass
+    grids and 1.7 for the stand-ins: 12.7 core-hours, 3.2 h on four workers;
+    `output/` was unchanged (its listing hashed before and after).
+  - **The settings, declared.** `least_squares`: ftol = xtol = 1e-10, gtol =
+    1e-8, max_nfev = 2,000, x_scale default. The 2-point difference step
+    √ε·max(1, |x|), ε the double-precision epsilon, backward where the forward
+    point would leave the bounds, the actual difference the divisor, as
+    scipy's own. L-BFGS-B, for the polish and the gradient route: ftol =
+    1e-10, gtol = 1e-5 (above the finite-difference noise floor of about 5e-7
+    on the gradient), maxiter = 200. ε_H = 1e-6. The keep rule: four, 0.01,
+    log 10⁴, the largest Laplace mass the reference; the prior's density and
+    curvature for the keep rule and for the recorded Σ_A and Σ_B at x_H
+    clipped to [0.01, 0.99] (`KAPPA_U_FLOOR`, from the review). The eigenvalue
+    range [1e-10, 1/12]; the perturbation cap 0.0025 and multiplier 4; 2.38²/4
+    for the first proposal. The stand-ins: δ = 0.02 in H towards the centre,
+    generators as above, the finite-difference gradient. The verdict's
+    thresholds as the plan writes them; 64 points per dimension on a grid
+    miss. The lengths 10,000 and 40,000, the acceptance, the Kish floor, the
+    tolerances and the budget are v2's, unchanged, as the plan's list
+    requires.
+  - **The tests.** `test_p5_v3_study.py`, 13 tests on toy emulators only (the
+    linear toy of `test_p5_g2_reference.py` in memory, and D92's toy emulator
+    file for the pool paths), G̃ never loaded, the sealed test set's drawing
+    functions replaced by ones that fail if called wherever the entry point
+    runs. They cover: the settings as literals, the record names, the
+    sealed-seed refusal and the stand-in keys; the candidate on the linear toy
+    recovering its Gaussian posterior (m = 1, all 16 starts reaching it, Σ
+    equal to the posterior's covariance in unit coordinates to 1e-4, the same
+    generator giving the same chains) with every diagnostic present and
+    JSON-clean; the order of draws, by an exact replay: the uniform block
+    equals the recorded starts, the normal block is recovered from the
+    unclipped chain starts, and v2's loop from the recorded starts and first
+    proposals with the generator continuing reproduces the chains and the
+    final proposals exactly, which differ from v2's sampler's on the same
+    generator; mode retention and the mass rule on synthetic solutions (the
+    duplicate within 0.01, the fourth kept and the fifth not, a sharp spike
+    under 10⁻⁴ of the mass dropped) and a bimodal synthetic target through the
+    gradient route, both modes kept, the chains on both and R-hat failing, one
+    mode when the other holds 10⁻⁶ of the mass, a plain callable refused; Σ
+    from the singular values with the clip counts, Σ_P against the inverse, a
+    flat direction, the Σ_s cap and the bounded difference's steps; the
+    prior's gradient and curvature against finite differences, the polish on
+    the toy under A (a stationary point of the Gaussian × Beta inside [ε, 1 −
+    ε], Σ_P with the curvature, the log-target at the polished point), a
+    surface whose likelihood mode lies beyond the lower face (the solution on
+    the face and the starts clipped to 0 under the uniform prior, inside and
+    clipped to ε under A) and `chain_starts` on its own; the candidate
+    installed inside spawned and forked workers at pool 2, the parent's
+    `run_chains` staying v2's throughout, every record carrying the
+    diagnostics, the records and samples equal to a pool-1 run's, the checks,
+    the mass lines and the stand-ins at pool 2 without an error line, v2's
+    sampler giving other chains, and a resume with other constants or other
+    lengths refused; the stand-ins on the toy (the own target equal to the
+    reference's log-target, its finite-difference gradient against the exact
+    one, the displaced target the translate with its support, both variants
+    accepted, the own within the tolerance on the difference, the displaced
+    moved by the shift, Σ_P from a direct run's record); the mass diagnostic
+    (0 for the whole box, monotone in the box, against an independent sum, ξ₀
+    never counting); the verdict, the kinds, the sampler tag and the
+    comparison with v2 on synthetic records; hold mode writing nothing with
+    the emulator functions replaced by ones that fail if called, and the
+    refusals (a sealed seed in a source's header, a report that exists, an
+    `--emulator` not G̃ before any load, sources made with another emulator,
+    `--pool 0`, the versions); and a small `--run` end to end on toy records
+    (six pairs, 200 and 600 steps, 4-point grids, the toy file standing in for
+    G̃): every phase, the files, the report's fields, a second `--run`
+    refused, a checks file from other lengths refused, a resume doing nothing
+    new. Locally, on the author's machine (Windows 11, Python 3.14.3, numpy
+    2.4.4 and scipy 1.17.1, the core interpreter, bytecode writing off), the
+    file alone: 12 passed, 1 skipped (fork, which Windows lacks), in 70 s. The
+    suite collects 363 tests, the 350 before and these 13, as
+    `CONTRIBUTING.md` now says; CI runs the fork case on Linux.
+  - **The review.** One independent read-only reviewer, a subagent of this
+    session on Claude Fable 5.1 (the model it reported), given the two new
+    files, the plan's two sections, the brief's constraints and
+    `p5_g2_reference.py`, not this sitting's conclusions, found no bug in the
+    sampler's mechanics: it confirmed the draw order, Σ from the singular
+    values with the √κ row and its clipping, the start draw and its clip, the
+    first proposal, the burn-in, adaptation and sampling loops being v2's line
+    for line, the installation inside each worker under spawn and fork and at
+    pool 1, the record's header and refusals, the sealed seeds refused and
+    never drawn by the tests, and the checks, the mass diagnostic, the verdict
+    rule and the comparison with the 14 pairs. It raised fifteen points. Nine
+    are taken up in the code: (1) the own stand-in's tolerance took its Monte
+    Carlo term from the reference record alone although both figures are Monte
+    Carlo estimates of one posterior, so a correct run would have failed a
+    comparison with probability about 0.5% each; the tolerance is now the
+    larger of the absolute value and four standard errors of the difference,
+    √(se_ref² + se_standin²), the stand-in's errors by `mc_errors` on its own
+    run; (2) for a direct run the keep rule ranked the solutions by the
+    likelihood alone, before the polish; it now ranks by the run's log-target
+    with the prior included, κ in the mass; (3) the phases after the
+    references were untested at a pool above 1; the spawn and fork test now
+    runs the checks, the mass lines and the stand-ins at pool 2; (4) a pair
+    that erred on every attempt would have stopped `g2_report` before any
+    report; the checks now run on the pairs recorded and the verdict reports
+    the missing one; (5) a solution on a face recorded a degenerate Σ_A or
+    Σ_B, κ at ε; the recorded Σ_A and Σ_B, and the keep rule's κ, take x_H
+    clipped to [0.01, 0.99] (`KAPPA_U_FLOOR`), the direct run's own Σ_P
+    staying at its polished solution; (6) two solutions polished to one point
+    counted as two; they are merged, and the log-target at the polished point
+    is recorded beside the least-squares one; (7) the 64⁴ recompute, about 1
+    GB per worker while its grid is built, runs on at most two workers; (8)
+    the report takes the record's header, not a resume's, and lists apart the
+    task errors a later record resolved; (9) the study asserts that the
+    candidate ran: the worker refuses a pair whose diagnostics count differs
+    from its sampler runs, a stand-in refuses a run not made by the gradient
+    route, the verdict requires every record's sampler tag, and a run with no
+    finite solution raises instead of dividing by zero. Also taken up:
+    `--pool` below 1 refused; an existing checks file checked against the
+    record's lengths and emulator; a test tolerance loosened against
+    finite-difference noise on CI; an unused import removed; a helper renamed.
+    Three readings the reviewer asked to have declared stand as written: the
+    keep rule's reference is the largest Laplace mass among the solutions, not
+    the best log-target's, so that any mode dropped holds under 10⁻⁴ of the
+    mass as the plan's gloss says; the gradient route's outcome is reported
+    beside the verdict, not inside it, the plan's verdict rule naming the 36
+    pairs, the comparisons and the cost; and the finite-difference step is
+    passed explicitly to the polish's and the stand-ins' differences while the
+    least-squares Jacobian uses scipy's own default of the same convention,
+    pinned by the scipy version the script refuses to run without.
+  - **What was seen.** Nothing new. The tests run toy emulators only (the
+    linear toy in memory and the toy emulator file of D92's test), never G̃,
+    with the sealed test set's drawing functions replaced by ones that fail if
+    called wherever the entry point runs. The hold mode and this sitting's
+    planning read v2's committed G2 records and reports (D89), read-only, for
+    the pairs' labels, θ, noise levels, statuses and the run figures D89
+    already reports; no posterior was computed on G̃, nothing was sampled on
+    it and nothing was drawn from the sealed streams.
+  - **Who did what.** The author confirmed in Plan Mode the numbering above
+    and that the stand-in's gradient is the finite difference while G3's route
+    uses autograd, and asked that the entry writing the gradient route into
+    `p5_g3_calibrators.py` add a torch test comparing autograd's gradient with
+    a float64 finite difference on a toy network, run locally in `.venv-p5`
+    since CI has no torch. This sitting, a new Claude Code session on Claude
+    Fable 5.1 (the model its transcript records, `claude-fable-5-1`, for every
+    message), wrote the script, the tests and this entry from the brief and
+    the plan. The reviewer was a subagent of this session, on Claude Fable 5.1
+    by its own report.
+  - **Not written.** The run and its output (D94); the v3 draft, the sampler
+    written into `p5_g2_reference.py` and the gradient route into
+    `p5_g3_calibrators.py` with the torch test above (D95); any protocol text;
+    any change to the six P5 scripts, the forward-model modules, the
+    requirements files, the frozen draft, v1, the decision sheet, the plan or
+    an earlier entry; nothing under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
