@@ -1,0 +1,139 @@
+{
+ "stage": "base",
+ "nodes": [
+  16,
+  8,
+  6,
+  12
+ ],
+ "n_train": 768,
+ "n_surfaces": 9216,
+ "n_heldout": 200,
+ "box": {
+  "H": [
+   0.02,
+   0.48
+  ],
+  "nu": [
+   0.05,
+   0.35
+  ],
+  "rho": [
+   -0.9,
+   -0.7
+  ],
+  "xi0": [
+   0.04,
+   0.25
+  ]
+ },
+ "N": 8000,
+ "base_T": {
+  "0.1": [
+   790.0,
+   504
+  ],
+  "0.25": [
+   500.0,
+   320
+  ],
+  "0.5": [
+   350.0,
+   224
+  ],
+  "1.0": [
+   250.0,
+   160
+  ],
+  "2.0": [
+   180.0,
+   112
+  ]
+ },
+ "seed_heldout": 73,
+ "ratio": 5,
+ "noise_levels": [
+  0.001,
+  0.003,
+  0.005
+ ],
+ "e_p99": 2.0945048560387187e-05,
+ "max_abs": 0.00021026103089213932,
+ "per_T_p99": {
+  "0.1": 5.924540867153757e-06,
+  "0.25": 7.747812365455072e-06,
+  "0.5": 1.845748752931335e-05,
+  "1.0": 2.705438317421357e-05,
+  "2.0": 2.8330534028164197e-05
+ },
+ "n_quotes": 7000,
+ "percentile_method": "numpy.percentile default (linear interpolation)",
+ "verdicts": {
+  "0.001": {
+   "bound": 0.0002,
+   "claimed": true
+  },
+  "0.003": {
+   "bound": 0.0006000000000000001,
+   "claimed": true
+  },
+  "0.005": {
+   "bound": 0.001,
+   "claimed": true
+  }
+ },
+ "tails": {
+  "H": 2.037890331959871e-10,
+  "nu": 4.134688489713588e-05,
+  "rho": 9.269281478552447e-06,
+  "xi0": 6.46433244564816e-07
+ },
+ "refine": false,
+ "refine_dimension": null,
+ "seconds_train_total": 222883.65393170004,
+ "seconds_heldout_total": 54255.32495900006,
+ "n_reprice": 16000,
+ "repriced_points": [],
+ "versions": {
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "expected": {
+   "numpy": "2.4.4",
+   "scipy": "1.17.1"
+  },
+  "checked": true,
+  "override": false,
+  "mismatch": {}
+ },
+ "record_commit": "3db18b5697ecd50f50c2be423e938aa8e44e9a3b",
+ "assembled_commit": "3db18b5697ecd50f50c2be423e938aa8e44e9a3b",
+ "assembled_clean_tree": true,
+ "launches": [
+  {
+   "kind": "launch",
+   "utc": "2026-10-24T05:10:45Z",
+   "pool": 4,
+   "n_done_before": 0,
+   "commit": "3db18b5697ecd50f50c2be423e938aa8e44e9a3b",
+   "clean_tree": true,
+   "versions": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "expected": {
+     "numpy": "2.4.4",
+     "scipy": "1.17.1"
+    },
+    "checked": true,
+    "override": false,
+    "mismatch": {}
+   }
+  }
+ ],
+ "utc_assembled": "2026-10-25T00:45:21Z",
+ "files": {
+  "jsonl": "output\\p5_g1_tasks.jsonl",
+  "npz": "output\\p5_g1_emulator.npz",
+  "csv": "output\\p5_g1_heldout.csv",
+  "report": "output\\p5_g1_report.json"
+ }
+}
