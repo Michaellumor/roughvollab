@@ -66,7 +66,8 @@ script needs it. From the command line the emulator is G̃, the build G1 passes
 (p5_g1_emulator.require_g1: the refined build when the base report calls for it), and an
 --emulator naming another file is refused; every record and report carries G̃'s SHA-256
 (D82). --test refuses an N other than 400 or a noise seed other than 20261022 before any
-draw, and no report is written over (D82). The tests use toy emulators in memory. Run from
+draw, and no report is written over (D82). The tests use toy emulators in memory, and a
+toy emulator file for the pool paths (D92). Run from
 the command line, the script refuses numpy and scipy other than the core interpreter's
 (p5_g1_emulator.CORE_VERSIONS) unless --allow-other-versions, recorded (D81).
 
@@ -689,7 +690,7 @@ def set_emulator(em):
 
 def _worker(args):
     job, kw = args
-    em = get_emulator(kw.pop("emulator_path", None)) if _EM["em"] is None else _EM["em"]
+    em = get_emulator(kw.pop("emulator_path", None))          # every call: a worker's later pairs carry the path too (D92)
     rec, stores = reference_pair(job["y"], job["s"], em, job["i"], job["j"], **kw)
     rec.update(kind="task", task=job["label"], set=job["set"], theta=job["theta"], y=list(map(float, job["y"])),
                utc=utc_now())
@@ -868,7 +869,7 @@ def run_set(set_name, points, eps, em, pool, paths, emulator_path, seeds, levels
 def _grid_job(args):
     """One pair's grid checks, in a worker (the emulator loaded once per process)."""
     job, rec, kw = args
-    em = get_emulator(kw.pop("emulator_path", None)) if _EM["em"] is None else _EM["em"]
+    em = get_emulator(kw.pop("emulator_path", None))          # every call, as in _worker (D92)
     y = np.asarray(job["y"], dtype=float)
     gc, axes = grid_check(rec, y, job["s"], em, kw["grid_n"], kw["extend"], kw["box"], kw["tol_mean"], kw["tol_c"],
                           kw["tol_q"])
@@ -921,6 +922,9 @@ def g2_report(jobs, paths, em, pool, levels=NOISE_LEVELS, grid_n=GRID_N, whole_n
     (its header's `lengths`; a `lengths` given that differs is refused). Refuses if a pair is
     missing from the record or its stored surface is not the one the current emulator gives
     (a rebuilt emulator)."""
+    if pool != 1 and not emulator_path:                       # the grid checks' workers load it from the path (D92)
+        raise SystemExit("report refused: at a pool above 1 the workers load the emulator from emulator_path, and "
+                         "none was given")
     hdr, launches, tasks, stores = load_references(paths["jsonl"], paths["samples"])
     hl = (hdr or {}).get("lengths")
     rec_lengths = (int(hl["burn"]), int(hl["sample"])) if hl else None
