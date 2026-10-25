@@ -4473,6 +4473,144 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Not written.** G2 and everything after it; any change to the draft, v1,
     the decision sheet or earlier entries.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D89** *(2026-10-25)* **P5 v2: gate G2 run and recorded (it failed on its
+  first attempt and on its retry, so P5 v2 stops at G2, line 143; the output
+  committed).**
+  - **Summary.** G2 failed on its first attempt and on its retry, so P5 v2
+    stops (line 143). Every pair whose reference run was accepted matched the
+    grid within tolerance, and the projected costs, 48.2 and 53.6 core-hours,
+    were far within the budget of 1,344. Nothing after G2 has been run, and the
+    sealed test set has never been drawn.
+  - **Attempt 1.** The author's command, `py -3 p5_g2_reference.py --pilot`.
+    The record's header and its first launch line: commit `7e97ac8`,
+    `clean_tree` true, numpy 2.4.4 and scipy 1.17.1, checked against the pinned
+    versions with no override, G̃'s SHA-256, lengths 10,000 and 40,000, seeds
+    79, 89 and 139 (line 143), pool 4, launched at 01:52:58 UTC on 25 October
+    2026. 4 of the 18 pairs were done and 14 raised
+    `TypeError("reference_pair() got an unexpected keyword argument
+    'emulator_path'")`. The cause is in `p5_g2_reference.py`'s `_worker` (line
+    692): at a pool above 1, `run_set` passes `emulator_path` in each task's
+    arguments, and `_worker` removes it only in the call that first loads the
+    emulator, so every later pair in a worker raised at the call to
+    `reference_pair`, before computing anything. The record shows the sequence:
+    the first pair finished at 01:57:04 UTC and all 14 errors are recorded in
+    the same second, while the three other pairs then running finished at
+    01:57:25, 01:58:05 and 02:00:58; the 4 pairs done, the first four
+    submitted, were each a worker's first and ran as written. Every pair's
+    generator is `default_rng([83, i, j])` and every process runs one BLAS
+    thread (`p5_g2_reference.py`, lines 88 and 89), so the pool changes no
+    result. Windows then restarted, at 03:12 UTC, with no launch running; the
+    terminal output of the first launch was lost, and the record and samples
+    were intact (checked read-only at the time). The completion, `py -3
+    p5_g2_reference.py --pilot --pool 1`, a path that passes no `emulator_path`
+    (`p5_g2_reference.py`, lines 862 and 863), launched at 06:43:21 UTC from
+    `7e97ac8` with a clean tree and `n_done_before` 4: the 14 remaining pairs,
+    no errors, the last finished at 07:15:03 UTC. The record then holds 18
+    pairs, 9 `ok` and 9 `reference_failure`, three of the failures from the
+    first launch: all six at s = 0.001 (g2_0000_0, g2_0001_0, g2_0002_0,
+    g2_0003_0, g2_0004_0 and g2_0005_0), two at 0.003 (g2_0000_1 and g2_0003_1)
+    and one at 0.005 (g2_0003_2). Each failure ran twice, at 10,000 and 40,000
+    and then at 20,000 and 80,000, and was accepted at neither (line 68: R-hat
+    at most 1.01 for every parameter and an effective size of H of at least
+    2,000): over their 18 runs, acceptance 0.14% to 4.2%, R-hat as high as
+    14.2, and an effective size of H from 4 to 1,596. The 9 `ok` pairs all
+    passed on the first grid, and the 5 at s = 0.005 on the whole-box grid as
+    well; two comparisons exceeded their fixed value and passed on the Monte
+    Carlo term of the tolerance (D81): g2_0000_2's contraction c on the
+    whole-box grid, 0.01838 against 0.01 (in force 0.0845); g2_0000_2's 5%
+    quantile of H on the whole-box grid, 0.002603 against 0.002 (in force
+    0.00797). The report, written at 08:27:37 UTC from `7e97ac8` with a clean
+    tree: `passed` false, 9 reference failures, a projection of 48.2 core-hours
+    for the test set's 1,200 pairs (a median of 37.2 s per unit of 50,000 steps
+    over 49 runs, times 3.89 units per pair), `go` true. The projection mixes
+    the first launch's timings (10 runs, a median of 85.3 s per unit, four
+    workers running) with the completion's (39 runs, 34.4 s); from the
+    completion's runs alone it would be 44.6 core-hours, and at the first
+    launch's median 110.6, both far within 1,344, so the mix changes nothing.
+  - **The retry.** The author's command, `py -3 p5_g2_reference.py
+    --pilot-retry --pool 1`, at doubled lengths on fresh surfaces: the header's
+    `lengths` 20,000 and 80,000 (its `burn` and `sample` keep the written
+    values, 10,000 and 40,000), seeds 131, 137 and 149 (line 143), each pair
+    keyed `default_rng([83, i, j])`; one launch, at 08:40:48 UTC from `7e97ac8`
+    with a clean tree and the versions as above; 18 pairs, no errors, the last
+    finished at 09:29:36 UTC. 13 `ok` and 5 `reference_failure`, all five at s
+    = 0.001 (g2r_0000_0, g2r_0001_0, g2r_0003_0, g2r_0004_0 and g2r_0005_0):
+    over their 10 runs, at 20,000 and 80,000 and then at 40,000 and 160,000,
+    acceptance 0.41% to 3.1%, R-hat as high as 25.9 (g2r_0004_0, the fixed
+    point at H = 0.04), and an effective size of H from 4 to 1,817. The 13 `ok`
+    pairs all passed on the first grid, and the 6 at s = 0.005 on the whole-box
+    grid as well; two comparisons exceeded their fixed value and passed on the
+    Monte Carlo term: g2r_0003_1's mean of H on the first grid, 0.001277
+    against 0.001 (in force 0.0016); g2r_0003_1's 95% quantile of H on the
+    first grid, 0.002435 against 0.002 (in force 0.00338). The report, written
+    at 11:07:31 UTC from `7e97ac8` with a clean tree: `passed` false, 5
+    reference failures, a projection of 53.6 core-hours (a median of 65.8 s per
+    unit of 100,000 steps over 36 runs, times 2.44 units per pair), `go` true.
+  - **What the two attempts show,** a reading labelled as such. The failures
+    concentrate where the posterior is sharpest: 6 of 6 and then 5 of 6 at s =
+    0.001, 2 of 6 and then none at 0.003, 1 of 6 and then none at 0.005. The
+    acceptance rates and R-hat show chains that did not adapt, not chains that
+    mixed slowly: the uniform-prior runs at s = 0.001 accepted 0.14% to 2.1% of
+    their proposals on the first attempt and 0.41% to 3.1% on the retry,
+    against 4.1% to 12.9% and 9.2% to 12.8% at s = 0.005, and R-hat reached
+    14.2 and 25.9. Doubling the lengths cleared the two larger noise levels but
+    not the smallest.
+  - **The stop.** Under line 143, P5 v2 stops: G3, G3's pilot references, the
+    test set's references, the calibrators and the scoring are not run.
+    `g2_status()` returns `p5_stops` true, "G2 failed its checks on the first
+    attempt and on the retry: P5 stops (line 143)". The two `go` values decide
+    nothing, line 143 taking the go from a passing attempt. This entry is the
+    dated decision-log entry that line 197 asks for on a stop: the stop, its
+    reason and the records up to it, with no hypothesis scored and nothing
+    re-run or tuned beyond the retry. No OSF act has been taken yet; a notice
+    of the stop on `695fw` is the author's, and follows this entry.
+  - **This sitting's checks.** Read-only, Python reading the files as they are,
+    with `g2_status()` and `require_g1()` the only functions of the scripts
+    called beside helpers that build paths or hash files; `output/` unchanged
+    (its listing, sizes and times); nothing sampled, priced, built, trained or
+    drawn. 1, attempt 1's record: one header and two launch lines as above,
+    each launch from `7e97ac8` with a clean tree and no override; 18 distinct
+    pair records, 9 `ok` and 9 `reference_failure`; 14 `task_error` lines, all
+    the TypeError, all between the two launches, each for a pair with a later
+    record; the first launch's 4 pairs the first four submitted; every pair's
+    generator `default_rng([83, i, j])`; no other line. 2, its report: as
+    above, its statuses equal to the record's. 3, the retry's record and
+    report: as above, no `task_error`. 4, `g2_status()` as above. 5, the
+    samples: each consolidated archive holds exactly the arrays its record
+    implies for the `ok` pairs, each pair's `_u` array and one per direct run
+    (19 and 23), each of n_chains × sample entries of its accepted run, and
+    equals the union of its `_parts` files array for array (`uint16`); the
+    `_parts` folders are not committed. 6, G̃: both headers carry G̃'s SHA-256,
+    and `require_g1()` returns `output/p5_g1_emulator.npz`, whose bytes hash to
+    it. No `output/p5_g3_pilot_refs*` or `output/p5_ref_test*` exists. The six
+    committed blobs, the text files' with LF line endings and their working
+    copies CRLF, as with G1's output, the two `.npz` byte for byte the files on
+    disk:
+    - `output/p5_g2_pilot.jsonl`, 50,081 bytes,
+      `80d265f850c75d04c64bc153ea42c292d583eb059b78bfc20d4bc67907e1ddae`
+    - `output/p5_g2_pilot_samples.npz`, 1,120,357 bytes,
+      `d27d619c5cf350e93745c286dd86ba084878799f5de4a72156ea2daf1e4a6271`
+    - `output/p5_g2_report.json`, 57,797 bytes,
+      `1756d30fd4ab23322289da17c57ef42427072132769dc82f386af220ef0b7bb4`
+    - `output/p5_g2r_pilot.jsonl`, 45,183 bytes,
+      `7c4dcc2c6ca477c230fc8e56ca8fb937e632076ac0698bc54cc2eefb8df668f5`
+    - `output/p5_g2r_pilot_samples.npz`, 1,861,426 bytes,
+      `869837b7c21ccc8a4bd44cafd50b372193c0cebf87079a1dd658b96fa20bb822`
+    - `output/p5_g2r_report.json`, 59,463 bytes,
+      `a4966b55e89dc9c5ee6471c79eb590b3352207c3ba84eb15ce55cfd99ad6305b`
+  - **What was seen.** G2's pilot surfaces and the posteriors on them: the
+    means and contractions of H for the passing pairs, and the diagnostics of
+    the failing ones. None is a test surface, no network exists, and nothing
+    about the hypotheses was looked at.
+  - **Who did what.** The author ran attempt 1, its completion and the retry.
+    The G2 pre-flight (25 October 2026, to 01:50 UTC), the read-only checks
+    during the runs and this sitting were held in one Claude Code session on
+    Claude Opus 5.5, the model its transcript records for every message on 25
+    October; the author confirmed that no other sitting is to be named.
+  - **Not written.** Any continuation of P5, which would be a new version
+    registered before any run; any change to the draft, v1, the decision sheet
+    or earlier entries.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -4531,9 +4669,11 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   posterior under its own training prior, scoring each against that posterior
   on a frozen Chebyshev emulator of the rough Heston surface, with gates G0 to
   G3, three noise levels and two priors on H; a two-step optimiser through the
-  emulator remains an exploratory, labelled analysis. G0 has been run, nothing
-  after it; G1 is next. Targets unchanged: arXiv q-fin.CP, then SIFIN,
-  Quantitative Finance or ACM ICAIF.
+  emulator remains an exploratory, labelled analysis. G0 and G1 passed (D62,
+  D88); v2 stopped at G2 on 25 October 2026, its reference sampler failing to
+  converge at the lowest noise level on both attempts (D89); a continuation
+  would be a new, separately registered version. Targets unchanged: arXiv
+  q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
