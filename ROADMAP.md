@@ -4720,6 +4720,79 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     its opening paragraph says; no code, script, test or protocol text changes;
     nothing on OSF.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D92** *(2026-10-25)* **P5 v3: the pool bug fixed in `p5_g2_reference.py`
+  (D89), with a test that runs both pool paths under spawn and fork (code and
+  tests; nothing run on real data).**
+  - **Summary.** `_worker` and `_grid_job` now take the emulator's path out of
+    a task's arguments on every call, not only a worker's first, so its later
+    pairs no longer pass it to `reference_pair` (D89); `g2_report` refuses a
+    pool above 1 without the path. A new test of both pool paths fails without
+    the fix, as G2's first launch did, and passes with it (D91, step 4).
+  - **The fix.** In `_worker` and `_grid_job`,
+    `get_emulator(kw.pop("emulator_path", None)) if _EM["em"] is None else
+    _EM["em"]` removed the path from a task's arguments only in a worker's
+    first call; the line is now `get_emulator(kw.pop("emulator_path", None))`,
+    on every call. `get_emulator` returns the process's cached emulator when
+    the path matches it or is None and loads the file otherwise, so at pool 1,
+    where no path is passed, nothing changes, and a worker under fork that
+    inherits a parent's emulator from another path loads the path it is given.
+    In `_grid_job` the old line was harmless, since it reads its arguments by
+    key; it is changed alike. `g2_report` now refuses a pool above 1 called
+    without `emulator_path`, which would otherwise leave its workers to load
+    `EMULATOR_PATH`, G̃, whatever emulator the caller holds; `main` passes the
+    path, so no run changes. The module docstring now says the tests also use a
+    toy emulator file.
+  - **The audit.** The other process pools, in `p5_g0_pilot.launch`,
+    `p5_g0_main.launch_main` and `p5_g1_emulator.launch`, submit workers that
+    pass their keyword arguments unchanged and keep no per-process cache; `_EM`
+    is the only such cache in the six scripts. `p5_g3_calibrators.py`
+    parallelises through torch threads, and `p5_stage2.py` has no process pool.
+  - **The test.** `test_the_pool_paths_give_every_pair_what_one_process_gives`
+    in `test_p5_g2_reference.py`, run once per start method, spawn and fork,
+    each skipped where the platform has none (Windows has no fork). A toy
+    emulator file, the test file's linear toy at the box's first-kind Chebyshev
+    nodes, two per dimension, with every key the loader and the record's header
+    read, is written to a temporary folder and loaded in the parent as `main`
+    loads G̃; `EMULATOR_PATH` points at a missing file, and `_no_sealed_draws`
+    is active. Four pairs (two points, two noise levels), all accepted, run at
+    pool 1 and then at pool 2 twice: with the parent's emulator cached, and
+    with that cache cleared so that every worker loads the file (under fork the
+    workers otherwise inherit it). Each pool-2 launch must return 4 and record
+    no `task_error` line; every record (its times aside), stored sample array
+    and grid check from `g2_report` at pool 2 must equal the pool-1 run's; and
+    `g2_report` at pool 2 without the path must be refused. Without the
+    `_worker` fix the test fails under spawn as G2's first launch did, the
+    launch doing 2 of the 4 pairs, each worker failing its second; with it, it
+    passes.
+  - **Local runs.** On the author's machine (Windows 11, Python 3.14.3, numpy
+    2.4.4 and scipy 1.17.1, the core interpreter), `test_p5_g2_reference.py`
+    only: 16 passed, 1 skipped (fork). The suite collects 350 tests, the 348
+    before and the new test's two cases, as `CONTRIBUTING.md` now says. CI runs
+    both cases on Linux, where fork exists.
+  - **The hash v2 binds.** `p5_g2_reference.py` no longer has the blob hash
+    that line 7 of the frozen draft binds. v2 is stopped (D89, D90), and its
+    records were made at `7e97ac8`, where the file still has that hash; v3's
+    freeze binds the new one (the plan, item 6).
+  - **The review.** One independent read-only reviewer, a subagent of this
+    session on Claude Opus 5.5, given the diff and the plan's item 2 but not
+    this sitting's conclusions, found no bug: the fix holds under both start
+    methods, the test fails on the unfixed code under both, and its exact
+    comparisons are not exposed to BLAS threading (the emulator's `einsum`
+    calls no BLAS, and the sampler's 4 × 4 covariances over at most 601 steps
+    fall below OpenBLAS's threading thresholds). Of its three nits and two
+    risks, four are taken up here: `g2_report`'s refusal above; the test
+    asserting `launch`'s return rather than its printed line, and its pairs'
+    acceptance; and two stale docstrings. The fifth is for D93: a candidate
+    sampler installed by patching the module in the parent would not reach
+    spawned workers, so the study installs it inside each worker.
+  - **What was seen.** Nothing: the test runs a toy emulator. No real surface
+    was used, nothing was sampled on G̃, and nothing was drawn from the sealed
+    streams.
+  - **Who did what.** This sitting, in the Claude Code session of D89 to D91,
+    ran on Claude Opus 5.5, as did its reviewer.
+  - **Not written.** The sampler's start and first proposal (D94), the
+    development study (D93), any protocol text.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

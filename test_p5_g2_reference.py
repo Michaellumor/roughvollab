@@ -5,8 +5,9 @@ guard the MACHINERY on toy emulators in memory: the literals written into the dr
 sample size on synthetic chains; the weighted summaries; the sampler on a linear
 emulator, whose posterior is a known Gaussian; the repeat and failure rules; the
 reweighting and the direct-run path; the grid checks; the draws; the record, resume
-and report on a toy pilot. Nothing here touches the real emulator, which is built at G1
-after freezing.
+and report on a toy pilot; and the two pool paths, on a small toy emulator written to a
+temporary file (D92). Nothing here touches the real emulator, G̃, which G1 built
+(D88).
 """
 import json
 from pathlib import Path
@@ -627,3 +628,82 @@ def test_the_test_set_and_the_emulator_are_fixed_before_any_draw_or_run(tmp_path
     np.savez(em_file, stage=np.array("base"), commit=np.array("x"), values=np.ones((2, 1, 1, 2, 3)))   # another file
     with pytest.raises(SystemExit, match="launch refused: .* emulator_sha256"):
         R.run_set("g2", *args)
+
+
+# ---- D92: the pool paths, whose bug stopped G2's first launch (D89) ----
+def _toy_emulator_file(path, em):
+    """A small emulator file holding every key the loader and the record's header read: the
+    linear toy at the box's first-kind Chebyshev nodes, two per dimension, so that the
+    interpolant is the toy itself."""
+    xs = [LO[d] + (E.cheb_nodes(2) + 1.0) / 2.0 * (HI[d] - LO[d]) for d in range(4)]
+    nodes = np.stack(np.meshgrid(*xs, indexing="ij"), axis=-1).reshape(-1, 4)
+    np.savez(path, values=em.evaluate_many(nodes).reshape(2, 2, 2, 2, 35), box_lo=LO, box_hi=HI,
+             TS=np.array([0.1, 0.25, 0.5, 1.0, 2.0]), z=np.linspace(-1.5, 1.5, 7), N=np.array(8000),
+             stage=np.array("base"), commit=np.array("toy"))
+    return str(path)
+
+
+def _untimed(d):
+    """A record or a grid check without its times, which differ from run to run."""
+    if isinstance(d, dict):
+        return {k: _untimed(v) for k, v in d.items() if k not in ("utc", "seconds")}
+    if isinstance(d, list):
+        return [_untimed(v) for v in d]
+    return d
+
+
+@pytest.mark.parametrize("method", ["spawn", "fork"])
+def test_the_pool_paths_give_every_pair_what_one_process_gives(tmp_path, monkeypatch, method):
+    """D92: at a pool above 1 every pair a worker takes carries the emulator's path, and the
+    worker serves it from its cache or the file (D89: the bug failed each worker's second pair).
+    Both pool paths, `launch` and `g2_report`, run with two workers over four pairs, so that
+    some worker takes a second; under spawn (the author's machine) and fork (CI's Linux, whose
+    workers inherit the parent's cache); first with the emulator loaded in the parent as `main`
+    loads G̃, then with that cache cleared, so that every worker loads the file. Every record,
+    stored sample and grid check equals a pool-1 run's, the generator being per pair."""
+    import functools
+    import multiprocessing
+    if method not in multiprocessing.get_all_start_methods():
+        pytest.skip(f"the {method} start method is not available on this platform")
+    monkeypatch.setattr(R, "ProcessPoolExecutor",
+                        functools.partial(R.ProcessPoolExecutor, mp_context=multiprocessing.get_context(method)))
+    monkeypatch.setattr(R, "EMULATOR_PATH", str(tmp_path / "no_g_tilde.npz"))  # no G̃ here or in fork's workers
+    _no_sealed_draws(monkeypatch)                                                     # a draw would fail the test (D82)
+    counts, launch = [], R.launch
+    monkeypatch.setattr(R, "launch", lambda *a, **k: counts.append(launch(*a, **k)) or counts[-1])  # pairs done
+    em_file = _toy_emulator_file(tmp_path / "toy_em.npz", LinearEm())
+    pts, eps, levels = np.array([CENTRE, CENTRE + 0.1 * (HI - LO)]), R.noise_draws(89, 2, 2), (0.003, 0.005)
+    kw = {"burn": 300, "sample": 900, "kish_min": 50.0, "rhat_max": 1.5, "ess_min": 20.0}
+
+    def paths(name):
+        return {"jsonl": str(tmp_path / f"{name}.jsonl"), "samples": str(tmp_path / f"{name}.npz"),
+                "report": str(tmp_path / f"{name}.json")}
+
+    def checks(rep):
+        return [(r["task"], r["status"], r.get("passed"), _untimed(r.get("grid")), _untimed(r.get("whole_box")))
+                for r in rep["pairs"]]
+
+    R._EM["path"], R._EM["em"] = None, None
+    try:
+        em = R.get_emulator(em_file)                                                  # from the file, as main loads G̃
+        jobs = R.run_set("g2", pts, eps, em, 1, paths("one"), em_file, {"points": 79, "noise": 89}, levels, kw)
+        _, _, ref, ref_st = R.load_references(paths("one")["jsonl"], paths("one")["samples"])
+        ref_checks = checks(R.g2_report(jobs, paths("one"), em, 1, levels, grid_n=4, whole_n=4))
+        assert len(jobs) == 4 and sorted(ref) == [j["label"] for j in jobs] and counts == [4]
+        assert all(r["status"] == "ok" for r in ref.values())                         # so every pair reaches the grid pool
+        with pytest.raises(SystemExit, match="none was given"):                       # a pool's workers need the path
+            R.g2_report(jobs, paths("one"), em, 2, levels, grid_n=4, whole_n=4)
+        for name in ("cached", "loading"):
+            if name == "loading":
+                R._EM["path"], R._EM["em"] = None, None                               # every worker loads the file
+            R.run_set("g2", pts, eps, em, 2, paths(name), em_file, {"points": 79, "noise": 89}, levels, kw)
+            assert counts[-1] == 4                                                    # launch did every pair
+            assert '"task_error"' not in Path(paths(name)["jsonl"]).read_text(encoding="utf-8")
+            hdr, launches, tasks, st = R.load_references(paths(name)["jsonl"], paths(name)["samples"])
+            assert [l["pool"] for l in launches] == [2] and hdr["emulator_sha256"] == E.sha256_file(em_file)
+            assert {k: _untimed(v) for k, v in tasks.items()} == {k: _untimed(v) for k, v in ref.items()}
+            assert sorted(st) == sorted(ref_st) and all(np.array_equal(st[k], ref_st[k]) for k in ref_st)
+            rep = R.g2_report(jobs, paths(name), em, 2, levels, grid_n=4, whole_n=4, emulator_path=em_file)
+            assert checks(rep) == ref_checks and rep["cost"]["pool"] == 2
+    finally:
+        R._EM["path"], R._EM["em"] = None, None
