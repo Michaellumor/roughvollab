@@ -210,8 +210,11 @@ def test_draws_surfaces_and_the_sealed_set(tmp_path, monkeypatch):
     _no_sealed_draws(monkeypatch)                                                     # a draw would fail the test (D82)
     with pytest.raises(SystemExit, match="G2 has not passed"):
         R.main(["--test", "--emulator", "no_such_file.npz"])                          # refused before any load (D81)
+    with pytest.raises(SystemExit, match=r"--emulator no_such_file\.npz is not G"):
+        R.main(["--pilot", "--emulator", "no_such_file.npz"])                         # G1's build is committed (D88): not G̃, refused before any load
+    monkeypatch.setattr(E, "paths", lambda stage="base": {k: str(tmp_path / f"no_g1_{stage}.{k}") for k in ("jsonl", "npz", "csv", "report")})
     with pytest.raises(SystemExit, match="no emulator"):
-        R.main(["--pilot", "--emulator", "no_such_file.npz"])                         # G1 is built after freezing
+        R.main(["--pilot", "--emulator", "no_such_file.npz"])                         # with no G1 build (an empty folder), no emulator
     R.main([])                                                                        # no flag: the design, then hold
 
 
@@ -410,6 +413,7 @@ def test_g2_pilot_set_fixed_points_retry_and_go_no_go(tmp_path, monkeypatch):
         R.main(["--g3-pilot", "--emulator", "no_such_file.npz"])
     rep(first, True, True, 1)
     _no_sealed_draws(monkeypatch)                                                    # a draw would fail the test (D82)
+    monkeypatch.setattr(E, "paths", lambda stage="base": {k: str(tmp_path / f"no_g1_{stage}.{k}") for k in ("jsonl", "npz", "csv", "report")})
     with pytest.raises(SystemExit, match="no emulator"):                             # past G2's gate, the emulator is needed
         R.main(["--test", "--emulator", "no_such_file.npz"])
 

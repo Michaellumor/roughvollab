@@ -4380,6 +4380,99 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Not written.** Anything on OSF; any P5 run; any box; D86 and every
     earlier entry.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D88** *(2026-10-25)* **P5 v2: gate G1 run, assembled and recorded (G̃ the
+  base build; Q1 claimed at all three noise levels; no refinement; the output
+  committed).**
+  - **Summary.** G1 passed at all three noise levels with no refinement (e =
+    0.000021; smallest bound 0.0002). G̃ is the base build, SHA-256
+    `c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add`,
+    committed with its record, held-out table and report. Nothing after G1 has
+    been run.
+  - **The pre-flight.** Held on 23 October 2026, read-only, in a Claude Code
+    sitting: a clean tree at `3db18b5`; the 13 bound files' blobs at `HEAD`
+    hashing to line 7's values, and `git diff --quiet 59ca589 HEAD` over them
+    exiting 0; `py -3` the core interpreter (Python 3.14.3, numpy 2.4.4, scipy
+    1.17.1) with no virtual environment active; no G1 output; 8 logical CPUs
+    and 11.5 GB free on C:. The hold mode, `py -3 p5_g1_emulator.py` with no
+    flag (run with Python's bytecode writing off, so that nothing was written),
+    gave an identity difference of 0.0 over 35 quotes in 41 s and the estimate
+    of 968 sets, 77.4 core-hours and 19.4 h on 4 workers, pricing nothing of
+    the design. The author's first two attempts to start the run never reached
+    the script: they were made from the wrong folder, and the pasted prompt
+    text made PowerShell's `PS` alias run.
+  - **The run.** The author's command, `py -3 p5_g1_emulator.py --run`, in his
+    own terminal. The record's header and its one launch line: commit
+    `3db18b5`, `clean_tree` true, Python 3.14.3 with numpy 2.4.4 and scipy
+    1.17.1, checked against the pinned versions with no override, Windows 11,
+    `cpu_count` 8, pool 4, launched at 05:10:45 UTC on 24 October 2026. The
+    identity check at launch gave 0.0 in 22 s (the run's output, as the author
+    reports it). One launch: 968 tasks (768 node triples, 200 held-out points),
+    0 errors, every quote finite, no point re-priced (no `first_attempt` line).
+    The run reported 1,156.0 min of wall time against the estimate's 19.4 h,
+    the record's launch and last task (00:26:44 UTC on 25 October) agreeing;
+    the task seconds sum to 277,139 s, 77.0 core-hours (222,883.7 for the
+    triples, 54,255.3 for the held-out points).
+  - **The assembly.** `py -3 p5_g1_emulator.py --assemble`, run by the author
+    at 00:45:21 UTC on 25 October 2026 from `3db18b5` with a clean tree (the
+    report's `utc_assembled`, `assembled_commit` and `assembled_clean_tree`).
+    e, the 99th percentile of the absolute error over the 7,000 held-out quotes
+    (numpy's default, linear interpolation), is 0.000021 (2.0945e-05, 0.0021
+    vol point) against the bound s/5 = 0.0002 at s = 0.1 vol point, about a
+    tenth of it; the bounds at 0.3 and 0.5 vol point, 0.0006 and 0.001, are
+    wider still. Q1 is claimed at all three levels. The maximum, 0.000210,
+    reported beside e as line 54 requires, exceeds the smallest level's bound
+    by 5%; the gate is on the 99th percentile, so it decides nothing. The
+    per-maturity 99th percentiles rise with T: 5.9e-06 at T = 0.1, 7.7e-06 at
+    0.25, 1.8e-05 at 0.5, 2.7e-05 at 1.0 and 2.8e-05 at 2.0. The tails: H
+    2.0e-10, ν 4.1e-05, ρ 9.3e-06 and ξ₀ 6.5e-07; ν's is the largest, the
+    dimension a refinement would have doubled. No refinement: `refine` is
+    false, and `require_g1()` returns the base build.
+  - **This sitting's checks.** Read-only, Python reading the files as they are,
+    `output/` unchanged (its listing, sizes and times), nothing priced, built,
+    sampled or trained. 1, the record: one header and one launch line, 968
+    distinct task lines (768 train, 200 heldout), no `stop` or `task_error`
+    line, every task finite, no `first_attempt` line, header and launch as
+    above. 2, the report: stage base, nodes (16, 8, 6, 12), `n_train` 768,
+    `n_heldout` 200, the values above, `repriced_points` empty,
+    `seconds_train_total` 222,883.7 and `seconds_heldout_total` 54,255.3, one
+    launch. 3, the held-out table: 7,000 rows; the 99th percentile and the
+    maximum of the absolute `diff` equal the report's `e_p99` and `max_abs`
+    exactly, and every `diff` is exactly `G_tilde` − `G`. 4, the emulator:
+    `values` (16, 8, 6, 12, 35), all finite, stage base; the box equals draft
+    line 39's and the node coordinates are its first-kind Chebyshev nodes,
+    exactly; `load_emulator()` at the 200 held-out points reproduces `G_tilde`
+    exactly. 5, `require_g1()` returns `output/p5_g1_emulator.npz`, whose bytes
+    on disk hash to G̃'s SHA-256 above. The four committed blobs, the text
+    files' with LF line endings and their working copies CRLF, as with G0's
+    output, the `.npz` byte for byte the file on disk:
+    - `output/p5_g1_tasks.jsonl`, 22,487,574 bytes,
+      `19f684b63e3eba96058610020d6f7331f00d4815556a2f069778272883e36f4c`
+    - `output/p5_g1_emulator.npz`, 2,584,804 bytes,
+      `c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add`
+    - `output/p5_g1_heldout.csv`, 1,086,349 bytes,
+      `cbd75656d39a65e663eca0f9801110820bcb87300c517d4b2ceb1db6e4052a56`
+    - `output/p5_g1_report.json`, 2,350 bytes,
+      `959d959dbc52cb125094bfa20b9f0c526e17efb3dd8cb01e7b0c17adc9b212d5`
+  - **Two tests updated.** On this entry's first commit CI failed two tests in
+    `test_p5_g2_reference.py`, which expected the refusal "no emulator" because
+    `output/` held no G1 build; they now point `p5_g1_emulator.paths` at an
+    empty temporary folder for that refusal, with one new assertion that, G̃
+    being committed, a file other than G̃ is refused before any load, and the
+    failing run drew nothing sealed, both tests blocking sealed draws and their
+    refusals coming before any load.
+  - **What was seen.** G1's output only: the node values and the held-out
+    errors, read by the assembly and by this sitting's checks. No reference
+    posterior, network or test surface exists yet, and nothing about the
+    hypotheses was looked at.
+  - **Who did what.** The author ran the build and the assembly in his own
+    terminal. The pre-flight was held in a Claude Code session on Claude Opus
+    5.5, the model that session's transcript records for all 39 of its messages
+    between 22:15 and 22:50 UTC on 23 October 2026; this sitting, in the same
+    session, also ran on Claude Opus 5.5. Line 200 is frozen, so the log
+    carries this.
+  - **Not written.** G2 and everything after it; any change to the draft, v1,
+    the decision sheet or earlier entries.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
