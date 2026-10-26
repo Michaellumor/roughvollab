@@ -212,5 +212,5 @@ Drafted with AI assistance (Claude) from the sources listed at the end of this s
 - [x] Every number in the hypotheses table defensible in the author's own words.
 - [ ] Gate tolerances declared; G0's scoping script committed before the scoping run, and the main run's settings written in before the main run.
 - [x] Prior-work section written from the papers themselves.
-- [ ] Independent review before freezing, with findings and fixes recorded (v2's: the pre-freeze review of 22 October 2026, `docs/protocols/P5_v2_prefreeze_review_2026-10-22.md`, and D81; the second, shorter review of D81's changes, `docs/protocols/P5_v2_second_review_2026-10-22.md`, and D82; v3's: the independent review of the sampler change, the code and this text against the plan, D97, its record to be cited here before the freeze).
+- [ ] Independent review before freezing, with findings and fixes recorded (v2's: the pre-freeze review of 22 October 2026, `docs/protocols/P5_v2_prefreeze_review_2026-10-22.md`, and D81; the second, shorter review of D81's changes, `docs/protocols/P5_v2_second_review_2026-10-22.md`, and D82; v3's: the independent review of the sampler change, the code and this text against the plan, D97, its record `docs/protocols/P5_v3_review_2026-10-26.md`).
 - [ ] OSF registration amended.
