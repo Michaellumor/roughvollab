@@ -6316,6 +6316,54 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     `output/`; D99 and every earlier entry. The living documents that still
     call v3 a draft or unregistered are D101's.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D101** *(2026-10-26)* **P5 v3: the living documents brought up to date with
+  v3's freeze and registration (the ROADMAP's P5 paragraph; the amendment
+  file's status line; docs only).**
+  - **Summary.** After D100, two living documents stopped short of v3's freeze:
+    the ROADMAP's P5 paragraph gave v2 as the registered protocol, and the
+    amendment file's status line ended at D99. The paragraph is replaced and
+    the status line gains a sentence on what has happened since. The frozen
+    draft and the files it binds are untouched; nothing of P5 has been run.
+  - **The changes.** 1, `ROADMAP.md`, the P5 bullet under Publication seeds
+    (lines 6365 to 6381 before this entry was added): replaced. The new
+    paragraph keeps v1's freeze and registration (APSF7) and gives v2's freeze
+    at `59ca589`, its registration as `695fw` and its stop at G2, with the
+    notice on OSF; v3's freeze at `740b0ca` and its registration as `jumhf`,
+    with the files it binds and the emulator; APSF7 pointing to v2 and 695FW to
+    v3, neither withdrawn; the question and the design in one sentence, kept
+    from the paragraph it replaces, and what v3 changes, in the words of the
+    paragraph 695FW now carries; that G0 and G1 passed under v2 and that v3's
+    G2 is next, none of v3's gates having been run; and the targets, unchanged.
+    Each claim was checked against the frozen draft, the log and OSF's public
+    records: the two-step optimiser through G̃ is still among the exploratory,
+    labelled analyses (draft line 135, byte-identical to v2's); APSF7's and
+    695FW's summaries open with the paragraphs pointing to v2 and to v3, and
+    neither registration is withdrawn (GET requests only); `output/` holds no
+    record of v3's gates. 2, `docs/protocols/P5_v3_amendment.md` line 7: its
+    text kept, one sentence appended ("Then version 3 was frozen …"), giving
+    the freeze, the registration, the update to 695FW and the filled record
+    table (D100, D101), as v2's line 7 gained its own (D87).
+  - **Left as they are, by design.** The frozen draft's own wording and its
+    file name, which only a dated amendment could change; v2's documents, its
+    frozen draft, its amendment file and its decision sheet, which record v2's
+    own path, its stop and its supersession being on 695FW and in D89, D90 and
+    D100; v1's Status line; the plan, whose first paragraph says the file is
+    not edited to record the answers, and which states nothing the freeze has
+    made untrue; `requirements-p5.txt`'s reference to the draft's file and the
+    scripts' docstrings, which are registered files; the Status board, which
+    has no P5 row; `CONTRIBUTING.md`, whose P5 lines are about the test
+    environment; `README.md`, which does not mention P5; log entries D55 to
+    D100 and the review records, which are history.
+  - **Readings, declared.** This sitting read the living documents named above,
+    the frozen draft's line 135 against v2's, the names in `output/`, and OSF's
+    public API for APSF7, 695FW and `jumhf`, GET requests only; it ran nothing.
+  - **What was seen.** Nothing new.
+  - **Who did what.** The author asked for this entry and gives it by the go.
+    This sitting, the one that wrote D100, on Claude Opus 5.5
+    (`claude-opus-5-5`), found the places, wrote the changes and this entry.
+  - **Not written.** Anything on OSF; any P5 run; any box; the frozen draft and
+    the files it binds; D100 and every earlier entry.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -6362,23 +6410,32 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   reframe still pending. Target: arXiv q-fin.CP / math.NA. *(Foundational;
   Layer 4 convergence.)*
 
-- **P5 (protocol v1 frozen 2026-10-02; v2 frozen and registered 2026-10-23) —
-  "Does a learned calibrator know what it cannot know?"** Pre-registered. v1,
-  `docs/protocols/P5_protocol.md`, was frozen before any P5 code existed and
-  registered on OSF as https://doi.org/10.17605/OSF.IO/APSF7. v2,
-  `docs/protocols/P5_protocol_v2_draft.md`, supersedes it: frozen at `59ca589`
-  and registered as https://doi.org/10.17605/OSF.IO/695FW with the files it
-  binds, each byte-identical to its blob; APSF7 points to it and is not
-  withdrawn (D55, D77, D86). v2 asks whether a learned calibrator, a deep
-  ensemble or a neural ratio estimator, is more prior-driven than the exact
-  posterior under its own training prior, scoring each against that posterior
-  on a frozen Chebyshev emulator of the rough Heston surface, with gates G0 to
-  G3, three noise levels and two priors on H; a two-step optimiser through the
-  emulator remains an exploratory, labelled analysis. G0 and G1 passed (D62,
-  D88); v2 stopped at G2 on 25 October 2026, its reference sampler failing to
-  converge at the lowest noise level on both attempts (D89); a continuation
-  would be a new, separately registered version. Targets unchanged: arXiv
-  q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
+- **P5 (protocol v1 frozen 2026-10-02; v2 frozen and registered 2026-10-23; v3
+  frozen and registered 2026-10-26) — "Does a learned calibrator know what it
+  cannot know?"** Pre-registered. v1, `docs/protocols/P5_protocol.md`, was
+  frozen before any P5 code existed and registered on OSF as
+  https://doi.org/10.17605/OSF.IO/APSF7. v2,
+  `docs/protocols/P5_protocol_v2_draft.md`, frozen at `59ca589` and registered
+  as https://doi.org/10.17605/OSF.IO/695FW, superseded it (D55, D77, D86); it
+  stopped at G2 on 25 October 2026, its reference sampler failing to converge
+  at the lowest noise level on both attempts (D89), and says so on OSF (D90).
+  v3, `docs/protocols/P5_protocol_v3_draft.md`, supersedes v2: frozen at
+  `740b0ca` and registered as https://doi.org/10.17605/OSF.IO/JUMHF with the
+  files it binds and the emulator, each byte-identical to its blob; APSF7
+  points to v2 and 695FW to v3, and neither is withdrawn (D91, D95 to D100). v3
+  asks v2's question: whether a learned calibrator, a deep ensemble or a neural
+  ratio estimator, is more prior-driven than the exact posterior under its own
+  training prior, scoring each against that posterior on a frozen Chebyshev
+  emulator of the rough Heston surface, with gates G0 to G3, three noise levels
+  and two priors on H; a two-step optimiser through the emulator remains an
+  exploratory, labelled analysis. It changes the exact reference's start and
+  first proposal, whose failure stopped v2, gives the ratio estimator's sampler
+  the same start by the gradient route, draws fresh seeds for G2 and adopts the
+  emulator built under v2; the hypotheses, priors and tolerances are unchanged.
+  The new start was developed and passed on the surfaces v2's G2 had seen (D93,
+  D94). G0 and G1 passed under v2 (D62, D88); v3's G2 is next, and none of v3's
+  gates has been run. Targets unchanged: arXiv q-fin.CP, then SIFIN,
+  Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
