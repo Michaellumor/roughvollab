@@ -6073,6 +6073,78 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     script, the five forward-model modules, the requirements files or an
     earlier entry; nothing under `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D99** *(2026-10-26)* **P5 v3: the review session's check of D98 before its
+  merge recorded; CI's run of D98's commit cited; the five boxes D95 reopened
+  re-ticked on the author's word (docs only).**
+  - **Summary.** The review's session checked D98's diff before its merge,
+    read-only: the fixes match the record and the author's answers, its two
+    small points outside the repository's texts. CI's run of D98's commit is
+    cited, the fork cases on record. The five reopened boxes are ticked on the
+    author's word; the draft differs from v2's frozen text in 14 lines.
+  - **The check (step 1 of the amendment file; D83's precedent).** Asked by the
+    author at 16:31 UTC on 26 October 2026 and made by 16:38, in D97's session,
+    on Claude Fable 5.1, on PR #253's commit `8200915`, before the merge. It
+    read the diff and the files from the git objects, compared
+    `p5_g2_reference.py` before and after as syntax trees without their
+    docstrings, finding the code identical, counted the tests (378 collected:
+    345 test functions and 33 parametrised cases), read the pull request and
+    its check runs through GitHub's API, and ran no script, test or pricer and
+    opened no P5 output. It found the five must-fix items made, every item of
+    section 7 made or declared, all twenty-two decisions on their leans, and
+    the record, the study's and the check's scripts, `output/`, the
+    forward-model modules and the requirements untouched. Its two small points,
+    neither in the repository's texts: the pull request's description gave the
+    core run as 79 passed and 9 skipped, D98 giving 80, the description having
+    been written before the sixth new test; and pytest was still running on
+    `8200915` when it checked, compile P1 having passed. The author chose to
+    leave the description as it is; pytest passed at 16:38:29 UTC. The author
+    merged PR #253 at 16:41:39 UTC as `95c7d3b`, whose tree is `8200915`'s.
+  - **CI on record (decision 12).** The tests workflow's run 40358271018 on
+    `8200915`
+    (https://github.com/Michaellumor/roughvollab/actions/runs/40358271018): 369
+    passed and 9 skipped of 378, in 1,001 s. Its log is quiet and names no
+    test; by the counts the nine skips are the seven torch tests of the
+    calibrators and the two of Layer 3, CI's environment having no torch, so
+    the two pool tests' fork cases, which skip on the author's Windows machine,
+    ran there and passed. The papers workflow's run 40358271145 passed; on
+    `main`'s merge commit `95c7d3b` all five checks passed.
+  - **The ticks.** On the author's word: boxes 204 (prior knowledge), 209 (the
+    reference sampler), 210 (the ratio estimator's sampler, under Architectures
+    and training) and 213 (the gate tolerances) are ticked, each of those four
+    lines now byte-identical to v2's frozen text; box 215 (the independent
+    review) is ticked and cites, besides v3's review and its record (D97), its
+    fixes (D98) and this check (D99). The draft now differs from v2's frozen
+    blob at `59ca589` in 14 lines, 1, 7, 9, 15, 54, 68, 75, 137, 140, 142, 143,
+    200, 215 and 216. Box 216 waits for the freeze commit.
+  - **The draft and the amendment file, besides.** Draft line 7: the gloss
+    names, under Before freezing, the box for the independent review and the
+    last box, the other four reopened boxes having been re-ticked, and cites
+    D95 to D99. Line 15: the check and this sitting declared, as v2's line 15
+    declared the check of D82 (D83). Line 200: D99 among the sittings on Claude
+    Opus 5.5 in Claude Code; the check by the review's session; the tool's part
+    gains the check, the author's the ticks. The amendment's line 7: the "Since
+    written" sentence gains the check and the ticks; lines 35 and 47 cite D95
+    to D99; line 41 declares the check beside the review and in the sittings'
+    acts, now D88 to D99. Every other line of both files is byte-identical to
+    `main`'s; 216 and 76 lines, CRLF.
+  - **Readings, declared.** This sitting read the check's report and its
+    commands in the review session's transcript, the job log of CI's run
+    through its pre-signed address (GitHub's API, read-only), and the two
+    drafts' lines against v2's frozen blob; it ran nothing.
+  - **What was seen.** Nothing new.
+  - **Who did what.** The author asked for the check, chose to leave the pull
+    request's description as it is, merged D98, and gives the ticks by the go
+    on this entry. The check was made in D97's session, on Claude Fable 5.1.
+    This sitting, in the Claude Code session that held, among others, D89 to
+    D92, D94, D96 and D98, on Claude Opus 5.5 (`claude-opus-5-5`), read the
+    check and CI's record and wrote the ticks, the declarations and this entry.
+  - **Not written.** The freeze commit, which changes only line 7 ("DRAFT." to
+    "FROZEN on" its date, with the hash list) and box 216 (step 2 of the
+    amendment file); the OSF acts, the author's (steps 3 and 4); the
+    post-freeze commit (D100) and the living documents (D101); any change to an
+    earlier entry, v2's documents, v1, the decision sheet, the plan, the
+    scripts, the tests or `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
