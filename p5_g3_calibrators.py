@@ -1,6 +1,7 @@
 """
-p5_g3_calibrators.py — P5 gate G3, the two calibrators (docs/protocols/P5_protocol_v2_draft.md,
-Objects "The calibrators" and "Architecture and training", D68; Gates, G3, D67; the seeds of D68).
+p5_g3_calibrators.py — P5 gate G3, the two calibrators (docs/protocols/P5_protocol_v3_draft.md,
+Objects "The calibrators" and "Architecture and training", D68, with v3's start of the ratio
+estimator's sampler, D95; Gates, G3, D67; the seeds of D68).
 
 The calibrators, each trained per prior and per noise level on surfaces y = G̃(θ) + s ε
 from the emulator (p5_g1_emulator.py), both on one trunk: a multilayer perceptron with
@@ -19,8 +20,15 @@ the cyclic shift of θ by one within the batch, labelled 0; binary cross-entropy
 2B pairs; its posterior under the training prior P, density ∝ P(H) r(θ, y), sampled by
 the sampler of p5_g2_reference.py with log P(H) + logit as the target, the same chains,
 lengths, adaptation, acceptance and single repeat, generator default_rng([107, p, q, i, j]);
-Ĥ and ξ₀ the means over the pooled sampling steps, the 90% interval equal-tailed; a
-failure after the repeat is the calibrator's failure on that pair at that seed.
+its start and first proposal by the gradient route (line 75; the plan's Decision 3, D93 to
+D95): the modes by L-BFGS-B from the 16 starts the generator draws first, with the value and
+the exact gradient of log P(H) + logit in unit coordinates from torch autograd on a float64
+copy of the trained network (NRETarget; the chains' target stays the network as trained),
+Σ the pair's Σ_P from its reference record under P, a preconditioner only; the record of
+each posterior keeps a summary of the start (m, the kept solutions, the optimiser's
+statuses). Ĥ and ξ₀ the means over the pooled sampling steps, the 90% interval
+equal-tailed; a failure after the repeat is the calibrator's failure on that pair at that
+seed.
 
 Optimiser and stopping: Adam at 0.001, β (0.9, 0.999), no weight decay, batch 256 with a
 partial final batch kept, the rate constant; a validation set of 4,000 surfaces per
@@ -411,14 +419,75 @@ def nre_target(run, y):
     return target
 
 
-def nre_posterior(run, y, i, burn=R.BURN, sample=R.SAMPLE, rhat_max=R.RHAT_MAX, ess_min=R.ESS_MIN):
+class NRETarget:
+    """log P(H) + logit(θ, y) as the sampler's target (nre_target's callable: the network as
+    trained), with the gradient route's attributes (line 75; D95): value_grad_unit(x) and
+    grad_unit(x), the log-target and its exact gradient in unit coordinates from torch autograd
+    on a float64 copy of the network plus the prior's analytic gradient in x_H; sigma, the
+    pair's Σ_P from its reference record (p5_g2_reference, `under[P]["sigma_P"]`), a
+    preconditioner only; bounds_unit, H within ε of the faces, where log P(H) is −inf."""
+
+    def __init__(self, run, y, sigma_P):
+        require_torch()
+        if sigma_P is None:
+            raise ValueError("the ratio estimator's sampler needs the pair's Σ_P from its reference record (line 75, D95); "
+                             "the record has none")
+        self.run, self.prior = run, run["prior"]
+        self._target = nre_target(run, y)
+        self.x64 = torch.as_tensor(run["std"](np.asarray(y, dtype=float).reshape(1, -1)), dtype=torch.float64)
+        self.net64 = copy.deepcopy(run["nets"][0]).double().eval()
+        self.sigma = np.asarray(sigma_P, dtype=float)
+        if self.sigma.shape != (4, 4):
+            raise ValueError(f"Σ_P has shape {self.sigma.shape}, not (4, 4)")
+        self.bounds_unit = (np.array([R.EPS_H, 0.0, 0.0, 0.0]), np.array([1.0 - R.EPS_H, 1.0, 1.0, 1.0]))
+
+    def __call__(self, th):
+        return self._target(th)
+
+    def value_grad_unit(self, x):
+        """(log P(H) + logit, its gradient in unit coordinates) at one unit-cube point: the
+        logit and its gradient in float64 by autograd, the prior's part analytic."""
+        xu = torch.as_tensor(np.asarray(x, dtype=float).reshape(1, 4), dtype=torch.float64).requires_grad_(True)
+        logit = self.net64(torch.cat([self.x64, xu], dim=1)).reshape(())
+        (g,) = torch.autograd.grad(logit, xu)
+        g = g[0].detach().numpy().astype(float).copy()
+        u = float(np.asarray(x, dtype=float).reshape(4)[0])
+        f = float(logit.detach()) + float(R.prior_logpdf(R.H_LO + u * R.H_W, self.prior))
+        g[0] += R.prior_grad_curv(u, self.prior)[0]
+        return f, g
+
+    def grad_unit(self, x):
+        return self.value_grad_unit(x)[1]
+
+
+def _trim_start(st):
+    """The ratio estimator's record keeps a summary of each run's start, not the whole (the
+    scores of 1,200 pairs at five seeds would repeat Σ_P, the reference's, thousands of times):
+    the route, m, the kept solutions' x and log-target with the starts reaching each, the
+    optimiser's statuses, the chains' solution and clipped coordinates, the acceptance over the
+    first 500 burn-in steps and the optimiser's seconds (D95)."""
+    if not st:
+        return st
+    acc_key = "acceptance_first_%d" % R.ADAPT_EVERY
+    return {"route": st.get("route"), "m": st.get("m"), "starts_elsewhere": st.get("starts_elsewhere"),
+            "kept": [{"x": k.get("x"), "logf": k.get("logf"), "n_starts_reached": k.get("n_starts_reached")} for k in st.get("kept") or []],
+            "optimiser": {k: v for k, v in (st.get("optimiser") or {}).items() if k in ("status", "nit", "reached")},
+            "chain_solution": st.get("chain_solution"), "n_start_clipped": st.get("n_start_clipped"),
+            acc_key: st.get(acc_key), "optimiser_seconds": st.get("optimiser_seconds")}
+
+
+def nre_posterior(run, y, i, sigma_P, burn=R.BURN, sample=R.SAMPLE, rhat_max=R.RHAT_MAX, ess_min=R.ESS_MIN):
     """The ratio estimator's posterior for one pair by the reference's sampler (line 75):
-    generator default_rng([107, p, q, i, j]); Ĥ and ξ₀ the pooled means, the equal-tailed
-    90% interval; a failure after the repeat is the calibrator's failure on the pair."""
+    generator default_rng([107, p, q, i, j]); the start and first proposal by the gradient
+    route on NRETarget, with the pair's Σ_P from its reference record (D95); Ĥ and ξ₀ the
+    pooled means, the equal-tailed 90% interval; a failure after the repeat is the
+    calibrator's failure on the pair."""
     rng = np.random.default_rng([SEED_NRE, PRIOR_INDEX[run["prior"]], int(run["q"]), int(i), int(run["j"])])
     t0 = time.perf_counter()
     chains, attempts = R._run_with_repeat(None, None, None, rng, "uniform", burn, sample, BOX, rhat_max, ess_min,
-                                          target=nre_target(run, y))
+                                          target=NRETarget(run, y, sigma_P))
+    for a in attempts:
+        a["start"] = _trim_start(a.get("start"))
     out = {"attempts": attempts, "seconds": time.perf_counter() - t0}
     if chains is None:
         return dict(out, status="failure", H_hat=None, xi0_hat=None, lo=None, hi=None, n_pooled=None)
@@ -434,8 +503,8 @@ def nre_posterior(run, y, i, burn=R.BURN, sample=R.SAMPLE, rhat_max=R.RHAT_MAX, 
 # --------------------------------------------------------------------------- #
 def pilot_surfaces(refs, prior, j):
     """The G3 pilot pairs at level j (0-based j_ref = j − 1 in the reference's records) whose
-    reference was accepted: (i, θ, y, Ĥ_exact,P, mean ξ₀ under P). Failures are removed and
-    counted (line 144)."""
+    reference was accepted: (i, θ, y, Ĥ_exact,P, mean ξ₀ under P, Σ_P under P for the ratio
+    estimator's start, D95). Failures are removed and counted (line 144)."""
     j_ref = int(j) - 1
     rows, removed = [], []
     for lab, rec in sorted(refs.items()):
@@ -446,7 +515,7 @@ def pilot_surfaces(refs, prior, j):
             continue
         u = rec["under"][prior]
         rows.append({"i": rec["i"], "theta": rec["theta"], "y": np.asarray(rec["y"], dtype=float),
-                     "H_exact": u["mean_H"], "xi0_exact": u["mean_xi0"]})
+                     "H_exact": u["mean_H"], "xi0_exact": u["mean_xi0"], "sigma_P": u.get("sigma_P")})
     return rows, removed
 
 
@@ -489,7 +558,7 @@ def predict_rows(run, rows, burn=R.BURN, sample=R.SAMPLE, rhat_max=R.RHAT_MAX, e
         return [(float(pr["H_hat"][k]), float(pr["xi0_hat"][k])) for k in range(len(rows))], [], cost
     preds, fails, attempts = [], [], []
     for r in rows:
-        po = nre_posterior(run, r["y"], r["i"], burn, sample, rhat_max, ess_min)
+        po = nre_posterior(run, r["y"], r["i"], r.get("sigma_P"), burn, sample, rhat_max, ess_min)
         attempts.append(po["attempts"])
         if po["status"] != "ok":
             preds.append(None)
@@ -834,7 +903,8 @@ def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path
                     n_new += 1
             else:
                 for r in todo:
-                    po = nre_posterior(run, np.asarray(r["y"]), r["i"], **post_kw)
+                    po = nre_posterior(run, np.asarray(r["y"]), r["i"], ((r.get("under") or {}).get(prior) or {}).get("sigma_P"),
+                                       **post_kw)
                     append_line(out_path, {"kind": "task", "task": f"{label}|{r['task']}", "run": label, "pair": r["task"],
                                            "calibrator": kind, "prior": prior, "j": j, "q": int(q), "i": r["i"],
                                            **{k2: v for k2, v in po.items()}, "utc": utc_now()})

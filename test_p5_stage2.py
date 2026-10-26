@@ -30,7 +30,7 @@ def test_literals_are_the_written_ones():
     assert (h["H-c"]["measure"], h["H-c"]["bin"], h["H-c"]["expected"], h["H-c"]["refuted"], h["H-c"]["seed_floor"]) == ("E", "Identified", 0.05, 0.02, True)
     assert (h["H-d"]["measure"], h["H-d"]["bin"], h["H-d"]["direction"], h["H-d"]["expected"], h["H-d"]["refuted"]) == ("m", "Flat", "below", 0.80, 0.85)
     assert S.SEED_BOOT not in (20261002, 7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113)
-    assert S.DEFAULT_INPUTS["refs"].endswith("p5_ref_test.jsonl") and S.DEFAULT_INPUTS["scores"].endswith("p5_scores_test.jsonl")
+    assert S.DEFAULT_INPUTS["refs"].endswith("p5v3_ref_test.jsonl") and S.DEFAULT_INPUTS["scores"].endswith("p5_scores_test.jsonl")
 
 
 def _pairs(cs, levels=None, i0=0):
