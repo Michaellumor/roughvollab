@@ -5088,6 +5088,118 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     requirements files, the frozen draft, v1, the decision sheet, the plan or
     an earlier entry; nothing under `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D94** *(2026-10-26)* **P5 v3: the development study run and recorded;
+  candidate (A) passes it (all 36 pairs accepted at the first attempt, every
+  comparison within tolerance, 34.8 core-hours; the output committed).**
+  - **Summary.** The author ran the development study (D93) from `633b470` with
+    four workers. Candidate (A) passes it under the plan's binding rule: all 36
+    of v2's pilot pairs accepted at the first attempt, every grid comparison
+    within tolerance, and a projection of 34.8 core-hours against 1,344. Its
+    gradient route passed on the stand-ins. (A) is adopted for D95.
+  - **The run.** `py -3 p5_v3_study.py --run`, run by the author from the
+    merged `main` after a read-only pre-flight in this Claude Code session (a
+    clean tree at `633b470`; the core interpreter with numpy 2.4.4 and scipy
+    1.17.1; `require_g1()` returning G̃; v2's records equal to D89's blobs; 8
+    logical CPUs and 7.1 GB free on C:; the hold mode writing nothing and
+    estimating 12.7 core-hours, 3.2 h on four workers). The record's header and
+    its one launch line: commit `633b470`, `clean_tree` true, pool 4, G̃'s
+    SHA-256, Python 3.14.3 with numpy 2.4.4 and scipy 1.17.1 checked with no
+    override, the lengths in force 10,000 and 40,000 with the candidate's
+    constants, and v2's two records cited by their LF SHA-256, D89's blob
+    hashes; launched at 19:09:59 UTC on 25 October 2026. The sampling ended at
+    19:26:55 UTC, the checks at 20:57:34, the mass grids at 23:28:01 and the
+    stand-ins, with the report, at 00:17:01 on 26 October: 5 h 7 min against
+    the estimate's 3.2 h, the mass grids taking longer than v2's whole-box
+    timings implied. No error, no task error, no repeat.
+  - **The references.** All 36 pairs `ok`, each record carrying the candidate's
+    tag and keyed `default_rng([83, i, j])`, its θ, s and y equal to v2's;
+    every one of the 55 sampler runs (36 uniform, 19 direct: 9 under A, 10
+    under B) accepted at its first attempt. The uniform runs accepted 23.0% to
+    30.7% of their proposals, with R-hat at most 1.0013 and an effective size
+    of H from 7,305 to 12,481; the direct runs 23.2% to 30.5%, R-hat at most
+    1.0009, an effective size of H from 8,408 to 12,580. The 14 pairs v2
+    failed, nine from its first attempt and five from its retry, are all
+    accepted.
+  - **The checks.** `g2_report` with four workers, written at 20:57:34 UTC from
+    `633b470` with a clean tree: `passed` true, no reference failure, every
+    first grid passed, and at s = 0.005 every whole-box grid (12). One
+    comparison exceeded its fixed value and passed on the Monte Carlo term
+    (D81): g2_0000_2's contraction c on the whole-box grid, 0.0129 against 0.01
+    (in force 0.0442). The projection of the test set's references is 34.8
+    core-hours (a median of 68.3 s per unit of 50,000 steps over 55 runs, times
+    1.53 units per pair) against 1,344, so `go` is true; the optimiser's
+    seconds lie inside the runs' timed windows.
+  - **The verdict.** The report, written at 00:17:01 UTC on 26 October 2026
+    from `633b470` with a clean tree: "(A) passes the development study". It is
+    complete (36 of 36 pairs present, every one run by the candidate), with
+    none not accepted, no grid miss and `go` true; no error, and no grid miss
+    recomputed. Under the plan's verdict rule, binding by D91, (A) is adopted;
+    D95 writes it into `p5_g2_reference.py`.
+  - **The gradient route,** reported beside the verdict: the 72 stand-in runs
+    on the reference's own log-target (36 pairs, priors A and B) each accepted
+    at its first attempt and within G2's tolerances of the least-squares
+    route's, the Monte Carlo error of both figures carried on their difference;
+    and the 72 on the target displaced by 0.02 in H towards the centre each
+    accepted, their posterior means of H moved by the displacement to within
+    0.0009 (median 0.0001). D95 takes the gradient route into
+    `p5_g3_calibrators.py` (Decision 3), with the torch test of autograd's
+    gradient against a float64 finite difference that D93 records.
+  - **What the report adds,** as the plan asks: each chain's acceptance over
+    its first 500 burn-in steps, before any adaptation, 13.4% to 35.0% (median
+    26.8%); the final proposal against each run's sample covariance, its
+    generalised eigenvalues and trace ratios 1.10 to 1.84 (median 1.42),
+    against the 1.416 (2.38²/4) a clean adaptation gives; one kept solution in
+    every run (m = 1), all 16 starts reaching it; at most one eigenvalue
+    clipped and at most five start coordinates clipped to a face in any run;
+    the optimiser 0.38 to 1.33 s per run. The share of the posterior mass under
+    A outside the first grid's box, compared with nothing: a median of 6.8e-08,
+    above 1e-4 at six pairs (g2_0000_0 0.000839, g2_0000_1 0.000125, g2_0005_2
+    0.00237, g2r_0003_2 0.000133, g2r_0005_1 0.00113, g2r_0005_2 0.000105), the
+    largest at g2_0005_2, the fixed point at H = 0.46.
+  - **A reading, labelled as such.** The record bears out the reading of D89
+    and the plan: chains started at the optimiser's solution with a proposal
+    scaled to its covariance accept about a quarter of their proposals from the
+    first step, and the adaptation ends near 2.38²/4 times the posterior
+    covariance, so the transient D89 read as non-adaptation is gone. The 36
+    surfaces are v2's, already seen; the out-of-sample check is v3's own G2, on
+    fresh surfaces (the plan).
+  - **This sitting's checks.** Read-only, Python reading the files as they are,
+    with `require_g1()` the only function of the scripts called; `output/`
+    unchanged; nothing sampled, priced, built, trained or drawn. 1, the record:
+    one header and one launch as above; 36 distinct pair records, all `ok`,
+    tagged, keyed and equal to v2's in θ, s and y, the candidate's diagnostics
+    present for every run and every run accepted at its first attempt; 36 mass
+    lines; 144 stand-in lines keyed [107, p, 0, i, j] and [..., 1]; nothing
+    else. 2, the checks file: as above, its statuses equal to the record's. 3,
+    the report: as above, its statuses and mass figures equal to the record's,
+    the 14 pairs v2 failed compared with v2's runs. 4, the samples: the archive
+    holds exactly the 55 arrays the records imply, each of n_chains × sample
+    entries of its accepted run, and equals the union of its `_parts` files
+    array for array (`uint16`); the `_parts` folder is not committed. 5, G̃:
+    the header carries its SHA-256, and `require_g1()` returns the base build,
+    whose bytes hash to it. No `output/p5v3_g2_*`, `output/p5_g3_pilot_refs*`
+    or `output/p5_ref_test*` exists. The four committed blobs, the text files'
+    with LF line endings and their working copies CRLF, the `.npz` byte for
+    byte the file on disk:
+    - `output/p5v3_study.jsonl`, 1,224,155 bytes,
+      `20b39cc40ea490fe159ebf5550964cf9fc4dd0dd074ca5abb809f1908ba59d53`
+    - `output/p5v3_study_samples.npz`, 6,637,910 bytes,
+      `dd609ec1ff8a8b0c37616797579e5cda38b8c75f51f2b5e713d2769612142cd1`
+    - `output/p5v3_study_checks.json`, 127,895 bytes,
+      `a9d225dea7778fdfa67c70c509263bbb59977278e05559fe8bb32f9940e49102`
+    - `output/p5v3_study_report.json`, 1,507,120 bytes,
+      `0f19cff814fd286567616ea21d0a9ac69f3a67526a1594c79219a02c07b20a43`
+  - **What was seen.** v2's 36 pilot surfaces again, as the plan declared, and
+    the posteriors on them under (A) and the stand-ins: their means and
+    contractions of H, and their diagnostics. None is a test surface, no
+    network exists, and nothing about the hypotheses was looked at.
+  - **Who did what.** The author ran the study. The pre-flight and this sitting
+    were held in the Claude Code session of D89 to D92, on Claude Opus 5.5; the
+    study's script came from the D93 session, on Claude Fable 5.1.
+  - **Not written.** The v3 draft and the sampler written into
+    `p5_g2_reference.py` (D95); any change to the draft, v1, the decision
+    sheet, the plan or earlier entries.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
