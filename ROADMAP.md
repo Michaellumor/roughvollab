@@ -5202,9 +5202,9 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - Drafted with AI assistance; every decision confirmed by the author.
 - **D95** *(2026-10-26)* **P5 v3: the v3 draft written from v2's frozen text;
   the adopted sampler written into `p5_g2_reference.py` and the gradient route
-  into `p5_g3_calibrators.py`; G2's fresh seeds; the transcription check and
-  the amendment file (docs, code and tests; the check's run pending, the
-  author's).**
+  into `p5_g3_calibrators.py`; G2's fresh seeds; the transcription check, run
+  by the author and reproducing the study's records exactly, and the amendment
+  file (docs, code and tests; the check's output committed).**
   - **Summary.** `docs/protocols/P5_protocol_v3_draft.md` is v2's frozen text
     at `59ca589` with exactly the changes the plan names (D91) and one more,
     the title line, by the author's decision; 18 of its 216 lines differ,
@@ -5213,10 +5213,12 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     six fresh seeds and v3's record names; the ratio estimator's sampler takes
     the gradient route in `p5_g3_calibrators.py`; `p5_v3_transcription.py`
     re-runs the written-in sampler on the development study's 36 pairs and
-    compares its records with the study's, the author to run it from this
-    entry's code commit before the merge; `docs/protocols/P5_v3_amendment.md`
-    carries v3's OSF texts. Nothing ran on real data: the tests run toy
-    emulators and toy records.
+    compares its records with the study's, run by the author from this entry's
+    code commit, `579b525`, before the merge: it reproduced the study's 36
+    records and 55 sample arrays exactly, and its output is committed in this
+    entry's second commit; `docs/protocols/P5_v3_amendment.md` carries v3's
+    OSF texts. Nothing else ran on real data: the tests run toy emulators and
+    toy records.
   - **The draft, line by line.** Built by a script from the blob `git show
     59ca589:docs/protocols/P5_protocol_v2_draft.md` (SHA-256 `41255dbd`…,
     checked before anything is changed); every other line is byte-identical,
@@ -5390,9 +5392,26 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     optimiser's seconds (and the study's tag). The report gives `reproduced`,
     every differing field per pair, the counts and the provenance (commit,
     clean tree, versions, G̃'s hash, the study record's SHA-256 with LF line
-    endings, D94's `20b39cc4`…). Its run is the author's, decided in Plan
-    Mode, from this entry's code commit on the branch before the merge; its
-    record and result join this entry in a second commit.
+    endings, D94's `20b39cc4`…). The run, the author's by his decision in Plan
+    Mode: `py -3 p5_v3_transcription.py --run` from this entry's code commit
+    `579b525` with a clean tree, the core interpreter (Python 3.14.3, numpy
+    2.4.4 and scipy 1.17.1, checked against the pinned versions with no
+    override), one launch, at 09:22:58 UTC on 26 October 2026, pool 4; the 36
+    pairs done between 09:24:24 and 09:42:15 UTC, every one `ok` (19 direct
+    runs among the 55), no error; the report written at 09:42:16 UTC from
+    `579b525` with a clean tree: `reproduced` true, 36 pairs compared and none
+    differing, 55 sample arrays and 55 sampler runs equal to the study's, the
+    samples bit for bit and every figure, every attempt field and every field
+    of every run's start equal. The sampler as written in is therefore the
+    candidate the study ran. The three committed blobs (the text files' with
+    LF line endings and their working copies CRLF, the `.npz` byte for byte
+    the file on disk): `output/p5v3_transcription.jsonl`, 398,272 bytes,
+    `f974abaf57f6a28f57257fa294501054761e00dab5106b2622a98a2b06850e3d`;
+    `output/p5v3_transcription_samples.npz`, 6,637,910 bytes,
+    `e13e376af5f0a70e612597948e4bdaed12dafe2743e2d72f2ba91ec873051ac7`;
+    `output/p5v3_transcription_report.json`, 4,861 bytes,
+    `fd192f9c275815a1ca5fa3177df6adf9f113974ee2d1e1e638a80074cc0208c7`; the
+    `_parts` folder is not committed, as with every such record.
   - **The amendment file.** `docs/protocols/P5_v3_amendment.md`, 76 lines,
     modelled on v2's (D77): the status; OSF's rules as read for v2 and the
     stop notice's promise (D90); the design, a component of `gdsv7` holding
@@ -5497,8 +5516,8 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     records, never G̃; the hold modes read the study's committed record (D94)
     for its pairs, keys and statuses, read-only, and loaded no emulator;
     nothing was sampled on G̃ and nothing drawn from the sealed streams. The
-    transcription check's run, the author's, will see the study's 36 surfaces
-    again and its own reproduction of D94's records, and nothing else.
+    transcription check's run, the author's, saw the study's 36 surfaces again
+    and its own reproduction of D94's records, and nothing else.
   - **Declared.** (1) `p5_v3_study.py`, unchanged as the brief requires, reads
     v2's G2 records through `p5_g2_reference.SETS`, which now name v3's
     records: its hold mode reports "no record at output/p5v3_g2_pilot.jsonl",
@@ -5529,19 +5548,18 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     keep a summary (`_trim_start`).
   - **Who did what.** The author decided, in Plan Mode, the seeds' rule, who
     runs the transcription check, the amendment of the study's assertions and
-    the title line, and will run the check. This sitting, a new Claude Code
-    session on Claude Fable 5.1 (the model its transcript records,
-    `claude-fable-5-1`, for every message), read the plan, the frozen draft,
-    the scripts, their tests and the log, drafted v3 from the frozen blob,
-    ported the sampler, wrote the gradient route, the check, the amendment
-    file, the tests and this entry. The reviewer was a subagent of this
-    session, on Claude Fable 5.1 by its own report.
-  - **Not written.** The freeze, the registration and v3's G2; the
-    transcription check's run (the author's, in a second commit to this
-    branch); the re-ticking of the reopened boxes (after D96); any change to
-    v2's draft or amendment file, v1, the decision sheet, the plan,
-    `p5_v3_study.py`, the five forward-model modules, the requirements files
-    or an earlier entry; nothing under `output/`.
+    the title line, and ran the check from the code commit. This sitting, a
+    new Claude Code session on Claude Fable 5.1 (the model its transcript
+    records, `claude-fable-5-1`, for every message), read the plan, the frozen
+    draft, the scripts, their tests and the log, drafted v3 from the frozen
+    blob, ported the sampler, wrote the gradient route, the check, the
+    amendment file, the tests and this entry. The reviewer was a subagent of
+    this session, on Claude Fable 5.1 by its own report.
+  - **Not written.** The freeze, the registration and v3's G2; the re-ticking
+    of the reopened boxes (after D96); any change to v2's draft or amendment
+    file, v1, the decision sheet, the plan, `p5_v3_study.py`, the five
+    forward-model modules, the requirements files or an earlier entry; nothing
+    under `output/` beyond the check's three records.
   - Drafted with AI assistance; every decision confirmed by the author.
 ---
 

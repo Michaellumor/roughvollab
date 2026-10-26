@@ -1,0 +1,208 @@
+{
+ "check": "P5 v3 transcription check: p5_g2_reference.run_chains, the start written in from the development study's candidate, re-run on the study's 36 pairs at the study's lengths (D95)",
+ "script": "p5_v3_transcription.py",
+ "reproduced": true,
+ "reading": "the written-in sampler reproduces the development study's records exactly",
+ "n_pairs": 36,
+ "n_pairs_expected": 36,
+ "n_pairs_compared": 36,
+ "n_pairs_differing": 0,
+ "n_sample_arrays_compared": 55,
+ "n_sampler_runs_compared": 55,
+ "differences": {},
+ "comparison": {
+  "record_keys": [
+   "status",
+   "set",
+   "i",
+   "j",
+   "s",
+   "seed",
+   "theta",
+   "y",
+   "direct",
+   "kish",
+   "neff",
+   "support_lo",
+   "support_hi",
+   "c_A",
+   "coverage",
+   "well_covered"
+  ],
+  "under_keys": [
+   "mean_H",
+   "var_H",
+   "q05_H",
+   "q95_H",
+   "mean_xi0",
+   "source",
+   "sigma_P"
+  ],
+  "attempt_keys": [
+   "attempt",
+   "burn",
+   "sample",
+   "acceptance",
+   "rhat",
+   "ess",
+   "ess_H",
+   "accepted"
+  ],
+  "start": "every field but optimiser_seconds, sampler",
+  "samples": "every stored array equal, the key sets equal"
+ },
+ "lengths": {
+  "burn": 10000,
+  "sample": 40000,
+  "kish_min": 1000.0,
+  "rhat_max": 1.01,
+  "ess_min": 2000.0,
+  "levels": [
+   0.001,
+   0.003,
+   0.005
+  ],
+  "start": {
+   "n_starts": 16,
+   "ls_method": "trf",
+   "ls_jac": "2-point",
+   "ls_ftol": 1e-10,
+   "ls_xtol": 1e-10,
+   "ls_gtol": 1e-08,
+   "ls_max_nfev": 2000,
+   "fd_rel_step": 1.4901161193847656e-08,
+   "lbfgs_ftol": 1e-10,
+   "lbfgs_gtol": 1e-05,
+   "lbfgs_maxiter": 200,
+   "eps_H": 1e-06,
+   "keep_max": 4,
+   "distinct": 0.01,
+   "mass_log": 9.210340371976184,
+   "eig_lo": 1e-10,
+   "eig_hi": 0.08333333333333333,
+   "perturb_cap": 0.0025,
+   "perturb_mult": 4.0,
+   "kappa_u_floor": 0.01,
+   "scale": 1.4161,
+   "n_chains": 4,
+   "adapt_every": 500,
+   "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+  }
+ },
+ "start": {
+  "n_starts": 16,
+  "ls_method": "trf",
+  "ls_jac": "2-point",
+  "ls_ftol": 1e-10,
+  "ls_xtol": 1e-10,
+  "ls_gtol": 1e-08,
+  "ls_max_nfev": 2000,
+  "fd_rel_step": 1.4901161193847656e-08,
+  "lbfgs_ftol": 1e-10,
+  "lbfgs_gtol": 1e-05,
+  "lbfgs_maxiter": 200,
+  "eps_H": 1e-06,
+  "keep_max": 4,
+  "distinct": 0.01,
+  "mass_log": 9.210340371976184,
+  "eig_lo": 1e-10,
+  "eig_hi": 0.08333333333333333,
+  "perturb_cap": 0.0025,
+  "perturb_mult": 4.0,
+  "kappa_u_floor": 0.01,
+  "scale": 1.4161,
+  "n_chains": 4,
+  "adapt_every": 500,
+  "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+ },
+ "study": {
+  "path": "output\\p5v3_study.jsonl",
+  "sha256_lf": "20b39cc40ea490fe159ebf5550964cf9fc4dd0dd074ca5abb809f1908ba59d53",
+  "commit": "633b4705b80ca10113034bdf257f03a02974f8da",
+  "lengths": {
+   "burn": 10000,
+   "sample": 40000,
+   "kish_min": 1000.0,
+   "rhat_max": 1.01,
+   "ess_min": 2000.0,
+   "levels": [
+    0.001,
+    0.003,
+    0.005
+   ],
+   "candidate": {
+    "n_starts": 16,
+    "ls_method": "trf",
+    "ls_jac": "2-point",
+    "ls_ftol": 1e-10,
+    "ls_xtol": 1e-10,
+    "ls_gtol": 1e-08,
+    "ls_max_nfev": 2000,
+    "fd_rel_step": 1.4901161193847656e-08,
+    "lbfgs_ftol": 1e-10,
+    "lbfgs_gtol": 1e-05,
+    "lbfgs_maxiter": 200,
+    "eps_H": 1e-06,
+    "keep_max": 4,
+    "distinct": 0.01,
+    "mass_log": 9.210340371976184,
+    "eig_lo": 1e-10,
+    "eig_hi": 0.08333333333333333,
+    "perturb_cap": 0.0025,
+    "perturb_mult": 4.0,
+    "kappa_u_floor": 0.01,
+    "scale": 1.4161,
+    "n_chains": 4,
+    "adapt_every": 500,
+    "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+   }
+  },
+  "emulator_sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add",
+  "n_pairs": 36,
+  "samples": "output\\p5v3_study_samples.npz"
+ },
+ "record": {
+  "path": "output\\p5v3_transcription.jsonl",
+  "samples": "output\\p5v3_transcription_samples.npz"
+ },
+ "emulator": {
+  "path": "output\\p5_g1_emulator.npz",
+  "sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add"
+ },
+ "header_commit": "579b5253fe03334aef844fbe68d6a31be7064f05",
+ "launches": [
+  {
+   "kind": "launch",
+   "utc": "2026-10-26T09:22:58Z",
+   "pool": 4,
+   "n_done_before": 0,
+   "commit": "579b5253fe03334aef844fbe68d6a31be7064f05",
+   "clean_tree": true,
+   "versions": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "expected": {
+     "numpy": "2.4.4",
+     "scipy": "1.17.1"
+    },
+    "checked": true,
+    "override": false,
+    "mismatch": {}
+   }
+  }
+ ],
+ "report_commit": "579b5253fe03334aef844fbe68d6a31be7064f05",
+ "report_clean_tree": true,
+ "versions": {
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "expected": {
+   "numpy": "2.4.4",
+   "scipy": "1.17.1"
+  },
+  "checked": true,
+  "override": false,
+  "mismatch": {}
+ },
+ "utc_report": "2026-10-26T09:42:16Z"
+}
