@@ -5698,6 +5698,165 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     sheet, the plan or any script; nothing under `output/` beyond the check's
     three files.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D97** *(2026-10-26)* **P5 v3: the independent review of v3 before the
+  freeze, read-only, by a fresh session and twenty-five agents on Claude Fable
+  5.1 (freeze after fixes, no redesign; four must-fix items for a later
+  sitting; the record committed and cited at line 215; docs only).**
+  - **Summary.** The independent review that the plan's item 7 and the
+    amendment file's step 1 call for was made on 26 October 2026 by a new
+    Claude Code session on Claude Fable 5.1 that wrote none of v3, with a
+    workflow of twenty-five read-only agents on the same model: seven
+    reviewers, two skeptics per dimension, a completeness critic with two
+    skeptics, and a synthesis. Its verdict: freeze after fixes, no redesign.
+    Forty-nine findings and twelve items from the critic, none refuted but one
+    process item; four must change before the freeze (a scoring path that stops
+    on a pair whose reference failed; the registration texts' dropped exception
+    for the ratio estimator's sampler; line 200's attribution of D91; one
+    phrase of line 68), none a change of a registered rule, a seed, a tolerance
+    or the budget; the rest is wording, declarations, docstrings and tests for
+    the same round. The record is committed at
+    `docs/protocols/P5_v3_review_2026-10-26.md`, and the draft's line 215 now
+    cites it. The fixes are a later sitting's; this session checks their diff
+    before its merge, as D83 checked D82. Nothing else changes.
+  - **The review.** Made from the author's brief of 26 October 2026 in a new
+    Claude Code session on Claude Fable 5.1 (`claude-fable-5-1`, the model its
+    transcript records for every message), at `main` `3fad362` with the tracked
+    tree clean, in Plan Mode first. The author took the three decisions the
+    brief put to him, each on the lean: the workflow's shape; the committed
+    JSON and JSONL records readable by the agents for a figure a text states,
+    with no new figure computed and no `.npz` loaded; the reports carried
+    verbatim in the record. He then started the review with the word
+    "ultracode" in his message. The workflow: seven reviewers, one per
+    dimension of the brief (the text against the plan; the sampler change in
+    the code, with the paths the transcription check did not exercise read line
+    by line; the ratio estimator's sampler; G2 and the records; the amendment
+    file; the declarations; the tests and the run paths no test or recorded run
+    has exercised); two skeptics per dimension, each told to refute every
+    finding from the files, defaulting to refuted where a claim could not be
+    verified, one through a correctness lens and one through a consequence
+    lens; a completeness critic over the seven reports and the skeptics'
+    verdicts, its items verified by two skeptics of their own; one synthesis.
+    Twenty-five agents, every one inheriting the session's model (their
+    transcripts record `claude-fable-5-1` and no other), launched at 11:47 UTC
+    and complete 76 min 27 s later, at 13:03 UTC: 5,646,096 tokens, 858 tool
+    uses, none failed or returned empty. Every prompt carried the rules:
+    read-only, nothing written in the repository; no P5 script in any mode,
+    hold modes included, no test, no pricer, no repository module imported;
+    never a draw of the sealed seeds 20261002 and 20261022; no emulator loaded,
+    G̃ hashed only; the committed records as the author's decision allows; no
+    token printed; standalone Python only, each command listed. What each agent
+    ran beyond reading is in the record, with two reads it declares beyond the
+    letter of that decision: G1's record's launch line, for a time D88 states,
+    and a count over the check's thirty-six task lines, for figures D96 states.
+    The session's own checks, made before the workflow ran and independent of
+    it, and its verification of every must-fix finding and of eleven others
+    against the files, are the record's section 4.
+  - **The verdict and the findings.** Freeze after fixes; no redesign. The
+    draft differs from v2's frozen text at `59ca589` in exactly the eighteen
+    lines D95 names, every other line byte-identical; every change the plan's
+    items 1 to 6 name is present and nothing under "What v3 does not change" is
+    touched; the constants of candidate (A) in line 68 equal the script's, the
+    study's and the two committed record headers' key for key; the sampler
+    written into `p5_g2_reference.py` is the study's candidate function for
+    function, with D95's one declared addition; the six seeds are the six
+    smallest primes above 149 in line 143's order; every blob hash the
+    amendment file states is right; the sealed seeds are drawn on no path; and
+    the code agrees with the text on every path the study's 55 reference runs
+    and the check's 55 exercised, reading finding no fault on the paths they
+    did not. Forty-nine findings (4 must-fix, 24 same-round, 21 note), every
+    one standing with both its skeptics, the severity of four re-graded by one
+    skeptic; twelve items from the critic, eleven standing and one, about the
+    agents' own reads, refuted as unverifiable from the files. Must-fix: (1)
+    `score_set` in `p5_g3_calibrators.py` (lines 887 and 906 to 907) scores
+    every record of a set whatever its status and hands `NRETarget` no Σ_P for
+    a pair whose reference failed, which raises an uncaught ValueError, so
+    `--score g3` and `--score test` stop at the first such pair, an outcome
+    lines 101 and 144 anticipate; found by two dimensions independently, and
+    the filter must be on status, a direct-run failure under B leaving Σ_P
+    under A in the record. (2) The amendment file's "What is not changed" (line
+    37) and its paragraph for 695FW (line 47) drop the plan's exception for the
+    ratio estimator's sampler's start and first proposal (plan line 74), which
+    Decision 3 took and draft line 75 changes; both texts are pasted on OSF at
+    the freeze. (3) Draft line 200 says D91 ran on Claude Opus 5.5 in Claude
+    Code, where D91 records the plan's first version from "the session that
+    guides the author", whose model no entry names, the review and the
+    corrected copy coming from the Opus session. (4) Line 68's "two solutions
+    polished to one point counting as one", where the code merges two polished
+    solutions within 0.01, the keep rule's own distinctness; a wording fix,
+    graded at the boundary. Same-round: line 7's gloss of the changes, which
+    names neither the go rule's clause, nor line 137's entries, nor the
+    checklist; line 9's "nothing else of the design changes"; line 15's seed
+    inventory (all six of v2's seeds are still drawn on toy maps, 157 is a toy
+    noise seed, and the ratio estimator's generator is unnamed), what the study
+    and the check left unexercised, and the sittings' hold modes and reads;
+    readings to declare on line 68 ("its best kept solution" is the first kept
+    solution in the order before the polish, which at m = 3 also fixes which
+    solution gets two chains; `least_squares` minimises −log L, the prior
+    entering at the keep rule and the polish; the clip to [0.01, 0.99] applies
+    to the least-squares route only; the insertion "the start included"
+    describes v2's unchanged code and alters no rule); line 75's "H within ε =
+    1e-6 of the faces", which reads as the opposite of the code's bounds, and
+    "the same 16 uniform starts", which are the same in number, law and order,
+    not in value; line 200's tool and author clauses; the amendment's summary
+    (Σ_P sits in the pair's record, the gradient route was outside the verdict
+    rule, two citations are stale, "gate records" overstates) and its order of
+    acts (line 137, D96's attestation if a fix touches a bound script, line 7's
+    last sentence at the freeze); three docstrings of the bound scripts and one
+    test docstring; tests for m ≥ 2 and the merge after the polish, for the
+    repeat's fresh start, for the ratio estimator's repeat and failure, for the
+    calibrators' entry point past its refusals, and for the seed exclusion sets
+    of three test files; and the study script's `SOURCES`, which read v3's
+    record names. Notes, with no change: a run's timed window includes the
+    acceptance diagnostics as well as the optimiser, conservatively; a start
+    that raises is recorded as a task error, unreachable on a finite G̃; no CI
+    result is in the repository, and the figure "364 passed, 8 skipped" the
+    brief gave one reviewer was the review session's own, from its memory of
+    D95's pull request, not the log's. The run paths neither a test nor a
+    recorded run has exercised, and what a tiny end-to-end run of each would
+    need, are listed in the record; whether to make such runs before the freeze
+    is the author's, among twenty-two decisions the record puts to him with the
+    synthesis's leans.
+  - **The record.** `docs/protocols/P5_v3_review_2026-10-26.md`, in the form of
+    v2's two records: the status; how it was done, with the rules, the
+    decisions, what each agent ran beyond reading and a table of every finding
+    with both skeptics' verdicts; the verdict; what was verified against the
+    source in this session; the session's own findings; what must change before
+    freezing; what is worth making in the same round; the decisions for the
+    author; and the twenty-five reports verbatim, their headings three levels
+    down. Impersonal voice, British spelling, no AI-assistance line, the models
+    stated. The committed blob, LF, its working copy CRLF:
+    - `docs/protocols/P5_v3_review_2026-10-26.md`, 439,375 bytes,
+      `1970e5c432f94c2d7d9eefe460063b882e99e3075f061f68de9f97df5bde8984`
+  - **Line 215.** The draft's review box now cites the record: "D97, its record
+    to be cited here before the freeze)" became "D97, its record
+    `docs/protocols/P5_v3_review_2026-10-26.md`)", the box left unticked. No
+    other line of the draft changes; its diff against `main` is that one line,
+    the file 216 lines, CRLF.
+  - **What was seen.** Nothing new. The review read committed files only: the
+    texts, the scripts, the tests, the log and, for figures the texts state,
+    the headers of the study's and the check's records, the fields of the five
+    committed reports and of v2's two G2 headers, G1's record's launch line and
+    a count over the check's thirty-six task lines, every one declared as seen
+    by D88, D89, D94 or D96. No `.npz` was opened, G̃ was hashed, no posterior
+    was computed, nothing was sampled or drawn, no script, test or pricer was
+    run by any agent or by the session, and the sealed test set has not been
+    drawn.
+  - **Who did what.** The author took the three Plan-Mode decisions, started
+    the workflow and confirms this entry. This sitting, a new Claude Code
+    session on Claude Fable 5.1 (the model its transcript records,
+    `claude-fable-5-1`, for every message), read the plan, the draft and v2's
+    frozen blob, both amendment files, v2's two review records, the entries D81
+    to D83 and D86 to D96, the scripts and the tests, planned and ran the
+    workflow, verified the findings against the source, wrote the record,
+    changed line 215 and wrote this entry. The twenty-five agents ran on Claude
+    Fable 5.1 from this session.
+  - **Not written.** The fixes the review leads to (a later sitting's, in an
+    entry of its own, whose diff this session checks read-only before its
+    merge); the re-ticking of the reopened boxes; the freeze; the registration;
+    v3's G2 and everything after it; any change to the draft but line 215, to
+    v2's draft or amendment file, v1, the decision sheet, the plan, any script
+    or test, anything under `output/`, or an earlier entry.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
