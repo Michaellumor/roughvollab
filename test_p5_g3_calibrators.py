@@ -20,6 +20,7 @@ import pytest
 import p5_g3_calibrators as C
 import p5_g2_reference as R
 import p5_g1_emulator as E
+from test_p5_g2_reference import SEEDS_IN_USE
 
 _needs_torch = pytest.mark.skipif(not C._HAS_TORCH, reason="torch not in this env (run in .venv-p5)")
 LO, HI = E.box_arrays(E.BOX)
@@ -49,7 +50,8 @@ def test_literals_are_the_written_ones():
     seeds = {C.torch_seed(p, j, q, m) for p in (1, 2) for j in (1, 2, 3) for q in range(1, 7) for m in range(0, 6)}
     assert len(seeds) == 2 * 3 * 6 * 6 and C.torch_seed(1, 1, 1, 1) == 109_011_011 and C.torch_seed(2, 3, 5, 0) == 109_023_050
     assert all(2 * n == C.LADDER[k + 1] for k, n in enumerate(C.LADDER[:-1])) and 2 * C.LADDER[-1] == C.DRAW_N
-    assert {C.SEED_TRAIN, C.SEED_VALID, C.SEED_NRE}.isdisjoint({20261002, 7, 61, 62, 73, 79, 83, 89, 97, 101})
+    own = {C.SEED_TRAIN, C.SEED_VALID, C.SEED_NRE}
+    assert own <= set(SEEDS_IN_USE) and own.isdisjoint(set(SEEDS_IN_USE) - {107, 109, 113})      # in the tuple, no other's (D98)
 
 
 def test_draws_layout_nesting_and_standardiser():
@@ -241,7 +243,9 @@ def test_autograd_gradient_against_a_float64_finite_difference_on_a_toy_network(
     """D95 (the author's request, D93): the gradient route's exact gradient from torch autograd
     on a float64 copy of the network against a float64 central finite difference of the same
     log-target, on a toy network of the design's trunk, the prior's analytic part included; the
-    value within float32 rounding of the network as trained; the route through run_chains."""
+    value within 1e-5 of the network as trained in float32, relative to max(1, |f|) (the gap
+    measured at 8.5e-9 at most on these points with torch 2.14.1, D98); the route through
+    run_chains."""
     torch = C.torch
     torch.manual_seed(7)
     net = C.make_mlp(39, 1)
@@ -283,7 +287,7 @@ def test_autograd_gradient_against_a_float64_finite_difference_on_a_toy_network(
         n_checked += 1
         assert np.all(np.abs(fd - g) <= 1e-7 * np.maximum(1.0, np.abs(g))), (x, fd, g)
         v32 = float(tg(R.unit_to_theta(x).reshape(1, 4))[0])                             # the network as trained, float32
-        assert abs(v32 - f) < 1e-3 * max(1.0, abs(f))
+        assert abs(v32 - f) < 1e-5 * max(1.0, abs(f))
         u = float(x[0])
         f_prior = float(R.prior_logpdf(R.H_LO + u * R.H_W, "A"))                           # the prior's part, analytic, in f and g[0]
         with torch.no_grad():
@@ -634,3 +638,149 @@ def test_g3_resumes_only_on_a_matching_record_and_writes_nothing_over(tmp_path, 
     assert json.loads(Path(tj).read_text(encoding="utf-8").splitlines()[0])["emulator"] == A
     with pytest.raises(SystemExit, match="resume refused: .* emulator sha256"):
         C.train_seeds(LinearEm(), rep2, emulator=B, **tkw)
+
+
+# ---- D98: the fixes D97's review led to ----
+def _stand_in_scoring(monkeypatch):
+    """Stand-ins for the networks, the samplers and torch, so that score_set runs numpy only;
+    returns the list of (run label, i) the ratio estimator's sampler was called on."""
+    import types
+    seen = []
+
+    def fake_nre(run, y, i, sigma_P, **kw):
+        seen.append((run["label"], int(i)))
+        if sigma_P is None:                                                               # as NRETarget refuses it
+            raise ValueError("the ratio estimator's sampler needs the pair's Σ_P from its reference record")
+        return {"attempts": [], "seconds": 0.0, "status": "ok", "H_hat": 0.1, "xi0_hat": 0.1, "lo": 0.05, "hi": 0.15,
+                "n_pooled": 8}
+    monkeypatch.setattr(C, "require_torch", lambda: None)
+    monkeypatch.setattr(C, "torch", types.SimpleNamespace(set_num_threads=lambda n: None, __version__="stand-in"))
+    monkeypatch.setattr(C, "load_run", lambda nets_dir, label: {"label": label})
+    monkeypatch.setattr(C, "nre_posterior", fake_nre)
+    monkeypatch.setattr(C, "ensemble_predict", lambda run, Y: {k: np.full(len(Y), 0.1) for k in
+                                                                ("H_hat", "xi0_hat", "lo", "hi", "var_alea", "var_epi")})
+    return seen
+
+
+def test_the_ratio_estimator_scores_only_pairs_whose_reference_is_ok(tmp_path, monkeypatch):
+    """Must-fix 1 of D97's review (NRE-1 = TESTS-1; line 75; D98): the ratio estimator scores
+    only the pairs whose reference is `ok`, the filter on the status and not on a Σ_P being
+    present (a direct run failing under B leaves the pair's Σ_P under A); the pairs it does not
+    score are listed by label in the scores' header; the ensemble's branch scores every pair, as
+    v2 wrote it (decision 5). Numpy only: the networks and the sampler are stand-ins."""
+    refs = _g3_refs(n=3)
+    refs["g3_0001_1"].update(status="reference_failure", under={})                         # the uniform run failed: no Σ_P
+    refs["g3_0002_1"]["status"] = "reference_failure"                                     # a direct run under B failed:
+    refs["g3_0002_1"]["under"].pop("B")                                                   #  Σ_P under A is still there
+    seen = _stand_in_scoring(monkeypatch)
+    trained = {"ensemble_A_j2": {"seeds": {"1": "ensemble_p1_j2_q1_n100"}}, "nre_A_j2": {"seeds": {"1": "nre_p1_j2_q1_n100"}}}
+    out = tmp_path / "scores.jsonl"
+    kw = dict(nets_dir=str(tmp_path), nets_g3=str(tmp_path), out_path=str(out), threads=1)
+    assert C.score_set("g3", refs, None, trained, **kw) == 3 + 1
+    rows = [json.loads(l) for l in out.read_text(encoding="utf-8").splitlines()]
+    assert rows[0]["kind"] == "header" and rows[0]["nre_skipped"] == {"g3_0001_1": "reference_failure",
+                                                                      "g3_0002_1": "reference_failure"}
+    tasks = [r for r in rows if r["kind"] == "task"]
+    assert sorted(r["pair"] for r in tasks if r["calibrator"] == "ensemble") == ["g3_0000_1", "g3_0001_1", "g3_0002_1"]
+    assert [r["pair"] for r in tasks if r["calibrator"] == "nre"] == ["g3_0000_1"] and seen == [("nre_p1_j2_q1_n100", 0)]
+    assert C.score_set("g3", refs, None, trained, **kw) == 0                                # resume: nothing new, nothing re-run
+    assert seen == [("nre_p1_j2_q1_n100", 0)] and len(out.read_text(encoding="utf-8").splitlines()) == len(rows)
+
+
+@_needs_torch
+def test_the_ratio_estimators_repeat_and_failure_and_the_row_it_is_scored_by(tmp_path, monkeypatch):
+    """D97's review (C-3; D98): the ratio estimator's posterior when both attempts fail the
+    acceptance (the split R-hat forced to 1.5): status "failure", two attempts at (b, s) and
+    (2b, 2s), each with its own trimmed start by the gradient route, and no estimate; and the row
+    score_set writes for it, its status "failure" and its attempts recorded."""
+    torch = C.torch
+    em = LinearEm()
+    th, ep = C.training_block("A", 1, 1, n_block=64)
+    Y = C.make_surfaces(th, ep, 0.003, em)
+    mu, sd = 0.20, 0.01
+
+    class Quadratic(torch.nn.Module):
+        def forward(self, z):                                                  # logit = −(H_unit − mu_unit)² / (2 sd_unit²)
+            Hu = z[:, 35]
+            return (-((Hu - (mu - 0.02) / 0.46) ** 2) / (2 * (sd / 0.46) ** 2)).unsqueeze(1)
+    run = {"nets": [Quadratic()], "std": C.Standardiser(Y), "prior": "A", "q": 1, "j": 2, "kind": "nre"}
+    sig = np.diag([(sd / 0.46) ** 2, 1 / 12, 1 / 12, 1 / 12])
+    monkeypatch.setattr(R, "split_rhat", lambda x: 1.5)
+    po = C.nre_posterior(run, Y[0], 0, sig, burn=200, sample=400)
+    assert po["status"] == "failure" and po["H_hat"] is None and po["lo"] is None and po["n_pooled"] is None
+    assert [(a["attempt"], a["burn"], a["sample"], a["accepted"]) for a in po["attempts"]] == [(1, 200, 400, False), (2, 400, 800, False)]
+    s1, s2 = (a["start"] for a in po["attempts"])
+    assert s1["route"] == s2["route"] == "gradient" and s1["m"] >= 1 and s2["m"] >= 1
+    assert len(s1["optimiser"]["nit"]) == len(s2["optimiser"]["nit"]) == 16
+    assert s1["optimiser"]["nit"] != s2["optimiser"]["nit"]                                 # the repeat optimises 16 fresh starts
+    refs = {"g3_0000_1": {"set": "g3", "task": "g3_0000_1", "i": 0, "j": 1, "status": "ok", "y": Y[0].tolist(),
+                          "under": {"A": {"sigma_P": sig.tolist()}}}}
+    monkeypatch.setattr(C, "load_run", lambda nets_dir, label: dict(run))
+    out = tmp_path / "scores.jsonl"
+    assert C.score_set("g3", refs, em, {"nre_A_j2": {"seeds": {"1": "nre_p1_j2_q1_n64"}}}, nets_dir=str(tmp_path),
+                       nets_g3=str(tmp_path), out_path=str(out), threads=1, post_kw={"burn": 200, "sample": 400}) == 1
+    row = json.loads(out.read_text(encoding="utf-8").splitlines()[-1])
+    assert (row["status"], row["H_hat"], row["pair"], row["run"], len(row["attempts"])) == ("failure", None, "g3_0000_1",
+                                                                                            "nre_p1_j2_q1_n64", 2)
+
+
+def test_the_entry_point_hands_g2s_lengths_and_the_hashes_on(tmp_path, monkeypatch):
+    """D97's review (TESTS-4; D98): main past its refusals, numpy only, with stand-ins for the
+    emulator, the ladder, the training and the scoring: --g3, --train and --score test in turn.
+    G2's lengths from a passed retry report (doubled, 20,000 and 80,000) reach run_g3 and
+    score_set as post_kw; score_set receives the hashes of G̃, G3's report and the set's
+    references; the trained seeds are written where --score reads them."""
+    g = "e" * 64
+    info = {"path": "output/p5_g1_emulator.npz", "sha256": g}
+    monkeypatch.setattr(C, "require_torch", lambda: None)
+    monkeypatch.setattr(E, "emulator_for_run", lambda path=None: "toy.npz")
+    monkeypatch.setattr(E, "load_emulator", lambda path: LinearEm())
+    monkeypatch.setattr(E, "emulator_info", lambda path: info)
+    first, retry = tmp_path / "g2.json", tmp_path / "g2r.json"
+    first.write_text(json.dumps({"passed": False}), encoding="utf-8")
+    retry.write_text(json.dumps({"passed": True, "attempt": 2, "go": True, "lengths": {"burn": 20000, "sample": 80000},
+                                 "emulator": info}), encoding="utf-8")
+    g3_refs, test_refs = tmp_path / "g3.jsonl", tmp_path / "test.jsonl"
+    g3_refs.write_text("\n".join([json.dumps({"kind": "header", "set": "g3", "n_points": 16, "emulator_sha256": g})]
+                                 + [json.dumps({"kind": "task", "task": f"g3_{i:04d}_{j}", "set": "g3", "i": i, "j": j,
+                                                "status": "ok"}) for i in range(16) for j in range(3)]) + "\n", encoding="utf-8")
+    test_refs.write_text(json.dumps({"kind": "header", "set": "test", "n_points": 1, "emulator_sha256": "f" * 64}) + "\n"
+                         + json.dumps({"kind": "task", "task": "test_0000_0", "set": "test", "i": 0, "j": 0, "status": "ok"})
+                         + "\n", encoding="utf-8")
+    for name, key, path in (("g2", "report", first), ("g2r", "report", retry), ("g3", "jsonl", g3_refs), ("test", "jsonl", test_refs)):
+        monkeypatch.setitem(R.SETS, name, dict(R.SETS[name], **{key: str(path)}))
+    monkeypatch.setitem(C.PATHS, "report", str(tmp_path / "g3_report.json"))
+    monkeypatch.setattr(C, "OUT_DIR", str(tmp_path))
+    got = {}
+
+    def fake_run_g3(em, refs, **kw):
+        got["g3"] = (len(refs), kw)
+        rep = {"gate": "G3", "emulator": kw["emulator"], "cells": {"nre_A_j2": {"n_star": 100, "rungs": [], "removed_references": []}},
+               "cells_passing": ["nre_A_j2"], "cells_not_passing": [], "p5_stops": False, "p5_stops_reason": None,
+               "scoring_projection": {"projected_core_hours": 1.0, "complete": True}}
+        Path(C.PATHS["report"]).write_text(json.dumps(rep), encoding="utf-8")
+        return rep
+
+    def fake_train_seeds(em, rep, **kw):
+        got["train"] = (rep["cells_passing"], kw)
+        return {"nre_A_j2": {"n_star": 100, "seeds": {"1": "nre_p1_j2_q1_n100"}, "empty_slots": []}}
+
+    def fake_score_set(set_name, refs, em, trained, **kw):
+        got["score"] = (set_name, sorted(refs), trained, kw)
+        return 0
+    monkeypatch.setattr(C, "run_g3", fake_run_g3)
+    monkeypatch.setattr(C, "train_seeds", fake_train_seeds)
+    monkeypatch.setattr(C, "score_set", fake_score_set)
+    C.main(["--g3"])
+    assert got["g3"][0] == 48 and got["g3"][1]["post_kw"] == {"burn": 20000, "sample": 80000} and got["g3"][1]["emulator"] == info
+    C.main(["--train"])
+    assert got["train"][0] == ["nre_A_j2"] and got["train"][1]["emulator"] == info
+    assert json.loads((tmp_path / "p5_calibrators_trained.json").read_text(encoding="utf-8"))["nre_A_j2"]["n_star"] == 100
+    rep = json.loads(Path(C.PATHS["report"]).read_text(encoding="utf-8"))
+    rep["emulator"] = dict(info, sha256="d" * 64)                                          # three hashes told apart; score_set,
+    Path(C.PATHS["report"]).write_text(json.dumps(rep), encoding="utf-8")                  #  not main, is what compares them
+    C.main(["--score", "test"])
+    name, labels, trained, kw = got["score"]
+    assert name == "test" and labels == ["test_0000_0"] and trained["nre_A_j2"]["seeds"] == {"1": "nre_p1_j2_q1_n100"}
+    assert kw["post_kw"] == {"burn": 20000, "sample": 80000} and kw["emulator"] == info
+    assert kw["hashes"] == {"G̃": g, "G3 report": "d" * 64, "test references": "f" * 64}

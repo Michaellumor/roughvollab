@@ -28,11 +28,13 @@ D93, passed in D94 and written in here, D95), once per sampler run, before the c
   3. Σ = (JᵀJ)⁻¹ from J's singular values, V S⁻² Vᵀ; for a direct run Σ_P = (JᵀJ +
      diag(κ, 0, 0, 0))⁻¹, κ = −∂² log P/∂x_H², from the singular values of J stacked with
      √κ e₁ᵀ; the eigenvalues clipped to [1e-10, 1/12], the count clipped recorded. Σ_A and Σ_B
-     at each kept solution of every run are recorded (the uniform run's read for Σ_P), κ at
-     x_H clipped to [0.01, 0.99] (KAPPA_U_FLOOR), and the pair's record carries Σ_P under each
-     prior for the ratio estimator's sampler (p5_g3_calibrators.py).
+     at each kept solution of every run are recorded (the uniform run's read for Σ_P); the keep
+     rule's prior density and curvature for a direct run, and κ for the recorded Σ_A and Σ_B,
+     are taken at x_H clipped to [0.01, 0.99] (KAPPA_U_FLOOR); and the pair's record carries Σ_P
+     under each prior for the ratio estimator's sampler (p5_g3_calibrators.py).
   4. Chain k starts at kept solution k mod m plus a draw from N(0, 4 Σ_s), Σ_s being Σ with its
-     eigenvalues capped at 0.0025, clipped to the box ([ε, 1 − ε] in H for a direct run).
+     eigenvalues capped at 0.0025, clipped to the box ([ε, 1 − ε] in H for a direct run or a
+     run with a target, within the target's own bounds).
   5. The first proposal is 2.38²/4 · Σ of the chain's solution.
 Then, as in v2: at burn-in steps 500, 1,000, …, 10,000 the proposal is 2.38²/4 × the
 empirical covariance of that chain's steps so far (the start included), its diagonal floored
@@ -65,7 +67,8 @@ bits on the box's range of H) so that the posterior probability under A of any i
 be computed later. With a `target`, a callable object with grad_unit(x) and sigma
 (p5_g3_calibrators.NRETarget), the modes come from the gradient route: L-BFGS-B from the 16
 starts with the target's gradient (and its value, when the target gives both), Σ the given
-sigma for every solution, a preconditioner only; a plain callable is refused.
+sigma, its eigenvalues clipped to [1e-10, 1/12] as the start clips its own, for every
+solution, a preconditioner only; a plain callable is refused.
 
 G2 (line 143): on 18 pilot surfaces (4 points uniform on the box from default_rng(151) and
 the two fixed points H = 0.04 and 0.46 at the box's centre in ν, ρ and ξ₀, at the three

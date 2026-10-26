@@ -5857,6 +5857,222 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     v2's draft or amendment file, v1, the decision sheet, the plan, any script
     or test, anything under `output/`, or an earlier entry.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D98** *(2026-10-26)* **P5 v3: the fixes the independent review led to
+  (D97): the ratio estimator scores only the pairs whose reference is `ok`; the
+  declarations, the registration texts and the docstrings brought up to date;
+  tests of the paths the review found unexercised (code, tests and docs; the
+  review session's check of this diff comes before the merge).**
+  - **Summary.** The author took all twenty-two of the record's leans and named
+    the first draft's model and medium. This entry makes the five must-fix
+    items and the same-round items: one code change, in `score_set`;
+    docstrings; six new tests; eight lines of the draft and eleven of the
+    amendment file. The sampler's path is untouched.
+  - **The author's answers.** To section 8 of the record, "all leans". To
+    must-fix 3, "Opus 5.5 wrote the first draft" of the plan, and, asked in
+    this sitting where, a claude.ai chat, whose transcript is not among the
+    session files a sitting can read, so that the model rests on the author's
+    word, not on a transcript's label. Line 200's attribution of D91's sitting
+    traces to D95's summary; D95 stands as merged.
+  - **Must-fix 1, the scoring (NRE-1 = TESTS-1; decision 5).** `score_set` in
+    `p5_g3_calibrators.py` scores the ratio estimator only on records whose
+    status is `ok`, the filter on the status, since a direct run failing under
+    B leaves the pair's Σ_P under A; the scores' header lists the pairs it does
+    not score by label, `nre_skipped`, written once, so that a resume adds
+    nothing. The ensemble's branch is as v2 wrote it. Stage 2 reads only header
+    and task lines and measures only accepted pairs, so neither the missing
+    rows nor the new key changes what it measures, as a new test shows on
+    scores written so. Line 75 says so. The scoring's test plants two failed
+    references, one with no Σ_P and one with Σ_P under A only; it failed on the
+    unfixed code with its stand-in's ValueError, the one `NRETarget` raises,
+    and passes after the fix.
+  - **Must-fix 2 to 5.** 2, the registration texts (AMD-1): the amendment's
+    line 37 names the exception for the ratio estimator's sampler, by the
+    gradient route, and line 47 names that sampler among the changes, "the
+    calibrators' architecture and training otherwise" unchanged. 3, line 200 on
+    D91 (DECL-1): the plan's first version written in a claude.ai chat on
+    Claude Opus 5.5, by the author's word, its review and corrected copy on
+    Claude Opus 5.5 in Claude Code. 4, line 68's merge clause (V3TEXT-4, graded
+    must-fix by decision 3): "two kept solutions polished to within 0.01 of one
+    another counting as one, the starts that reached either counted for it". 5,
+    this review declared (the record's section 5): its reads in line 15, its
+    session, agents and model in line 200, and both in the amendment's line 41.
+  - **The draft, besides.** Line 7 (DECL-2, the fuller fix by decision 4): the
+    gloss names the go rule's clause on the optimiser's seconds, the entries
+    added under Precedence, the reason, the pilots, the sittings, the five
+    reopened boxes and the last box returned to its wording before v2's freeze,
+    and cites D95 to D98; a separate clause, from the review, states that a
+    pair whose reference failed is not scored by the ratio estimator, which
+    changes no rule (D97, D98); "ran candidate (A), since adopted" for "ran the
+    adopted sampler", here and in line 140; D90 beside D89. Line 9 (DECL-7):
+    the ratio estimator's start by the gradient route, the retry's start clause
+    replaced and the optimiser's seconds counted in the go rule. Line 15: the
+    seeds the tests draw (DECL-3, C-6), v2's six still drawn on toys, 89 and
+    157 as toy noise seeds, the ratio estimator's `[107, p, q, i, j]` for small
+    indices and the tests' one tuple; what has not run on G̃ (DECL-4), the
+    check having re-run the references only and every reference run of the
+    study and of the check, 55 each, taking the least-squares route at its
+    first attempt with one kept solution, the tests running each such path on
+    toys, the merge with the polish's result replaced, and the gradient route
+    having run in the tests on toy-trained networks at short lengths and on an
+    untrained trunk; and the sittings' acts, sitting by sitting from D88 to D98
+    (DECL-5 = AMD-5, decision 20), D88's load of G̃ at its held-out points and
+    its call of `require_g1()`, D89's pre-flight and checks during its runs,
+    D93's reading of v2's records and D94's pre-flight among them, D94 having
+    called only `require_g1()`. Line 68 (D2-1 = V3TEXT-5, V3TEXT-6, V3TEXT-7,
+    C-11; decision 2): "its best kept solution" declared as the first in the
+    keep rule's order by the log-target before the polish, the code unchanged,
+    and that order deciding, at m = 3, which solution gets two chains; step (1)
+    minimising −log L for every run, a direct run's prior entering at the keep
+    rule and the polish; a retry pair's first sampler run sharing its
+    namesake's optimiser starting points and perturbation draws, the stream's
+    first two blocks. The words "the start included" in the adaptation clause
+    describe v2's unchanged code and change no rule, as D97 records. Line 75
+    (NRE-2, V3TEXT-3, C-8; NRE-1 for its last clause): H's bounds ε = 1e-6
+    inside the faces, as there; 16 starts uniform on [0, 1]⁴, the first block
+    of its own generator; the keep rule's prior term on the gradient route the
+    target's own value, not taken at H clipped to [0.01, 0.99]; a pair whose
+    reference failed not scored. Line 137 (AMD-6): D98 among the entries that
+    read the scripts. Line 200 (DECL-6, C-12, decision 15): "the sittings from
+    D88", D86 and D87 being after v2's freeze too and naming no model; the
+    tool's part gains D90, D92, D96's pre-flight, D97 and D98; the author's the
+    stop notice, the plan agreed, D95's two departures named, D95 merged and
+    the tag agreed, the review's three decisions and its workflow's start, and
+    the review's twenty-two decisions answered; one clause on each sitting's
+    subagent reviewer. Every other line is byte-identical to `main`'s; 216
+    lines, CRLF; the boxes stay unticked.
+  - **The amendment file.** Line 7: the "Since written" sentence gains the
+    review and the fixes, and the entries moved on again, the check and the
+    re-ticks D99, the post-freeze commit D100 and the living documents D101.
+    Line 25 (AMD-9, decision 18): the hashes of all but the decision log in the
+    Status line, the decision log's in the post-freeze entry. Line 30 (AMD-3;
+    AMD-7, decision 6): each sampler run's record carries its start and each
+    pair's record Σ_P under each prior; a direct run's polish, the prior's
+    curvature added to JᵀJ before the inversion; and the check, run from
+    `579b525`, whose `p5_g2_reference.py` the registered one equals but for its
+    module docstring, `p5_g3_calibrators.py` not being loaded by it. Line 34
+    (G2R-2): the reference's four records named, G2's pilot and retry, G3's
+    pilot references and the test set's, the other records keeping their names.
+    Lines 35 and 47 (AMD-8): D95 to D98 cited. Line 41 (AMD-4; DECL-3, C-6;
+    DECL-5 = AMD-5, decision 20; must-fix 5): the stand-in runs outside the
+    verdict rule, each accepted and the 72 on the reference's own target within
+    G2's tolerances; this review; the seeds as in line 15; the sittings' acts
+    in one sentence, as line 15 lists them, the reads of records being written
+    during the runs among them, ending "and nothing else". Line 53, step 1
+    (AMD-6, AMD-7, AMD-10, decision 16): line 137; what becomes of D96's
+    attestation, which covers the sampler in `p5_g2_reference.py` as it stood
+    at `579b525`; the check and the ticks in D99, as D83. Line 54, step 2
+    (AMD-2, decision 7; C-9): line 7's last sentence kept as the hash list's
+    lead-in; v2's caveat on `p5_g0_pilot.py`'s hash; the two scripts' hashes
+    those of this entry's commit, neither `7e97ac8`'s nor `633b470`'s nor
+    `579b525`'s. Line 57: D100 and D101. Every other line byte-identical; 76
+    lines, CRLF.
+  - **The docstrings (D2-2, C-4, NRE-2).** `p5_g2_reference.py`'s module
+    docstring: the keep rule's prior terms for a direct run, and κ for the
+    recorded Σ_A and Σ_B, taken at x_H clipped to [0.01, 0.99]; a given sigma's
+    eigenvalues clipped to [1e-10, 1/12]; the starts' clip for a direct run or
+    a run with a target. `NRETarget`'s: "H's bounds ε inside the faces".
+    `score_set`'s: the filter.
+  - **D96's attestation (decision 6).** D96's check, run from `579b525`,
+    attests the sampler in `p5_g2_reference.py` there (`1d91989`…, `main`'s
+    blob until this entry), which changes only in its module docstring: its
+    code, compared as a syntax tree without that docstring, is unchanged.
+    `p5_g3_calibrators.py` (`2e8bef4`… there), which the check does not load,
+    changes in `score_set` and in two docstrings. The sampler's path is
+    untouched and the check is not re-run; the amendment's summary, its step 1
+    and its step 2 now say so.
+  - **The tests.** 378 collected, as `CONTRIBUTING.md` now says, 372 and six
+    new: the scoring's filter, and the entry point's hand-off of G2's lengths
+    and of three hashes told apart through `--g3`, `--train` and `--score test`
+    (TESTS-4), both numpy only, and the ratio estimator's repeat and failure
+    with the row the scoring writes (C-3), its two attempts optimising sixteen
+    fresh starts each, with torch, in `test_p5_g3_calibrators.py`; two
+    least-squares minima in `test_p5_g2_reference.py` (TESTS-3), on a toy whose
+    fit is mirror-symmetric in H: m = 2, the chains split 0, 1, 0, 1, every
+    start counted, the two-mode chains failing the acceptance into a reference
+    failure whose two attempts carry m = 2, both solutions polished and kept
+    under prior A, and the merge's bookkeeping with the polish's result
+    replaced so that both land on one point, no toy whose two minima polish to
+    within 0.01 having been built; and, in `test_p5_stage2.py`, `main --stage1`
+    and then `--run`, and Stage 2 on the scores as this entry writes them, its
+    verdicts and measures those of the scores with the ratio estimator's rows
+    for the failed pair. The repeat test asserts each attempt's 16 starts, the
+    second's drawn afresh (TESTS-2). The autograd test's tolerance is 1e-5 for
+    1e-3 (decision 11), the gap measured at 8.5e-9 at most over all 30 of its
+    points. One tuple of every seed in use, the plan's nineteen and v3's six
+    with no seed twice, is defined in `test_p5_g2_reference.py`; the
+    reference's seeds, G0's confirming draws (61, 62), G1's, G3's and Stage 2's
+    are each asserted in it and, for the last three, clear of every other
+    (decision 13).
+  - **The runs (decision 1).** On the author's machine: six of the P5 test
+    files, those changed or importing the changed scripts, in the core
+    interpreter (Python 3.14.3, numpy 2.4.4, scipy 1.17.1), 80 passed and 9
+    skipped, the seven torch tests and the two pool cases that run only under
+    fork; the calibrators' tests in the P5 leaf (torch 2.14.1, numpy 2.5.4,
+    scipy 1.18.1), 20 passed. One `nre_posterior` run in the P5 leaf on a ratio
+    estimator trained on the tests' linear toy (800 surfaces, 15 epochs), Σ_P
+    from a toy reference, at the written lengths and acceptance: accepted at
+    its first attempt, R-hat at most 1.0007 and the effective size of H 7,075,
+    m = 4 (13, 1, 1 and 1 starts), every L-BFGS-B exit status 0, acceptance
+    over the first 500 burn-in steps 0.61 to 0.68, in 15.9 s; nothing written.
+    Scratch scripts on toys: the two-minima toy's start and acceptance, run
+    inline before the test that now holds it, and the float32 gap, its script
+    kept with its output. Nothing ran on G̃ or on real data, and no seed of the
+    sealed set was drawn.
+  - **Left as they are, declared.** Decision 8: `p5_v3_study.py` stays the
+    study's blob. Its `SOURCES` read `R.SETS`, v3's names since D95, so after
+    v3's G2 its hold mode's `estimate()` would print v3's report as v2's and
+    `read_sources()` would list v3's pairs as "v2 ok", while `--run` stays
+    refused, by `refuse_overwrite` on the study's committed report and by
+    launch's check of the seeds; D95 declared the state before v3's G2, and
+    this extends it. Decision 17: `p5_v3_transcription.py`, its line 18 as D96
+    declared and its loose "gate records" in lines 15 and 16. Decision 9: a
+    start that raises is a `task_error` line, the pair re-run on resume from
+    the same stream, so `g2_report` and Stage 1 refuse until the author
+    intervenes; the guards cannot be reached on a finite G̃. Decision 10: no
+    early check of Σ_P. Decision 14: no model named for D86 and D87. Decision
+    21: the CI workflow's comment. Decisions 19 and 22: in D97. Decision 12:
+    CI's Actions run for this entry's commit, so that the fork cases are on
+    record, is cited in D99.
+  - **The review.** One independent read-only reviewer, a subagent of this
+    session on Claude Opus 5.5, given the diff, the record's sections 6 to 8,
+    the author's answers and the runs' outputs, not this sitting's conclusions,
+    found the code correct, the five must-fix items made and every decision
+    taken up on its lean or declared. All twenty of its points were taken up:
+    two over-claims in the amendment's line 41, the stand-ins' tolerance and a
+    list closed by "and nothing else" that was not complete; this bullet, which
+    line 200 needed; line 68's retry pairs, which share only their first run's
+    opening blocks; line 15's acts, D94's calls corrected and four acts added;
+    the attestation named in the summary and in step 2; "the sittings from
+    D88"; line 7's list completed and D97 cited; the author's part of line 200;
+    decision 8's declaration extended; the reference runs in this entry; the
+    findings' labels; line 15's account of the gradient route and of the
+    merge's test; three tests strengthened and one added; line 34; line 30's
+    wording; the model's source; the order at m = 3; and two points of wording.
+    A second read, of the revised text, confirmed nineteen of them and raised
+    five points, all taken up: line 7's scoring clause, which the plan does not
+    name, moved out of the plan's list into a clause of its own that changes no
+    rule; the amendment's line 30 and step 1, which made the check attest
+    `p5_g3_calibrators.py`, a script it never loads; a scratch script said to
+    be kept that was not; a label; and this sentence; with three smaller
+    points, the reads during the runs in line 41, a figure's notation and the
+    pilots in line 7.
+  - **What was seen.** Nothing new: this sitting read the review record, the
+    scripts, their tests and the log, and opened no committed record itself;
+    the tests it ran read only what line 15 and D95 declare they read; the toy
+    run and the scratch scripts saw toys only.
+  - **Who did what.** The author answered the decisions and named the first
+    draft's model and medium. This sitting, in the Claude Code session that
+    held, among others, D89 to D92, D94 and D96, on Claude Opus 5.5
+    (`claude-opus-5-5`), planned the fixes in Plan Mode, the author approving
+    the plan, and wrote the code, the tests, the texts and this entry, and ran
+    the tests and the toy run.
+  - **Not written.** The review session's check of this diff, before the merge,
+    and the re-ticks (D99); the freeze, the registration, the post-freeze
+    commit (D100) and the living documents (D101); any change to v2's
+    documents, v1, the decision sheet, the plan, the study's or the check's
+    script, the five forward-model modules, the requirements files or an
+    earlier entry; nothing under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
