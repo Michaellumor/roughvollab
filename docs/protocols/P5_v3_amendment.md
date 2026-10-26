@@ -60,16 +60,16 @@ Each step is the author's ("author") or a repository commit made on the author's
 
 | Item | Value |
 |---|---|
-| Freeze commit | |
-| SHA-256 of the blob | |
-| Freeze date (UTC) | |
+| Freeze commit | `740b0ca8777e8c777733a4967a6ac886dbd5e094` |
+| SHA-256 of the blob | `2676871174fab192d8297bf5348acad078a47359fbc34f853f2dd8a5a47dc806` |
+| Freeze date (UTC) | 26 October 2026 |
 | SHA-256 of the six P5 scripts, the five forward-model modules and the two requirements files | in the Status line (line 7) at the freeze commit |
 | SHA-256 of G̃ | `c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add` (D88) |
-| SHA-256 of each file exported for the registration, `ROADMAP.md` included | |
-| v3 registration id and DOI | |
-| v3 date registered (UTC) | |
-| Hashes OSF reports for the registered files | |
-| Update to 695FW approved (UTC) | |
+| SHA-256 of each file exported for the registration, `ROADMAP.md` included | listed in D100 |
+| v3 registration id and DOI | `jumhf`, https://doi.org/10.17605/OSF.IO/JUMHF |
+| v3 date registered (UTC) | 26 October 2026, 21:55:37 |
+| Hashes OSF reports for the registered files | in D100, each equal to its blob's |
+| Update to 695FW approved (UTC) | 26 October 2026, 22:12:18 |
 
 ## What is not Claude's to do
 

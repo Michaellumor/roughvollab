@@ -6145,6 +6145,177 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     earlier entry, v2's documents, v1, the decision sheet, the plan, the
     scripts, the tests or `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D100** *(2026-10-26)* **P5 v3: the post-freeze commit (registered on OSF as
+  `jumhf`; the registration in the Status line, the last box ticked and the
+  record filled; docs only).**
+  - **Summary.** Version 3, frozen at `740b0ca`, is registered on OSF as
+    `jumhf` (DOI 10.17605/OSF.IO/JUMHF), archiving the 16 exported files, each
+    equal to its blob; 695FW now points to it. This commit adds the
+    registration to line 7, ticks the last box and fills the amendment file's
+    record. Nothing of P5 has been run.
+  - **The changes.** Draft line 7 gains one sentence at its end: "Registered on
+    OSF on 26 October 2026 as https://doi.org/10.17605/OSF.IO/JUMHF; the
+    registered file is this file at the freeze commit, before this sentence and
+    the tick of the last box were added (D100)." Line 216's box, "OSF
+    registration amended", is ticked, nothing else on the line changing; the
+    line is now v2's line 216 as D86 left it. No other line moved: the draft
+    stays at 216 lines, and the protocol's blob at the freeze commit, the
+    registered file, still hashes to `26768711`…, as listed below. In the
+    amendment file the value cells of the table under Record are filled: the
+    freeze commit, the protocol's hash, the freeze date, the registration's id,
+    DOI and date, the update's approval, and pointers to the hashes below;
+    nothing else in that file changes.
+  - **The freeze commit (step 2), which has no entry of its own.**
+    `740b0ca8777e8c777733a4967a6ac886dbd5e094`, made on the author's go at
+    18:58:38 UTC on 26 October 2026, on `docs/p5-v3-freeze` from `9806026`; its
+    timestamp is the freeze. It changed only draft line 7, "DRAFT." becoming
+    "FROZEN on 26 October 2026." and the hash list and the versions being
+    appended after the line's last sentence, kept as their lead-in (eleven of
+    the thirteen hashes v2's, the other two D98's), and box 216, which gained
+    "the act that follows this commit"; the draft then differed from v2's
+    frozen blob in 13 lines, 1, 7, 9, 15, 54, 68, 75, 137, 140, 142, 143, 200
+    and 215. Before it, the search the amendment file's line 41 calls for, of
+    the tracked files and of `output/`, found no reference posterior of v3's
+    gates, no network and no test surface, the P5 records in `output/` being
+    G0's, G1's, v2's G2's and its retry's, the development study's and the
+    transcription check's only. On PR #255, compile P1 passed; the tests
+    workflow's run 40382580668 was cancelled on its first attempt at the job's
+    30-minute limit, its output stopping after 144 of the 378 tests, none
+    having failed, a tree differing only in the draft having passed on `main`
+    at `9806026` in 390 s; re-run on the author's word, it passed, 369 passed
+    and 9 skipped of 378, in 996 s. The author merged PR #255 at 20:00:14 UTC
+    as `22f0f82`, whose tree is `740b0ca`'s; its five checks passed, and the
+    branch was deleted on the author's word.
+  - **The export (step 2, its last sentence).** Made after the merge and before
+    any act on OSF, where step 2 has it immediately after the commit: the
+    protocol, the six scripts, the five forward-model modules, both
+    requirements files and `ROADMAP.md`, exported as their blobs at the freeze
+    commit (LF line endings), and G̃, byte for byte the committed file; 16
+    files, each checked two ways, its SHA-256 against that of `git show` and
+    git's object id computed from its raw bytes against the tree's, and all but
+    `ROADMAP.md` a third, against the hash the Status line lists or, for the
+    protocol, the hash recorded at the commit. Their hashes are those listed
+    below; `ROADMAP.md`'s, which the Status line cannot carry, is `ca7c2551`….
+  - **The registration (step 3).** OSF `jumhf`, an Open-Ended Registration of
+    the component `vw9uf` (titled "P5 protocol v3: frozen files", inside
+    `gdsv7`, as the author's screens showed, the component not being publicly
+    readable), registered at 21:55:37 UTC on 26 October 2026 and approved by
+    the author, its first schema response, `6adfcc5af987465bf0be5e0c`, last
+    modified at 21:58:33; public and not embargoed; DOI 10.17605/OSF.IO/JUMHF.
+    Its title and summary are as the amendment file proposed, the summary
+    equal, character for character, to that file's lines 25 to 44 at the freeze
+    commit, each with its newline, with the three placeholders filled (the
+    freeze commit, the protocol's hash, 26 October 2026) and the backticks
+    removed; its description is v2's with the version, the commit and the
+    superseded registration changed. MIT; the five subjects of v1 and v2; v2's
+    nine tags. This sitting's checks 1 to 4, GET requests to OSF's public API
+    only (the registration, its identifiers, its subjects and the files of its
+    archive), found it public and not pending approval, embargoed, withdrawn or
+    archiving, registered from `vw9uf` under licence `563c1cf88c5e4a3877f9e972`
+    (MIT License) on 2026-10-26T21:55:37.553747, on v2's schema,
+    `5df83f7dd28338001ac0ab0d`, with that DOI, title and summary, and one
+    folder, "Archive of OSF Storage", holding exactly 16 files, each with OSF's
+    size and SHA-256 equal to its git blob's at the freeze commit:
+    - `P5_protocol_v3_draft.md`, 120,816 bytes,
+      `2676871174fab192d8297bf5348acad078a47359fbc34f853f2dd8a5a47dc806`
+    - `p5_g0_pilot.py`, 46,221 bytes,
+      `5a592624559c5dad30a3a8ef80deff1d0196e37427460ffc9985459f9d7970cd`
+    - `p5_g0_main.py`, 39,975 bytes,
+      `fa8706dc4028ebceaf8ad7f646030f25f2768a2877869e751109e75dad85fbc1`
+    - `p5_g1_emulator.py`, 45,062 bytes,
+      `2c81a92aa584e8edae02d2e82e089842259da4d9c9a36d9b36a481b725d2b04c`
+    - `p5_g2_reference.py`, 87,963 bytes,
+      `0ebd245d486f36f63ede1431985c3ba4680725f53d5a4813b2e542a1e3e33868`
+    - `p5_g3_calibrators.py`, 58,057 bytes,
+      `52c0c9d2e27be9c961ef09b9fdcfd9e80504bf484b42262aa48561a188435c39`
+    - `p5_stage2.py`, 62,493 bytes,
+      `5f196a44153fd4db994359329c0f0246b7dbda41127a4d8bd11ebcf9e56d1159`
+    - `rough_heston_cf.py`, 13,784 bytes,
+      `6b8fb570e444378db153fb83cc64269bb657d169772baf655364a8198fd7bb2f`
+    - `layer4_calibrate_surface.py`, 13,347 bytes,
+      `7776be7f0d2035a682369b1cacca478bd00289e493554db02a54bab2833d9331`
+    - `layer4_calibrate.py`, 15,033 bytes,
+      `c627572722ac4b2775c69b0013b2c5dd3fc4a4c845f845a4d6308b684c947597`
+    - `rough_heston.py`, 11,455 bytes,
+      `659062ff1027907279bcf5b3f02e47de37d075be9ae0f144a6472d65ab06006d`
+    - `roughvol_core.py`, 7,023 bytes,
+      `7fa98797451364dec119672a99d8a4c25da44287e8f1f2193702849391666982`
+    - `requirements.txt`, 40 bytes,
+      `48061e7fa7686b876b0221aaf663c6576c4aacc7227c1bb192d6250c5d037494`
+    - `requirements-p5.txt`, 1,117 bytes,
+      `85a2d7e9f279641ac8ca7663fd91ee2c87701452d10ba5634fbfc314ace12dd9`
+    - `ROADMAP.md`, 524,577 bytes,
+      `ca7c25514354d43363e21a72a2031a38e7bb227315413f849a925c8af8e56a50`
+    - `p5_g1_emulator.npz`, 2,584,804 bytes,
+      `c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add`
+  - **The update to 695FW (step 4).** Schema response
+    `6adfcf6e25a82e92fbda21aa`, submitted at 22:12:14 UTC and approved at
+    22:12:18 UTC (its last modification) on 26 October 2026: the amendment
+    file's paragraph for the update, with the freeze date, `JUMHF`, the DOI's
+    address, the freeze commit and the protocol's hash filled in and the
+    backticks removed, placed at the top of the summary, the stop notice and
+    v2's summary unchanged below it after a blank line, and entered as the
+    justification; only the summary changed (`updated_response_keys`); the 15
+    archived files keep their SHA-256, each v2's at `59ca589`; 695FW is public
+    and not withdrawn. Check 5, GET requests only, read this from 695FW's
+    schema responses, three, all approved: `6adba36f29130ee140f7c6d4` (the
+    registration, 23 October 2026), `6ade09278faa7545598a0050` (the stop
+    notice, 25 October 2026; D90) and this one; the new summary is, character
+    for character, the paragraph, a blank line and the summary this sitting had
+    read before the update.
+  - **How it went on OSF.** The author's account, from the author's screens and
+    OSF's own times, checked by this sitting as it went; only `jumhf`, its
+    files, its logs and 695FW can be read publicly. All times UTC, on 26
+    October 2026. The component `vw9uf` was made in `gdsv7` with United States
+    storage, the region of v2's registration, and the description above. The
+    registration's public logs record the component's creation at 20:49:00; the
+    16 exported files added between 20:59:55 and 21:00:00, `ROADMAP.md` last,
+    which a first view of the list did not yet show; and, after this sitting
+    had reported it missing, all 16 updated between 21:06:04 and 21:06:08, the
+    same files uploaded again. The archive holds one version of each, with the
+    hashes listed above, and `jumhf`'s public record gives 21:06:08 as its last
+    modification. Before registering, the author saved the API's listing of the
+    component's storage, read in the author's own browser, and this sitting
+    compared it with the export: 16 files, no folder and no other file, each at
+    its first version, with the export's size, SHA-256 and MD5. A draft,
+    `6adfc5146c3e866c89ca9537`, was then made from `vw9uf` on the Open-Ended
+    Registration template; its review page listed seven subjects, and the
+    author removed the two that were not v2's, Applied Statistics and
+    Probability, before submitting it, to be public immediately. The author
+    approved the registration from OSF's email, then made the update to 695FW,
+    created at 22:08:46, and approved it.
+  - **Readings, declared.** This sitting read the job logs of both attempts of
+    the freeze commit's test run and of `main`'s run at `9806026`, and the
+    cancelled attempt's annotations, through GitHub's API (the logs through
+    their pre-signed addresses), read-only; mapped the test suite's collection
+    order from the test files' syntax trees, importing and running nothing, to
+    place where the first attempt stopped (tests 145 to 216); read OSF's public
+    API for `jumhf`, its logs and its files' versions among it, 695FW and
+    APSF7, GET requests only, and the listing of `vw9uf`'s storage the author
+    saved; listed `output/`'s file names for the search; and read G̃'s bytes
+    only to hash and export them, never loading the emulator. It ran no P5
+    script, test or pricer and opened no other P5 output.
+  - **What was seen.** Nothing new.
+  - **Who did what.** The author gave the go for the freeze commit, merged it,
+    asked for the tests' re-run and the branch's deletion, made every act on
+    OSF (the component, the uploads, the registration and its approval, the
+    update to 695FW and its approval), and gives the tick of box 216 by the go
+    on this entry. This sitting, in the Claude Code session that held, among
+    others, D89 to D92, D94, D96, D98 and D99, on Claude Opus 5.5
+    (`claude-opus-5-5`), prepared the freeze commit, exported and hashed the
+    files, filled the amendment file's texts for OSF, guided the acts on OSF
+    and checked them read-only, and wrote this entry. Before the hold, one
+    subagent, also on Claude Opus 5.5, checked this entry and the two edits
+    against git, GitHub's API and OSF's public API, changing nothing in the
+    repository, on GitHub or on OSF; it found no figure wrong, and its three
+    points of wording, the second upload, the reach of the export's third check
+    and the test run's two attempts, were taken up.
+  - **The box.** Box 216 is ticked on the author's word.
+  - **Not written.** Any P5 run, which none of this starts; any other box; v1;
+    v2's documents; the decision sheet; the plan; the scripts, the tests and
+    `output/`; D99 and every earlier entry. The living documents that still
+    call v3 a draft or unregistered are D101's.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
