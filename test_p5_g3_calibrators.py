@@ -5,8 +5,9 @@ and SKIP without it (run them in .venv-p5, see requirements-p5.txt), as Layer 3'
 guard the MACHINERY on toy emulators in memory: the literals written into the draft
 (lines 72, 73, 75, 144); the draws and their nesting; the models, losses and the batch
 construction; the training loop and its stop statuses; the outputs in box units; the ratio
-estimator's posterior through the reference's sampler; G3's checks and ladder on a toy.
-Nothing here trains on the real emulator, which is built at G1 after freezing.
+estimator's posterior through the reference's sampler, its start by the gradient route with
+autograd's gradient checked against a float64 finite difference (D95); G3's checks and ladder
+on a toy. Nothing here trains on the real emulator, G̃, which G1 built under v2 (D88).
 """
 import copy
 import json
@@ -106,9 +107,11 @@ def test_pilot_surfaces_from_reference_records():
         for j in range(3):
             refs[f"g3_{i:04d}_{j}"] = {"set": "g3", "i": i, "j": j, "status": "ok" if (i, j) != (1, 2) else "reference_failure",
                                        "theta": [0.1, 0.2, -0.8, 0.1], "y": [0.2] * 35,
-                                       "under": {"A": {"mean_H": 0.1 + i, "mean_xi0": 0.05}, "B": {"mean_H": 0.3, "mean_xi0": 0.06}}}
+                                       "under": {"A": {"mean_H": 0.1 + i, "mean_xi0": 0.05, "sigma_P": np.diag([1e-3, 1e-2, 1e-2, 1e-2]).tolist()},
+                                                 "B": {"mean_H": 0.3, "mean_xi0": 0.06, "sigma_P": np.diag([2e-3, 1e-2, 1e-2, 1e-2]).tolist()}}}
     rows, removed = C.pilot_surfaces(refs, "A", 3)                         # j = 3 is the record's j = 2
     assert [r["i"] for r in rows] == [0, 2] and removed == ["g3_0001_2"] and rows[1]["H_exact"] == 2.1
+    assert rows[0]["sigma_P"][0][0] == 1e-3 and C.pilot_surfaces(refs, "B", 1)[0][0]["sigma_P"][0][0] == 2e-3   # Σ_P under P, for the start (D95)
     rows_b, removed_b = C.pilot_surfaces(refs, "B", 1)
     assert len(rows_b) == 3 and removed_b == [] and rows_b[0]["xi0_exact"] == 0.06
 
@@ -206,20 +209,97 @@ def test_calibrator_outputs_in_box_units_and_the_nre_posterior(tmp_path):
             Hu = z[:, 35]
             return (-((Hu - (mu - 0.02) / 0.46) ** 2) / (2 * (sd / 0.46) ** 2)).unsqueeze(1)
     nre["nets"] = [Quadratic()]
-    po = C.nre_posterior(nre, Y[0], i=0, burn=1000, sample=3000, rhat_max=1.1, ess_min=50)
+    sig = np.diag([(sd / 0.46) ** 2, 1 / 12, 1 / 12, 1 / 12])                         # Σ_P as a reference record would carry it (D95)
+    po = C.nre_posterior(nre, Y[0], 0, sig, burn=1000, sample=3000, rhat_max=1.1, ess_min=50)
     assert po["status"] == "ok" and po["n_pooled"] == 4 * 3000 and po["lo"] < po["H_hat"] < po["hi"]
+    st = po["attempts"][0]["start"]                                                       # the gradient route, its summary kept (D95)
+    assert st["route"] == "gradient" and st["m"] >= 1 and len(st["kept"]) == st["m"] and set(st["kept"][0]) == {"x", "logf", "n_starts_reached"}
+    assert set(st) == {"route", "m", "starts_elsewhere", "kept", "optimiser", "chain_solution", "n_start_clipped", "acceptance_first_500", "optimiser_seconds"}
+    from scipy.optimize import minimize_scalar                                            # the mode of logit + log P_A in H, exactly
+    mu_u, sd_u = (mu - 0.02) / 0.46, sd / 0.46
+    mode_u = minimize_scalar(lambda u: (u - mu_u) ** 2 / (2 * sd_u ** 2) - float(R.prior_logpdf(0.02 + 0.46 * u, "A")),
+                             bounds=(0.2, 0.6), method="bounded", options={"xatol": 1e-12}).x
+    assert set(st["optimiser"]) == {"status", "nit", "reached"} and all(abs(k["x"][0] - mode_u) < 1e-5 for k in st["kept"])
     wA = lambda h: np.exp(R.prior_logpdf(h, "A")) * np.exp(-(h - mu) ** 2 / (2 * sd ** 2))
     grid = np.linspace(0.02, 0.48, 200001)
     w = wA(grid)
     mean_A = np.sum(grid * w) / np.sum(w)
     ess = po["attempts"][-1]["ess"]["H"]                                                     # the accepted attempt's
     direct, _ = R._run_with_repeat(None, None, None, np.random.default_rng([107, 1, 1, 0, 1]), "uniform", 1000, 3000,
-                                   E.BOX, 1.1, 50, target=C.nre_target(nre, Y[0]))
+                                   E.BOX, 1.1, 50, target=C.NRETarget(nre, Y[0], sig))
     assert R.unit_to_theta(direct["samples"].reshape(-1, 4))[:, 0].mean() == po["H_hat"]          # the generator's arguments
     assert abs(po["H_hat"] - mean_A) < 4 * sd / np.sqrt(ess) + 1e-9                     # the prior A tilts the mean down
     assert abs(po["xi0_hat"] - CENTRE[3]) < 0.02                                           # ξ₀ flat: uniform on its range
-    po2 = C.nre_posterior(nre, Y[0], i=0, burn=1000, sample=3000, rhat_max=1.1, ess_min=50)
+    po2 = C.nre_posterior(nre, Y[0], 0, sig, burn=1000, sample=3000, rhat_max=1.1, ess_min=50)
     assert po2["H_hat"] == po["H_hat"]                                                     # default_rng([107, 1, 1, 0, 1])
+    with pytest.raises(ValueError, match="Σ_P"):                                            # no Σ_P in the record: refused
+        C.nre_posterior(nre, Y[0], 0, None, burn=100, sample=200, rhat_max=5.0, ess_min=1.0)
+
+
+@_needs_torch
+def test_autograd_gradient_against_a_float64_finite_difference_on_a_toy_network():
+    """D95 (the author's request, D93): the gradient route's exact gradient from torch autograd
+    on a float64 copy of the network against a float64 central finite difference of the same
+    log-target, on a toy network of the design's trunk, the prior's analytic part included; the
+    value within float32 rounding of the network as trained; the route through run_chains."""
+    torch = C.torch
+    torch.manual_seed(7)
+    net = C.make_mlp(39, 1)
+    em = LinearEm()
+    th, ep = C.training_block("A", 2, 1, n_block=64)
+    Y = C.make_surfaces(th, ep, 0.003, em)
+    run = {"nets": [net], "std": C.Standardiser(Y), "prior": "A", "q": 1, "j": 2}
+    sig = np.diag([0.001, 0.01, 0.01, 0.01])
+    tg = C.NRETarget(run, Y[0], sig)
+    assert np.array_equal(tg.sigma, sig) and tg.bounds_unit[0][0] == R.EPS_H and tg.bounds_unit[1][0] == 1 - R.EPS_H
+    assert next(tg.net64.parameters()).dtype == torch.float64 and next(net.parameters()).dtype == torch.float32   # a copy, the original untouched
+
+    def pattern(x):                                                                       # the ReLU pattern of the float64 copy at x
+        z = torch.cat([tg.x64, torch.as_tensor(np.asarray(x).reshape(1, 4), dtype=torch.float64)], dim=1)
+        signs = []
+        for layer in tg.net64:
+            z = layer(z)
+            if isinstance(layer, torch.nn.Linear):
+                signs.append((z > 0).flatten())
+        return torch.cat(signs[:-1])
+    rng = np.random.default_rng(11)
+    h = 1e-6
+    n_checked = 0
+    for x in rng.uniform(0.05, 0.95, size=(30, 4)):
+        f, g = tg.value_grad_unit(x)
+        assert np.array_equal(g, tg.grad_unit(x)) and g.shape == (4,) and np.isfinite(f)
+        fd = np.empty(4)
+        linear = True
+        for i in range(4):
+            xp, xm = x.copy(), x.copy()
+            xp[i] += h
+            xm[i] -= h
+            if not (torch.equal(pattern(xp), pattern(x)) and torch.equal(pattern(xm), pattern(x))):
+                linear = False                                                            # a kink inside the stencil: the difference is not the derivative
+                break
+            fd[i] = (tg.value_grad_unit(xp)[0] - tg.value_grad_unit(xm)[0]) / (2 * h)
+        if not linear:
+            continue
+        n_checked += 1
+        assert np.all(np.abs(fd - g) <= 1e-7 * np.maximum(1.0, np.abs(g))), (x, fd, g)
+        v32 = float(tg(R.unit_to_theta(x).reshape(1, 4))[0])                             # the network as trained, float32
+        assert abs(v32 - f) < 1e-3 * max(1.0, abs(f))
+        u = float(x[0])
+        f_prior = float(R.prior_logpdf(R.H_LO + u * R.H_W, "A"))                           # the prior's part, analytic, in f and g[0]
+        with torch.no_grad():
+            logit64 = float(tg.net64(torch.cat([tg.x64, torch.as_tensor(x.reshape(1, 4), dtype=torch.float64)], dim=1)).reshape(()))
+        assert abs(f - (logit64 + f_prior)) < 1e-12 * max(1.0, abs(f))
+    assert n_checked >= 10
+    with pytest.raises(ValueError, match="Σ_P"):
+        C.NRETarget(run, Y[0], None)
+    with pytest.raises(ValueError, match="shape"):
+        C.NRETarget(run, Y[0], np.eye(3))
+    rc = R.run_chains(None, None, None, np.random.default_rng([107, 1, 1, 0, 2]), "uniform", burn=200, sample=400, target=tg)
+    st = rc["start"]
+    assert st["route"] == "gradient" and st["m"] >= 1 and np.allclose(st["kept"][0]["sigma"], R.clip_cov(sig)[0])
+    assert st["kept"][0]["sigma_A"] is None and st["bounds_unit"][0][0] == R.EPS_H and rc["samples"].shape == (4, 400, 4)
+    assert set(C._trim_start(R._jsonable(st))) == {"route", "m", "starts_elsewhere", "kept", "optimiser", "chain_solution", "n_start_clipped",
+                                                   "acceptance_first_500", "optimiser_seconds"} and C._trim_start(None) is None
 
 
 @_needs_torch
@@ -233,7 +313,8 @@ def test_toy_g3_ladder_end_to_end(tmp_path):
             y = em.evaluate_many(theta)[0] + E.NOISE_LEVELS[j] * rng.standard_normal(35)
             refs[f"g3_{i:04d}_{j}"] = {"set": "g3", "task": f"g3_{i:04d}_{j}", "i": i, "j": j, "status": "ok",
                                        "theta": theta.tolist(), "y": y.tolist(),
-                                       "under": {p: {"mean_H": float(theta[0]), "mean_xi0": float(theta[3])} for p in "AB"}}
+                                       "under": {p: {"mean_H": float(theta[0]), "mean_xi0": float(theta[3]), "sigma_P": np.diag([1e-3, 1e-2, 1e-2, 1e-2]).tolist()}
+                                                 for p in "AB"}}
     paths = {"jsonl": str(tmp_path / "ladder.jsonl"), "nets": str(tmp_path / "nets"), "report": str(tmp_path / "g3.json")}
     kw = dict(em=em, refs=refs, jsonl_path=paths["jsonl"], nets_dir=paths["nets"], report_path=paths["report"], threads=1,
               ladder=(64, 128), n_block=256, n_valid=40, levels=(0.003,), priors=("A",), calibrators=("ensemble", "nre"),
@@ -269,7 +350,8 @@ def test_seeds_scoring_and_the_retraining_rule(tmp_path, monkeypatch):
         y = em.evaluate_many(theta)[0] + 0.003 * rng.standard_normal(35)
         refs[f"g3_{i:04d}_1"] = {"set": "g3", "task": f"g3_{i:04d}_1", "i": i, "j": 1, "status": "ok",
                                  "theta": theta.tolist(), "y": y.tolist(),
-                                 "under": {p: {"mean_H": float(theta[0]), "mean_xi0": float(theta[3])} for p in "AB"}}
+                                 "under": {p: {"mean_H": float(theta[0]), "mean_xi0": float(theta[3]), "sigma_P": np.diag([1e-3, 1e-2, 1e-2, 1e-2]).tolist()}
+                                           for p in "AB"}}
     orig_checks = C.g3_checks
     monkeypatch.setattr(C, "g3_checks", lambda pn, p2, rows, **kw: orig_checks(pn, p2, rows, slope_min=-np.inf, tol=np.inf))
     paths = {"jsonl": str(tmp_path / "ladder.jsonl"), "nets": str(tmp_path / "nets"), "report": str(tmp_path / "g3.json")}
@@ -308,10 +390,13 @@ def test_seeds_scoring_and_the_retraining_rule(tmp_path, monkeypatch):
                        out_path=str(tmp_path / "scores.jsonl"), threads=1, post_kw=pk) == 0                 # resume
 
 
-def test_entry_points_hold_and_refuse():
+def test_entry_points_hold_and_refuse(tmp_path, monkeypatch):
     C.main([])                                                                             # the design, then hold
     if C._HAS_TORCH:
-        with pytest.raises(SystemExit, match="no emulator"):
+        with pytest.raises(SystemExit, match=r"--emulator no_such_file\.npz is not G"):   # G̃ is committed (D88): another file is refused before any load
+            C.main(["--g3", "--emulator", "no_such_file.npz"])
+        monkeypatch.setattr(E, "paths", lambda stage="base": {k: str(tmp_path / f"no_g1_{stage}.{k}") for k in ("jsonl", "npz", "csv", "report")})
+        with pytest.raises(SystemExit, match="no emulator"):                               # with no G1 build (an empty folder), no emulator
             C.main(["--g3", "--emulator", "no_such_file.npz"])
     else:
         with pytest.raises(SystemExit, match="torch is not in this environment"):
@@ -346,7 +431,8 @@ def _fake_ladder(monkeypatch, d_by_n, slope_by_kind, seconds_by_n=None):
 def _g3_refs(n=4, j_ref=1):
     return {f"g3_{i:04d}_{j_ref}": {"set": "g3", "task": f"g3_{i:04d}_{j_ref}", "i": i, "j": j_ref, "status": "ok",
                                     "theta": [0.1, 0.2, -0.8, 0.1], "y": [0.2] * 35,
-                                    "under": {p: {"mean_H": 0.1 + 0.05 * i, "mean_xi0": 0.05 + 0.04 * i} for p in "AB"}}
+                                    "under": {p: {"mean_H": 0.1 + 0.05 * i, "mean_xi0": 0.05 + 0.04 * i, "sigma_P": np.diag([1e-3, 1e-2, 1e-2, 1e-2]).tolist()}
+                                              for p in "AB"}}
             for i in range(n)}
 
 

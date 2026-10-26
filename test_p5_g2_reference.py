@@ -47,10 +47,10 @@ def toy_surface(em, theta=CENTRE, s=0.003, seed=11):
 
 
 def test_literals_are_the_written_ones():
-    assert (R.SEED_REF, R.SEED_G2_POINTS, R.N_G2_POINTS, R.SEED_G2_NOISE) == (83, 79, 4, 89)
+    assert (R.SEED_REF, R.SEED_G2_POINTS, R.N_G2_POINTS, R.SEED_G2_NOISE) == (83, 151, 4, 157)                # v3's seeds (D95)
     assert (R.SEED_G3_POINTS, R.N_G3_POINTS, R.SEED_G3_NOISE, R.SEED_TEST) == (97, 16, 101, 20261002)
     assert (R.N_CHAINS, R.BURN, R.SAMPLE, R.ADAPT_EVERY) == (4, 10000, 40000, 500)
-    assert abs(R.SCALE - 2.38 ** 2 / 4) < 1e-15 and R.INIT_VAR == 1 / 12 and R.DIAG_FLOOR == 1e-10
+    assert abs(R.SCALE - 2.38 ** 2 / 4) < 1e-15 and R.EIG_HI == 1 / 12 and R.DIAG_FLOOR == 1e-10 and not hasattr(R, "INIT_VAR")
     assert (R.RHAT_MAX, R.ESS_MIN, R.KISH_MIN) == (1.01, 2000.0, 1000.0)
     assert (R.GRID_N, R.EXTEND, R.WHOLE_N, R.TOL_MEAN, R.TOL_C) == (32, 0.20, 48, 0.001, 0.01)
     assert R.PRIOR_AB["A"] == (2.5, 9.0) and abs(R.PRIOR_AB["B"][0] - 235 / 23) < 1e-15 and abs(R.PRIOR_AB["B"][1] - 376 / 69) < 1e-15
@@ -61,8 +61,25 @@ def test_literals_are_the_written_ones():
         assert abs(_beta(aa, bb).var() - 36 / 2645) < 1e-15                                  # equal variances
     assert abs(R.VAR_PRIOR_A - 0.46 ** 2 * 36 / 2645) < 1e-18 and abs(R.VAR_PRIOR_A - 0.00288) < 1e-17
     assert R.H_LO == 0.02 and abs(R.H_W - 0.46) < 1e-15 and R.NOISE_LEVELS == (0.001, 0.003, 0.005)
-    assert {R.SEED_REF, R.SEED_G2_POINTS, R.SEED_G2_NOISE}.isdisjoint({20261002, 7, 61, 62, 73, 97, 101})
-    assert R.SETS["g2"]["jsonl"].endswith("p5_g2_pilot.jsonl") and R.SETS["test"]["samples"].endswith("p5_ref_test_samples.npz")
+    # v3's six G2 seeds (D95): the six smallest primes above 149, v2's largest pilot seed, in line 143's order; none in use before
+    v3 = (R.SEED_G2_POINTS, R.SEED_G2_NOISE, R.SEED_G2_FIXED_NOISE, R.SEED_G2R_POINTS, R.SEED_G2R_NOISE, R.SEED_G2R_FIXED_NOISE)
+    primes = [p for p in range(150, 200) if all(p % d for d in range(2, int(p ** 0.5) + 1))]
+    assert v3 == tuple(primes[:6]) == (151, 157, 163, 167, 173, 179) and R.SEEDS_V2_G2 == (79, 89, 139, 131, 137, 149)
+    excluded = {7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127, 131, 137, 139, 149, 20261002, 20261022}
+    assert set(v3).isdisjoint(excluded) and set(R.SEEDS_V2_G2) <= excluded and R.SEED_REF in excluded
+    # v3's records under new names (the plan, item 5); v2's names nowhere in the sets
+    assert R.SETS["g2"]["jsonl"].endswith("p5v3_g2_pilot.jsonl") and R.SETS["g2"]["samples"].endswith("p5v3_g2_pilot_samples.npz")
+    assert R.SETS["g2"]["report"].endswith("p5v3_g2_report.json") and R.SETS["g2r"]["jsonl"].endswith("p5v3_g2r_pilot.jsonl")
+    assert R.SETS["g2r"]["report"].endswith("p5v3_g2r_report.json") and R.SETS["g3"]["jsonl"].endswith("p5v3_g3_pilot_refs.jsonl")
+    assert R.SETS["test"]["jsonl"].endswith("p5v3_ref_test.jsonl") and R.SETS["test"]["samples"].endswith("p5v3_ref_test_samples.npz")
+    assert all("p5v3_" in v and "/p5_g2" not in v.replace("\\", "/") for d in R.SETS.values() for v in d.values())
+    # the start's constants (line 68; D93's settings, D95)
+    assert R.N_STARTS == 16 and (R.LS_METHOD, R.LS_JAC) == ("trf", "2-point") and (R.LS_FTOL, R.LS_XTOL, R.LS_GTOL, R.LS_MAX_NFEV) == (1e-10, 1e-10, 1e-8, 2000)
+    assert (R.LBFGS_FTOL, R.LBFGS_GTOL, R.LBFGS_MAXITER) == (1e-10, 1e-5, 200) and R.EPS_H == 1e-6 and R.KAPPA_U_FLOOR == 0.01
+    assert (R.KEEP_MAX, R.DISTINCT) == (4, 0.01) and abs(R.MASS_LOG - np.log(1e4)) < 1e-15 and (R.EIG_LO, R.EIG_HI) == (1e-10, 1 / 12)
+    assert (R.PERTURB_CAP, R.PERTURB_MULT) == (0.0025, 4.0) and abs(R.FD_REL_STEP - np.sqrt(np.finfo(float).eps)) < 1e-30
+    cc = R.sampler_constants()
+    assert cc["n_starts"] == 16 and cc["eps_H"] == 1e-6 and cc["mass_log"] == R.MASS_LOG and "uniform starts" in cc["draw_order"]
 
 
 def test_split_rhat_and_ess_on_synthetic_chains():
@@ -124,6 +141,11 @@ def test_sampler_on_a_linear_emulator_matches_its_gaussian_posterior():
         assert abs(pooled[:, p].mean() - mean[p]) < 4 * se + 1e-9
     assert 0.1 < run["acceptance"] < 0.6
     assert run["samples"].shape == (4, 4000, 4) and np.all(run["samples"] >= 0) and np.all(run["samples"] <= 1)
+    st = run["start"]                                                                   # the start's diagnostics (D95)
+    assert st["route"] == "least_squares" and st["m"] == 1 and st["kept"][0]["n_starts_reached"] == 16 and st["starts_elsewhere"] == 0
+    assert np.allclose(st["kept"][0]["sigma"], cov / np.outer(HI - LO, HI - LO), rtol=1e-4, atol=0)   # Σ = the Gaussian's covariance in unit coordinates
+    assert np.allclose(R.unit_to_theta(st["kept"][0]["x"]), mean, atol=1e-6) and st["kept"][0]["polish"] is None
+    assert np.array_equal(st["chain_start"], np.clip(st["chain_start_raw"], 0, 1)) and len(st["acceptance_first_500"]) == 4
     run2 = R.run_chains(y, s, em, np.random.default_rng([R.SEED_REF, 0, 0]), "uniform", burn=2000, sample=4000)
     assert np.array_equal(run["samples"], run2["samples"])                 # the same generator, the same chains
     # a proposal outside the box is rejected without evaluation: log_target is -inf there
@@ -191,16 +213,16 @@ def test_reweighting_direct_runs_and_grid_against_the_gaussian():
 
 
 def test_draws_surfaces_and_the_sealed_set(tmp_path, monkeypatch):
-    pts = R.pilot_points(79, 4)
+    pts = R.pilot_points(151, 4)
     assert pts.shape == (4, 4) and np.all(pts >= LO) and np.all(pts <= HI)
-    assert np.array_equal(pts, np.random.default_rng(79).uniform(LO, HI, size=(4, 4)))
-    eps = R.noise_draws(89, 4)
-    assert eps.shape == (4, 3, 35) and np.array_equal(eps, np.random.default_rng(89).standard_normal((4, 3, 35)))
+    assert np.array_equal(pts, np.random.default_rng(151).uniform(LO, HI, size=(4, 4)))
+    eps = R.noise_draws(157, 4)
+    assert eps.shape == (4, 3, 35) and np.array_equal(eps, np.random.default_rng(157).standard_normal((4, 3, 35)))
     em = LinearEm()
     Y = R.surfaces(pts, eps, em)
     assert Y.shape == (4, 3, 35)
     assert np.allclose(Y[2, 1], em.evaluate_many(pts[2])[0] + 0.003 * eps[2, 1])
-    p5, p3 = R.pilot_points(79, 5), R.pilot_points(79, 3)                 # the head property of a uniform draw
+    p5, p3 = R.pilot_points(151, 5), R.pilot_points(151, 3)               # the head property of a uniform draw
     assert np.array_equal(p5[:3], p3)                                      # (checked on a pilot seed: line 95 keeps
     import inspect                                                         #  the sealed stream for the test set)
     assert "SEED_TEST" in inspect.getsource(R.test_points) and R.SEED_TEST == 20261002
@@ -244,6 +266,7 @@ def test_toy_pilot_record_resume_and_report(tmp_path, capsys, toy_emulator):
     assert [j["label"] for j in jobs] == ["g2_0000_0", "g2_0001_0"] == [j["label"] for j in jobs2]
     assert all(np.array_equal(a["y"], b["y"]) for a, b in zip(jobs, jobs2))
     assert hdr["set"] == "g2" and hdr["burn"] == 10000 and hdr["seed_ref"] == 83 and hdr["priors"]["A"] == [2.5, 9.0]
+    assert hdr["lengths"]["start"] == R.sampler_constants() == hdr["start"]              # the start's constants, in the header (D95)
     assert [l["n_done_before"] for l in launches] == [0, 2] and set(tasks) == {"g2_0000_0", "g2_0001_0"}
     assert all(t["status"] == "ok" and t["runs"]["uniform"][0]["burn"] == 500 for t in tasks.values())
     assert set(stores) >= {"g2_0000_0_u", "g2_0001_0_u"} and stores["g2_0000_0_u"].dtype == np.uint16
@@ -355,19 +378,21 @@ def test_g2_pilot_set_fixed_points_retry_and_go_no_go(tmp_path, monkeypatch):
     with doubled lengths on fresh surfaces; the go or no-go on the projected cost; the later
     runs only after G2 has passed with a go."""
     assert R.FIXED_POINTS == ((0.04, 0.20, -0.80, 0.145), (0.46, 0.20, -0.80, 0.145))
-    assert (R.SEED_G2_FIXED_NOISE, R.SEED_G2R_POINTS, R.SEED_G2R_NOISE, R.SEED_G2R_FIXED_NOISE) == (139, 131, 137, 149)
-    used = {20261002, 20261022, 7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127}
-    assert {139, 131, 137, 149}.isdisjoint(used) and R.BUDGET_CORE_H == 1344.0 == 2 * 7 * 24 * 4
+    assert (R.SEED_G2_FIXED_NOISE, R.SEED_G2R_POINTS, R.SEED_G2R_NOISE, R.SEED_G2R_FIXED_NOISE) == (163, 167, 173, 179)   # v3's (D95)
+    used = {20261002, 20261022, 7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127, 131, 137, 139, 149}         # v2's six included
+    assert {151, 157, 163, 167, 173, 179}.isdisjoint(used) and R.BUDGET_CORE_H == 1344.0 == 2 * 7 * 24 * 4
     centre = (LO + HI) / 2
     assert np.allclose(np.array(R.FIXED_POINTS)[:, 1:], centre[1:])                  # ν, ρ, ξ₀ at the box's centre
     pts, eps, seeds = R.g2_surfaces()
     assert pts.shape == (6, 4) and eps.shape == (6, 3, 35)
-    assert np.array_equal(pts[:4], R.pilot_points(79, 4)) and np.array_equal(pts[4:], np.array(R.FIXED_POINTS))
-    assert np.array_equal(eps[:4], R.noise_draws(89, 4)) and np.array_equal(eps[4:], R.noise_draws(139, 2))
-    assert seeds == {"points": 79, "noise": 89, "fixed_points": [list(p) for p in R.FIXED_POINTS], "fixed_noise": 139}
+    assert np.array_equal(pts[:4], R.pilot_points(151, 4)) and np.array_equal(pts[4:], np.array(R.FIXED_POINTS))
+    assert np.array_equal(eps[:4], R.noise_draws(157, 4)) and np.array_equal(eps[4:], R.noise_draws(163, 2))
+    assert seeds == {"points": 151, "noise": 157, "fixed_points": [list(p) for p in R.FIXED_POINTS], "fixed_noise": 163}
     ptr, epr, sr = R.g2_surfaces(retry=True)
-    assert np.array_equal(ptr[:4], R.pilot_points(131, 4)) and np.array_equal(ptr[4:], pts[4:])
-    assert np.array_equal(epr[:4], R.noise_draws(137, 4)) and np.array_equal(epr[4:], R.noise_draws(149, 2))
+    assert np.array_equal(ptr[:4], R.pilot_points(167, 4)) and np.array_equal(ptr[4:], pts[4:])
+    assert np.array_equal(epr[:4], R.noise_draws(173, 4)) and np.array_equal(epr[4:], R.noise_draws(179, 2))
+    assert sr == {"points": 167, "noise": 173, "fixed_points": [list(p) for p in R.FIXED_POINTS], "fixed_noise": 179}
+    assert not np.array_equal(pts[:4], R.pilot_points(79, 4)) and not np.array_equal(ptr[:4], R.pilot_points(131, 4))   # fresh surfaces
     assert len(R.make_jobs("g2", pts, eps, LinearEm())) == 18
     # the projection: the median seconds per run of the lengths in force, times the mean runs per pair, times the pairs
     att = [[{"burn": 10, "sample": 40, "seconds": 2.0}],
@@ -534,7 +559,7 @@ def test_the_retry_and_the_hand_off_of_g2s_lengths(tmp_path, monkeypatch, toy_em
     R.main(["--pilot-retry", "--emulator", "no_such_file.npz"])
     rs, rp = calls["run_set"][-1], calls["report"][-1]
     assert rs["set"] == "g2r" and rs["n"] == 6 and (rs["kw"]["burn"], rs["kw"]["sample"]) == (20000, 80000)
-    assert rs["seeds"]["points"] == 131 and rs["seeds"]["noise"] == 137 and rs["seeds"]["fixed_noise"] == 149
+    assert rs["seeds"]["points"] == 167 and rs["seeds"]["noise"] == 173 and rs["seeds"]["fixed_noise"] == 179
     assert rp["attempt"] == 2 and tuple(rp["lengths"]) == (20000, 80000)
     Path(retry).write_text(json.dumps({"gate": "G2", "passed": True, "go": True, "attempt": 2,
                                        "lengths": {"burn": 20000, "sample": 80000}, "budget_core_hours": 1344.0,
@@ -644,9 +669,9 @@ def _toy_emulator_file(path, em):
 
 
 def _untimed(d):
-    """A record or a grid check without its times, which differ from run to run."""
+    """A record or a grid check without its times (the start's optimiser seconds included), which differ from run to run."""
     if isinstance(d, dict):
-        return {k: _untimed(v) for k, v in d.items() if k not in ("utc", "seconds")}
+        return {k: _untimed(v) for k, v in d.items() if k not in ("utc", "seconds", "optimiser_seconds")}
     if isinstance(d, list):
         return [_untimed(v) for v in d]
     return d
@@ -707,3 +732,178 @@ def test_the_pool_paths_give_every_pair_what_one_process_gives(tmp_path, monkeyp
             assert checks(rep) == ref_checks and rep["cost"]["pool"] == 2
     finally:
         R._EM["path"], R._EM["em"] = None, None
+
+
+# ---- D95: the start and the first proposal written in from the development study's candidate (A) ----
+class _TwoGaussians:
+    """A synthetic target for the gradient route: log(N(m1, sd² I) + w2 N(m2, sd² I)) in unit
+    coordinates, with its exact gradient and Σ = sd² I (as test_p5_v3_study.py has it)."""
+
+    def __init__(self, m1, m2, sd, w2=1.0):
+        self.m1, self.m2, self.sd, self.w2 = np.asarray(m1, float), np.asarray(m2, float), float(sd), float(w2)
+        self.sigma = sd ** 2 * np.eye(4)
+
+    def _parts(self, x):
+        x = np.asarray(x, float).reshape(-1, 4)
+        a = -np.sum((x - self.m1) ** 2, axis=1) / (2 * self.sd ** 2)
+        b = np.log(self.w2) - np.sum((x - self.m2) ** 2, axis=1) / (2 * self.sd ** 2)
+        return x, a, b
+
+    def __call__(self, th):
+        _, a, b = self._parts(R.theta_to_unit(th))
+        return np.logaddexp(a, b)
+
+    def grad_unit(self, x):
+        x, a, b = self._parts(x)
+        pa = np.exp(a - np.logaddexp(a, b))[:, None]
+        return (pa * (-(x - self.m1) / self.sd ** 2) + (1 - pa) * (-(x - self.m2) / self.sd ** 2))[0]
+
+
+def _untimed_start(d):
+    """A start's diagnostics without its seconds and the study's tag, JSON-clean."""
+    d = R._jsonable(d)
+    return {k: v for k, v in d.items() if k not in ("optimiser_seconds", "sampler")}
+
+
+def test_the_written_in_start_equals_the_studys_candidate_bit_for_bit():
+    """D95: run_chains is p5_v3_study.candidate_run_chains as the study ran it (D93, D94): on the
+    same generator the uniform run, a direct run under A and the gradient route give the same
+    chains, the same final proposals and the same diagnostics, and the constants are the same."""
+    import p5_v3_study as S
+    assert R.sampler_constants() == S.candidate_constants()
+    em = LinearEm()
+    s = 0.003
+    y = toy_surface(em, s=s)
+    for prior, key in (("uniform", [R.SEED_REF, 0, 0]), ("A", [R.SEED_REF, 0, 1]), ("B", [R.SEED_REF, 2, 1])):
+        ours = R.run_chains(y, s, em, np.random.default_rng(key), prior, burn=600, sample=800)
+        study = S.candidate_run_chains(y, s, em, np.random.default_rng(key), prior, burn=600, sample=800)
+        assert np.array_equal(ours["samples"], study["samples"]) and np.array_equal(ours["cov"], study["cov"])
+        assert ours["acceptance"] == study["acceptance"] and (ours["burn"], ours["sample"], ours["prior"]) == (600, 800, prior)
+        assert _untimed_start(ours["start"]) == _untimed_start(study["candidate"]) and "candidate" not in ours
+        assert ours["start"]["route"] == "least_squares" and (ours["start"]["kept"][0]["polish"] is None) == (prior == "uniform")
+    tg = _TwoGaussians([0.3] * 4, [0.7] * 4, 0.02)
+    ours = R.run_chains(None, None, None, np.random.default_rng(5), "uniform", burn=500, sample=1000, target=tg)
+    study = S.candidate_run_chains(None, None, None, np.random.default_rng(5), "uniform", burn=500, sample=1000, target=tg)
+    assert np.array_equal(ours["samples"], study["samples"]) and _untimed_start(ours["start"]) == _untimed_start(study["candidate"])
+    assert ours["start"]["route"] == "gradient" and ours["start"]["m"] == 2 and ours["start"]["chain_solution"] == [0, 1, 0, 1]
+    assert not R.accept(ours["samples"], 1.01, 100)[0]                                  # two modes: the chains sit apart, R-hat fails
+    with pytest.raises(TypeError, match="grad_unit"):                                    # a plain callable is not run with the start
+        R.run_chains(None, None, None, np.random.default_rng(5), "uniform", burn=10, sample=10,
+                     target=lambda th: np.zeros(np.asarray(th).reshape(-1, 4).shape[0]))
+
+    class _WithValue(_TwoGaussians):                                                     # a target giving value and gradient together
+        def value_grad_unit(self, x):
+            return float(self(R.unit_to_theta(x).reshape(1, 4))[0]), self.grad_unit(x)
+    both = R.run_chains(None, None, None, np.random.default_rng(5), "uniform", burn=500, sample=1000,
+                        target=_WithValue([0.3] * 4, [0.7] * 4, 0.02))
+    assert np.array_equal(both["samples"], ours["samples"])                              # the same value and gradient: the same run
+
+
+def test_the_generator_is_drawn_in_the_declared_order_and_the_first_proposal_is_sigma():
+    """Line 68 (D95): block 1, 16 × 4 uniforms for the optimiser's starts; block 2, 4 × 4 standard
+    normals for the start perturbations; then mh_step's draws from the recorded starts with the
+    first proposal 2.38²/4 · Σ, v2's loop reproducing the chains and the final proposals exactly."""
+    em = LinearEm()
+    s = 0.003
+    y = toy_surface(em, s=s)
+    key = [R.SEED_REF, 1, 2]
+    run = R.run_chains(y, s, em, np.random.default_rng(key), "uniform", burn=600, sample=800)
+    d = run["start"]
+    rng = np.random.default_rng(key)
+    U = rng.uniform(size=(16, 4))
+    Z = rng.standard_normal((4, 4))
+    assert np.array_equal(np.asarray(d["starts"]), U)
+    for k in range(4):
+        sol = d["kept"][d["chain_solution"][k]]
+        L = R._chol_pd(R.PERTURB_MULT * R.capped_cov(sol["sigma"]))
+        assert np.allclose(np.linalg.solve(L, np.asarray(d["chain_start_raw"][k]) - sol["x"]), Z[k], atol=1e-12)
+    x = np.asarray(d["chain_start"]).copy()
+    lt = R.log_target(x, y, s, em, "uniform")
+    cov = np.stack([R.SCALE * d["kept"][d["chain_solution"][k]]["sigma"] for k in range(4)])
+    L = np.stack([R._chol_pd(c) for c in cov])
+    hist = np.empty((4, 601, 4))
+    hist[:, 0] = x
+    for t in range(1, 601):
+        x, lt, _ = R.mh_step(x, lt, L, y, s, em, "uniform", rng)
+        hist[:, t] = x
+        if t % 500 == 0:
+            cov = np.stack([R.adapted_cov(hist[k, :t + 1]) for k in range(4)])
+            L = np.stack([R._chol_pd(c) for c in cov])
+    samples = np.empty((4, 800, 4))
+    for t in range(800):
+        x, lt, _ = R.mh_step(x, lt, L, y, s, em, "uniform", rng)
+        samples[:, t] = x
+    assert np.array_equal(samples, run["samples"]) and np.array_equal(cov, run["cov"])
+    # the pieces on their own: Σ from the singular values with the clip counts, the cap, the keep rule, the prior's derivatives
+    rng2 = np.random.default_rng(0)
+    Q, _ = np.linalg.qr(rng2.standard_normal((35, 4)))
+    V, _ = np.linalg.qr(rng2.standard_normal((4, 4)))
+    J = (Q * np.array([1e6, 100.0, 4.0, 0.1])) @ V.T
+    c, eig, n = R.cov_from_jacobian(J)
+    assert n == 2 and np.allclose(np.sort(np.linalg.eigvalsh(c)), np.sort(np.clip(1 / np.array([1e6, 100.0, 4.0, 0.1]) ** 2, 1e-10, 1 / 12)), rtol=1e-6)
+    J2 = (Q * np.array([50.0, 20.0, 8.0, 4.0])) @ V.T
+    assert np.allclose(R.cov_from_jacobian(J2, 30.0)[0], np.linalg.inv(J2.T @ J2 + np.diag([30.0, 0, 0, 0])), rtol=1e-8)
+    assert np.allclose(np.diag(R.capped_cov(np.diag([0.01, 0.001, 0.002, 0.1]))), [0.0025, 0.001, 0.002, 0.0025])
+    I = 1e-3 * np.eye(4)
+    xs = np.array([[0.2] * 4, [0.205] * 4, [0.7] * 4, [0.5] * 4, [0.9] * 4, [0.1] * 4, [0.4] * 4])
+    logf = np.array([0.0, -0.5, -1.0, -np.log(1e4) - 1e-6, -2.0, -3.0, -4.0])
+    kept, mass, reached = R.keep_solutions(xs, logf, [I] * 7)
+    assert kept == [0, 2, 4, 5] and reached.tolist() == [0, 0, 1, -1, 2, 3, -1]
+    for which in ("A", "B"):
+        for u in (0.05, 0.3, 0.8):
+            g, kap = R.prior_grad_curv(u, which)
+            h = 1e-5
+            lp = lambda uu: float(R.prior_logpdf(R.H_LO + uu * R.H_W, which))          # noqa: E731
+            assert abs(g - (lp(u + h) - lp(u - h)) / (2 * h)) < 1e-5 * max(1.0, abs(g)) and kap > 0
+    assert R.prior_grad_curv(0.3, "uniform") == (0.0, 0.0)
+    f = lambda x: np.array([x[0] ** 2, 3.0 * x[1], x[2] * x[3]])                      # noqa: E731
+    Jf, f0 = R.fd_jacobian(f, np.array([0.3, 1.0, 0.5, 0.25]), np.zeros(4), np.ones(4))
+    assert np.allclose(Jf, [[0.6, 0, 0, 0], [0, 3, 0, 0], [0, 0, 0.25, 0.5]], atol=1e-6)
+
+
+def test_sigma_P_in_the_record_reweighted_and_direct_and_the_record_is_json_clean():
+    """Line 68 and line 75 (D95): the pair's record carries Σ_P under each prior for the ratio
+    estimator's sampler, the uniform run's Σ with the prior's curvature added where the figures
+    are reweighted, the accepted direct run's Σ at its best kept solution where they are direct;
+    each attempt's record carries the run's start, JSON-clean."""
+    em = LinearEm()
+    s = 0.003
+    y = toy_surface(em, s=s)
+    rec, stores = R.reference_pair(y, s, em, 0, 2, burn=600, sample=1800, kish_min=50.0, rhat_max=1.2, ess_min=50.0)
+    assert rec["status"] == "ok" and rec["direct"] == []
+    u_start = rec["runs"]["uniform"][-1]["start"]
+    for p in ("A", "B"):
+        assert rec["under"][p]["source"] == "reweighted" and rec["under"][p]["sigma_P"] == u_start["kept"][0]["sigma_" + p]
+        assert np.asarray(rec["under"][p]["sigma_P"]).shape == (4, 4)
+    assert rec["under"]["A"]["sigma_P"][0][0] < u_start["kept"][0]["sigma"][0][0]       # the prior's curvature narrows H
+    assert rec["under"]["A"]["sigma_P"] != rec["under"]["B"]["sigma_P"]
+    rec2, _ = R.reference_pair(y, s, em, 0, 2, burn=600, sample=1200, kish_min=1e12, rhat_max=1.2, ess_min=50.0)
+    assert rec2["direct"] == ["A", "B"]
+    for p in ("A", "B"):
+        assert rec2["under"][p]["source"] == "direct" and rec2["under"][p]["sigma_P"] == rec2["runs"][p][-1]["start"]["kept"][0]["sigma"]
+        assert rec2["runs"][p][-1]["start"]["kept"][0]["polish"] is not None and rec2["runs"][p][-1]["start"]["prior"] == p
+    json.dumps(rec, allow_nan=False)
+    json.dumps(rec2, allow_nan=False)
+    assert set(u_start) >= {"route", "m", "starts", "optimiser", "kept", "chain_solution", "chain_start_raw", "chain_start",
+                            "n_start_clipped", "bounds_unit", "acceptance_first_500", "proposal_vs_sample", "optimiser_seconds"}
+    assert R._jsonable({"a": np.array([1.0, np.inf]), "b": np.float64(2.0), "c": np.int64(3), "d": np.bool_(True)}) == \
+        {"a": [1.0, None], "b": 2.0, "c": 3, "d": True}
+
+
+def test_a_resume_with_other_start_constants_is_refused(tmp_path, monkeypatch, toy_emulator):
+    """The start's constants sit in the header's `lengths`, so launch refuses a resume made with
+    other constants, as it refuses other lengths (D95)."""
+    em = toy_emulator
+    paths = {"jsonl": str(tmp_path / "r.jsonl"), "samples": str(tmp_path / "r.npz"), "report": str(tmp_path / "r.json")}
+    kw = {"burn": 300, "sample": 900, "kish_min": 50.0, "rhat_max": 1.5, "ess_min": 20.0}
+    args = (np.array([CENTRE]), R.noise_draws(157, 1), em, 1, paths, "no_such_file.npz", {"points": 151, "noise": 157}, (0.003,), kw)
+    R.run_set("g2", *args)
+    hdr = R.load_references(paths["jsonl"])[0]
+    assert hdr["lengths"]["start"]["distinct"] == 0.01 and hdr["start"] == R.sampler_constants()
+    monkeypatch.setattr(R, "DISTINCT", 0.02)
+    assert R.sampler_constants()["distinct"] == 0.02
+    with pytest.raises(SystemExit, match="launch refused: .* lengths"):
+        R.run_set("g2", *args)
+    monkeypatch.setattr(R, "DISTINCT", 0.01)
+    R.run_set("g2", *args)                                                             # the same constants: a resume with nothing to do
+    assert len(R.load_references(paths["jsonl"])[1]) == 2

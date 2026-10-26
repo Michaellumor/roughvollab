@@ -154,9 +154,10 @@ def test_the_generator_is_drawn_in_the_declared_order():
         x, lt, _ = R.mh_step(x, lt, L, y, s, em, "uniform", rng)
         samples[:, t] = x
     assert np.array_equal(samples, run["samples"]) and np.array_equal(cov, run["cov"])
-    # the candidate's chains differ from v2's on the same generator: the starts and the first proposal changed
-    v2 = S._V2_RUN_CHAINS(y, s, em, np.random.default_rng(key), "uniform", burn=600, sample=800)
-    assert not np.array_equal(v2["samples"], run["samples"]) and "candidate" not in v2
+    # D95 wrote the candidate into p5_g2_reference.run_chains, which _V2_RUN_CHAINS now is: on the same generator it gives the
+    # same chains, its diagnostics under `start`, not `candidate` (D93 asserted the opposite against v2's sampler; amended in D95)
+    v3 = S._V2_RUN_CHAINS(y, s, em, np.random.default_rng(key), "uniform", burn=600, sample=800)
+    assert np.array_equal(v3["samples"], run["samples"]) and "candidate" not in v3 and "start" in v3
 
 
 class _TwoGaussians:
@@ -400,12 +401,13 @@ def test_the_candidate_is_installed_inside_the_workers(tmp_path, monkeypatch, me
     assert {k: _untimed2(v) for k, v in tasks.items()} == {k: _untimed2(v) for k, v in ref.items()}
     st2, st1 = R.load_samples(_paths(tmp_path, "two")["samples"]), R.load_samples(_paths(tmp_path, "one")["samples"])
     assert sorted(st2) == sorted(st1) and all(np.array_equal(st2[k], st1[k]) for k in st1)
-    # the same jobs under v2's sampler give other chains, and records without the diagnostics
+    # the same jobs through p5_g2_reference's own worker, the written-in sampler (D95), give the same chains, and records without
+    # the study's `candidate` list (D93 asserted other chains against v2's sampler; amended in D95)
     S.uninstall_candidate()
     R.run_set("g2", pts, eps, em, 1, {**_paths(tmp_path, "v2"), "report": str(tmp_path / "v2.json")}, em_file,
               {"points": 79, "noise": 89}, (0.003, 0.005), KW)
     _, _, v2t, v2s = R.load_references(_paths(tmp_path, "v2")["jsonl"], _paths(tmp_path, "v2")["samples"])
-    assert "candidate" not in v2t["g2_0000_0"] and not np.array_equal(v2s["g2_0000_0_u"], st1["g2_0000_0_u"])
+    assert "candidate" not in v2t["g2_0000_0"] and np.array_equal(v2s["g2_0000_0_u"], st1["g2_0000_0_u"])
     # a resume with other constants is refused, as one with other lengths is
     monkeypatch.setattr(S, "DISTINCT", 0.02)
     hdr3 = S.study_header(1, em_file, None, None, KW)
@@ -713,7 +715,8 @@ def test_a_small_run_end_to_end_on_toy_records(tmp_path, monkeypatch, capsys):
     lf.write_bytes(b'{"a": 1}\n{"b": 2}\n')
     assert S.sha256_lf(str(crlf)) == S.sha256_lf(str(lf)) == E.sha256_file(str(lf)) != E.sha256_file(str(crlf))   # the committed blob's hash
     assert S.sha256_lf(str(tmp_path / "absent")) is None
-    assert hdr["seeds"]["g2"]["points"] == 79 and hdr["seeds"]["g2r"]["points"] == 131 and hdr["lengths"]["candidate"]["n_starts"] == 16
+    # the toy sources carry p5_g2_reference's G2 seeds, v3's since D95 (D93 wrote v2's literals, 79 and 131; amended in D95)
+    assert hdr["seeds"]["g2"]["points"] == R.SEED_G2_POINTS and hdr["seeds"]["g2r"]["points"] == R.SEED_G2R_POINTS and hdr["lengths"]["candidate"]["n_starts"] == 16
     assert hdr["emulator_sha256"] == E.sha256_file(em_file) and hdr["script"] == "p5_v3_study.py"
     assert (hdr["lengths"]["burn"], hdr["lengths"]["sample"], hdr["lengths"]["kish_min"], hdr["lengths"]["ess_min"]) == (200, 600, 20.0, 10.0)
     assert len(tasks) == 6 and all(t["status"] == "ok" and t["candidate"] for t in tasks.values()) and errors == []

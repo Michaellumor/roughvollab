@@ -5200,6 +5200,349 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     `p5_g2_reference.py` (D95); any change to the draft, v1, the decision
     sheet, the plan or earlier entries.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D95** *(2026-10-26)* **P5 v3: the v3 draft written from v2's frozen text;
+  the adopted sampler written into `p5_g2_reference.py` and the gradient route
+  into `p5_g3_calibrators.py`; G2's fresh seeds; the transcription check and
+  the amendment file (docs, code and tests; the check's run pending, the
+  author's).**
+  - **Summary.** `docs/protocols/P5_protocol_v3_draft.md` is v2's frozen text
+    at `59ca589` with exactly the changes the plan names (D91) and one more,
+    the title line, by the author's decision; 18 of its 216 lines differ,
+    every other line byte-identical. Candidate (A), adopted in D94, is written
+    into `p5_g2_reference.py` from `p5_v3_study.py` as committed, with v3's
+    six fresh seeds and v3's record names; the ratio estimator's sampler takes
+    the gradient route in `p5_g3_calibrators.py`; `p5_v3_transcription.py`
+    re-runs the written-in sampler on the development study's 36 pairs and
+    compares its records with the study's, the author to run it from this
+    entry's code commit before the merge; `docs/protocols/P5_v3_amendment.md`
+    carries v3's OSF texts. Nothing ran on real data: the tests run toy
+    emulators and toy records.
+  - **The draft, line by line.** Built by a script from the blob `git show
+    59ca589:docs/protocols/P5_protocol_v2_draft.md` (SHA-256 `41255dbd`…,
+    checked before anything is changed); every other line is byte-identical,
+    verified by a line diff; 216 lines, the working copy CRLF. Line 1, the
+    title, "v2" to "v3" (the author's decision in Plan Mode; the one line
+    beyond the plan's list). Line 7, the Status: "DRAFT."; what v3 supersedes
+    (v2 at `59ca589`, 695FW, stopped at G2, D89; v1, APSF7); that v3 is v2's
+    frozen text with exactly the plan's changes; G0 declared as before; G1 run
+    under v2 and passed, G̃ `output/p5_g1_emulator.npz`, SHA-256
+    `c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add`,
+    adopted and not rebuilt; v2's G2 and the development study declared; no
+    posterior of v3's own gates, no network, no test surface, the sealed set
+    never drawn; the hash list and the versions appended at the freeze commit.
+    Line 9, the reason for the amendment: v2's reference failed G2 twice
+    (D89), chains from a uniform start and the first proposal 2.38²/4 · (1/12)
+    · I that did not adapt at 0.1 vol point (acceptance under 5%, R-hat up to
+    25.9, an effective size of H as low as 4); v3 changes the start and first
+    proposal to candidate (A), developed and passed on the 36 surfaces v2's G2
+    had seen (D91, D93, D94), draws fresh seeds and adopts G̃, nothing else;
+    v2's own reason for amending v1 stands. Line 15, what had been seen: the
+    tests' G2 seed list becomes v3's, v2's six joining the seeds the
+    reference's tests check no seed in use falls on; and a passage declaring
+    G1's output (D88), both G2 attempts (D89: the 36 surfaces, their
+    references' diagnostics, the posteriors of the 22 accepted pairs with
+    their grid comparisons), the development study (D93, D94), the
+    transcription check (D95), the toy-only tests and the undrawn sealed set.
+    Line 54: the emulator built under v2 at G1 and adopted by its SHA-256, no
+    rebuild recorded and none that would match byte for byte. Line 68, the
+    exact reference: the generator's order (the 16 × 4 uniforms, the 4 × 4
+    normals, then the proposals and acceptance draws); the retry's start
+    clause replaced, a retry pair sharing only the generator's stream with the
+    first attempt's pair of the same i and j; (A)'s five steps with every
+    constant as the study ran them (D93): `least_squares` trf, 2-point, bounds
+    [0, 1]⁴, ftol = xtol = 1e-10, gtol = 1e-8, max_nfev 2,000, the step
+    √ε·max(1, |x|) inward at a face; the direct-run polish by L-BFGS-B on ½Σr²
+    − log P(x_H), ftol 1e-10, gtol 1e-5, maxiter 200, H within ε = 1e-6 of the
+    faces; the keep rule (at most four, distinct beyond 0.01, Laplace mass
+    within log 10⁴ of the largest, two solutions polished to one point
+    counting as one); Σ from J's singular values, Σ_P with κ = (a − 1)/u² + (b
+    − 1)/(1 − u)², u clipped to [0.01, 0.99] for the keep rule and the
+    recorded Σ_A and Σ_B, the eigenvalues clipped to [1e-10, 1/12]; the starts
+    at solution k mod m plus N(0, 4 Σ_s), Σ_s capped at 0.0025, clipped to the
+    box or to [ε, 1 − ε] in H; the first proposal 2.38²/4 · Σ; the repeat
+    re-running the start from the generator continuing; and what each run's
+    record and the pair's record carry (the start; Σ_P under each prior). Line
+    75: the ratio estimator's sampler by the gradient route (Decision 3),
+    L-BFGS-B from the same 16 starts with the value and exact gradient of log
+    P(H) + logit from torch autograd on a float64 copy of the network, Σ the
+    pair's Σ_P from its reference record, a preconditioner only, the sampled
+    distribution unchanged. Line 137: D92, D93 and D95 join the entries that
+    read the scripts. Line 140, the pilots: G0 before v2's freeze, G1 under
+    v2, v2's G2 and the study declared, G2 and G3 after v3's freeze. Line 142:
+    G1's outcome under v2 (D88: e = 2.0945e-05 against 0.0002, the maximum
+    0.000210, the per-maturity 99th percentiles 5.9e-06 to 2.8e-05, ν's tail
+    the largest, no refinement, G̃ the base build) and that v3 runs no G1.
+    Line 143: the six seeds with their rule, the retry's start clause replaced
+    as in line 68, and the go rule's clause that a run's core-seconds include
+    its optimiser's. Line 200: v3's sittings and models (D88 to D92 and D94 on
+    Claude Opus 5.5, D91's review of the plan by nine agents on Claude Fable
+    5.1, D93 and D95 on Claude Fable 5.1, D96's in its record), what the tool
+    did for v3 and what the author did. Lines 204, 209, 210, 213 and 215
+    reopened, 215 naming v3's review (D96) to be cited before the freeze; line
+    216 "- [ ] OSF registration amended.", v2's pre-freeze wording, to gain
+    "the act that follows this commit" at the freeze commit.
+  - **The seeds.** Chosen by the author in Plan Mode by a rule fixed in
+    advance, before any run of v3 and without looking at any outcome: the six
+    smallest primes above 149, v2's largest pilot seed, in increasing order,
+    assigned in the order line 143 names them: points 151, noise 157 and
+    fixed-point noise 163 for the first attempt; 167, 173 and 179 for the
+    retry. None is 7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127,
+    131, 137, 139, 149, 20261002 or 20261022. The script holds v2's six as
+    `SEEDS_V2_G2`, not reused, and the tests' exclusion set gains them.
+  - **The sampler written in, constant by constant.**
+    `p5_g2_reference.run_chains` is `p5_v3_study.candidate_run_chains` as the
+    study ran it (D93, D94), ported with its helpers (`prior_grad_curv`,
+    `residuals`, `fd_jacobian`, `cov_from_jacobian`, `capped_cov`, `clip_cov`,
+    `keep_solutions`, `chain_starts`, `_lbfgs`, `_modes_least_squares`,
+    `_modes_gradient`, `_proposal_vs_sample`, `_jsonable`) and its constants:
+    `N_STARTS` 16; `LS_METHOD` trf, `LS_JAC` 2-point, `LS_FTOL` = `LS_XTOL` =
+    1e-10, `LS_GTOL` 1e-8, `LS_MAX_NFEV` 2000; `FD_REL_STEP` √ε; `LBFGS_FTOL`
+    1e-10, `LBFGS_GTOL` 1e-5, `LBFGS_MAXITER` 200; `EPS_H` 1e-6;
+    `KAPPA_U_FLOOR` 0.01; `KEEP_MAX` 4, `DISTINCT` 0.01, `MASS_LOG` log 10⁴;
+    `EIG_LO` 1e-10, `EIG_HI` 1/12; `PERTURB_CAP` 0.0025, `PERTURB_MULT` 4;
+    `SCALE` 2.38²/4 as before; `INIT_VAR` goes with the uniform start's
+    proposal. The generator's draws: 16 × 4 uniforms, 4 × 4 standard normals,
+    then v2's. The one addition in the port: `_modes_gradient` takes a
+    target's `value_grad_unit(x)` for L-BFGS-B's value and gradient where the
+    target gives both (the ratio estimator's float64 copy); a target without
+    it runs as the study's stand-ins did. Everything after the start
+    (`_chol_pd`, `adapted_cov`, `mh_step`, the adaptation every 500 burn-in
+    steps, the sampling phase, `accept`, the repeat, the reweighting, the
+    direct runs and the storage) is v2's, unchanged. Each attempt's record
+    gains `start`, the run's diagnostics as the study recorded them (the
+    optimiser's starts and statuses, m, the kept solutions with Σ, Σ_A, Σ_B,
+    their eigenvalues and the number clipped, the chains' starts and their
+    solution, the coordinates clipped, the acceptance over the first 500
+    burn-in steps, the final proposal against the sample covariance, the
+    optimiser's seconds); `_run_with_repeat` reads it from `start` or, where
+    the study's candidate is installed in its place, from `candidate`, so that
+    the study's script and its tests run as before. The pair's record gains
+    `under[P]["sigma_P"]`, by the study's rule: the accepted direct run's Σ at
+    its best kept solution where the figures under P are direct, else the
+    uniform run's Σ with P's curvature added. The header carries the start's
+    constants (`sampler_constants()`, the study's `candidate_constants()` key
+    for key) at the top and inside `lengths`, so that `launch` refuses a
+    resume with other constants as it refuses other lengths. `SETS` names v3's
+    records: `output/p5v3_g2_pilot.jsonl`, `_samples.npz` and
+    `p5v3_g2_report.json`; `p5v3_g2r_*`; `p5v3_g3_pilot_refs.jsonl` and
+    `_samples.npz`; `p5v3_ref_test.jsonl` and `_samples.npz`; v2's files stay
+    in place. The module docstring, the design the hold mode prints and the
+    hold message are updated; the hold mode writes nothing (`output/` listed
+    before and after). `p5_stage2.py` reads the test set through `SETS` and
+    needs no change.
+  - **The gradient route.** `p5_g3_calibrators.NRETarget(run, y, sigma_P)`:
+    its call is v2's `nre_target`, the network as trained, so the chains'
+    target is unchanged; `value_grad_unit(x)` returns log P(H) + logit and its
+    gradient in unit coordinates, the logit and its gradient in float64 by
+    torch autograd on a deep copy of the network cast to float64, the prior's
+    part analytic ((a − 1)/u − (b − 1)/(1 − u) at u = x_H); `grad_unit(x)`;
+    `sigma`, the pair's Σ_P from its reference record, refused when missing or
+    not 4 × 4; `bounds_unit`, H within ε of the faces. `nre_posterior(run, y,
+    i, sigma_P, …)` runs `_run_with_repeat` with that target, so the start
+    comes from `_modes_gradient` with the float64 value and gradient and Σ_P
+    clipped as the start clips its own; each attempt's `start` is kept as a
+    summary (`_trim_start`: the route, m, the kept solutions' x and log-target
+    with the starts reaching each, the optimiser's statuses, the chains'
+    solution and clipped coordinates, the acceptance over the first 500 steps,
+    the optimiser's seconds), since the scores of 1,200 pairs at five seeds
+    would otherwise repeat Σ_P thousands of times. `pilot_surfaces` carries
+    Σ_P under P from each reference record, and `predict_rows` and `score_set`
+    pass it. Declared: a G3-pilot or test record without Σ_P, one made by v2's
+    script, is refused at the first posterior.
+  - **The torch test (the author's, D93).**
+    `test_autograd_gradient_against_a_float64_finite_difference_on_a_toy_network`:
+    on a network of the design's trunk (39 → 128 → 128 → 128 → 1, seed 7) with
+    a fixed standardised surface and a diagonal Σ_P, `grad_unit` against a
+    float64 central difference (step 1e-6) of `value_grad_unit`'s value at 30
+    random interior points, within 1e-7·max(1, |g|) per coordinate; a stencil
+    point at which the network's ReLU pattern changes is skipped, the
+    difference not being the derivative across a kink, and at least 10 points
+    must be checked; the value within float32 rounding of the network as
+    trained; the prior's part equal to the analytic one; `NRETarget` refusing
+    a missing Σ_P and a wrong shape; `run_chains` on the target running the
+    gradient route with Σ_P clipped; `_trim_start`'s keys. It runs in
+    `.venv-p5`; CI skips the torch tests.
+  - **The transcription check.** `p5_v3_transcription.py`, outside the six
+    bound scripts. It reads only the study's record and samples
+    (`output/p5v3_study.jsonl` and `_samples.npz`, D94) and G̃ through
+    `emulator_for_run`, and writes only `output/p5v3_transcription.jsonl`,
+    `_samples.npz` with its `_parts` folder, and `_report.json`, never v2's
+    records or the names of v3's gates. With no flag it prints the design, the
+    study's 36 pairs with their keys, statuses and runs, and the comparison
+    rule, loads no emulator and writes nothing (checked). On `--run` (pool 4
+    by default): the versions against the pinned ones; its report must not
+    exist; the study's header must carry G̃'s SHA-256 and, under
+    `lengths.candidate`, the start's constants as `sampler_constants()` gives
+    them, a difference refused key by key; `run_chains` must be the module's
+    own; the sealed seeds are refused wherever a seed is read; the 36 pairs
+    come from the study's task lines, each θ and y checked against v2's G2
+    surfaces, drawn with v2's seeds from the study's header and priced through
+    G̃; then `launch` over them with the reference's own worker at the study's
+    lengths and acceptance constants (10,000 and 40,000; R-hat 1.01, an
+    effective size of 2,000, the Kish floor 1,000), resumable; then the
+    comparison, after the JSON round trip the records make: every stored
+    sample array equal and the key sets equal; the record's status, set, i, j,
+    s, seed, theta, y, direct, kish, neff, support_lo, support_hi, c_A,
+    coverage and well_covered; under each prior the figures and the source,
+    and Σ_P against the study's rule applied to its own record; each run's
+    attempt, burn, sample, acceptance, rhat, ess, ess_H and accepted; each
+    run's `start` against the study's `candidate` entry on every field but the
+    optimiser's seconds (and the study's tag). The report gives `reproduced`,
+    every differing field per pair, the counts and the provenance (commit,
+    clean tree, versions, G̃'s hash, the study record's SHA-256 with LF line
+    endings, D94's `20b39cc4`…). Its run is the author's, decided in Plan
+    Mode, from this entry's code commit on the branch before the merge; its
+    record and result join this entry in a second commit.
+  - **The amendment file.** `docs/protocols/P5_v3_amendment.md`, 76 lines,
+    modelled on v2's (D77): the status; OSF's rules as read for v2 and the
+    stop notice's promise (D90); the design, a component of `gdsv7` holding
+    the 15 files of v2's kind at the freeze commit plus G̃ (Decision 10), the
+    G2 records, the study's and the check's cited by path and hash; the
+    amendment statement, the proposed title "… (protocol v3; supersedes OSF
+    695FW)", the summary (what changed from v2 with its entries, what is not
+    changed, why, what had been seen, the AI-use line) and the paragraph for
+    the update to 695FW, with `<freeze-commit>`, `<sha256>`, `<freeze-date>`,
+    `<v3-id>` and `<v3-doi>` open; the order of acts (D96's review and the
+    re-ticked boxes; the freeze commit changing only lines 7 and 216; the
+    exports; the two OSF acts; D97; D98); an empty record table; what is not
+    Claude's to do.
+  - **The tests, and the count.** `test_p5_g2_reference.py`: the literals
+    (v3's seeds and their rule, the exclusion set with v2's six, v3's record
+    names, the start's constants, `EIG_HI` in place of `INIT_VAR`), the
+    start's diagnostics in the Gaussian test, the header's constants in the
+    record test, `pilot_points` and `noise_draws` on 151 and 157 in place of
+    79 and 89, the retry's seeds, and `_untimed` dropping the optimiser's
+    seconds; four new tests: the written-in start equal to
+    `p5_v3_study.candidate_run_chains` bit for bit on the toy (a uniform run,
+    direct runs under A and B, the gradient route on a two-Gaussian target, a
+    target giving value and gradient together; a plain callable refused), the
+    generator's order and the first proposal by replay with the pieces on
+    their own, Σ_P in the record reweighted and direct with the record
+    JSON-clean, and a resume with other start constants refused.
+    `test_p5_g3_calibrators.py`: Σ_P in the fake references, `nre_posterior`
+    through `NRETarget` with the kept mode checked against the exact
+    one-dimensional mode of logit + log P_A, the trimmed start, and the torch
+    test; one stale assertion fixed, `test_entry_points_hold_and_refuse`
+    expecting "no emulator" with torch present although G̃ has been committed
+    since D88 (it failed in `.venv-p5` since then, as D89's sitting had noted;
+    CI, without torch, never ran that branch): it now expects "is not G̃"
+    first and "no emulator" with `p5_g1_emulator.paths` pointed at an empty
+    folder, as D88 did for the reference's tests.
+    `test_p5_v3_transcription.py`, four tests on toy records: the names; a toy
+    study record made by the study's own worker reproduced by the check
+    through the reference's own worker, a changed sample array, figure,
+    attempt field, start field and Σ_P each caught and named, and the
+    direct-run path through both workers; the entry point on toy records with
+    the refusals and hold mode; v2's surfaces from the study's seeds.
+    `test_p5_stage2.py`: the test set's record name. `test_p5_v3_study.py`, by
+    the author's decision in Plan Mode: three assertions D93 wrote against
+    v2's sampler and v2's seeds, which (A) written in and v3's seeds falsify,
+    amended, two to equality with the written-in sampler (the same chains on
+    the same generator; a record of the reference's own worker without the
+    study's `candidate` list but with the same samples) and one to the
+    reference's G2 seeds; nothing else in that file, and nothing in
+    `p5_v3_study.py`, changes. Locally, on the author's machine (Windows 11,
+    Python 3.14.3, the core interpreter with numpy 2.4.4 and scipy 1.17.1,
+    bytecode writing off, without -I), the changed files:
+    `test_p5_g2_reference.py` and `test_p5_v3_transcription.py` together 24
+    passed, 1 skipped (fork, which Windows lacks); `test_p5_v3_study.py` 12
+    passed, 1 skipped (fork); `test_p5_stage2.py` and
+    `test_p5_g3_calibrators.py` together 26 passed, 6 skipped (torch); in
+    `.venv-p5` (numpy 2.5.4, scipy 1.18.1, torch 2.14.1+cpu)
+    `test_p5_g3_calibrators.py` 17 passed, the torch test among them. The
+    suite collects 372 tests, the 363 before and the nine new ones, as
+    `CONTRIBUTING.md` now says. `output/` was unchanged by every run and by
+    the hold modes (its listing compared before and after).
+  - **The review.** One independent read-only reviewer, a subagent of this
+    session on Claude Fable 5.1 (the model it reported), was given the brief,
+    the plan, the approved implementation plan with the author's decisions,
+    the entries D86 and D88 to D94, the diff and the new files, not this
+    sitting's conclusions, and was forbidden to run any P5 script or test; it
+    ran git, diff and grep and two standalone arithmetic snippets. It found no
+    bug in the port, the record, the gradient route or the transcription
+    check: it confirmed the ported functions line for line against the study's
+    with the one intended addition, the draw order, the start in every attempt
+    and Σ_P by the study's rule, the constants in the header's `lengths` and
+    the refused resume, v3's record names with v2's files untouched, the seeds
+    and their rule, the chains' target unchanged with the gradient of log P in
+    the unit coordinate correct, the check's reads, writes, refusals and
+    comparison, the draft's 18 lines against the plan and D88 to D94, the
+    amendment file against v2's and the facts, and the tests and the count. It
+    raised thirteen points. Eight are taken up: draft line 15 and the
+    amendment file asserted that the transcription check had run, which it has
+    not, its run being the author's after this commit, so both now say what
+    the check does and that its result is recorded in D95; the amendment's
+    summary cited no record by hash, as Decision 10 asks, and now lists v2's
+    six G2 files (D89), the study's four (D94) and placeholders for the
+    check's three, each with its blob hash; two stale texts in
+    `p5_g2_reference.py`, `g2_surfaces`'s docstring with v2's seeds and
+    `get_emulator`'s message about G1 after freezing; draft line 9 stated as
+    fact what D89 and the plan label a reading, that the chains did not adapt,
+    and quoted figures over all 14 failures while three of attempt 1's nine
+    were at 0.3 and 0.5 vol point, so it now attributes the reading to D89 and
+    says the failures concentrated at 0.1 vol point, the amendment's summary
+    likewise; line 68 and the docstring said the polish's gradient is Jᵀr plus
+    the prior's gradient where the objective ½Σr² − log P makes it Jᵀr less d
+    log P/du, as the code has it; they said Σ_A and Σ_B are recorded at each
+    kept solution of a uniform run where the code records them for every run,
+    the uniform run's being read, so the words changed and the code, bound to
+    the study's, did not; and a test's name said "both routes" of the
+    reweighted and direct Σ_P. Four are declared below: the constants' key,
+    the gradient route on a trained network, the records' size and the study's
+    sources. One stands as written: `_eq` in the check compares nested values
+    with Python's equality, under which 1.0 equals 1, which no field of these
+    records exercises. The last was a caution to stage by name, which this
+    entry's commit observes.
+  - **What was seen.** Nothing new: the tests run toy emulators and toy
+    records, never G̃; the hold modes read the study's committed record (D94)
+    for its pairs, keys and statuses, read-only, and loaded no emulator;
+    nothing was sampled on G̃ and nothing drawn from the sealed streams. The
+    transcription check's run, the author's, will see the study's 36 surfaces
+    again and its own reproduction of D94's records, and nothing else.
+  - **Declared.** (1) `p5_v3_study.py`, unchanged as the brief requires, reads
+    v2's G2 records through `p5_g2_reference.SETS`, which now name v3's
+    records: its hold mode reports "no record at output/p5v3_g2_pilot.jsonl",
+    naming v3's path as if it were v2's record, its `estimate()` finds no v2
+    report, its `check_surfaces` would refuse v2's records since `g2_surfaces`
+    now draws v3's seeds, and its `_V2_RUN_CHAINS` and `uninstall_candidate`
+    hold the written-in sampler despite their names; its `--run` is refused
+    for want of the records, which is safe. The study has run and its record
+    stands at `633b470`, and the transcription check reads the study's own
+    record, with v2's seeds from its header. (2) Line 1 of the draft, beyond
+    the plan's list, by the author's decision. (3) The three amended
+    assertions of `test_p5_v3_study.py` and the stale one of
+    `test_p5_g3_calibrators.py`, under The tests. (4) `_run_with_repeat` reads
+    a run's start from `candidate` where the study's candidate is installed in
+    `run_chains`'s place, so that the study's unchanged code and tests still
+    run. (5) The start's constants sit under the key `start`, in the header
+    and in `lengths`, where the implementation plan had written `sampler`;
+    v3's records carry no sampler tag (the study's do, and the check skips
+    it). (6) The gradient route has run only on smooth stand-ins, the study's:
+    on a trained ReLU logit, piecewise linear plus log P(H), L-BFGS-B may stop
+    at a kink with status 2 and the 16 starts may scatter over one basin, so
+    its behaviour on a real network is first seen at G3's pilot, where the
+    recorded statuses and the number of kept solutions m are the diagnostic;
+    the torch test of this entry checks the gradient, not the optimiser's
+    convergence. (7) Each attempt record carries its whole start, about 6 KB
+    per run, so the test set's 1,200 pairs will give a reference record of
+    about 10 MB, force-added as the others are; the ratio estimator's scores
+    keep a summary (`_trim_start`).
+  - **Who did what.** The author decided, in Plan Mode, the seeds' rule, who
+    runs the transcription check, the amendment of the study's assertions and
+    the title line, and will run the check. This sitting, a new Claude Code
+    session on Claude Fable 5.1 (the model its transcript records,
+    `claude-fable-5-1`, for every message), read the plan, the frozen draft,
+    the scripts, their tests and the log, drafted v3 from the frozen blob,
+    ported the sampler, wrote the gradient route, the check, the amendment
+    file, the tests and this entry. The reviewer was a subagent of this
+    session, on Claude Fable 5.1 by its own report.
+  - **Not written.** The freeze, the registration and v3's G2; the
+    transcription check's run (the author's, in a second commit to this
+    branch); the re-ticking of the reopened boxes (after D96); any change to
+    v2's draft or amendment file, v1, the decision sheet, the plan,
+    `p5_v3_study.py`, the five forward-model modules, the requirements files
+    or an earlier entry; nothing under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
