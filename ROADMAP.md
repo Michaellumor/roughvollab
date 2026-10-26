@@ -5543,6 +5543,161 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     `p5_v3_study.py`, the five forward-model modules, the requirements files
     or an earlier entry; nothing under `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D96** *(2026-10-26)* **P5 v3: the transcription check run and recorded; the
+  sampler written into `p5_g2_reference.py` reproduces the development study's
+  reference records exactly (the output committed; the draft's lines 15, 200
+  and 215 and the amendment file brought up to date; the later entries moved on
+  by one).**
+  - **Summary.** The author ran D95's transcription check from `579b525` after
+    D95's merge: the sampler as written into `p5_g2_reference.py` reproduced
+    the study's 36 reference records and their 55 sample arrays exactly. This
+    entry commits the check's three files, writes the result into the draft and
+    the amendment file, and moves the later entries on by one.
+  - **The order of acts, declared.** D95 set the check's run on its branch
+    before the merge, its record and result to join D95 in a second commit. The
+    author merged PR #250, whose head was `579b525`, at 09:19:34 UTC on 26
+    October 2026 (the merge commit `5df1785`, whose tree is `579b525`'s) and
+    launched the check at 09:22:58 UTC from `579b525` with a clean tree, so the
+    code run is the code merged. The D95 session committed the record and the
+    result at 09:45:01 UTC as a second commit on that branch, `4519d50`, and
+    pushed it, the PR being already merged: `4519d50` is not in `main`, and its
+    changes to D95 are not taken, a merged entry not being edited. Its three
+    files are the blobs committed here, and its wording for the draft's line 15
+    and the amendment file is the starting point of the changes below, cited to
+    this entry. The entries after D95 move on by one: the independent review is
+    D97, the post-freeze commit D98 and the update of the living documents D99;
+    D95's text, which names them D96 to D98, stands as merged.
+  - **The branch and the working copies, declared.** This sitting deleted D95's
+    branch, locally and on GitHub, on reading that the PR was merged: on its
+    own initiative, the author not having asked for it, and without first
+    checking that the branch's head was the merged head. Git's warning that the
+    branch was not merged to `HEAD`, and its report that the branch had been at
+    `4519d50`, were read after both deletions. The commit is on no branch; at
+    10:11:12 UTC, on the author's word, it was tagged on GitHub as
+    `p5-d95-second-commit` (an annotated tag, `deb010c7`), so that it stays
+    fetchable. Leaving the branch for `main` removed the check's three files
+    from the working tree, `4519d50` tracking them and `main` not. They were
+    written back from `4519d50`'s blobs with git's checkout conversion (`git
+    cat-file --filters`), into paths where nothing stood. Their bytes are the
+    run's: at 09:43:32 UTC, before the second commit, this sitting listed the
+    run's record, samples and report at 398,310, 6,637,910 and 5,068 bytes, and
+    at 09:43:48 hashed the samples to `e13e376a`…; the files written back have
+    those sizes and that hash, and the text files' LF blobs are shorter by one
+    byte per line ending (38 and 207), so every line ending was CRLF and the
+    text files too are the run's byte for byte, by inference, no hash of them
+    having been taken before their removal.
+  - **The run.** The author's, in the script's `--run` mode (D95). The record's
+    header and its one launch line: commit `579b525`, `clean_tree` true, pool
+    4, G̃'s SHA-256, Python 3.14.3 with numpy 2.4.4 and scipy 1.17.1 checked
+    with no override, the lengths in force 10,000 and 40,000 with (A)'s
+    constants, and the study cited by the commit it ran from, `633b470`, and
+    its record by its LF SHA-256, D94's `20b39cc4`…; launched at 09:22:58 UTC
+    with none done before. The 36 pairs, 18 from v2's first attempt and 18 from
+    its retry, were done between 09:24:24 and 09:42:15 UTC, every one `ok`,
+    with 55 sampler runs (36 uniform, 19 direct: 9 under A, 10 under B); no
+    error. The report was written at 09:42:16 UTC from `579b525` with a clean
+    tree, 19 min 18 s after the launch.
+  - **The result.** The report: `reproduced` true, "the written-in sampler
+    reproduces the development study's records exactly"; 36 of 36 pairs
+    compared and none differing, 55 sampler runs and 55 sample arrays compared,
+    `differences` empty. The comparison covers the study's 36 reference records
+    and their samples, not its mass lines, stand-in runs or grid checks, which
+    the check does not re-run. Every one of the 55 runs took the least-squares
+    route at its first attempt and kept one solution, so the check reproduces
+    the candidate's 36 uniform and 19 direct runs at the study's lengths; the
+    gradient route, the repeat and the keeping of several solutions lie outside
+    what it exercised. The record carries two fields the study's does not, both
+    added by D95: each run's start under `start`, the study's `candidate` less
+    its `sampler` tag; and under each prior the covariance `sigma_P` that the
+    ratio estimator's sampler reads, the kept solution's Σ_A or Σ_B in the
+    uniform run where the prior is reweighted (53 of 72) and the kept Σ of the
+    direct run where there is one (19).
+  - **This sitting's checks.** Read-only, Python reading the files, independent
+    of the script's comparison; nothing run on G̃, nothing sampled or drawn. 1,
+    the record: 38 lines, the header and launch as above and 36 pair records,
+    matched to the study's by task name; every field the two share is equal,
+    recursively and exactly, the times and seconds apart, and so is every field
+    of each run's start against the study's `candidate`, `optimiser_seconds`
+    apart. 2, the report: its counts equal to those of 1 and 3. 3, the samples:
+    the 55 arrays equal to the study's in dtype, shape and value, and to the 55
+    `_parts` files; the two archives hold the same members with the same CRCs,
+    sizes and timestamps, in a different order, so their files differ (SHA-256
+    `e13e376a`… against D94's `dd609ec1`…). 4, G̃'s file hashes to `c3adb2e2`…,
+    the header's. 5, the study's four records are D94's blobs (`20b39cc4`…,
+    `dd609ec1`…, `a9d225de`…, `0f19cff8`…), unchanged. The three committed
+    blobs, equal to `4519d50`'s, the text files' with LF line endings and their
+    working copies CRLF, the `.npz` byte for byte the file on disk:
+    - `output/p5v3_transcription.jsonl`, 398,272 bytes,
+      `f974abaf57f6a28f57257fa294501054761e00dab5106b2622a98a2b06850e3d`
+    - `output/p5v3_transcription_samples.npz`, 6,637,910 bytes,
+      `e13e376af5f0a70e612597948e4bdaed12dafe2743e2d72f2ba91ec873051ac7`
+    - `output/p5v3_transcription_report.json`, 4,861 bytes,
+      `fd192f9c275815a1ca5fa3177df6adf9f113974ee2d1e1e638a80074cc0208c7`
+  - **This sitting's other acts, declared.** At 09:20 UTC, after the merge and
+    before the launch, this sitting ran the check's hold mode as a pre-flight:
+    it read the study's record and samples, loaded no emulator and wrote
+    nothing. During the run it read the partial record, read-only: at 09:25 UTC
+    its header and the kinds of its first lines, and at 09:28 and 09:29 its
+    pair records and the part files written so far, compared with the study's;
+    after the report, from 09:43, the finished files, as above.
+  - **The draft, three lines.** Every other line byte-identical to `main`'s;
+    216 lines, CRLF. Line 15: the check's sentence, "re-runs the sampler … and
+    compares its records with the study's; its result is recorded in D95",
+    becomes "run by the author on 26 October 2026, re-ran the sampler … and
+    reproduced the study's reference records and their samples exactly (D96)".
+    Line 200: D96 joins the sittings on Claude Opus 5.5, with the transcription
+    check among their runs; *What the tool did* ends "built the transcription
+    check (D95) and recorded the author's run of it (D96)"; *What the author
+    did* counts the check among the runs on the author's machine (D96); the
+    independent review becomes D97. Line 215: the review becomes D97. The three
+    are lines the plan names (D91).
+  - **The amendment file.** Every other line byte-identical; 76 lines, CRLF.
+    The Status line gains a sentence beginning "Since written", as v2's file
+    did (D87): the check run, its three files committed and their hashes filled
+    in, the entries moved on by one. The design cites the check's records to
+    D96; the placeholders lose the check's three; the summary gives the three
+    blobs' SHA-256, cited to D96, and its bullet on the start now says that the
+    check found the sampler as written to reproduce the study's reference
+    records and their samples exactly (D96); "What had been seen" says the
+    same, citing D95 and D96; the review becomes D97 (twice), the post-freeze
+    commit D98 and the update of the living documents D99.
+  - **What was seen.** Nothing new. The check's run saw the study's 36 surfaces
+    again and its own reproduction of D94's reference records; this sitting
+    read the check's files, the study's records and `4519d50`, and hashed G̃'s
+    file without loading it. None is a test surface, no network exists, and the
+    sealed test set has not been drawn.
+  - **Readings beyond the request, declared.** `4519d50`'s diff; GitHub's API,
+    read-only, for that commit, the branch list and the repository's events;
+    the D95 session's transcript and memory note, for its account of the second
+    commit, which it reported pushed to PR #250, already merged; and this
+    session's own transcript, for the times of its acts.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5, given the staged change and the sources and not
+    this sitting's conclusions, recomputed the figures and found none wrong.
+    All eight of its points were taken up: the tag, made after staging; "the
+    study's records" narrowed to its reference records and their samples in the
+    title, line 15 and the amendment file; the reach of the check stated; the
+    study cited by the commit it ran from; git's warning described as written;
+    the session's label; the pre-flight, the reads during the run and the
+    deletion's initiative declared; and four points of wording. On a second
+    read, of the revised text, it confirmed the eight and raised four smaller
+    points, all taken up: the read at 09:25, the samples the pre-flight read,
+    and two words.
+  - **Declared.** `p5_v3_transcription.py`'s docstring (line 18) still sets the
+    run before the merge; the script is D95's and is left as written.
+  - **Who did what.** The author ran the check, merged D95 and agreed to the
+    tag. This sitting, in the Claude Code session that held, among others, D89
+    to D92 and D94, on Claude Opus 5.5 (`claude-opus-5-5`), read `4519d50` and
+    the records, wrote the three files back, ran the checks above, tagged
+    `4519d50` on the author's word, and wrote the draft's three lines, the
+    amendment file's changes and this entry. The check's script came from the
+    D95 session, on Claude Fable 5.1.
+  - **Not written.** The independent review (D97), the re-ticking of the
+    reopened boxes, the freeze, the registration and v3's G2; any change to D95
+    or an earlier entry, to v2's draft or amendment file, v1, the decision
+    sheet, the plan or any script; nothing under `output/` beyond the check's
+    three files.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
