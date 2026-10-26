@@ -17,6 +17,7 @@ import pytest
 import p5_stage2 as S
 import p5_g2_reference as R
 from p5_g0_pilot import append_line
+from test_p5_g2_reference import SEEDS_IN_USE
 
 
 def test_literals_are_the_written_ones():
@@ -29,7 +30,7 @@ def test_literals_are_the_written_ones():
     assert (h["H-b"]["measure"], h["H-b"]["bin"], h["H-b"]["expected"], h["H-b"]["refuted"]) == ("E", "Partial", 0.15, 0.05)
     assert (h["H-c"]["measure"], h["H-c"]["bin"], h["H-c"]["expected"], h["H-c"]["refuted"], h["H-c"]["seed_floor"]) == ("E", "Identified", 0.05, 0.02, True)
     assert (h["H-d"]["measure"], h["H-d"]["bin"], h["H-d"]["direction"], h["H-d"]["expected"], h["H-d"]["refuted"]) == ("m", "Flat", "below", 0.80, 0.85)
-    assert S.SEED_BOOT not in (20261002, 7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113)
+    assert S.SEED_BOOT in SEEDS_IN_USE and S.SEED_BOOT not in set(SEEDS_IN_USE) - {127}  # in the tuple, no other's (D98)
     assert S.DEFAULT_INPUTS["refs"].endswith("p5v3_ref_test.jsonl") and S.DEFAULT_INPUTS["scores"].endswith("p5_scores_test.jsonl")
 
 
@@ -336,6 +337,39 @@ def test_end_to_end_on_synthetic_inputs(tmp_path, capsys):
     Path(g3).write_text("\n".join([json.dumps({"kind": "header", "mode": "score", "set": "g3"})] + lines[1:]) + "\n", encoding="utf-8")
     with pytest.raises(SystemExit, match="inputs refused"):
         S.run({"refs": inputs["refs"], "samples": inputs["samples"], "scores": g3}, str(tmp_path / "out2"), n_boot=5)
+
+
+def test_stage2_reads_the_scores_as_d98_writes_them(tmp_path):
+    """D98 (D97's review, must-fix 1): the scoring no longer writes the ratio estimator's rows for
+    a pair whose reference failed and lists such pairs in its header; Stage 2, which measures the
+    accepted pairs only, reads those scores with its measures and verdicts unchanged."""
+    inputs = _write_inputs(tmp_path)                                                    # a reference failure planted: test_0003_1
+    lines = Path(inputs["scores"]).read_text(encoding="utf-8").splitlines()
+    hdr = dict(json.loads(lines[0]), nre_skipped={"test_0003_1": "reference_failure"})
+    kept = [l for l in lines[1:] if not (json.loads(l)["calibrator"] == "nre" and json.loads(l)["pair"] == "test_0003_1")]
+    assert len(lines) - 1 - len(kept) == 2 * 5                                           # both priors at five slots
+    d98 = dict(inputs, scores=str(tmp_path / "scores_d98.jsonl"))
+    Path(d98["scores"]).write_text("\n".join([json.dumps(hdr)] + kept) + "\n", encoding="utf-8")
+    reps = {}
+    for name, inp in (("v2", inputs), ("d98", d98)):
+        S.run_stage1(inp, str(tmp_path / ("out_" + name)))
+        reps[name] = S.run(inp, str(tmp_path / ("out_" + name)), n_boot=50)
+    assert reps["d98"]["verdicts"] == reps["v2"]["verdicts"] and reps["d98"]["stage2"] == reps["v2"]["stage2"]
+
+
+def test_main_runs_stage_1_and_then_stage_2_from_the_command_line(tmp_path, capsys):
+    """D97's review (TESTS-4, its Stage 2 half; D98): main --stage1, then main --run, on synthetic
+    inputs, as the command line will run them after the scoring."""
+    inputs = _write_inputs(tmp_path, n_per_level=20, plant=False)
+    out = str(tmp_path / "out")
+    S.main(["--stage1", "--refs", inputs["refs"], "--out-dir", out])
+    S.main(["--run", "--refs", inputs["refs"], "--samples", inputs["samples"], "--scores", inputs["scores"],
+            "--g3-report", inputs["g3_report"], "--out-dir", out])
+    text = capsys.readouterr().out
+    assert text.count("=== Stage 1:") == 2 and text.count("written:") == 2
+    rep = json.loads(Path(out, "p5_stage2_report.json").read_text(encoding="utf-8"))
+    assert set(rep["verdicts"]) == set(S.CALIBRATORS) and rep["bootstrap"]["n_boot"] == S.N_BOOT
+    assert Path(out, "p5_stage1_report.json").exists() and Path(out, "p5_stage1.csv").exists()
 
 
 def test_floors_and_untestable_rows_on_a_thin_bin(tmp_path):

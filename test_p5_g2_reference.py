@@ -21,6 +21,10 @@ import p5_g1_emulator as E
 
 LO, HI = E.box_arrays(E.BOX)
 CENTRE = (LO + HI) / 2
+# Every seed the design uses (D97's review, G2R-3; D98): the plan's nineteen, v2's six G2 seeds among them, then v3's six.
+# The other P5 test files import SEEDS_IN_USE to check that their scripts' own seeds collide with no other.
+PLAN_SEEDS = (7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127, 131, 137, 139, 149, 20261002, 20261022)
+SEEDS_IN_USE = PLAN_SEEDS + (151, 157, 163, 167, 173, 179)
 
 
 class LinearEm:
@@ -65,8 +69,9 @@ def test_literals_are_the_written_ones():
     v3 = (R.SEED_G2_POINTS, R.SEED_G2_NOISE, R.SEED_G2_FIXED_NOISE, R.SEED_G2R_POINTS, R.SEED_G2R_NOISE, R.SEED_G2R_FIXED_NOISE)
     primes = [p for p in range(150, 200) if all(p % d for d in range(2, int(p ** 0.5) + 1))]
     assert v3 == tuple(primes[:6]) == (151, 157, 163, 167, 173, 179) and R.SEEDS_V2_G2 == (79, 89, 139, 131, 137, 149)
-    excluded = {7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127, 131, 137, 139, 149, 20261002, 20261022}
-    assert set(v3).isdisjoint(excluded) and set(R.SEEDS_V2_G2) <= excluded and R.SEED_REF in excluded
+    assert len(set(SEEDS_IN_USE)) == len(SEEDS_IN_USE) == 25 and SEEDS_IN_USE[19:] == v3      # one tuple, no seed twice (D98)
+    assert {R.SEED_REF, R.SEED_G3_POINTS, R.SEED_G3_NOISE, R.SEED_TEST, R.SEED_TEST_NOISE, *v3, *R.SEEDS_V2_G2} <= set(SEEDS_IN_USE)
+    assert set(v3).isdisjoint(PLAN_SEEDS) and set(R.SEEDS_V2_G2) <= set(PLAN_SEEDS) and R.SEED_REF in PLAN_SEEDS
     # v3's records under new names (the plan, item 5); v2's names nowhere in the sets
     assert R.SETS["g2"]["jsonl"].endswith("p5v3_g2_pilot.jsonl") and R.SETS["g2"]["samples"].endswith("p5v3_g2_pilot_samples.npz")
     assert R.SETS["g2"]["report"].endswith("p5v3_g2_report.json") and R.SETS["g2r"]["jsonl"].endswith("p5v3_g2r_pilot.jsonl")
@@ -168,6 +173,9 @@ def test_repeat_then_reference_failure(monkeypatch):
     assert [(a["burn"], a["sample"]) for a in att] == [(200, 400), (400, 800)]           # doubled lengths
     assert all(a["accepted"] is False and a["rhat"]["H"] == 1.5 for a in att)
     assert rec["seed"] == [83, 2, 1] and rec["under"] == {} and rec["c_A"] is None
+    assert all(a["start"]["route"] == "least_squares" and len(a["start"]["starts"]) == 16
+               and len(a["start"]["optimiser"]["status"]) == 16 for a in att)               # each attempt runs the start (D98)
+    assert att[0]["start"]["starts"] != att[1]["start"]["starts"]                         # the repeat's 16 starts drawn afresh
 
 
 def test_reweighting_direct_runs_and_grid_against_the_gaussian():
@@ -379,7 +387,7 @@ def test_g2_pilot_set_fixed_points_retry_and_go_no_go(tmp_path, monkeypatch):
     runs only after G2 has passed with a go."""
     assert R.FIXED_POINTS == ((0.04, 0.20, -0.80, 0.145), (0.46, 0.20, -0.80, 0.145))
     assert (R.SEED_G2_FIXED_NOISE, R.SEED_G2R_POINTS, R.SEED_G2R_NOISE, R.SEED_G2R_FIXED_NOISE) == (163, 167, 173, 179)   # v3's (D95)
-    used = {20261002, 20261022, 7, 61, 62, 73, 79, 83, 89, 97, 101, 107, 109, 113, 127, 131, 137, 139, 149}         # v2's six included
+    used = set(PLAN_SEEDS)                                                                # v2's six included
     assert {151, 157, 163, 167, 173, 179}.isdisjoint(used) and R.BUDGET_CORE_H == 1344.0 == 2 * 7 * 24 * 4
     centre = (LO + HI) / 2
     assert np.allclose(np.array(R.FIXED_POINTS)[:, 1:], centre[1:])                  # ν, ρ, ξ₀ at the box's centre
@@ -907,3 +915,56 @@ def test_a_resume_with_other_start_constants_is_refused(tmp_path, monkeypatch, t
     monkeypatch.setattr(R, "DISTINCT", 0.01)
     R.run_set("g2", *args)                                                             # the same constants: a resume with nothing to do
     assert len(R.load_references(paths["jsonl"])[1]) == 2
+
+
+# ---- D98: the paths D97's review found unexercised ----
+class _MirrorEm:
+    """G̃(θ) = a + M φ(θ), φ = (k (H − c)², ν, ρ, ξ₀): a surface is fitted alike at H = c + d and
+    c − d, so least squares has two minima mirror-symmetric in H about c, of equal Laplace mass."""
+
+    def __init__(self, c=0.25, k=10.0, seed=5, scale=0.03):
+        rng = np.random.default_rng(seed)
+        self.M = rng.normal(0.0, scale, size=(35, 4))
+        self.a = 0.2 + rng.uniform(0, 0.05, size=35)
+        self.c, self.k, self.box = c, k, E.BOX
+
+    def evaluate_many(self, thetas):
+        th = np.asarray(thetas, dtype=float).reshape(-1, 4)
+        return self.a[None, :] + np.column_stack([self.k * (th[:, 0] - self.c) ** 2, th[:, 1:]]) @ self.M.T
+
+
+def test_two_least_squares_minima_two_kept_solutions_and_the_merge_after_the_polish(monkeypatch):
+    """Line 68 (D97's review, TESTS-3 = D2-3; D98): m = 2 by the least-squares route, which neither
+    the study nor the transcription check reached: the chains split 0, 1, 0, 1 over the two kept
+    solutions, every start counted, and the chains, sitting in two modes, fail the acceptance, so
+    the pair is a reference failure whose two attempts carry m = 2; under prior A both solutions
+    are polished and kept; and the merge after the polish, with the polish replaced so that both
+    kept solutions land on one point (no toy on which two minima polish to within 0.01 was built)."""
+    em, s = _MirrorEm(), 0.003
+    y = em.evaluate_many([0.35, 0.20, -0.80, 0.145])[0] + s * np.random.default_rng(11).standard_normal(35)
+    key = [R.SEED_REF, 0, 1]
+    run = R.run_chains(y, s, em, np.random.default_rng(key), "uniform", burn=300, sample=900)
+    st = run["start"]
+    assert st["route"] == "least_squares" and st["m"] == 2 and st["chain_solution"] == [0, 1, 0, 1]
+    assert sum(k["n_starts_reached"] for k in st["kept"]) + st["starts_elsewhere"] == 16 and st["n_merged_after_polish"] == 0
+    x_c = (em.c - R.H_LO) / R.H_W
+    assert abs(st["kept"][0]["x"][0] + st["kept"][1]["x"][0] - 2 * x_c) < 1e-4                 # mirror images about c
+    assert abs(st["kept"][0]["mass_ls"] - st["kept"][1]["mass_ls"]) < 1e-6
+    assert not R.accept(run["samples"], R.RHAT_MAX, 100.0)[0]                                # two modes apart: R-hat fails
+    rec, stores = R.reference_pair(y, s, em, 0, 1, burn=300, sample=900)
+    assert rec["status"] == "reference_failure" and stores == {} and rec["under"] == {}
+    assert [(a["burn"], a["sample"], a["start"]["m"]) for a in rec["runs"]["uniform"]] == [(300, 900, 2), (600, 1800, 2)]
+    run_A = R.run_chains(y, s, em, np.random.default_rng(key), "A", burn=300, sample=900)
+    sa = run_A["start"]
+    assert sa["m"] == 2 and sa["n_merged_after_polish"] == 0 and all(k["polish"]["status"] in (0, 1, 2) for k in sa["kept"])
+    orig, first = R._lbfgs, {}
+
+    def one_point(f_and_g, x0, lo_b, hi_b):                                               # every polish lands on the first's point
+        res = orig(f_and_g, x0, lo_b, hi_b)
+        res.x = np.array(first.setdefault("x", res.x), dtype=float)
+        return res
+    monkeypatch.setattr(R, "_lbfgs", one_point)
+    sm = R.run_chains(y, s, em, np.random.default_rng(key), "A", burn=300, sample=900)["start"]
+    assert sm["m"] == 1 and sm["n_merged_after_polish"] == 1 and sm["chain_solution"] == [0, 0, 0, 0]
+    assert sm["kept"][0]["n_starts_reached"] == sum(k["n_starts_reached"] for k in sa["kept"]) + sa["starts_elsewhere"] - sm["starts_elsewhere"]
+    assert set(sm["optimiser"]["reached"]) <= {0, -1} and np.array_equal(sm["kept"][0]["x"], first["x"])

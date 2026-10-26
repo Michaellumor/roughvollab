@@ -425,7 +425,7 @@ class NRETarget:
     grad_unit(x), the log-target and its exact gradient in unit coordinates from torch autograd
     on a float64 copy of the network plus the prior's analytic gradient in x_H; sigma, the
     pair's Σ_P from its reference record (p5_g2_reference, `under[P]["sigma_P"]`), a
-    preconditioner only; bounds_unit, H within ε of the faces, where log P(H) is −inf."""
+    preconditioner only; bounds_unit, H's bounds ε inside the faces, where log P(H) is −inf."""
 
     def __init__(self, run, y, sigma_P):
         require_torch()
@@ -858,7 +858,11 @@ def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path
     seeds, against which Stage 2 checks that the scoring is complete (D81). `emulator` is
     G̃'s {path, sha256}, recorded in the header; `hashes` ({source: SHA-256}: G̃, the set's
     references, G3's report), with Stage 1's for the test set, must all agree, else the
-    scoring is refused before any network is loaded (line 142, D82)."""
+    scoring is refused before any network is loaded (line 142, D82). The ratio estimator
+    scores only the pairs whose reference is `ok`, the filter on the status (a direct run
+    failing under B leaves Σ_P under A), a pair whose reference failed being outside every
+    measure by Stage 1; those pairs are listed by label in the header (line 75, D98). The
+    ensemble's rows for them are written as before, and Stage 2 does not read them."""
     out_path, post_kw = out_path or scores_path(set_name), dict(post_kw or {})
     stage1 = None
     if set_name == "test":
@@ -876,10 +880,12 @@ def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path
     torch.set_num_threads(int(threads))
     nets_dir, nets_g3 = nets_dir or PATHS["nets"], nets_g3 or PATHS["nets_g3"]
     expected = scored_networks(trained)
+    nre_skipped = {lab: r.get("status") for lab, r in sorted(refs.items())
+                   if r.get("set") == set_name and r.get("status") != "ok"}           # not scored by the ratio estimator (D98)
     if hdr is None:
         append_line(out_path, header("score", threads, {"set": set_name, "post_kw": post_kw, "expected": expected,
                                                         "stage1_refs_digest": stage1["refs_digest"] if stage1 else None,
-                                                        "emulator": emulator}, versions))
+                                                        "emulator": emulator, "nre_skipped": nre_skipped}, versions))
     _override_line(out_path, versions, "score")
     n_new = 0
     for key, cell in trained.items():
@@ -903,6 +909,8 @@ def score_set(set_name, refs, em, trained, nets_dir=None, nets_g3=None, out_path
                     n_new += 1
             else:
                 for r in todo:
+                    if r.get("status") != "ok":                                      # its reference failed: not scored (D98)
+                        continue
                     po = nre_posterior(run, np.asarray(r["y"]), r["i"], ((r.get("under") or {}).get(prior) or {}).get("sigma_P"),
                                        **post_kw)
                     append_line(out_path, {"kind": "task", "task": f"{label}|{r['task']}", "run": label, "pair": r["task"],

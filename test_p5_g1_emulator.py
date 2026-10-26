@@ -18,6 +18,7 @@ import p5_g1_emulator as E
 import p5_g0_pilot as P
 import p5_g0_main as M
 import layer4_calibrate_surface as S
+from test_p5_g2_reference import SEEDS_IN_USE
 
 D38 = P.D38_POINT
 VUS3 = np.array([-1.0, 0.0, 1.0])
@@ -35,7 +36,8 @@ def test_literals_are_the_written_ones():
     assert E.BASE_T is M.BASE_T and E.BASE_T[0.10] == (790.0, 504) and E.BASE_T[2.00] == (180.0, 112)
     assert E.SEED_HELDOUT == 73 and E.N_HELDOUT == 200 and E.RATIO == 5 and E.NOISE_LEVELS == (0.001, 0.003, 0.005)
     assert E.N_QUOTES == 35 and E.POOL_DEFAULT == 4 and E.COST_PER_TRIPLE_S == 288.0
-    assert E.SEED_HELDOUT not in (20261002, 7, 61, 62)
+    assert E.SEED_HELDOUT in SEEDS_IN_USE and E.SEED_HELDOUT not in set(SEEDS_IN_USE) - {73}  # in the tuple, no other's (D98)
+    assert set(M.SEEDS) == {61, 62} <= set(SEEDS_IN_USE)                                 # G0's confirming draws, in the tuple
     est = E.estimate()
     assert est["n_sets"] == 968 and abs(est["core_hours"] - 968 * 288 / 3600) < 1e-9 and abs(est["wall_hours"] * 4 - est["core_hours"]) < 1e-9
 
