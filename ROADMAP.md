@@ -6545,6 +6545,189 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     documents, v1, the decision sheet or an earlier entry; anything on OSF;
     nothing under `output/` beyond G2's three files.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D103** *(2026-10-27)* **P5 v3: G3's pilot references computed and recorded
+  (all 48 pairs accepted, so line 144's condition for G3 and the training of
+  seeds is met; the output committed).**
+  - **Summary.** G3's pilot references were computed on 27 October 2026, the
+    author's run, once G2 had passed with a go (D102). All 48 pairs were
+    accepted, each of the 54 reference runs at its first attempt, and no
+    reference failed, so no surface is removed from G3's set (line 144). Line
+    144's condition, that G3 and the training of seeds run only when all 48
+    pairs are recorded, accepted or failed, in a record made with G̃, is met.
+    This entry commits the record and its samples and brings the ROADMAP's P5
+    paragraph up to date. G3 has not been run, no calibrator has been trained,
+    and the sealed test set has never been drawn.
+  - **The run.** The author's command, `py -3 p5_g2_reference.py --g3-pilot`,
+    one launch, at 09:30:57 UTC on 27 October 2026, from `2a7a2f1` (D102's
+    merge) with a clean tree. The record's header and its launch line: commit
+    `2a7a2f1`, `clean_tree` true, numpy 2.4.4 and scipy 1.17.1, checked against
+    the pinned versions with no override, G̃'s SHA-256, lengths 10,000 and
+    40,000 with the start's constants equal to those in G2's record, seeds 97
+    for the 16 points and 101 for their noise (line 144), pool 4,
+    `n_done_before` 0, Python 3.14.3 on Windows 11, and G2's status as
+    `require_g2()` returned it. 48 pairs, the 16 points at the three noise
+    levels, no errors, each keyed `default_rng([83, i, j])`; the pair records
+    were written from 09:32:04 to 09:45:19 UTC, and the run ended "=== done: 48
+    pairs (0 errors) in 14.4 min ===". It writes no report: the record and the
+    samples are its output.
+  - **The reference runs.** 54 runs, each accepted at its first attempt, at
+    10,000 and 40,000 (line 68: R-hat at most 1.01 on each parameter and an
+    effective sample size of H of at least 2,000): one under the uniform prior
+    per pair, each prior's figures being reweighted from it where the
+    reweighted effective size reaches 1,000 (D81), and six direct runs under
+    prior B, at the three points lowest in H, where B's came to 15 to 681:
+    H = 0.024 at all three levels (g3_0004_0 to g3_0004_2), H = 0.053 at
+    s = 0.003 and 0.005 (g3_0005_1 and g3_0005_2), and H = 0.066 at s = 0.003
+    (g3_0006_1). Every other figure was reweighted, A's on all 48 pairs and B's
+    on 42; among them the smallest effective size was 1,433, A's on g3_0010_2.
+    Over the 54 runs: R-hat at most 1.0018, effective sizes of at least 6,082
+    for every parameter and 7,022 for H, and acceptance from 23.9% to 30.3% of
+    proposals. The start (line 68; D95): every run kept one solution (m = 1),
+    reached from all 16 starts; each of the 864 least-squares runs ended on a
+    tolerance, none at its evaluation cap; the polish ran in the six direct
+    runs and merged nothing; and 36 start coordinates were clipped to the box,
+    in 20 runs.
+  - **What the run shows,** a reading labelled as such. The direct runs fell
+    where prior B puts little mass: B, a Beta(10.2, 5.4) on the scaled range of
+    H, is small near the box's lower edge, and the points needing them are the
+    three lowest in H. A's reweighted figures all reached 1,000, the largest H
+    among the 16 points being 0.381, short of the upper edge, near which G2's
+    smallest lay (D102); A's smallest here, 1,433, is at that point. Measured
+    as line 143 measures G2's attempt, this run's median of 60.7 s per run,
+    with 1.125 runs per pair, would project 22.8 core-hours for the test set's
+    1,200 pairs, against G2's 29.1; no gate reads this figure.
+  - **What follows.** Line 144's condition is met: all 48 pairs are recorded,
+    all accepted, in a record made with G̃, whose SHA-256 its header carries.
+    G3 can now run, the author's run in the P5 leaf, with numpy 2.5.4, scipy
+    1.18.1 and torch 2.14.1 (line 7): `p5_g3_calibrators.py --g3` reads this
+    record, refuses to go on unless it holds all 48 pairs made with G̃ (D82),
+    and takes the reference's lengths from `require_g2()`. With no reference
+    failure, G3's set is all 16 surfaces at each noise level. The test set's
+    references, which line 93 permits only after G2 has passed with a go, have
+    not been computed, and the sealed set has never been drawn.
+  - **Earlier acts of this session, declared.** The author merged D102
+    (PR #258) at 08:57 UTC on 27 October 2026 as `2a7a2f1`, whose tree is
+    `b6524de`'s; this session fetched it at 09:15 UTC, checked the merge and
+    read its five checks, all passing. The pre-flight, on the author's word,
+    from 09:20:50 to 09:21:01 UTC, before the launch: read-only, with
+    `git status` and the hashes of `output/` and `__pycache__` compared before
+    and after and nothing written in the repository. It found the checkout
+    still on D102's branch, at `b6524de`, with `2a7a2f1`'s files and a clean
+    tree; the 13 bound files' blobs and G̃'s file equal to line 7's hashes;
+    `py -3` the core interpreter, Python 3.14.3 with numpy 2.4.4 and scipy
+    1.17.1; no record of G3's pilot, G2's retry or the test set in `output/`;
+    `g2_status()` and `require_g2()` giving G2 passed on attempt 1 with a go at
+    10,000 and 40,000, and `require_g1()` and `emulator_for_run()` G̃'s path,
+    whose hash G2's report carries; the start's constants in the code equal to
+    G2's record's; and the hold mode, `py -3 p5_g2_reference.py` with no flag,
+    printing the design and returning before loading G̃ or drawing anything. It
+    also read the machine's power, sleep setting, memory and disk, and the
+    processes. At about 09:25 UTC, on the author's word, it deleted D102's
+    branch, after checking the merge and that the branch's heads, local and on
+    GitHub, were the PR's head: it switched to `main` and fast-forwarded it to
+    `2a7a2f1`, then deleted the branch locally and on GitHub, in two commands.
+    The switch passed through D101's merge, `b3aa167`, which does not track
+    G2's three output files, so git removed them from the working copy, and the
+    fast-forward wrote them again from their blobs, at 09:25:45 UTC
+    (`ROADMAP.md` likewise went back to D101's text and forward again); their
+    bytes, hashed again at 09:26, equal those hashed by the pre-flight, and
+    only their modification times changed. After the run, from 09:47:14 to
+    09:48:24 UTC and before this entry was asked for, it listed the processes
+    and read the record and the samples, read-only, by Python reading JSON and
+    the arrays with no script of P5's imported, with `output/` and
+    `__pycache__` hashed before and after; its script's first attempt, at
+    09:48:11, stopped on an error in one of its own assertions.
+  - **This sitting's checks.** Read-only, Python reading the files as they are;
+    outside the test runs below, no script of P5's was imported and nothing was
+    sampled, priced, built, trained or drawn; `output/` and `__pycache__` are
+    unchanged (hashed before and after). 1, the record: one header and one
+    launch line as above; 48 distinct pair records, `g3_0000_0` to `g3_0015_2`,
+    all `ok`, each with its seed and noise level, the three of each point
+    sharing its θ; no `task_error` and no other line. 2, the runs: the figures
+    above, recomputed from the records. 3, the samples: the consolidated
+    archive holds exactly the 54 arrays the record implies, each pair's `_u`
+    array and one `_B` array per direct run, each of 160,000 entries (4 chains
+    × 40,000) of `uint16`, and equals the union of its 54 `_parts` files array
+    for array; the `_parts` folder is not committed. 4, G̃: the header carries
+    line 7's SHA-256 for G̃, which G̃'s file hashes to and G2's report carries.
+    No `output/p5v3_g2r*` or `p5v3_ref_test*` exists. The two committed blobs,
+    the record's with LF line endings and its working copy CRLF, as with G2's,
+    the `.npz` byte for byte the file on disk:
+    - `output/p5v3_g3_pilot_refs.jsonl`, 421,906 bytes,
+      `699c821a6f9854423d86f770f2d01ee2227f028d17397967bf9cc08eaa2b9290`
+    - `output/p5v3_g3_pilot_refs_samples.npz`, 6,501,479 bytes,
+      `1bfbae6f26e43d949dab308203a6e8c81bb72c200bc1b55981011f4b22d40816`
+  - **The tests.** Before this entry was drafted, this sitting ran the eight P5
+    test files in the core interpreter, which like CI's job has no torch, with
+    `PYTHONDONTWRITEBYTECODE=1` and pytest's cache off so that nothing is
+    written in the repository, and with the record and the samples in place as
+    the commit will have them: 97 passed and 9 skipped, in 236 s. Then it ran
+    the nine skipped tests alone, with pytest's reasons shown: 7 need torch,
+    and 2 are the `fork` cases of two pool tests, one in each of
+    `test_p5_g2_reference.py` and `test_p5_v3_study.py`, a start method Windows
+    does not offer and CI's Linux runs. `output/` and `__pycache__` were
+    unchanged by each run (hashed before and after). The tests draw toy and
+    pilot streams in memory, G3's seeds 97 and 101 among them, and replace
+    every draw from the sealed streams with a recorder or a refusal. No test
+    reads G3's pilot record: `test_p5_g2_reference.py` checks its file name and
+    drives `--g3-pilot` only to a refusal or with `run_set` replaced by a
+    recorder, and the tests that drive `p5_g3_calibrators.py` give it records
+    of their own, stop at its hold, or are refused before it reads one.
+  - **Declared.** Three phrases of D102 were inexact, and D102 is left as
+    merged: "the skipped being torch's", for of its 9 skipped tests 7 were
+    torch's and 2 the `fork` cases above, its run's progress line being this
+    run's exactly; "as CI runs them", for CI's job runs the whole suite with
+    `python -m pytest -q` on Linux under Python 3.12, without those two
+    settings; and, under What was seen, "contractions of H under both priors",
+    for the record holds the contraction under A only.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "G0 and G1 passed under v2 (D62, D88), and v3's G2 passed on
+    its first attempt with a go on 27 October 2026 (D102); nothing after it has
+    been run." now reads "G0 and G1 passed under v2 (D62, D88), and v3's G2
+    passed on its first attempt with a go on 27 October 2026 (D102); G3's pilot
+    references were computed the same day, all 48 pairs accepted (D103), and
+    nothing after them has been run." The rest of the bullet is unchanged.
+  - **Readings, declared.** The frozen draft's lines 7, 68, 93, 143 and 144;
+    `p5_g2_reference.py`; in `p5_g1_emulator.py`, the functions for G̃ and the
+    versions; `git_state()` in `p5_g0_pilot.py`; `p5_g3_calibrators.py` and the
+    P5 test files, for which of them read G3's pilot record or draw from a
+    sealed stream; CI's workflow, `.github/workflows/tests.yml`; D102, for the
+    form and the figures quoted; and this session's own transcript, for the
+    times of its acts and the model.
+  - **What was seen.** G3's pilot surfaces and the exact posteriors on them, as
+    the record holds them: the points and quotes; under each prior the mean,
+    variance and quantiles of H, the mean of ξ₀ and Σ_P; the contraction under
+    A; the coverage masses; and the runs' diagnostics. None is a test surface,
+    no calibrator has been trained, and nothing about the hypotheses was looked
+    at.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (67 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, recomputed every figure from
+    the files and found them all right. It found three statements wrong, all
+    corrected: the tests' setting given as CI's; line 143 left out of the
+    readings; and the contraction of H given under both priors; the first and
+    the last repeat D102's phrases, declared above. Its wording points were
+    taken up: the checks' exclusion widened to both test runs; the tests that
+    touch G3's record or the calibrators' script described in full, with their
+    drawing in memory, which never reaches the sealed streams; the two pool
+    tests named as two; D102's phrases declared as inexact outright; line 93
+    read as the condition it is, "only after"; the reading's best support
+    stated; and the fetch and the second hashing declared. It wrote nothing;
+    one of its listings, timing out, had its output kept by the harness in this
+    session's folder, outside the repository.
+  - **Who did what.** The author ran G3's pilot references, gave the word for
+    the pre-flight and the branch's deletion, and asked for this entry. The
+    merge check, the pre-flight, the deletion, the read after the run and this
+    sitting were held in the Claude Code session that wrote D100 to D102, on
+    Claude Opus 5.5 (`claude-opus-5-5`), the model its transcript records for
+    every message on 27 October 2026; it ran the checks and the tests above,
+    asked for the review, and wrote this entry and the paragraph's change.
+  - **Not written.** G3, the training of seeds and everything after them; the
+    test set's references; any change to the frozen draft or the files it
+    binds, the amendment file, v2's documents, v1, the decision sheet or an
+    earlier entry; anything on OSF; nothing committed under `output/` beyond
+    the two files above.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -6615,9 +6798,10 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   emulator built under v2; the hypotheses, priors and tolerances are unchanged.
   The new start was developed and passed on the surfaces v2's G2 had seen (D93,
   D94). G0 and G1 passed under v2 (D62, D88), and v3's G2 passed on its first
-  attempt with a go on 27 October 2026 (D102); nothing after it has been run.
-  Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM
-  ICAIF.
+  attempt with a go on 27 October 2026 (D102); G3's pilot references were
+  computed the same day, all 48 pairs accepted (D103), and nothing after them
+  has been run. Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative
+  Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
