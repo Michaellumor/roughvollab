@@ -6364,6 +6364,187 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
   - **Not written.** Anything on OSF; any P5 run; any box; the frozen draft and
     the files it binds; D100 and every earlier entry.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D102** *(2026-10-27)* **P5 v3: gate G2 run and recorded (it passed on its
+  first attempt with a go, so P5 v3 continues past G2, line 143; the output
+  committed).**
+  - **Summary.** G2 passed on its first attempt with a go. All 20 reference
+    runs on the 18 pilot pairs were accepted at their first attempt, all 120
+    comparisons with the grids were within tolerance, none needing the Monte
+    Carlo term, and the projected cost of the test set's references, 29.1
+    core-hours, is far within the budget of 1,344. So no retry is run, the
+    reference keeps its written lengths, 10,000 and 40,000, and G2's condition
+    for G3's pilot references and the test set's is met (line 143). This entry
+    commits G2's three files and brings the ROADMAP's P5 paragraph up to date.
+    Nothing after G2 has been run, and the sealed test set has never been
+    drawn.
+  - **The run.** The author's command, `py -3 p5_g2_reference.py --pilot`, one
+    launch, at 00:22:10 UTC on 27 October 2026. The record's header and its
+    launch line: commit `b3aa167` (D101's merge), `clean_tree` true, numpy
+    2.4.4 and scipy 1.17.1, checked against the pinned versions with no
+    override, G̃'s SHA-256, lengths 10,000 and 40,000, seeds 151, 157 and 163
+    with the two fixed points (line 143), pool 4, `n_done_before` 0, Python
+    3.14.3 on Windows 11. 18 pairs, no errors, each keyed
+    `default_rng([83, i, j])`; the pair records were written from 00:23:21 to
+    00:28:59 UTC, and the report, after the grids, at 01:13:41 UTC, from
+    `b3aa167` with a clean tree.
+  - **The reference runs.** 20 runs, each accepted at its first attempt, at
+    10,000 and 40,000 (line 68: R-hat at most 1.01 for every parameter and an
+    effective size of H of at least 2,000): one under the uniform prior per
+    pair, each prior's figures being reweighted from it where the reweighted
+    effective size reaches 1,000 (D81), and two direct runs under prior B, at
+    the fixed point H = 0.04 with s = 0.003 and 0.005 (g2_0004_1 and
+    g2_0004_2), where B's came to 172 and 203. Every other figure was
+    reweighted, A's on all 18 pairs and B's on 16; among them the smallest
+    effective sizes were A's at the fixed point H = 0.46, 1,162 to 1,653 over
+    the three levels. Over the 20 runs: R-hat at most 1.0014, effective sizes
+    of at least 7,681 for every parameter and 9,492 for H, and acceptance from
+    24.3% to 29.9% of proposals. The start (line 68; D95): every run kept one
+    solution (m = 1), reached from all 16 starts; each of the 320 least-squares
+    runs ended on a tolerance, none at its evaluation cap; the polish ran in
+    the two direct runs and merged nothing; and 19 start coordinates were
+    clipped to the box, in 10 runs.
+  - **The grids.** All 18 pairs passed on the first grid, 32 points per
+    dimension over the chains' support extended by 20%, and the 6 at s = 0.005
+    on the whole-box grid as well, 48 points in each of H, ν and ρ and 32 in
+    ξ₀: 120 comparisons, five on each grid (under A the mean of H, c and the 5%
+    and 95% quantiles of H; under B the mean of H), each within the tolerance
+    in force. No difference exceeded its fixed value, so none relied on the
+    Monte Carlo term of the tolerance (D81). The largest relative to its
+    tolerance was g2_0001_2's 95% quantile of H on the whole-box grid, 0.000918
+    against 0.002.
+  - **The report.** `passed` true, 0 reference failures, `go` true: a
+    projection of 29.1 core-hours for the test set's 1,200 pairs, a median of
+    78.7 s per unit of 50,000 steps over the 20 runs, each run's seconds
+    including its optimiser's (line 143; D95), times 1.11 units per pair, the
+    two direct runs counted; against 1,344 core-hours (line 143). The grids, a
+    mean of 250 s for a first grid and 773 s for a whole-box grid, are outside
+    the projection, which line 143 takes from the sampler runs.
+  - **What the attempt shows,** a reading labelled as such. The failure that
+    stopped v2 did not recur. At s = 0.001, where v2's G2 failed on all 6 pairs
+    and then on 5 of 6, its uniform-prior runs there accepting 0.14% to 2.1% of
+    their proposals on the first attempt and 0.41% to 3.1% on the retry (D89),
+    v3's six runs accepted 28.3% to 29.9%, with R-hat at most 1.0008. The
+    surfaces are fresh, drawn as v2's were and with the same two fixed points,
+    so the comparison is between the samplers on like surfaces, not on the same
+    ones; the development study had found the failure gone on the surfaces v2's
+    G2 had seen, all 14 pairs v2 failed accepted (D94).
+  - **What follows.** G2 has passed with a go on its first attempt (line 143):
+    the retry is not run, and the script refuses `--pilot-retry` after a
+    passing first attempt; the reference's lengths for every later run are the
+    written 10,000 and 40,000; and G2's condition for G3's pilot references and
+    the test set's, that they are "computed only after G2 has passed with a
+    go", is met, each being the author's run. `g2_status()` returns `passed`
+    true, attempt 1, those lengths, `go` true, the projection and G̃'s SHA-256,
+    with the reason "G2 passed on attempt 1 with a go; the reference's lengths
+    are burn 10000, sample 40000", and `require_g2()`, which `--g3-pilot` and
+    `--test` call before loading G̃, returns the same. G3 and the training of
+    seeds wait until all 48 of G3's pilot pairs are recorded, accepted or
+    failed (line 144).
+  - **Earlier acts of this session, declared.** The author merged D101
+    (PR #257) at 23:40 UTC on 26 October 2026 as `b3aa167`, whose tree is
+    `2936918`'s, its five checks passing; at 00:02 UTC on 27 October, on the
+    author's word, this session fast-forwarded `main` to it and deleted D101's
+    branch, locally and on GitHub, and from 00:03 to 00:16, at the author's
+    request, it surveyed the drive's space, read-only, sizes only. The
+    pre-flight, on the author's word, from 00:17 to 00:20 UTC, before the
+    launch: read-only, with `git status`, `output/` and `__pycache__` compared
+    before and after and nothing written in the repository. It found `main` at
+    `b3aa167`, equal to `origin/main`, with a clean tree; the 13 bound files'
+    blobs and G̃'s file equal to line 7's hashes; `py -3` the core interpreter,
+    Python 3.14.3 with numpy 2.4.4 and scipy 1.17.1; no record of v3's gates in
+    `output/`; `g2_status()` giving "G2 has not been run" and `require_g1()`
+    G̃'s path; and the hold mode, `py -3 p5_g2_reference.py` with no flag,
+    printing the design, which matched the frozen text, and returning before
+    loading G̃ or drawing anything. It also read the machine's memory, disk and
+    power. During the run, from 00:22:52 to 00:23:07 UTC, it read the record's
+    header and launch line, the process list and the power state, and no pair's
+    result. After the run, from 06:38:39 to 06:40:02 UTC and before this entry
+    was asked for, it read the report and the record, read-only, by Python
+    reading JSON with no script of P5's imported, and listed the processes, the
+    files and `git status`.
+  - **This sitting's checks.** Read-only, Python reading the files as they are;
+    outside the test run below, `g2_status()`, `require_g2()` and
+    `require_g1()` were the only functions of the scripts called, and nothing
+    was sampled, priced, built, trained or drawn; `output/` and `__pycache__`
+    unchanged (their listings, sizes and times compared before and after). 1,
+    the record: one header and one launch line as above; 18 distinct pair
+    records, all `ok`; no `task_error` and no other line. 2, the report: as
+    above, its header and launch line equal to the record's and its statuses to
+    the record's; each of its 120 tolerances in force recomputed as the larger
+    of the fixed value and four Monte Carlo standard errors, equal to the one
+    recorded; its projection recomputed from the 20 runs, equal. 3,
+    `g2_status()` and `require_g2()` as above. 4, the samples: the consolidated
+    archive holds exactly the 20 arrays the report implies, each pair's `_u`
+    array and one `_B` array per direct run, each of 160,000 entries (4 chains
+    × 40,000) of `uint16`, and equals the union of its 20 `_parts` files array
+    for array; the `_parts` folder is not committed. 5, G̃: the header and the
+    report carry G̃'s SHA-256, and `require_g1()` returns
+    `output/p5_g1_emulator.npz`, whose bytes hash to it. No `output/p5v3_g2r*`,
+    `p5v3_g3*` or `p5v3_ref_test*` exists. The three committed blobs, the text
+    files' with LF line endings and their working copies CRLF, as with v2's G2
+    output, the `.npz` byte for byte the file on disk:
+    - `output/p5v3_g2_pilot.jsonl`, 158,087 bytes,
+      `53694a3a83aee6917d70c5be61de9eaff802df210dd2e9c3a04ac5b8f6fde45f`
+    - `output/p5v3_g2_pilot_samples.npz`, 2,405,943 bytes,
+      `cca98042ed7c80d3f6acd438a465b40f8b5de0cb689e92c49c6442cba0597215`
+    - `output/p5v3_g2_report.json`, 236,783 bytes,
+      `ea8f78643637cea3b7c1f45357d0866c1dc42f3851c9fd80db57ea3bf564ed87`
+  - **The tests.** After this entry was first drafted and staged, this sitting
+    ran the eight P5 test files in the core interpreter, as CI runs them
+    (`PYTHONDONTWRITEBYTECODE=1`, pytest's cache off), with G2's three files in
+    place as the commit will have them: 97 passed and 9 skipped, the skipped
+    being torch's, in 226 s; `output/` unchanged (its listing compared before
+    and after). One test now reads G2's report: `test_p5_v3_study.py`, line
+    635, passes `R.SETS`' report paths, v3's names since D95, to the study's
+    `estimate()` under the comment "v2's committed reports"; until G2's run
+    neither file existed and the test's assertions on the estimate were
+    skipped, and now v3's first report exists and they hold on it.
+  - **Declared.** The state D98 declared under its decision 8 now holds:
+    `p5_v3_study.py` reads `R.SETS`, v3's names since D95, so its hold mode
+    would now take v3's G2 record and report for v2's, while its `--run` stays
+    refused (D98). The study ran and was recorded in D94; the script, not among
+    the files line 7 binds, stays the study's blob, and its test is left as
+    written.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "G0 and G1 passed under v2 (D62, D88); v3's G2 is next, and
+    none of v3's gates has been run." now reads "G0 and G1 passed under v2
+    (D62, D88), and v3's G2 passed on its first attempt with a go on 27 October
+    2026 (D102); nothing after it has been run.", as D89 brought v2's up to
+    date. The rest of the bullet is unchanged.
+  - **Readings, declared.** The frozen draft's lines 7, 68, 136, 143 and 144;
+    `p5_g2_reference.py`, and the other P5 scripts and the P5 test files for
+    which of them read G2's files; D89, D94, D96, D98 and D101, for the form
+    and the figures quoted; and this session's own transcript, for the times of
+    its acts and the model.
+  - **What was seen.** G2's pilot surfaces and the posteriors on them: the
+    means, quantiles and contractions of H under both priors, the coverage
+    masses and the runs' diagnostics. None is a test surface, no calibrator has
+    been trained, and nothing about the hypotheses was looked at.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (44 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, recomputed the figures from the
+    files and found none wrong. All five of its points were taken up: the test
+    run, which followed the first draft, declared, and the checks' wording
+    narrowed to exclude it; "nothing written" narrowed to the repository, this
+    session having edited its own notes outside it, and the fast-forward of
+    `main` and the deletion of D101's branch declared; the reweighting
+    described as conditional on the effective size; the smallest effective
+    sizes stated among the figures reweighted; and the development study's
+    finding stated as D94 gives it. It wrote nothing; one of its listings,
+    timing out, had its output kept by the harness in this session's folder,
+    outside the repository.
+  - **Who did what.** The author ran G2 and asked for this entry. The
+    pre-flight, the reads during and after the run and this sitting were held
+    in the Claude Code session that wrote D100 and D101, on Claude Opus 5.5
+    (`claude-opus-5-5`), the model its transcript records for every message on
+    27 October 2026; it ran the checks and the tests above, asked for the
+    review, and wrote this entry and the paragraph's change.
+  - **Not written.** G3's pilot references, the test set's, G3 and everything
+    after them; the retry, which a passing first attempt rules out; any change
+    to the frozen draft or the files it binds, the amendment file, v2's
+    documents, v1, the decision sheet or an earlier entry; anything on OSF;
+    nothing under `output/` beyond G2's three files.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -6433,9 +6614,10 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   the same start by the gradient route, draws fresh seeds for G2 and adopts the
   emulator built under v2; the hypotheses, priors and tolerances are unchanged.
   The new start was developed and passed on the surfaces v2's G2 had seen (D93,
-  D94). G0 and G1 passed under v2 (D62, D88); v3's G2 is next, and none of v3's
-  gates has been run. Targets unchanged: arXiv q-fin.CP, then SIFIN,
-  Quantitative Finance or ACM ICAIF.
+  D94). G0 and G1 passed under v2 (D62, D88), and v3's G2 passed on its first
+  attempt with a go on 27 October 2026 (D102); nothing after it has been run.
+  Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM
+  ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
