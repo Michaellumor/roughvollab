@@ -6728,6 +6728,270 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     earlier entry; anything on OSF; nothing committed under `output/` beyond
     the two files above.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D104** *(2026-10-28)* **P5 v3: gate G3 run and recorded (10 of its 12 cells
+  passed, the ratio estimator trained under prior B failing at the two lower
+  noise levels; the projected cost of scoring within G3's budget, a go, so P5
+  v3 continues with the passing cells, line 144; its record and report
+  committed and its networks pinned by a hash).**
+  - **Summary.** Gate G3 (line 144) was run on 27 and 28 October 2026, the
+    author's run, once all 48 of its pilot references had been accepted (D103).
+    Of its 12 cells, each a calibrator, a prior and a noise level, 10 passed
+    and 2 failed: the ratio estimator trained under prior B at s = 0.001 and
+    0.003 (`nre_B_j1`, `nre_B_j2`), where no rung passed. Every failed rung
+    failed the stability check: the slope of ξ₀ held at every rung of every
+    cell, and every run was within both budgets. The projected cost of scoring
+    both calibrators on the test pairs is 155.2 core-hours, against G3's budget
+    of 1,344 (line 143): a go. P5 therefore goes on with the passing cells:
+    line 144 stops it only if every cell fails, or if the projected cost is
+    above the budget or cannot be projected. The report's `passed` is false,
+    which it defines as every cell passing, and its `p5_stops` false. This
+    entry commits G3's record and report, pins its networks by one hash, and
+    brings the ROADMAP's P5 paragraph up to date. No network has been trained
+    beyond G3's ladder, the test set's references have not been computed, and
+    the sealed test set has never been drawn.
+  - **The run.** The author's command,
+    `.\.venv-p5\Scripts\python.exe p5_g3_calibrators.py --g3`, in the P5 leaf,
+    one launch, from `a0a8f71` (D103's merge) with a clean tree. The record's
+    header, created at 11:19:30 UTC on 27 October 2026: commit `a0a8f71`,
+    `clean_tree` true; numpy 2.5.4, scipy 1.18.1 and torch 2.14.1, checked
+    against the pinned versions with no override (line 7); G̃'s SHA-256; Python
+    3.14.3 on Windows 11; 4 torch threads; the ladder 10,000 to 160,000 within
+    one draw of 320,000 surfaces per prior and level; 4,000 validation
+    surfaces; the budgets, 320,000 surfaces and 14,400 s of wall per run; the
+    slope's bound, 0.95, and the stability tolerance, 0.002; and the ratio
+    estimator's sampler at the reference's lengths, 10,000 and 40,000, from
+    `require_g2()`. 72 training runs, each cell at the five rungs and at
+    320,000, the top rung's check, all at training seed q = 1 and all `ok`,
+    each recorded with commit `a0a8f71` and a clean tree, from 11:20:59 UTC on
+    27 October to 03:33:25 on 28 October; 216 networks, the ensembles' 180
+    members and the ratio estimator's 36, all `ok`, stopping after 77 to 513
+    epochs, none at the cap of 1,000. Training took 48,075 s in all, the
+    longest run 3,554 s (the ensemble under B at s = 0.003 and 320,000),
+    against the cap of 14,400. The 60 rung lines, five per cell, were written
+    between the runs from 11:24:13 to 03:38:19 UTC, and the report at 03:38:19
+    UTC on 28 October, 16 h 19 min after the header. The record holds the
+    header, the 72 runs and the 60 rungs and no other line, and each rung line,
+    its cell's keys and time aside, equals its rung in the report; a resume
+    would have written the finished cells' rung lines again, and the process
+    this session saw at 15:37 and 20:53 UTC was the one started at 11:19:26, so
+    the run was never resumed. The networks are in `output/p5_g3/`, a `.pt` and
+    a `.json` per run.
+  - **The cells.** The ensemble under A passed at every rung at all three
+    levels, so its n* is 160,000 (`ensemble_A_j1` to `ensemble_A_j3`). Under B
+    it passed at s = 0.001 at every rung but 20,000 and at s = 0.003 at every
+    rung but 10,000, n* 160,000 (`ensemble_B_j1`, `ensemble_B_j2`), and at
+    s = 0.005 only at 20,000 and 40,000, n* 40,000 (`ensemble_B_j3`). The ratio
+    estimator under A passed at s = 0.001 only at 10,000, n* 10,000
+    (`nre_A_j1`), and at s = 0.003 and 0.005 only at 160,000, n* 160,000
+    (`nre_A_j2`, `nre_A_j3`); under B, at s = 0.001 and 0.003 at no rung
+    (`nre_B_j1`, `nre_B_j2`), and at s = 0.005 only at 40,000, n* 40,000
+    (`nre_B_j3`). n* being the largest rung at which both checks hold and both
+    runs are within the budget (line 144; D81), a passing rung followed by
+    failing ones fixes it: `nre_A_j1` passed at 10,000 and failed at every rung
+    above. The slope of ξ₀ was above 0.95 at all 60 rungs, the smallest 0.952
+    (`nre_B_j1` at 40,000), and every rung was within both budgets, so every
+    failed rung failed on the stability check alone: at the ensemble's 5 failed
+    rungs the median of abs(d) moved between n and 2n by 0.0021 to 0.0036, and
+    at the ratio estimator's 26 by 0.0025 to 0.0650, against the tolerance of
+    0.002. No reference was removed (D103), and every rung used all 16 surfaces
+    at its level but one: the ratio estimator's posterior failed after its
+    repeat (line 75) on g3_0006_1 with the network at 320,000 in `nre_B_j2`,
+    the check run of its top rung, so that rung's median at 2n is over 15
+    surfaces and its slope and median at n over 16, the script leaving a failed
+    prediction out only of the figures computed from that network's output.
+  - **The projection.** 155.2 core-hours, against 1,344 (line 143), complete
+    and a go: for each passing cell, its 400 test pairs at each of the five
+    seeds, 2,000 predictions, at the 4 torch threads a scoring process holds,
+    from its network's pilot predictions at n*. The ratio estimator's four
+    cells come to 37.6, 39.4, 38.7 and 39.5 core-hours (`nre_A_j1` to
+    `nre_A_j3`, `nre_B_j3`), from medians of 16.9 to 17.8 s per sampler run at
+    the adopted lengths, every pilot posterior of their networks at n* accepted
+    at its first attempt; the ensemble's six cells to less than 0.001
+    core-hours each.
+  - **What follows.** Each cell passes or fails on its own (line 144; D81). The
+    two failed cells' five training seeds are not trained; in each passing
+    cell, `p5_g3_calibrators.py --train` trains seeds 2 to 5 at n*, seed 1
+    being the ladder's network at n*, which the scoring reads from
+    `output/p5_g3/`. Every measure needing a failed network loses that level
+    for the ratio estimator, the other levels pooled as before, with the floors
+    of The calibrators and the seed floor taken on their pairs (line 75: a bin
+    in which a calibrator's failed pairs exceed 10% of that bin's pairs, or
+    leave fewer than 100, makes its hypotheses untestable for that calibrator).
+    H-a and H-d use only the networks trained under A (d is d_A, and m is taken
+    under A; lines 107 and 110), whose cells all passed, so for both
+    calibrators they keep the three levels. H-b and H-c use E, which pairs the
+    networks trained under A and under B at the same seed (line 109), so for
+    the ratio estimator they rest on the pairs at s = 0.005 alone, and for the
+    ensemble on all three levels. A hypothesis left with no level for a
+    calibrator is untestable for it (line 144); none here is left without one,
+    and a hypothesis whose bin misses a floor is untestable for that
+    calibrator, which leaves that calibrator's null unproven (line 128).
+    Whether each bin clears the floors is known only after the scoring: Stage
+    1, from the test set's references, gives each bin's pairs, and the scoring
+    each calibrator's failed pairs. The runs still to come, each the author's:
+    the test set's references, Stage 1 from them, the training of seeds 2 to 5,
+    the scoring of the test set, and Stage 2.
+  - **Earlier acts of this session, declared.** At about 10:31 to 10:32 UTC on
+    27 October 2026, before D103's commit, this session read, through GitHub's
+    API, PR #258's title and four deleted branches, rechecking an error in a
+    path of its own; before D103's merge it read PR #259's checks, keeping the
+    pytest job's log outside the repository. The author merged D103 (PR #259)
+    at 10:44 UTC as `a0a8f71`, whose tree is `5bc160a`'s; this session fetched
+    it at about 11:03 UTC, checked the merge and read its five checks, all
+    passing. From about 11:04 to 11:05 UTC, on the author's word, it deleted
+    D103's branch, after fetching again and checking the merge and that the
+    branch's heads, local and on GitHub, were the PR's head: it moved `main` to
+    `a0a8f71` by a fetch and then switched to it, so that no file was touched
+    (the hashes of `output/` and `__pycache__`, and the modification times of
+    `ROADMAP.md` and the five output files of G2 and of G3's pilot, unchanged),
+    and deleted the branch locally and on GitHub, in two commands. The
+    pre-flight, on the author's word, from 11:13:50 to 11:14:12 UTC, before the
+    launch: read-only, with `git status` and the hashes of `output/` and
+    `__pycache__` compared before and after and nothing written in the
+    repository. It found `main` at `a0a8f71`, equal to `origin/main`, with a
+    clean tree; the 13 bound files' blobs and G̃'s file equal to line 7's
+    hashes, and G3's pilot record and samples committed and equal to their
+    blobs; no record, report or networks of G3, trained seeds, scores or
+    test-set references in `output/`, so the run would be fresh; the P5 leaf's
+    interpreter, Python 3.14.3 with numpy 2.5.4, scipy 1.18.1 and torch
+    2.14.1+cpu, no CUDA, with G3's default of 4 torch threads, of 8 logical
+    processors; `require_g2()` giving G2 passed on attempt 1 with a go at
+    10,000 and 40,000, `require_g1()` G̃'s path, whose hash G2's report
+    carries, and `require_pilot()` accepting the 48 pairs; and the hold mode,
+    `p5_g3_calibrators.py` with no flag, printing the design and returning
+    before loading anything. It also read the machine's power, sleep and
+    hibernation settings, memory and disk, and the processes. The command it
+    first gave the author, `.venv-p5\Scripts\python p5_g3_calibrators.py --g3`,
+    is not valid in PowerShell, which refused it before starting anything: no
+    record, folder or process resulted, and the author ran the corrected form
+    above. During the run, read-only: at about 11:20 UTC it listed the
+    processes and read the record's header; at about 11:25 it searched
+    `p5_g3_calibrators.py` for how it times the wall budget and twice tried,
+    without result, to read the power plan's lid setting; at 11:31 it read the
+    first two runs' timings and statuses and the first rung line's keys, not
+    its values, its first read printing the member records of both finished
+    runs in full, among them the per-epoch validation losses and the best,
+    which no gate reads, an output the harness kept in a file in this session's
+    folder, outside the repository, showing this session its first 2 KB: the
+    first member's best and the start of its losses; from 15:37 to 15:39,
+    having also read lines 580 to 770 of `p5_g3_calibrators.py` and looked up
+    its functions that read and write the record and the networks, for the
+    record's keys and the cells' order, and at 20:53, it listed the processes
+    and read each run line's time, label, status and seconds and its members'
+    statuses and epochs, and each rung line's kind, time and keys only; and at
+    04:14 UTC on 28 October it read the time, the sizes and modification times
+    of the record and the report, and the processes. After the run's final
+    lines, before this entry was asked for, this session read the frozen
+    draft's lines 75 (in part), 99 to 128 and 136 to 144 and searched it, the
+    search showing lines 140, 172 and 197 in full, to set out what they mean.
+  - **This sitting's checks.** Read-only, Python reading the files as they are;
+    outside the test run below, no script of P5's was imported and nothing was
+    trained, sampled or drawn; `output/` and `__pycache__` are unchanged
+    (hashed before and after). It fetched `main` at 04:27 UTC and found
+    GitHub's at `a0a8f71`. 1, the record: the header as above, 72 run lines,
+    one per run, and 60 rung lines, five per cell, and no other line. 2, the
+    report: its fields, cells, rungs, n* and projection as above, recomputed:
+    each rung's two checks from its slope and medians, n* as the largest
+    passing rung, the projection's sum, and each rung equal to its line in the
+    record. 3, the networks: `output/p5_g3/` holds a `.pt` and a `.json` for
+    each of the 72 runs and nothing else, 144 files of 34,973,188 bytes. They
+    are not committed but pinned by the last hash below: the SHA-256 of the 144
+    lines `sha256sum` prints for them, each a file's SHA-256, two spaces and
+    its name, ending in LF, in byte order of name, the files hashed as G3 wrote
+    them, the `.json` files with CRLF line endings. It was added after the
+    review, on the author's answer, and Python and `sha256sum` give identical
+    lists. 4, G̃: the header and the report carry line 7's SHA-256 for G̃,
+    which G̃'s file hashes to. No trained seeds, scores or test-set references
+    exist in `output/`. The two committed blobs, with LF line endings and their
+    working copies CRLF, as with G2's and G3's pilot's, and the networks'
+    fingerprint:
+    - `output/p5_g3_ladder.jsonl`, 1,703,664 bytes,
+      `a620cc2f83c40b6868281e83aab715e7d3f5f8b0d000ea5105c9631e54d18172`
+    - `output/p5_g3_report.json`, 1,637,820 bytes,
+      `6204fa547d68d6ebd78eb47c9251d42205b4649e9cef3b92c91effd95d4a6ec8`
+    - `output/p5_g3/`, 144 files of 34,973,188 bytes, not committed,
+      `1a0fc6099890c73e4f3a1caa6cacfa5ddc89534d6e1750d6fafaa7324f6cea85`
+  - **The tests.** Before this entry was drafted, this sitting ran the eight P5
+    test files in the core interpreter, which like CI's job has no torch, with
+    `PYTHONDONTWRITEBYTECODE=1` and pytest's cache off so that nothing is
+    written in the repository, and with G3's record, report and networks in
+    place: 97 passed and 9 skipped, in 244 s, the counts and progress line of
+    D103's run, whose skips it gives. `output/` and `__pycache__` were
+    unchanged (hashed before and after). No test reads G3's record, report or
+    networks: the tests that drive `p5_g3_calibrators.py` work in temporary
+    folders of their own, stop at its hold, or are refused before it loads
+    anything, and the tests of `p5_stage2.py` give it a G3 report of their own,
+    the two calls without one being refused before it is read.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "G0 and G1 passed under v2 (D62, D88), and v3's G2 passed on
+    its first attempt with a go on 27 October 2026 (D102); G3's pilot
+    references were computed the same day, all 48 pairs accepted (D103), and
+    nothing after them has been run." now reads "G0 and G1 passed under v2
+    (D62, D88), and v3's G2 passed on its first attempt with a go on 27 October
+    2026 (D102); G3's pilot references were computed the same day, all 48 pairs
+    accepted (D103). G3 ran on 27 and 28 October 2026: 10 of its 12 cells
+    passed, the ratio estimator trained under prior B failing at the two lower
+    noise levels, and P5 goes on with the passing cells (D104); nothing after
+    it has been run." The rest of the bullet is unchanged.
+  - **Readings, declared.** The frozen draft's lines 7, 75 (in part), 99 to 128
+    and 136 to 144, and lines 172 and 197 as a search showed them; in
+    `p5_g3_calibrators.py`, before the run its usage and docstring, imports and
+    constants, `PATHS`, `require_pilot()`, the start of `run_g3()` and parts of
+    `main()`, during it lines 580 to 770, its functions that read and write the
+    record and the networks, and how it times the wall budget, and in this
+    sitting its paths, `main()`, `get_or_train()`, `run_g3()`, `header()`,
+    `pilot_surfaces()`, the checks, `budget_ok()`, the predictions, the ratio
+    estimator's posterior, the projection, the start of `train_seeds()` and
+    where the scoring loads seed 1's network; the version constants of
+    `p5_g1_emulator.py`; in `p5_stage2.py`, where it reads G3's report; the P5
+    test files, for which of them read G3's files; D103, for the form and the
+    figures quoted; and this session's own transcript, for the times of its
+    acts and the model.
+  - **What was seen.** G3's record and report, read in full by Python and
+    printed in part: the header; the runs' statuses, epochs and timings; at
+    each rung the slope, the medians of abs(d) at n and 2n and the verdicts, on
+    G3's pilot surfaces; from the cost records, the first pilot posterior's
+    acceptance, R-hat and effective sizes at n* in each passing cell of the
+    ratio estimator, and its acceptance at each rung; the projection; and,
+    during the run, the first member's best and the start of its validation
+    losses. None is a test surface, no network has scored a test surface, and
+    nothing about the hypotheses on the test set was looked at.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (97 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, recomputed every figure from
+    the files and found them all right. It found two statements wrong, both
+    corrected: the ratio estimator's failed posterior said to be left out of
+    both checks at its rung, where it is left out only of the median at 2n; and
+    the read at 11:31 said to have printed the first run's member records,
+    where it printed those of both finished runs. It found acts and readings
+    left out, now declared: the fetches at 11:03, 11:04 and 04:27; the search
+    and the reads of the lid setting at 11:25; the reads of the script before
+    the run, and the full extent of those from 15:37 to 15:39; the protocol
+    lines a search showed; and the reading of PR #259's checks. Its wording
+    points were taken up: the budget in the title; the floor's 10% as of the
+    bin's pairs; when the floors are known; the time of the API reads; the
+    order of the cells' clauses; n*'s budget condition; the rung lines' times
+    and keys; the deletion's times; the seed in the header's list; the threads;
+    seed 1's network as the scoring's input; the tests of `p5_stage2.py`; and
+    what was printed. It wrote nothing in the repository. It read G3's record
+    and report in full, printing none of the members' losses but, in one early
+    look at the record, the first member's best and the start of its losses;
+    its helper files, and two of its outputs that the harness kept, are in this
+    session's folder, outside the repository.
+  - **Who did what.** The author ran G3, gave the word for the pre-flight and
+    the branch's deletion, asked for this entry, and chose to pin the networks
+    by a hash rather than commit them. The merge check, the deletion, the
+    pre-flight, the reads during the run and this sitting were held in the
+    Claude Code session that wrote D100 to D103, on Claude Opus 5.5
+    (`claude-opus-5-5`), the model its transcript records for every message on
+    27 and 28 October 2026; it ran the checks and the tests above, asked for
+    the review, and wrote this entry and the paragraph's change.
+  - **Not written.** The training of seeds 2 to 5, the test set's references
+    and everything after them; any change to the frozen draft or the files it
+    binds, the amendment file, v2's documents, v1, the decision sheet or an
+    earlier entry; anything on OSF; nothing committed under `output/` beyond
+    the two files above.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -6799,9 +7063,11 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   The new start was developed and passed on the surfaces v2's G2 had seen (D93,
   D94). G0 and G1 passed under v2 (D62, D88), and v3's G2 passed on its first
   attempt with a go on 27 October 2026 (D102); G3's pilot references were
-  computed the same day, all 48 pairs accepted (D103), and nothing after them
-  has been run. Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative
-  Finance or ACM ICAIF.
+  computed the same day, all 48 pairs accepted (D103). G3 ran on 27 and 28
+  October 2026: 10 of its 12 cells passed, the ratio estimator trained under
+  prior B failing at the two lower noise levels, and P5 goes on with the
+  passing cells (D104); nothing after it has been run. Targets unchanged: arXiv
+  q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
