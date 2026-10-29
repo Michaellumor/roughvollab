@@ -7240,6 +7240,214 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     the record above, the archive and the `_parts` folder being pinned by their
     hashes and not committed.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D106** *(2026-10-29)* **P5 v3: Stage 1 run and recorded (1,200 pairs
+  accepted, no reference failure; Identified 842, Partial 328, Flat 30, the
+  Flat bin below the floor, so H-d is untestable for both calibrators and
+  neither null can be proven; P5 goes on; the output committed).**
+  - **Summary.** Stage 1 was run on 29 October 2026, the author's run, from the
+    test set's references alone and before any network had scored the test set
+    (line 101; D105). Each pair is binned by the exact posterior's contraction
+    of H under prior A, c (lines 79 to 89): Identified, c ≥ 0.9, 842 pairs
+    (70.2%); Partial, 0.5 ≤ c < 0.9, 328 (27.3%); Flat, c < 0.5, 30 (2.5%). The
+    Flat bin holds fewer than 10% of the 1,200 accepted pairs and fewer than
+    100, so the hypothesis on it, H-d, is untestable for both calibrators, the
+    fourth outcome beside the three verdicts (line 101); and as an untestable
+    outcome anywhere leaves a calibrator's null unproven (line 128), neither
+    calibrator's null can be proven, whatever H-a to H-c show. No reference
+    failed, so the rule that stops P5 at Stage 1, reference failures above 10%
+    of a level's test pairs (more than 40 of its 400; line 101, D81), is not
+    met, and P5 goes on within v3: nothing is adjusted to fill a bin (line
+    101). This entry commits Stage 1's report, CSV and figure and brings the
+    ROADMAP's P5 paragraph up to date. No network has been trained beyond G3's
+    ladder, and nothing has scored the test set.
+  - **The run.** The author's command, `py -3 p5_stage2.py --stage1`, from
+    `850107a` (D105's merge) with a clean tree, after D105's branch had been
+    deleted and with no pre-flight; numpy 2.4.4 and scipy 1.17.1, checked with
+    no override, on Python 3.14.3. The report was written at 17:50:21 UTC, its
+    `utc`, and the CSV and the figure at 17:50:20 and 17:50:21 by their
+    modification times. The report carries the record's digest, the SHA-256 of
+    its header and pair records as canonical JSON (`refs_digest()`),
+    `c31157882c54a16bb5397451a76e5ed6a0b99f7abe2a8b365a246e7075329f18`, which
+    the scoring of the test set and Stage 2 check; the record file's SHA-256 as
+    on disk, with CRLF line endings,
+    `9eab6c3e221a6fafd87705d1f3eac32a2c7748c9555167465432dc88b29a7477`, its
+    blob with LF being the one D105 lists; the record's header; and G̃'s
+    SHA-256, the references' and G2's being equal. Its summary line, as the
+    author pasted it, before the line naming the report it wrote: "=== Stage 1:
+    1200 accepted pairs, 0 reference failures; bins Identified 842 (70.2%; well
+    covered 43%), Partial 328 (27.3%; well covered 87%), Flat 30 (2.5%,
+    untestable; well covered 100%) ==="
+  - **Stage 1's figures.** By noise level: at s = 0.001 all 400 pairs are
+    Identified; at s = 0.003, 303 Identified and 97 Partial; at s = 0.005, 139
+    Identified, 231 Partial and 30 Flat. The bins hold 400, 261 and 30 distinct
+    θ, so each Flat pair is a different point. The quartiles of c are 0.987,
+    0.994 and 0.996 at s = 0.001, 0.902, 0.946 and 0.967 at 0.003, and 0.768,
+    0.864 and 0.916 at 0.005; no c is negative. Within 0.02 of a cut-off lie
+    137 pairs about 0.9 (83 at or above, 54 below) and 6 about 0.5 (2 and 4).
+    The coverage covariate (line 99): 680 pairs (56.7%) are well covered, 365
+    of the Identified (43.3%), 285 of the Partial (86.9%) and all 30 of the
+    Flat; on the well-covered pairs, on which the secondary analysis re-scores
+    the hypotheses (line 136), the Flat bin holds 30 of 680 (4.4%), below the
+    floor there too, the Identified 365 and the Partial 285. No reference
+    failed at any level.
+  - **What follows.** H-a, on the Identified bin, stays testable for both
+    calibrators at Stage 1's floor, on all three levels; H-b, on the Partial,
+    and H-c, on the Identified, for the ensemble on all three levels, and for
+    the ratio estimator on the pairs at s = 0.005 alone, E pairing the networks
+    trained under A and under B and its networks under B at the two lower
+    levels having failed G3 (line 144; D104): 231 Partial and 139 Identified.
+    Each calibrator's own floors (line 75; D104) apply after the scoring, to
+    its failed pairs. H-d is untestable for both, and the null, stated per
+    calibrator, is unproven for both (line 128). The scoring of the test set
+    and Stage 2 require this output and check its digest against the record
+    (`require_stage1()`; line 101; D81). The runs to come, each the author's:
+    the training of seeds 2 to 5 at n* in the passing cells
+    (`p5_g3_calibrators.py --train`, in the P5 leaf; D104), about 11.7 hours by
+    G3's own run times at each cell's n*, a figure no gate reads; the scoring
+    of the test set (`--score test`), projected at 155.2 core-hours at G3
+    (D104); and Stage 2 (`p5_stage2.py --run`).
+  - **Earlier acts of this session, declared.** On the author's word ("keep the
+    parts pin, Commit Go"), at 16:56 UTC on 29 October 2026, after checking
+    that no P5 process ran, that `HEAD`, `main` and `origin/main` and GitHub's
+    `main` were at D104's merge, and that exactly D105's two files were staged,
+    their blobs those the generator gave, this session committed D105 as
+    `282926c`, pushed its branch and opened PR #261 through GitHub's API, the
+    app's attempt to attach the PR to this session being refused; it read the
+    PR's checks at 16:56:56 UTC, both running, and at 17:21:38, both passed; at
+    16:57 it gave the author Stage 1's command, `py -3 p5_stage2.py --stage1`,
+    for after the merge. From 17:14 to 17:41 UTC, for questions of the
+    author's, it searched the repository for "Deribit" and "CME", the search
+    showing counts by file, the frozen draft's lines 19, 41 and 164 in part and
+    the README's lines on Deribit, and the word CME in none of its Markdown,
+    Python, TeX or HTML files; searched the draft for "real surface", showing
+    line 150, and for "synthetic", showing the numbers of five lines and the
+    sentences of lines 160 and 164; read line 164 in full; and searched the
+    draft for "Stemper", showing lines 160, 164, 175, 176 and 193 in part, and
+    read lines 175 and 193. The author merged D105 (PR #261) at 17:23:48 UTC as
+    `850107a`, whose parents are D104's merge and `282926c` and whose tree is
+    `282926c`'s; the five checks on `main` passed, the last at 17:41:00. At
+    17:45 this session read PR #261, its merge commit and checks, `main` and
+    the branch through GitHub's API, without fetching. From 17:48 to 17:49 UTC,
+    on the author's word, having found no P5 process and the Claude Code
+    session of D97 idle, it read the same again, moved `main` to `850107a` by a
+    fetch and switched to it, so that no file was touched (the hashes of
+    `output/` and `__pycache__` and git's status unchanged, and the
+    modification times and sizes of `ROADMAP.md` and the 42 tracked files under
+    `output/`), and deleted the branch locally and on GitHub, in two commands,
+    GitHub then returning 404 for it, and gave Stage 1's command again. From
+    17:51 to 17:52 UTC, Stage 1's printed lines having been pasted by the
+    author at 17:51, it counted the Python processes, none, read git's state
+    and the sizes and times of Stage 1's three files, read the sentences of
+    lines 101 and 128 on untestable outcomes and the null as a search showed
+    them, and read G3's report and record for each passing cell's run time at
+    n*, to estimate the training's length.
+  - **This sitting's checks.** Read-only, Python reading the files as they are;
+    outside the test run below, no script of P5's was imported and nothing was
+    trained, scored or drawn; `output/` and `__pycache__` are unchanged (hashed
+    before the test run and after the last generation of this entry). It found
+    no P5 process, the Claude Code session of D97 idle, and `main` at
+    `850107a`, equal to GitHub's. 1, the report: its fields as above; each
+    bin's count, share, counts by level, distinct θ, well-covered count and
+    floor recomputed from the CSV by the cut-offs and the floor, and the counts
+    within 0.02 of a cut-off, the negative c and the quartiles of c by level,
+    by numpy's percentiles as the script takes them; Stage 1 on the
+    well-covered pairs recomputed likewise; the references' digest recomputed
+    from the committed record as `refs_digest()` defines it, and the record
+    file's SHA-256 as on disk and its header equal to the report's; and the
+    reference failures none at every level and in every cell of true (H, ν). 2,
+    the CSV: 1,200 rows, one per pair, each pair's label, i, s, θ, c under A
+    and coverage under A and B equal to the record's, and j the record's plus
+    one (counted from 1); its bin c's by the cut-offs, and `well_covered` 1
+    exactly when both coverages are at least 0.001. 3, the figure: a PNG,
+    hashed and not opened. 4, `output/` against its hashes at D105's branch
+    deletion, before the run: since then it has gained the three files of Stage
+    1 and nothing else, and no file in it or in `__pycache__` has changed. 5,
+    G̃: the report carries line 7's SHA-256 for G̃, which G̃'s file hashes to.
+    No trained seeds, scores or Stage 2 output exist in `output/`. The three
+    blobs, the report's and the CSV's with LF line endings and their working
+    copies CRLF, as with the earlier outputs, and the figure's byte for byte
+    the file:
+    - `output/p5_stage1_report.json`, 9,632 bytes,
+      `79c9dfc41dbdb02ad232adea1d8426d92a6f36401f2ff820fd40a680f7b9e46d`
+    - `output/p5_stage1.csv`, 209,874 bytes,
+      `5c4f6548d15bb40bbe5a40fda7ed61af2f0c1f33fd80545878da229a58bcedf4`
+    - `output/p5_stage1.png`, 83,752 bytes,
+      `555197b063afac4acbaa174622c557de41ede34a54cf5b269ba2ca82db3971dc`
+  - **The tests.** While this entry was being drafted, before it was first
+    generated, this sitting ran the eight P5 test files in the core
+    interpreter, which like CI's job has no torch, with
+    `PYTHONDONTWRITEBYTECODE=1` and pytest's cache off so that nothing is
+    written in the repository, and with Stage 1's three files in place: 97
+    passed and 9 skipped, in 250 s, the counts and progress line of D105's run.
+    `output/` and `__pycache__` were unchanged (hashed before and after). No
+    test reads Stage 1's files: the tests of `p5_stage2.py` run Stage 1 into
+    temporary folders of their own; the test that requires Stage 1 before the
+    scoring gives `score_set()` a Stage 1 folder and a record of its own; and
+    the test that drives `p5_g3_calibrators.py --score test` replaces
+    `score_set()` with a recorder.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "The test set's references were computed on 28 October 2026,
+    all 1,200 pairs accepted (D105), and nothing after them has been run." now
+    reads "The test set's references were computed on 28 October 2026, all
+    1,200 pairs accepted (D105). Stage 1 ran on 29 October 2026: 842 pairs
+    Identified, 328 Partial and 30 Flat, too few to test H-d, so neither
+    calibrator's null can be proven (D106); nothing after it has been run." The
+    rest of the bullet is unchanged.
+  - **Readings, declared.** The frozen draft's line 7, by Python, for G̃'s
+    hash; lines 79 to 88, the first 700 characters of line 89, and lines 90 to
+    95, 97 to 99 and 101; the sentences of line 128 on the null as a search
+    showed them; and lines 68 and 136 in part as a search showed them; line 75
+    is cited as D104 read it. In `p5_stage2.py`, lines 162 to 431, from
+    `out_paths()` to `run_stage1()`, and where the scoring and the tests use
+    Stage 1's files; the P5 test files, for which of them read Stage 1's files;
+    G3's report and record, for the run times at n* and the scoring's
+    projection; for the author's questions above, the lines those searches
+    showed and lines 164, 175 and 193; D105, for the form, the paragraph and
+    the entry's end; and this session's own transcript, for the times of its
+    acts and the model.
+  - **What was seen.** Stage 1's printed lines, as the author pasted them; its
+    report, printed nearly in full; its CSV's header and counts; and the test
+    set's record, read again by Python for the digest and for the columns the
+    CSV copies, θ, c under A and the coverage under A and B, compared and not
+    printed. The figure was not opened. No network has scored the test set, and
+    nothing about the hypotheses on it, which need the scores, was looked at.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (73 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, and reading of the record only
+    Stage 1's inputs, recomputed every figure from the files and found them all
+    right. It found three statements wrong, all corrected: the summary line
+    quoted as Stage 1's last printed line, which a line naming the report
+    followed; the hashing after the last generation of this entry stated before
+    it had been made, since made; and line 89 counted among the lines read in
+    full, of which only its first 700 characters were. Its point of substance,
+    that for the ratio estimator H-b and H-c rest on the pairs at s = 0.005
+    alone, 231 Partial and 139 Identified, is now stated. Its wording points
+    were taken up: the rule that stops P5 at Stage 1 told apart from line 101's
+    floor; the processes counted, not listed; j counted from 1 and c under A
+    only; the record file's hash as on disk set against D105's blob, with the
+    digest stated; G̃'s check; the search for CME; the time of the commit; the
+    readings of lines 7 and 75 and of G3's projection; the searches in Who did
+    what; and the command given for Stage 1. It wrote nothing in the repository
+    and printed no posterior figure beyond c and the coverage; it ran three
+    read-only git commands beyond those allowed it, a read of the
+    configuration, a listing of the tree and a search, and listed the names of
+    files outside `output/` holding "cme"; its helper files are in this
+    session's folder, outside the repository.
+  - **Who did what.** The author ran Stage 1, gave the word for D105's commit,
+    keeping the pin of its `_parts` folder, and for its branch's deletion,
+    merged D105, and asked for this entry. The commit, the PR, the searches for
+    the author's questions, the merge check, the deletion, the reads after
+    Stage 1 and this sitting were held in the Claude Code session that wrote
+    D100 to D105, on Claude Opus 5.5 (`claude-opus-5-5`), the model its
+    transcript records for every message on 29 October 2026; it ran the checks
+    and the tests above, asked for the review, and wrote this entry and the
+    paragraph's change.
+  - **Not written.** The training of seeds 2 to 5, the scoring and everything
+    after them; any change to the frozen draft or the files it binds, the
+    amendment file, v2's documents, v1, the decision sheet or an earlier entry;
+    anything on OSF; nothing committed under `output/` beyond the three files
+    above.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -7315,7 +7523,9 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   October 2026: 10 of its 12 cells passed, the ratio estimator trained under
   prior B failing at the two lower noise levels, and P5 goes on with the
   passing cells (D104). The test set's references were computed on 28 October
-  2026, all 1,200 pairs accepted (D105), and nothing after them has been run.
+  2026, all 1,200 pairs accepted (D105). Stage 1 ran on 29 October 2026: 842
+  pairs Identified, 328 Partial and 30 Flat, too few to test H-d, so neither
+  calibrator's null can be proven (D106); nothing after it has been run.
   Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM
   ICAIF.
 
