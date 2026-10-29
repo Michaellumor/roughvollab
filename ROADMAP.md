@@ -6992,6 +6992,254 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     earlier entry; anything on OSF; nothing committed under `output/` beyond
     the two files above.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D105** *(2026-10-29)* **P5 v3: the test set's references computed and
+  recorded (all 1,200 pairs accepted, the sealed test set drawn for the first
+  time; the record committed and the samples pinned by their hashes).**
+  - **Summary.** The test set's references were computed on 28 October 2026,
+    the author's run, after G2 had passed with a go (D102; line 93) and after
+    G3 (D104). It is the first draw of the sealed test set: N = 400 θ, the
+    first 400 rows of `default_rng(20261002)`'s uniform draw on the box, each
+    at the three noise levels with noise from `default_rng(20261022)`, 1,200
+    pairs (line 93). All 1,200 pairs were accepted, each of the 1,432 reference
+    runs at its first attempt, and no reference failed, so every pair counts in
+    Stage 1 (line 101). This entry commits the record; pins the samples archive
+    by its SHA-256, the archive being 173,486,939 bytes, over GitHub's limit of
+    100 MiB per file, and the `_parts` folder, which Stage 2 also reads, by one
+    SHA-256 over its files; and brings the ROADMAP's P5 paragraph up to date.
+    Stage 1 has not been run, no network has been trained beyond G3's ladder,
+    and nothing has scored the test set.
+  - **The run.** The author's command, `py -3 p5_g2_reference.py --test`, one
+    launch, at 09:22:44 UTC on 28 October 2026 by the process's start, from
+    `56d2866` (D104's merge) with a clean tree. The record's header and its
+    launch line, written at 09:22:47: commit `56d2866`, `clean_tree` true;
+    numpy 2.4.4 and scipy 1.17.1, checked against the pinned versions with no
+    override; G̃'s SHA-256; lengths 10,000 and 40,000, the start's constants in
+    `lengths` equal to those of G2's record and G3's pilot's; seeds 20261002
+    for the points and 20261022 for the noise, N = 400; pool 4; `n_done_before`
+    0; Python 3.14.3 on Windows 11; and G2's status as `require_g2()` returned
+    it, passed on attempt 1 with a go. 1,200 pairs, `test_0000_0` to
+    `test_0399_2`, the 400 points at the three noise levels, each keyed
+    `default_rng([83, i, j])` (line 68), the three of each point sharing its θ;
+    the pair records were written from 09:24:28 to 15:21:18 UTC, and the
+    consolidated archive at 15:21:26 by its modification time, 5 h 59 min after
+    the header. The record holds the header, the launch line and the 1,200 pair
+    records and no other line: no `task_error`, and one launch, so the run was
+    never stopped and resumed. The laptop ran on its battery until between
+    09:26 and 09:28 UTC, and on mains power when read at 09:28 and 10:49 UTC;
+    the longest wait between consecutive pair records was 116 s. The power
+    bears on the runs' seconds only.
+  - **The reference runs.** 1,432 runs, each accepted at its first attempt, at
+    10,000 and 40,000 (line 68: R-hat at most 1.01 on each parameter and an
+    effective sample size of H of at least 2,000, which every run's record
+    meets): one under the uniform prior per pair, each prior's figures being
+    reweighted from it where the reweighted effective size reaches 1,000 (D81),
+    and 232 direct runs where it did not, 128 under prior A and 104 under prior
+    B, 13 pairs having both. No run was repeated and no reference failed. By
+    their own seconds, the optimiser's included, the runs took 23.8 core-hours,
+    against the 29.1 projected at G2's go for the test set, which the header's
+    `g2` carries (D102); no gate reads this figure.
+  - **What follows.** Every pair counts in Stage 1, a reference failure being
+    what would remove one (line 101). Stage 1 is the next run, the author's,
+    `py -3 p5_stage2.py --stage1`: from the references alone and before any
+    network scores the test set, it gives each bin's pairs, a bin holding fewer
+    than 10% of the accepted pairs, pooled over the noise levels, or fewer than
+    100, making its hypotheses untestable for both calibrators; the scoring of
+    the test set and Stage 2 require its output (line 101; D81). The other
+    runs, each the author's: the training of seeds 2 to 5 at n* in the passing
+    cells (`p5_g3_calibrators.py --train`; D104), which does not need Stage 1;
+    the scoring of the test set (`--score test`), which reads the record; and
+    Stage 2 (`p5_stage2.py --run`), which reads the record and the samples, the
+    archive overlaid by the `_parts` files while that folder exists
+    (`load_samples()` in `p5_g2_reference.py`), the two equal array for array;
+    the hashes below name both.
+  - **Earlier acts of this session, declared.** Before D104's commit, in its
+    last revision on the author's answers, this session read its own transcript
+    for its reads of the frozen draft, which D104's readings list. On the
+    author's word ("Commit Go"), from 08:02 to 08:03 UTC on 28 October 2026,
+    having found no P5 process and GitHub's `main` still at `a0a8f71`, and
+    having read the messages of D102's and D103's merges for the PR's title, it
+    committed D104 as `f92f7a1`, pushed its branch and opened PR #260 through
+    GitHub's API, the app's attempt to attach the PR to this session being
+    refused; it read the PR's checks at 08:03:42 UTC, `compile P1` passed and
+    `pytest` running, and, on the author's word, at 08:25:05, both passed. The
+    author merged D104 (PR #260) at 08:25:43 UTC as `56d2866`, whose parents
+    are `a0a8f71` and `f92f7a1` and whose tree is `f92f7a1`'s; the five checks
+    on `main` passed, the last at 08:43:23. From 08:55 to 08:57 UTC, on the
+    author's word, having found no P5 process and the Claude Code session of
+    D97, whose folder is the repository, idle, it read PR #260, its merge
+    commit and checks, `main` and the branch through GitHub's API, moved `main`
+    to `56d2866` by a fetch and switched to it, so that no file was touched
+    (the hashes of `output/` and `__pycache__` and git's status unchanged, and
+    the modification times and sizes of `ROADMAP.md` and the 41 tracked files
+    under `output/`), and deleted the branch locally and on GitHub, in two
+    commands, GitHub then returning 404 for it. At 09:19 UTC, asked for the
+    command of the test set's references, it searched the P5 scripts for their
+    usage and arguments, the search showing those of `p5_g3_calibrators.py` and
+    `p5_stage2.py` as well, read `p5_g2_reference.py`'s docstring and usage and
+    `main()`, searched it for the test set's constants, and gave
+    `py -3 p5_g2_reference.py --test`, offering a read-only pre-flight at
+    09:20. The run was launched at 09:22:44 UTC, and the author's request for
+    the pre-flight reached this session at 09:23:40, after the launch; the
+    pre-flight's first act, a read at 09:24 of this session's pre-flight script
+    and of `require_g2()`, came after it, and at 09:24:15 the author wrote that
+    the run had started, pasting its window's opening lines, the design and the
+    RUN line, before any pair had finished. This session then made the same
+    checks read-only after the launch, from 09:25:27 to 09:26:24 UTC: `main` at
+    `56d2866`, equal to GitHub's, with a clean tree; the 13 bound files' blobs
+    and working copies and G̃'s file equal to line 7's hashes; the 41 tracked
+    files under `output/` equal to their blobs; the record's header, its other
+    lines counted, not parsed or printed; no later outputs; and `output/` and
+    `__pycache__` hashed before and after. It also listed the processes and
+    read the memory, the disk, the power source and the sleep and hibernation
+    settings, the laptop then on its battery; compared two of its snapshots'
+    file lists, naming the files the run had made by then, the record and three
+    sample parts; and read the power source again, still the battery. At 09:28
+    UTC, the author having plugged the laptop in, it read the power source, on
+    mains, Windows Update's pause and restart settings, the processes, and the
+    record's line count and time and the parts' count; and searched
+    `p5_g2_reference.py` for how a stopped run resumes and read `launch()`,
+    `make_jobs()` and `load_references()`. At 10:49 UTC on 28 October it listed
+    the processes, and at 16:05 UTC on 29 October counted them, none; each time
+    it read the power source, the last boot time and git's `HEAD` and status,
+    and read the record by Python, printing the record's size, line count and
+    time, its lines' counts by kind, the header's time and commit, the launch
+    line, the pairs' statuses and a check of their labels, the first and last
+    pair times, whether the archive existed and its size, and the parts' count
+    and size, and no reference value. At 10:50 it also searched
+    `p5_g2_reference.py`, the search showing `save_pair_samples()` in part and
+    `consolidate_samples()`, listed `output/`'s `_parts` folders, and read the
+    sizes of G2's and G3's pilot's archives, to estimate the test set's.
+  - **This sitting's checks.** Read-only, Python reading the files as they are;
+    outside the test run below, no script of P5's was imported and nothing was
+    sampled, trained or drawn; `output/` and `__pycache__` are unchanged
+    (hashed before the test run and after the last generation of this entry).
+    It found no P5 process, the Claude Code session of D97 idle, and `main` at
+    `56d2866`, equal to GitHub's. 1, the record: one header and one launch line
+    as above and the 1,200 pair records, no other line; every pair `ok`, with
+    its seed and noise level; every run accepted at its first attempt at the
+    reference's lengths, within line 68's bounds. 2, the archive: `np.load`
+    finds exactly the 1,432 arrays the record implies, each pair's `_u` array
+    and one per direct run, each of 160,000 entries of `uint16` (4 chains ×
+    40,000), equal array for array to the 1,432 files of its `_parts` folder,
+    which is not committed and which the last hash below pins: the SHA-256 of
+    the 1,432 lines `sha256sum` prints for them, each a file's SHA-256, two
+    spaces and its name, ending in LF, in byte order of name, as D104 pinned
+    G3's networks; Python and `sha256sum` give identical lists, and the pin was
+    added after the review, which found that Stage 2 reads them. 3, `output/`
+    against its hashes at D104's branch deletion, before the run: since then it
+    has gained the record, the archive and the `_parts` files and nothing else,
+    and no file in it or in `__pycache__` has changed. 4, G̃: the header
+    carries line 7's SHA-256 for G̃, which G̃'s file hashes to. No Stage 1
+    output, trained seeds, scores or record of v3's G2 retry
+    (`output/p5v3_g2r*`) exist in `output/`. The record's blob, with LF line
+    endings and its working copy CRLF, as with G2's and G3's pilot's; the
+    archive, not committed, byte for byte the file on disk; and the `_parts`
+    folder's fingerprint:
+    - `output/p5v3_ref_test.jsonl`, 10,918,710 bytes,
+      `35f941340c935fb7c1b71b119d7ee4f0536588e8b87b722281612c39f207dbb6`
+    - `output/p5v3_ref_test_samples.npz`, 173,486,939 bytes, not committed,
+      `ad5431e8957c06cd841e884a7aba252ec1a8f67289eb29a67802a3bc24153001`
+    - `output/p5v3_ref_test_samples_parts/`, 1,432 files of 458,423,296 bytes,
+      not committed,
+      `deb73013b68ee63165d5493397bb064cfa7e00836e5b94d154410c2867628f98`
+  - **The tests.** While this entry was being drafted, before it was first
+    generated, this sitting ran the eight P5 test files in the core
+    interpreter, which like CI's job has no torch, with
+    `PYTHONDONTWRITEBYTECODE=1` and pytest's cache off so that nothing is
+    written in the repository, and with the test set's record, archive and
+    `_parts` files in place: 97 passed and 9 skipped, in 304 s, the counts and
+    progress line of D104's run. `output/` and `__pycache__` were unchanged
+    (hashed before and after). No test reads the test set's record or archive:
+    `test_p5_g2_reference.py` checks their file names and drives `--test` only
+    to a refusal or with `run_set()` replaced by a recorder; the tests that
+    score the set `test`, through `p5_g3_calibrators.py --score test` or by
+    calling `score_set()`, give it records of their own or none; and the tests
+    of `p5_stage2.py` check the default file names and give `--stage1` and
+    `--run` records of their own, its hold reading none.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "G3 ran on 27 and 28 October 2026: 10 of its 12 cells passed,
+    the ratio estimator trained under prior B failing at the two lower noise
+    levels, and P5 goes on with the passing cells (D104); nothing after it has
+    been run." now reads "G3 ran on 27 and 28 October 2026: 10 of its 12 cells
+    passed, the ratio estimator trained under prior B failing at the two lower
+    noise levels, and P5 goes on with the passing cells (D104). The test set's
+    references were computed on 28 October 2026, all 1,200 pairs accepted
+    (D105), and nothing after them has been run." The rest of the bullet is
+    unchanged.
+  - **Readings, declared.** The frozen draft's lines 7, 68 and 93, and line
+    101's first sentence, the bin rule, as a search for "reference failure"
+    showed it; the P5 scripts' usage and arguments as a search showed them,
+    `p5_g3_calibrators.py`'s and `p5_stage2.py`'s among them;
+    `p5_g2_reference.py`'s docstring and usage, the test set's constants, the
+    lines on resuming, and `save_pair_samples()` and `consolidate_samples()`,
+    as searches showed them, and `load_samples()`, `launch()`, `make_jobs()`,
+    `load_references()`, `require_g2()` and `main()`; in `p5_stage2.py`, its
+    usage, `main()`, its checks of Stage 2's inputs, the share of reference
+    failures it stops at and where it reads the references; the P5 test files,
+    for which of them read the test set's record or archive; D103, for the
+    form; D104, for the paragraph and the entry's end; and this session's own
+    transcript, for the times of its acts, the command of D104's tests and the
+    model.
+  - **What was seen.** The test set's record, read in full by Python and
+    printed in part: its header and launch line, its field names, and counts
+    and checks of the pairs' labels, statuses, seeds and times and of the runs'
+    routes, attempts, seconds and whether each was accepted, line 68's R-hat
+    and effective size of H being checked against its bounds and not printed.
+    No posterior figure of the test set, its means, variances, intervals,
+    contraction or coverage, was printed or looked at, nor its points or
+    quotes, the points being compared across each point's three pairs and not
+    printed; the archive's arrays were compared with the `_parts` files, not
+    looked at; and nothing about the hypotheses on the test set was looked at.
+    Stage 1, the first run to read the references' figures, is the author's.
+    The run's window, where the script prints each pair's status, posterior
+    mean of H under A, contraction under A and seconds as it goes, was not read
+    by this session beyond its opening lines, the design and the RUN line,
+    which the author pasted before any pair had finished.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (88 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, and barred from the test set's
+    posterior figures, recomputed every figure from the files and found them
+    all right. It found three statements wrong, all corrected: the run's window
+    said not to have been read by this session, where the author had pasted its
+    opening lines, the design and the RUN line, before any pair had finished;
+    the request for the pre-flight placed before the launch, which it followed
+    by 56 s; and no G2 retry said to exist in `output/`, where v2's retry files
+    do and v3's do not. Its point of substance, that Stage 2 reads the archive
+    overlaid by the `_parts` files while that folder exists, is now stated, and
+    this session pinned the folder too. It found acts and readings left out,
+    now declared: the search of the P5 scripts for their usage and arguments,
+    `p5_g3_calibrators.py`'s among them; the search on resuming and the whole
+    of the read at 09:28; the app's reads of the D97 session's state; and its
+    refused attempt to attach PR #260 to this session. Its wording points were
+    taken up: the sentence of line 101 the search showed; the span of this
+    sitting's hashing; the tests' time, during the drafting; the power source's
+    reads, with the longest wait between pair records; what the reads at 10:49
+    and 16:05 printed and how they saw the processes; the search at 10:50; the
+    record's lines counted, not parsed; whether each run was accepted; the
+    projection's source; the tests that call `score_set()` on the set `test`;
+    and the training's independence of Stage 1. It wrote nothing in the
+    repository and read the record under the rule above, printing no posterior
+    figure; its helper files, and one of its outputs that the harness kept, are
+    in this session's folders, outside the repository, and a file it wrote by
+    mistake outside them, a list of the tracked output files' names, it moved
+    into its own folder.
+  - **Who did what.** The author ran the test set's references, asked for the
+    pre-flight, gave the word for D104's commit and its branch's deletion,
+    merged D104, asked for this entry, and chose to pin the archive by its hash
+    rather than commit it. The commit, the PR, the merge check, the deletion,
+    the checks during and after the run and this sitting were held in the
+    Claude Code session that wrote D100 to D104, on Claude Opus 5.5
+    (`claude-opus-5-5`), the model its transcript records for every message on
+    28 and 29 October 2026; it ran the checks and the tests above, asked for
+    the review, pinned the `_parts` folder after it, and wrote this entry and
+    the paragraph's change.
+  - **Not written.** Stage 1, the training of seeds 2 to 5, the scoring and
+    everything after them; any change to the frozen draft or the files it
+    binds, the amendment file, v2's documents, v1, the decision sheet or an
+    earlier entry; anything on OSF; nothing committed under `output/` beyond
+    the record above, the archive and the `_parts` folder being pinned by their
+    hashes and not committed.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -7066,8 +7314,10 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   computed the same day, all 48 pairs accepted (D103). G3 ran on 27 and 28
   October 2026: 10 of its 12 cells passed, the ratio estimator trained under
   prior B failing at the two lower noise levels, and P5 goes on with the
-  passing cells (D104); nothing after it has been run. Targets unchanged: arXiv
-  q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
+  passing cells (D104). The test set's references were computed on 28 October
+  2026, all 1,200 pairs accepted (D105), and nothing after them has been run.
+  Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM
+  ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
