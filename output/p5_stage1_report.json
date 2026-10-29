@@ -1,0 +1,501 @@
+{
+ "stage": 1,
+ "stage1": {
+  "cuts": [
+   0.9,
+   0.5
+  ],
+  "n_accepted": 1200,
+  "n_reference_failures": 0,
+  "n_negative_c": 0,
+  "bins": {
+   "Identified": {
+    "count": 842,
+    "share": 0.7016666666666667,
+    "per_level": {
+     "0.001": 400,
+     "0.003": 303,
+     "0.005": 139
+    },
+    "n_distinct_theta": 400,
+    "untestable": false,
+    "floor": {
+     "share_min": 0.1,
+     "count_min": 100
+    },
+    "n_well_covered": 365,
+    "share_well_covered": 0.4334916864608076
+   },
+   "Partial": {
+    "count": 328,
+    "share": 0.2733333333333333,
+    "per_level": {
+     "0.001": 0,
+     "0.003": 97,
+     "0.005": 231
+    },
+    "n_distinct_theta": 261,
+    "untestable": false,
+    "floor": {
+     "share_min": 0.1,
+     "count_min": 100
+    },
+    "n_well_covered": 285,
+    "share_well_covered": 0.8689024390243902
+   },
+   "Flat": {
+    "count": 30,
+    "share": 0.025,
+    "per_level": {
+     "0.001": 0,
+     "0.003": 0,
+     "0.005": 30
+    },
+    "n_distinct_theta": 30,
+    "untestable": true,
+    "floor": {
+     "share_min": 0.1,
+     "count_min": 100
+    },
+    "n_well_covered": 30,
+    "share_well_covered": 1.0
+   }
+  },
+  "near_cutoff": {
+   "0.9": {
+    "at_or_above": 83,
+    "below": 54
+   },
+   "0.5": {
+    "at_or_above": 2,
+    "below": 4
+   }
+  },
+  "window": 0.02,
+  "c_by_level": {
+   "0.001": {
+    "n": 400,
+    "quartiles": [
+     0.98716747494161,
+     0.9935615404852062,
+     0.9958400347176716
+    ]
+   },
+   "0.003": {
+    "n": 400,
+    "quartiles": [
+     0.9019424132006131,
+     0.9461357630643489,
+     0.9669488511485428
+    ]
+   },
+   "0.005": {
+    "n": 400,
+    "quartiles": [
+     0.7680359019642475,
+     0.863711679300337,
+     0.9162111833282325
+    ]
+   }
+  }
+ },
+ "coverage": {
+  "cover_min": 0.001,
+  "n_well_covered": 680,
+  "share_well_covered": 0.5666666666666667,
+  "per_bin": {
+   "Identified": {
+    "n": 365,
+    "share": 0.4334916864608076
+   },
+   "Partial": {
+    "n": 285,
+    "share": 0.8689024390243902
+   },
+   "Flat": {
+    "n": 30,
+    "share": 1.0
+   }
+  },
+  "secondary_stage1": {
+   "cuts": [
+    0.9,
+    0.5
+   ],
+   "n_accepted": 680,
+   "n_reference_failures": 0,
+   "n_negative_c": 0,
+   "bins": {
+    "Identified": {
+     "count": 365,
+     "share": 0.5367647058823529,
+     "per_level": {
+      "0.001": 156,
+      "0.003": 149,
+      "0.005": 60
+     },
+     "n_distinct_theta": 211,
+     "untestable": false,
+     "floor": {
+      "share_min": 0.1,
+      "count_min": 100
+     },
+     "n_well_covered": 365,
+     "share_well_covered": 1.0
+    },
+    "Partial": {
+     "count": 285,
+     "share": 0.41911764705882354,
+     "per_level": {
+      "0.001": 0,
+      "0.003": 79,
+      "0.005": 206
+     },
+     "n_distinct_theta": 235,
+     "untestable": false,
+     "floor": {
+      "share_min": 0.1,
+      "count_min": 100
+     },
+     "n_well_covered": 285,
+     "share_well_covered": 1.0
+    },
+    "Flat": {
+     "count": 30,
+     "share": 0.04411764705882353,
+     "per_level": {
+      "0.001": 0,
+      "0.003": 0,
+      "0.005": 30
+     },
+     "n_distinct_theta": 30,
+     "untestable": true,
+     "floor": {
+      "share_min": 0.1,
+      "count_min": 100
+     },
+     "n_well_covered": 30,
+     "share_well_covered": 1.0
+    }
+   },
+   "near_cutoff": {
+    "0.9": {
+     "at_or_above": 45,
+     "below": 39
+    },
+    "0.5": {
+     "at_or_above": 2,
+     "below": 4
+    }
+   },
+   "window": 0.02,
+   "c_by_level": {
+    "0.001": {
+     "n": 156,
+     "quartiles": [
+      0.9854075587359807,
+      0.9929234169594034,
+      0.9955223159954661
+     ]
+    },
+    "0.003": {
+     "n": 228,
+     "quartiles": [
+      0.8663910180248875,
+      0.9306992832847036,
+      0.957757240820384
+     ]
+    },
+    "0.005": {
+     "n": 296,
+     "quartiles": [
+      0.7121442640551469,
+      0.8298092703403157,
+      0.890686648725399
+     ]
+    }
+   }
+  }
+ },
+ "reference_failures": {
+  "n_failures": 0,
+  "by_level": {
+   "0.001": {
+    "n_failures": 0,
+    "n_test_pairs": 400,
+    "share": 0.0
+   },
+   "0.003": {
+    "n_failures": 0,
+    "n_test_pairs": 400,
+    "share": 0.0
+   },
+   "0.005": {
+    "n_failures": 0,
+    "n_test_pairs": 400,
+    "share": 0.0
+   }
+  },
+  "by_true_H_nu": {
+   "H_edges": [
+    0.02,
+    0.112,
+    0.204,
+    0.29600000000000004,
+    0.388,
+    0.48
+   ],
+   "nu_edges": [
+    0.05,
+    0.15,
+    0.25,
+    0.35
+   ],
+   "counts": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0
+    ]
+   ]
+  },
+  "failures": [],
+  "share_max": 0.1,
+  "levels_over": [],
+  "p5_stops": false,
+  "rule": "reference failures above 10% of the test pairs at any noise level stop P5 at Stage 1 (D81)"
+ },
+ "p5_stops": false,
+ "untestable_both_calibrators": [
+  "Flat"
+ ],
+ "untestable_secondary": [
+  "Flat"
+ ],
+ "refs": "output\\p5v3_ref_test.jsonl",
+ "refs_digest": "c31157882c54a16bb5397451a76e5ed6a0b99f7abe2a8b365a246e7075329f18",
+ "refs_sha256": "9eab6c3e221a6fafd87705d1f3eac32a2c7748c9555167465432dc88b29a7477",
+ "refs_header": {
+  "kind": "header",
+  "script": "p5_g2_reference.py",
+  "commit": "56d28661f89608f6001739d503b1359239cf16e7",
+  "clean_tree": true,
+  "set": "test",
+  "n_points": 400,
+  "seeds": {
+   "points": 20261002,
+   "noise": 20261022
+  },
+  "seed_ref": 83,
+  "emulator": "output\\p5_g1_emulator.npz",
+  "emulator_meta": {
+   "stage": "base",
+   "commit": "3db18b5697ecd50f50c2be423e938aa8e44e9a3b",
+   "nodes": [
+    16,
+    8,
+    6,
+    12
+   ]
+  },
+  "emulator_sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add",
+  "box": {
+   "H": [
+    0.02,
+    0.48
+   ],
+   "nu": [
+    0.05,
+    0.35
+   ],
+   "rho": [
+    -0.9,
+    -0.7
+   ],
+   "xi0": [
+    0.04,
+    0.25
+   ]
+  },
+  "noise_levels": [
+   0.001,
+   0.003,
+   0.005
+  ],
+  "n_chains": 4,
+  "burn": 10000,
+  "sample": 40000,
+  "adapt_every": 500,
+  "scale": 1.4161,
+  "diag_floor": 1e-10,
+  "start": {
+   "n_starts": 16,
+   "ls_method": "trf",
+   "ls_jac": "2-point",
+   "ls_ftol": 1e-10,
+   "ls_xtol": 1e-10,
+   "ls_gtol": 1e-08,
+   "ls_max_nfev": 2000,
+   "fd_rel_step": 1.4901161193847656e-08,
+   "lbfgs_ftol": 1e-10,
+   "lbfgs_gtol": 1e-05,
+   "lbfgs_maxiter": 200,
+   "eps_H": 1e-06,
+   "keep_max": 4,
+   "distinct": 0.01,
+   "mass_log": 9.210340371976184,
+   "eig_lo": 1e-10,
+   "eig_hi": 0.08333333333333333,
+   "perturb_cap": 0.0025,
+   "perturb_mult": 4.0,
+   "kappa_u_floor": 0.01,
+   "scale": 1.4161,
+   "n_chains": 4,
+   "adapt_every": 500,
+   "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+  },
+  "rhat_max": 1.01,
+  "ess_min": 2000.0,
+  "kish_min": 1000.0,
+  "reweighting_rule": "(Kish / pooled sampling steps) x ESS of H >= kish_min (D81)",
+  "cover_min": 0.001,
+  "priors": {
+   "A": [
+    2.5,
+    9.0
+   ],
+   "B": [
+    10.217391304347826,
+    5.449275362318841
+   ]
+  },
+  "var_prior_A": 0.0028799999999999993,
+  "grid_n": 32,
+  "extend": 0.2,
+  "whole_n": 48,
+  "tol_mean": 0.001,
+  "tol_c": 0.01,
+  "tol_q": 0.002,
+  "tol_mc_k": 4.0,
+  "tolerance_rule": "each tolerance the larger of its value and tol_mc_k Monte Carlo standard errors (D81)",
+  "quant": 65535,
+  "python": "3.14.3",
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "versions": {
+   "numpy": "2.4.4",
+   "scipy": "1.17.1",
+   "expected": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1"
+   },
+   "checked": true,
+   "override": false,
+   "mismatch": {}
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "cpu_count": 8,
+  "pool": 4,
+  "utc_created": "2026-10-28T09:22:47Z",
+  "n_test": 400,
+  "n_test_written": 400,
+  "noise_seed_written": 20261022,
+  "g2": {
+   "passed": true,
+   "p5_stops": false,
+   "retry_due": false,
+   "attempt": 1,
+   "burn": 10000,
+   "sample": 40000,
+   "go": true,
+   "projected_core_hours": 29.13304770370208,
+   "emulator_sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add",
+   "reason": "G2 passed on attempt 1 with a go; the reference's lengths are burn 10000, sample 40000"
+  },
+  "lengths": {
+   "burn": 10000,
+   "sample": 40000,
+   "kish_min": 1000.0,
+   "rhat_max": 1.01,
+   "ess_min": 2000.0,
+   "levels": [
+    0.001,
+    0.003,
+    0.005
+   ],
+   "start": {
+    "n_starts": 16,
+    "ls_method": "trf",
+    "ls_jac": "2-point",
+    "ls_ftol": 1e-10,
+    "ls_xtol": 1e-10,
+    "ls_gtol": 1e-08,
+    "ls_max_nfev": 2000,
+    "fd_rel_step": 1.4901161193847656e-08,
+    "lbfgs_ftol": 1e-10,
+    "lbfgs_gtol": 1e-05,
+    "lbfgs_maxiter": 200,
+    "eps_H": 1e-06,
+    "keep_max": 4,
+    "distinct": 0.01,
+    "mass_log": 9.210340371976184,
+    "eig_lo": 1e-10,
+    "eig_hi": 0.08333333333333333,
+    "perturb_cap": 0.0025,
+    "perturb_mult": 4.0,
+    "kappa_u_floor": 0.01,
+    "scale": 1.4161,
+    "n_chains": 4,
+    "adapt_every": 500,
+    "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+   }
+  }
+ },
+ "emulator": {
+  "path": "output\\p5_g1_emulator.npz",
+  "sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add"
+ },
+ "files": {
+  "stage1_report": "output\\p5_stage1_report.json",
+  "stage1_csv": "output\\p5_stage1.csv",
+  "stage1_png": "output\\p5_stage1.png"
+ },
+ "commit": "850107aa070bb19cc0bf3b86105d8dc133170258",
+ "clean_tree": true,
+ "python": "3.14.3",
+ "numpy": "2.4.4",
+ "scipy": "1.17.1",
+ "versions": {
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "expected": {
+   "numpy": "2.4.4",
+   "scipy": "1.17.1"
+  },
+  "checked": true,
+  "override": false,
+  "mismatch": {}
+ },
+ "utc": "2026-10-29T17:50:21Z",
+ "note": "declared from the references alone, before any network scores the test set (line 101)"
+}
