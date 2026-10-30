@@ -1,0 +1,112 @@
+{
+ "ensemble_A_j1": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "ensemble_p1_j1_q1_n160000",
+   "2": "ensemble_p1_j1_q2_n160000",
+   "3": "ensemble_p1_j1_q3_n160000",
+   "4": "ensemble_p1_j1_q4_n160000",
+   "5": "ensemble_p1_j1_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "nre_A_j1": {
+  "n_star": 10000,
+  "seeds": {
+   "1": "nre_p1_j1_q1_n10000",
+   "2": "nre_p1_j1_q2_n10000",
+   "3": "nre_p1_j1_q3_n10000",
+   "4": "nre_p1_j1_q4_n10000",
+   "5": "nre_p1_j1_q5_n10000"
+  },
+  "empty_slots": []
+ },
+ "ensemble_A_j2": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "ensemble_p1_j2_q1_n160000",
+   "2": "ensemble_p1_j2_q2_n160000",
+   "3": "ensemble_p1_j2_q3_n160000",
+   "4": "ensemble_p1_j2_q4_n160000",
+   "5": "ensemble_p1_j2_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "nre_A_j2": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "nre_p1_j2_q1_n160000",
+   "2": "nre_p1_j2_q2_n160000",
+   "3": "nre_p1_j2_q3_n160000",
+   "4": "nre_p1_j2_q4_n160000",
+   "5": "nre_p1_j2_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "ensemble_A_j3": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "ensemble_p1_j3_q1_n160000",
+   "2": "ensemble_p1_j3_q2_n160000",
+   "3": "ensemble_p1_j3_q3_n160000",
+   "4": "ensemble_p1_j3_q4_n160000",
+   "5": "ensemble_p1_j3_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "nre_A_j3": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "nre_p1_j3_q1_n160000",
+   "2": "nre_p1_j3_q2_n160000",
+   "3": "nre_p1_j3_q3_n160000",
+   "4": "nre_p1_j3_q4_n160000",
+   "5": "nre_p1_j3_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "ensemble_B_j1": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "ensemble_p2_j1_q1_n160000",
+   "2": "ensemble_p2_j1_q2_n160000",
+   "3": "ensemble_p2_j1_q3_n160000",
+   "4": "ensemble_p2_j1_q4_n160000",
+   "5": "ensemble_p2_j1_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "ensemble_B_j2": {
+  "n_star": 160000,
+  "seeds": {
+   "1": "ensemble_p2_j2_q1_n160000",
+   "2": "ensemble_p2_j2_q2_n160000",
+   "3": "ensemble_p2_j2_q3_n160000",
+   "4": "ensemble_p2_j2_q4_n160000",
+   "5": "ensemble_p2_j2_q5_n160000"
+  },
+  "empty_slots": []
+ },
+ "ensemble_B_j3": {
+  "n_star": 40000,
+  "seeds": {
+   "1": "ensemble_p2_j3_q1_n40000",
+   "2": "ensemble_p2_j3_q2_n40000",
+   "3": "ensemble_p2_j3_q3_n40000",
+   "4": "ensemble_p2_j3_q4_n40000",
+   "5": "ensemble_p2_j3_q5_n40000"
+  },
+  "empty_slots": []
+ },
+ "nre_B_j3": {
+  "n_star": 40000,
+  "seeds": {
+   "1": "nre_p2_j3_q1_n40000",
+   "2": "nre_p2_j3_q2_n40000",
+   "3": "nre_p2_j3_q3_n40000",
+   "4": "nre_p2_j3_q4_n40000",
+   "5": "nre_p2_j3_q5_n40000"
+  },
+  "empty_slots": []
+ }
+}

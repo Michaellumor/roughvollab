@@ -7448,6 +7448,241 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     anything on OSF; nothing committed under `output/` beyond the three files
     above.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D107** *(2026-10-30)* **P5 v3: seeds 2 to 5 trained and recorded (40 runs
+  in the 10 cells that passed G3, all finishing, with no retraining and no
+  empty slot; the record and the list of trained seeds committed and the
+  networks pinned by a hash; the ROADMAP's P5 paragraph brought up to date).**
+  - **Summary.** Seeds 2 to 5 were trained at n* in each of the 10 cells that
+    passed G3 (line 75; line 144; D104), on 29 and 30 October 2026, the
+    author's run, before any network had scored the test set. All 40 runs
+    finished with status ok, and every member with them, so no loss was
+    non-finite, no cell was retrained from seed value 6 and no slot is empty
+    (line 75; D82). With each cell's seed 1, the ladder's network at n*, that
+    makes the 50 networks the scoring reads, five per cell. This entry commits
+    the training's record and its list of trained seeds, pins the 80 files of
+    the 40 runs' networks by a hash on the author's word, as D104 pinned G3's,
+    so that they are fixed in this log before they see the test set, and brings
+    the ROADMAP's P5 paragraph up to date. Nothing has scored the test set.
+  - **The run.** The author's command,
+    `.\.venv-p5\Scripts\python.exe p5_g3_calibrators.py --train`, from
+    `4e0c8a6` (D106's merge) with no change to a tracked file, in the P5 leaf:
+    Python 3.14.3, numpy 2.5.4, scipy 1.18.1 and torch 2.14.1+cpu, checked with
+    no override, at 4 torch threads of 8 CPUs, with G̃ by its hash. The process
+    table shows it started at 19:18:59 UTC on 29 October 2026. The record's
+    header was written at 19:19:03, its last run's line at 06:04:20 UTC on 30
+    October, and the list of trained seeds at the same second by its
+    modification time. The runs' own times sum to 38,701 s, 10.75 hours, 43.0
+    core-hours at 4 threads, against the estimate of about 11.7 hours in D106.
+    The record holds the header and the 40 run lines and no other line; by its
+    times, which are whole seconds, the largest gap between one run's end and
+    the next's start is about 1.2 s, so the run was neither interrupted nor
+    resumed. Its header's settings are G3's: it differs from that of G3's
+    record only in its mode, commit, time and list of passing cells, and in
+    having no lengths for the sampler and no block size. The wall budget it
+    carries, 14,400 s, is the gate's (line 144), and the script does not apply
+    it to the training, whose longest run took 2,452 s. The author pasted the
+    run's opening lines; its last printed line has not been seen, and no Python
+    process was running at 07:12 UTC on 30 October.
+  - **The runs.** The cells and their n* are G3's (D104). Per seed, the
+    ensemble under A at n* = 160,000 took 1,923 to 2,361 s at s = 0.001, 1,319
+    to 1,668 s at 0.003 and 1,020 to 1,097 s at 0.005; under B, 1,950 to 2,452
+    s and 1,342 to 1,959 s at the two lower levels at 160,000, and 315 to 398 s
+    at 0.005 at n* = 40,000. The ratio estimator under A took 19 to 28 s at
+    s = 0.001 at n* = 10,000, and 229 to 576 s at 0.003 and 216 to 652 s at
+    0.005 at 160,000; under B, 72 to 150 s at 0.005 at n* = 40,000, its cells
+    at the two lower levels having failed G3 and so not being trained (line
+    144). An ensemble member stopped after 112 to 460 epochs and a ratio
+    estimator after 105 to 339; none reached the cap of 1,000. In all, 120
+    members and 16 ratio estimators were trained, each with the torch seed of
+    line 75, 109,000,000 + 10,000·p + 1,000·j + 10·q + m, as the record shows,
+    the training draw being `default_rng([109, p, j, q])` by the script.
+  - **What follows.** The scoring of the test set is next, the author's run,
+    `.\.venv-p5\Scripts\python.exe p5_g3_calibrators.py --score test`, from
+    this entry's merge. It reads the list of trained seeds: seed 1 of each cell
+    from `output/p5_g3/`, pinned by D104, and seeds 2 to 5 from
+    `output/p5_calibrators/`, pinned below. It makes 12,000 ensemble rows and
+    8,000 posteriors of the ratio estimator, 400 pairs per level at five seeds
+    per cell, and G3 projected it at 155.2 core-hours (D104), about 39 hours at
+    4 threads. Then Stage 2 (`p5_stage2.py --run`), also the author's. Every
+    slot being filled, the pairing of line 75 needs no replacement seed.
+  - **Earlier acts of this session, declared.** On the author's word ("Commit
+    Go"), at 18:32 UTC on 29 October 2026, after checking that no P5 process
+    ran, that `HEAD`, `main`, `origin/main` and GitHub's `main` were at D105's
+    merge, and that exactly D106's four files were staged, their blobs those
+    the generator gave, this session committed D106 as `0dcbf07`, pushed its
+    branch and opened PR #262 through GitHub's API, the app's attempt to attach
+    the PR to this session being refused; it read the PR's checks at 18:33:37
+    UTC, both running. When the author said at 18:52 that it was merged, this
+    session read the PR and `main` through GitHub's API at 18:52:27, with
+    `ls-remote`, the local state and the processes, the PR being still open and
+    `main` unmoved, read the PR's checks at 18:52:45, both passed, and told the
+    author. The author merged D106 (PR #262) at 18:53:31 UTC as `4e0c8a6`,
+    whose parents are D105's merge and `0dcbf07` and whose tree is `0dcbf07`'s;
+    the five checks on `main` passed, the last at 19:10:43. From 19:11 to 19:12
+    UTC, on the author's word, having found no P5 process and the Claude Code
+    session of D97 idle, it read PR #262, its merge commit and checks, `main`
+    and the branch through GitHub's API, moved `main` to `4e0c8a6` by a fetch
+    and switched to it, so that no file was touched (the hashes of `output/`
+    and `__pycache__` unchanged, and the modification times and sizes of
+    `ROADMAP.md` and the 45 tracked files under `output/`), and deleted the
+    branch locally and on GitHub, in two commands, GitHub then returning 404
+    for it. At 19:12:29 it read the usage of `p5_g3_calibrators.py`, lines 56
+    to 95, and gave the training's command.
+  - **The pre-flight of the training, declared.** On the author's word ("do the
+    pre-flight"), from 19:15 to 19:17:40 UTC, read-only: it read
+    `train_seeds()`, `main()` and the lines naming `LEAF_VERSIONS`; checked
+    git, the 13 files and G̃ against line 7, the tracked files under `output/`
+    against their blobs, G3's report, the training's outputs absent, and the
+    pins of D104 and D105, recomputed; ran in the P5 leaf, with
+    `PYTHONDONTWRITEBYTECODE=1`, the script's own guards (`version_check()`,
+    `require_g2()`, `emulator_for_run()`, `require_pilot()`,
+    `require_same_emulator()` and `refuse_overwrite()`), and its hold mode,
+    which trains nothing; and read the machine's state. All passed, except that
+    the machine was on battery, which it told the author, and `output/` and
+    `__pycache__` were unchanged. The author plugged it in and launched the
+    run.
+  - **Reads during and after the run, declared.** From 19:19:59 to 19:20:36
+    UTC, the author having said the run had started: the power, on mains; the
+    two processes, the launcher and the interpreter it started, and their
+    parents; the record's header and line count; and the networks' folder, not
+    yet there. From 20:42 to 20:44 UTC, on the author's "check progress": the
+    processes, the power, the code at the lines below, and the record, the
+    folder, and G3's report and record for the seed-1 times at n*, finding 2 of
+    the 40 runs done and comparing their seconds per member's epoch with G3's.
+    At 07:12 to 07:14 UTC on 30 October, on the same words: the same reads, the
+    end of the run found as above, the record against the list and the folder,
+    the hashes of `output/` and `__pycache__` against those from before the
+    launch, and the app's terminal panel, which did not show the run.
+  - **The pre-flight of the scoring, declared.** On the author's word
+    ("pre-flight is ok"), from 07:18 to 07:22 UTC on 30 October, before this
+    entry and read-only; it is to be checked again from this entry's merge. It
+    read the code at the lines below; checked git, the 13 files and G̃ against
+    line 7, the tracked files under `output/` against their blobs, G3's report
+    and its projection, the scores and Stage 2's output absent, and the pins of
+    D104 and D105, recomputed; ran in the P5 leaf, the same way, the guards the
+    scoring runs: `version_check()`, `require_g2()`, `emulator_for_run()`,
+    `require_stage1()`, which recomputes the references' digest, and
+    `require_same_emulator()` on G̃, G3's report, the test set's references and
+    Stage 1's output; imported `p5_stage2.py` there; loaded each of the 50
+    networks with `load_run()` and checked its calibrator, prior, level, seed,
+    n and status against the list, applying none to any surface; counted the
+    test set's pairs per level with their status, all 400 per level ok, and
+    whether each has a Σ_P under the prior of each cell of the ratio estimator,
+    all do, printing no value; ran the script's hold mode; and read the
+    machine's state, on mains, with no reboot pending, the lid's action not
+    being readable. All passed, and `output/` and `__pycache__` were unchanged.
+  - **This sitting's checks.** Read-only, Python reading the files as they are;
+    outside the test run below, no script of P5's was imported and nothing was
+    trained, scored or drawn; `output/` and `__pycache__` are unchanged (hashed
+    before the test run and after the last generation of this entry). It found
+    no P5 process, the Claude Code session of D97 idle, and `main` at
+    `4e0c8a6`, equal to GitHub's. 1, the record: its header as above; one line
+    per run, in the script's order, each at its cell's n* and noise level, with
+    status ok, 4 threads, commit `4e0c8a6` and `clean_tree` true; every member
+    with status ok, its torch seed by line 75's formula, and a history as long
+    as its epochs. 2, the list: the 10 cells in the order of the report's
+    `cells`, as in the header's list of passing cells, each with G3's n*, seeds
+    1 to 5 by their labels, no empty slot, and each network's two files
+    present. 3, the networks: `output/p5_calibrators/` holds a `.pt` and a
+    `.json` for each of the 40 runs and nothing else, and each `.json`'s
+    fields, its standardiser aside, equal its run's line in the record. They
+    are not committed but pinned by the last hash below, on the author's word:
+    the SHA-256 of 80 lines, each a file's SHA-256, two spaces and its name,
+    ending in LF, in byte order of name, the files hashed as the run wrote
+    them, the `.json` files with CRLF line endings; Python and `sha256sum -b`,
+    the ` *` it prints before each name written as two spaces, give identical
+    lists. 4, the earlier pins: G3's networks, and the test set's archive and
+    parts, equal their hashes in D104 and D105. 5, `output/` against its hashes
+    at the training's pre-flight, before the run: since then it has gained the
+    82 files of the record, the list and the networks and nothing else, and no
+    file in it or in `__pycache__` has changed. 6, G̃: the header and G3's
+    report carry line 7's SHA-256 for G̃, which G̃'s file hashes to. No scores
+    or Stage 2 output exist in `output/`. The two committed blobs, with LF line
+    endings and their working copies CRLF, as with the earlier outputs, and the
+    networks' fingerprint:
+    - `output/p5_calibrators.jsonl`, 643,111 bytes,
+      `05466e1cec1b3440a24958f0d39aefb1bd986b617d08066d6d0ff92f73fa93ca`
+    - `output/p5_calibrators_trained.json`, 2,524 bytes,
+      `f50400ca23d9c5d369daf009da78223a9601bba6c925da65fa09337ad72470bd`
+    - `output/p5_calibrators/`, 80 files of 22,004,565 bytes, not committed,
+      `e86cd6dda0299ed3ec415dc3da152a682f5834151862e4d477885c4b1a2d787f`
+  - **The tests.** While this entry was being drafted, before it was first
+    generated, this sitting ran the eight P5 test files in the core
+    interpreter, which like CI's job has no torch, with
+    `PYTHONDONTWRITEBYTECODE=1` and pytest's cache off so that nothing is
+    written in the repository, and with the training's outputs in place: 97
+    passed and 9 skipped, in 237 s, the counts and progress line of D106's run.
+    `output/` and `__pycache__` were unchanged (hashed before and after). No
+    test reads the training's files, by a search of the test files and a
+    reading of the one that names the list: it drives
+    `p5_g3_calibrators.py --train` with `train_seeds()` a recorder, in a
+    temporary folder of its own.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "Stage 1 ran on 29 October 2026: 842 pairs Identified, 328
+    Partial and 30 Flat, too few to test H-d, so neither calibrator's null can
+    be proven (D106); nothing after it has been run." now reads "Stage 1 ran on
+    29 October 2026: 842 pairs Identified, 328 Partial and 30 Flat, too few to
+    test H-d, so neither calibrator's null can be proven (D106). Seeds 2 to 5
+    were trained on 29 and 30 October 2026, all 40 runs finishing with no
+    retraining (D107); nothing after them has been run." The rest of the bullet
+    is unchanged.
+  - **Readings, declared.** The frozen draft's line 7, by Python, for the
+    hashes it lists; and the sentences of lines 75 and 144 on the seeds and the
+    training, with the start of line 132, as a search showed them. In
+    `p5_g3_calibrators.py`, lines 56 to 105, 143 to 148, 178 to 192, 321 to
+    387, 479 to 553, 636 to 680 and 770 to 999, and searches of it; in
+    `p5_stage2.py`, lines 100 to 234 and a search of its imports; in
+    `p5_g1_emulator.py`, its version constants as a search showed them; in the
+    P5 test files, searches for the training's files and `train_seeds()`, and
+    lines 752 to 780 of `test_p5_g3_calibrators.py`; G3's report and record,
+    for the run times at n*, the header and the projection; D104 and D106, for
+    the form, the pin and the paragraph; and this session's own transcript, for
+    the times of its acts and the model.
+  - **What was seen.** The training's record, read by Python: its header, every
+    run's times, statuses, seeds and epochs, and each `.json`'s fields compared
+    with it. Two printings showed the first member's best validation loss: at
+    20:43 UTC on 29 October, with the start of its history, the rest of that
+    output going to a file not read; and at 07:31 UTC on 30 October, without
+    its history. The list; the networks' names, sizes and hashes. Of the test
+    set's record, by the script's reader, the count of pairs by level and
+    status, whether a Σ_P is there, and the digest, no value being printed. No
+    network has scored the test set, and nothing about the hypotheses on it,
+    which need the scores, was looked at.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (72 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, and reading of the test set's
+    record only counts, recomputed every figure from the files and found them
+    all right but one. It found three statements wrong, all corrected: the
+    largest gap between runs, given as at most 1 s, which is about 1.2 s; the
+    printing of a member's best validation loss, given as one, of which there
+    were two; and the hashing after the last generation of this entry, stated
+    before it had been made, since made. Its wording points were taken up: the
+    tracked files whose times and sizes were compared; the wall budget in the
+    header, which the training does not apply; the standardiser, which the
+    record does not hold; how the list of hashes is made; the commit named; the
+    order of the cells; the reads at 18:52; the end of Not written; and the
+    clean tree, stated as no change to a tracked file. It wrote nothing in the
+    repository, loaded no network, ran no script of P5's and printed no loss
+    value of its own, seeing through this session's transcript what this
+    session had printed; it ran one read-only git command beyond those allowed
+    it, `git check-ignore`, and read `p5_g0_pilot.py` by search and two helper
+    files of this session not named to it; its helper files are in this
+    session's folder, outside the repository.
+  - **Who did what.** The author ran the training, gave the word for D106's
+    commit and for its branch's deletion, merged D106, gave the word for the
+    two pre-flights, and asked for this entry with the networks pinned by a
+    hash. The commit, the PR, the reads, the merge check, the deletion, the
+    pre-flights and this sitting were held in the Claude Code session that
+    wrote D100 to D106, on Claude Opus 5.5 (`claude-opus-5-5`), the model its
+    transcript records for every message on 29 and 30 October 2026; it ran the
+    checks and the tests above, asked for the review, and wrote this entry and
+    the paragraph's change.
+  - **Not written.** The scoring and everything after it; any change to the
+    frozen draft or the files it binds, the amendment file, v2's documents, v1,
+    the decision sheet or an earlier entry; anything on OSF; nothing committed
+    under `output/` beyond the two files above, the networks being pinned by a
+    hash and not committed.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -7525,9 +7760,10 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   passing cells (D104). The test set's references were computed on 28 October
   2026, all 1,200 pairs accepted (D105). Stage 1 ran on 29 October 2026: 842
   pairs Identified, 328 Partial and 30 Flat, too few to test H-d, so neither
-  calibrator's null can be proven (D106); nothing after it has been run.
-  Targets unchanged: arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM
-  ICAIF.
+  calibrator's null can be proven (D106). Seeds 2 to 5 were trained on 29 and
+  30 October 2026, all 40 runs finishing with no retraining (D107); nothing
+  after them has been run. Targets unchanged: arXiv q-fin.CP, then SIFIN,
+  Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
