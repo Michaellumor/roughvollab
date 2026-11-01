@@ -408,6 +408,23 @@ always resolving to the latest release). A BibTeX entry is provided below for co
 }
 ```
 
+P5 was pre-registered before its test set was used or any of its calibrators trained; the pilot runs already seen are declared in the protocol. To cite the study's design, cite its registration:
+
+```bibtex
+@misc{lumor2026p5,
+  author    = {Michael Lumor},
+  title     = {Does a learned calibrator know what it cannot know? Prior
+               dependence in deep calibration of the rough Heston model
+               (protocol v3; supersedes OSF 695FW)},
+  year      = {2026},
+  publisher = {OSF Registries},
+  doi       = {10.17605/OSF.IO/JUMHF},
+  note      = {P5 Protocol v3. Pre-registration, registered 26 October 2026;
+               supersedes 10.17605/OSF.IO/695FW (v2) and
+               10.17605/OSF.IO/APSF7 (v1)}
+}
+```
+
 ---
 
 ## Licence
