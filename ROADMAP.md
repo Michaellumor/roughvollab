@@ -9097,6 +9097,289 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     it binds, the amendment file, v2's documents, v1, the decision sheet or an
     earlier entry; anything under `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D113** *(2026-11-01)* **P5 v3: D112's commit and merge declared; a citation
+  for P5's registration added to the README's Citation section (PR #270) and
+  recorded; one clause of it changed and a new abstract put in `CITATION.cff`,
+  in this entry's commit.**
+  - **Summary.** D112 was committed and merged after it was generated. On the
+    author's word the README's Citation section then gained a BibTeX entry for
+    P5's registration, by its own PR, which the author merged 15 seconds after
+    D112, and this entry's commit changes one clause of the citation's sentence
+    and replaces the abstract in `CITATION.cff` with one the author wrote. This
+    entry records them and the deletion of the two PRs' branches. This session
+    ran none of the scripts line 137 lists and trained, scored and drew
+    nothing, no file under `output/` changed, and no verdict, figure or reading
+    is touched. Only this entry changes `ROADMAP.md`, and the P5 paragraph
+    stands as D111 left it.
+  - **The commit of D112, declared.** On the author's word ("Commit Go",
+    19:44:25 UTC on 1 November 2026) this session found the session of D97 idle
+    at 19:44:28. At 19:44:41 it found no Python or git process and `HEAD`,
+    `main` and `origin/main` at `de82882`, staged `ROADMAP.md` and
+    `docs/tour/index.html` by name, and read the blob of `ROADMAP.md` as the
+    hash the generator gave,
+    `eae5a5c30a631ce4befed53c2b9f55fc1cd81fd74aa37def77b1283f2995de69`, the
+    commit's 171 insertions coming with no deletion. It committed D112 as
+    `2553c33`, on `docs/p5-d112-declared`, at 19:44:45. It pushed from 19:44:46
+    to 19:44:50, the push's own exit status being 0 and GitHub's head for the
+    branch `2553c33`, and opened PR #269 through GitHub's API at 19:45:00, the
+    app's status showing no PR attached and this session's request to attach
+    this one being refused. It read the PR's checks by 19:45:14, both running,
+    and again by 19:50:09, just after reading the next PR's checks,
+    `compile P1` passed and `pytest` running, and read them no more before the
+    merge.
+  - **The merge of D112, declared.** The PR's checks passed, the last at
+    19:54:33 by the API. The author merged D112 (PR #269) at 20:01:41, as
+    `fa09676`, whose parents are the README line's merge, `de82882`, and
+    `2553c33`, and whose tree, `735dc3c`, is `2553c33`'s. On `main`,
+    `compile P1` and `pytest` passed, the last at 20:10:30. The other three
+    checks on that commit, `build`, `report-build-status` and `deploy`, show as
+    cancelled: GitHub's `pages build and deployment` run for it, created at
+    20:01:43, was cancelled at 20:02:19, its `build` job's steps having passed
+    and the other two jobs not having run. The `build` check carries the
+    annotation "Canceling since a higher priority waiting request for pages
+    build and deployment @ main exists". The next merge's run, created at
+    20:01:58, started its `build` at 20:02:22 and deployed at 20:03:09.
+    GitHub's deployments list has none for `fa09676`, and the site took D112's
+    strip from that run. GitHub's Pages builds list marks `fa09676` `errored`,
+    "Page build failed.", updated at 20:01:57; it marks `8b95fde` the same,
+    though that commit's deployment succeeded at 09:40:55, so this session does
+    not read the label as a failed page.
+  - **The citation asked for.** The README's Citation section had one BibTeX
+    entry, the software's. At 19:45:48 the author gave a sentence and a BibTeX
+    entry, `lumor2026p5`, for it. From 19:46:32 this session read the three
+    registrations on OSF's public API and resolved their DOIs at doi.org, and
+    by 19:47:09 it had read DataCite's record for JUMHF. The BibTeX entry's
+    author, year, publisher "OSF Registries", type, date and the DOIs of v3, v2
+    and v1 agreed with them. This session raised two points at the hold,
+    recommending a change to each, both for the author to decide, and the
+    author took both ("Commit Go, both changes", 19:49:22).
+  - **The two changes.** The title given, "P5 Protocol v3: Is a learned
+    calibrator more prior-driven than Bayes' rule requires?", follows the
+    registered file's line 1, not the DOI's record, and OSF and DataCite both
+    give "Does a learned calibrator know what it cannot know? Prior dependence
+    in deep calibration of the rough Heston model (protocol v3; supersedes OSF
+    695FW)". The BibTeX entry now carries the record's title, and its note
+    opens "P5 Protocol v3.". The sentence given, "P5 was pre-registered before
+    any test surface was drawn or any network trained", follows line 7. On it
+    this session told the author that line 15 declares "one unprinted in-memory
+    draw of the test set", without re-reading lines 7 and 15 for the hold,
+    having read them whole earlier that day, at 15:51:47 and 16:25:02. That was
+    too strong. Line 15 declares that, in runs on 22 October, a first version
+    of one G2 test "called the script's functions that draw the sealed test θ
+    and noise" and compared their output with a second draw, in memory, nothing
+    being printed, saved or inspected; D81 says this was in each run of the G2
+    tests on that code. The line ends "The sealed test set has never been
+    drawn", and D105 dates the first draw to 28 October. So the protocol's own
+    statement did not contradict "before any test surface was drawn". Line 15
+    does declare small networks trained by the torch tests on a toy map,
+    against "any network trained", and says the bets were made with knowledge
+    of G0's pilot. The sentence as merged read "P5 was pre-registered before
+    its test set was used or any of its calibrators trained; the pilot runs
+    already seen are declared in the protocol. To cite the study's design, cite
+    its registration:" It is true to the record: the first draw and the first
+    training of a calibrator came after the registration (D104, D105). Its
+    second clause did not cover everything lines 7 and 15 declare: G1's run is
+    not a pilot, nor is the in-memory call above, while v2's two attempts at G2
+    and the development study on their 36 pilot surfaces are. At this entry's
+    hold this session recommended, and the author took ("Commit Go,
+    Significant, clause", 21:19:14), "what had already been run and seen is
+    declared in the protocol" for "the pilot runs already seen are declared in
+    the protocol", so this entry's commit changes that one line of `README.md`.
+  - **The citation's commit and merge.** At 19:47:02 this session found the
+    session of D97 idle. Finding no Python or git process, it created
+    `docs/readme-p5-citation` from `main` at `de82882` by 19:47:25, PR #269
+    being open, so the switch took D112 and the strip out of the working copy,
+    and it wrote the author's block as given into the README's Citation
+    section, under the software's entry, then searched the tracked documents
+    for `lumor2026p5` and checked the braces and line endings. On the author's
+    word it sent the two changes at 19:49:26 and 19:49:29, the file's
+    modification time then being 19:49:42. At 19:49:42 it checked the braces
+    and line endings again, found no Python or git process, staged `README.md`
+    alone and committed `5c786c2` at 19:49:45, 17 lines added. It pushed from
+    19:49:45 to 19:49:48, the push's own exit status being 0 and GitHub's head
+    for the branch `5c786c2`, and opened PR #270 through GitHub's API at
+    19:49:56, the app's status again showing no PR attached and this session's
+    request to attach this one being refused. It read the PR's checks by
+    19:50:08, both running, and read them no more before the merge; they
+    passed, the last at 19:59:54 by the API. The commit carried no entry, as
+    past README-only commits did not; this entry records it. PR #270's body
+    says "No figure, verdict or claim changes", which is too broad, since the
+    block adds a public statement about the registration's timing. No
+    independent reader read the block before its merge. The author merged it at
+    20:01:56, the API's merge time, its commit dated 20:01:55, as `387c134`,
+    whose parents are `fa09676` and `5c786c2` and whose tree, `6b89596`, is
+    `fa09676`'s with `5c786c2`'s change to `README.md`. The five checks on
+    `main` passed, `deploy` at 20:03:09 and the last, `pytest`, at 20:15:54.
+  - **The two branches.** On the author's word ("merged, check and delete the
+    branch", 20:33:14), having found the session of D97 idle at 20:33:21 and,
+    at 20:33:39, no Python or git process, this session read both PRs, their
+    merge commits and checks, `main` and the branches through GitHub's API. By
+    20:33:48 two searches had counted one `class="card violet"` on the live
+    tour page and one `lumor2026p5` in the README on GitHub's `main`. From
+    20:34:00 to 20:34:03 it moved `main` to `387c134` by a fetch and switched
+    to it from the citation's branch. The two files that differed, `ROADMAP.md`
+    and `docs/tour/index.html`, were written again, so the latter's
+    modification time is now 20:34:02, not the 19:23:27 D112 gives; its content
+    is the merged blob with CRLF line endings. The modification times and sizes
+    of `output/p5_stage2_report.json` and `docs/p5/index.html` were unchanged.
+    The author named one branch and both PRs were merged, so this session said
+    at 20:34:04 that it was deleting both. Each branch's heads, local and on
+    GitHub, being its PR's head, it deleted D112's locally at 20:34:07 and on
+    GitHub at 20:34:17, and the citation's locally at 20:34:20 and on GitHub at
+    20:34:26, each in its own command. GitHub then returned 404 for both, read
+    by 20:34:52, with `main` and `origin/main` at `387c134` and nothing tracked
+    changed. By 20:34:54 the live tour page equalled `main`'s, and the live P5
+    page returned HTTP 200 with 362,199 bytes.
+  - **The abstract in `CITATION.cff`.** At 20:58:54 the author gave a new
+    `abstract:` block for the file, to replace the current one, from
+    `abstract: >` down to the line before `authors:`. Where the old one listed
+    four layers and ended on "individually citable", the new one says what the
+    project asks, names a simulation engine as underlying the estimation,
+    pricing, execution and hedging layers and a characteristic-function pricer
+    as underlying the calibration layer, and adds a sentence on P5. This
+    session wrote it as given at 21:13:37, by a script in its own folder, the
+    blank line before `authors:` and the file's line endings kept and every
+    line outside the block byte-identical. It parses as YAML with only
+    `abstract` differing; no validator for the citation format was run, none
+    being installed or in CI. This session checked the abstract's statements
+    against the README and, for the two layers' statements, the scripts'
+    imports: `roughvol_core` is imported by `layer1c_roughness_audit.py`,
+    `identifiability_map.py`, `interpret_h.py`, `layer1b_mlmc_asian.py`,
+    `execution_alpha.py`, `layer3_deep_hedging.py` and `rough_heston.py`, while
+    `layer4_calibrate.py` and `layer4_calibrate_surface.py` do not import it,
+    take only `PARAMS` from `rough_heston` and price through
+    `rough_heston_cf.py`, `model_smile_lift` being an optional forward model on
+    the Markovian lift. It raised two points at the hold, for the author to
+    decide: "Every design decision is recorded with its predicted outcome
+    before the result is known" is stronger than `CONTRIBUTING.md`'s
+    "Significant design decisions" and than this log, whose D1 and D4 are
+    decisions with no prediction; and the file's `version` and `date-released`
+    still name v0.3.0, of 28 September, which predates P5's protocol
+    (`13bca7e`, 2 October). The author took this session's recommended wording
+    for the first ("Commit Go, Significant, clause", 21:19:14), "Significant
+    design decisions are recorded with their predicted outcomes before the
+    result is known", and left both fields. This entry's commit carries the
+    block with that change, 21 lines for 11, the file written again at
+    21:21:25.
+  - **The clock.** The API's times show no hour's offset: GitHub records the
+    PRs as created at 19:45:00 and 19:49:56, after the pushes that ended at
+    19:44:50 and 19:49:48, and their checks as starting at 19:45:05 and
+    19:50:02.
+  - **This sitting's checks.** In the repository, read-only but for this entry,
+    its branch, the abstract and the clause. On the author's word ("prepare
+    D113", 20:43:00) this session found the session of D97 idle at 20:43:42 and
+    20:46:41, and at 20:46:50 no Python or git process and `HEAD`, `main`,
+    `origin/main` and GitHub's `main` at `387c134`, and it created this entry's
+    branch from it by 20:46:53. The generator, the snapshot, the abstract's
+    script and the reads of the live pages and of GitHub's records are this
+    session's scripts in its own folder, outside the repository, and import
+    nothing of P5's. A check in the command at 20:46:50 stopped on a syntax
+    error of this session's, so it compared nothing, and the generator's first
+    run failed its own assertion on a count, 18 lines against 17; neither wrote
+    anything. By 21:21:28 all 2,011 files under `output/` and the `__pycache__`
+    folders hashed as they did at D110's last generation. By 21:21:30 the live
+    P5 page, the site's tour page and the README on GitHub's `main` had each
+    been read once and equalled `main`'s blobs byte for byte. No test was run
+    for this entry; no test file names `ROADMAP.md`, `README.md` or
+    `CITATION.cff`, and CI runs the suite on the PR.
+  - **Readings, declared.** This session's transcript and notes, for the times
+    above; git's objects, log, status, remote heads, branch lists and tags, and
+    a dry-run fetch, which moved no ref; GitHub's API, for the two PRs, their
+    merge commits, checks, annotations, workflow runs and jobs, the deployments
+    and Pages builds, and the branches; OSF's public API for the three
+    registrations, doi.org for their DOIs, and DataCite's record for JUMHF; the
+    live P5 page, the site's tour page and the README on GitHub's `main`; the
+    README's lines 1 to 125, its headings and its Citation section, and the
+    tracked documents, searched for `lumor2026p5`; `CITATION.cff`'s lines 1 to
+    60 and its history; the scripts' imports of `roughvol_core` and along the
+    calibration chain; `layer4_calibrate.py`'s lines 70 to 93; the head of
+    `test_roughvol_core.py`; `CONTRIBUTING.md`'s lines 58 to 66 and its count
+    of the suite; `paper/paper.md`'s lines 22 to 45; the frozen draft's lines 1
+    and 3, the first 4,200 characters of lines 7 and 15, later line 7's
+    sentences on the test set and the end of line 15, and its "Registered on
+    OSF" sentence; the workflow files, listed and searched for `concurrency`;
+    the test files, searched for the log, the README and `CITATION.cff`; the
+    modification times and sizes of `ROADMAP.md`, `docs/tour/index.html`,
+    `README.md`, `CITATION.cff`, `docs/p5/index.html` and
+    `output/p5_stage2_report.json`; and the log, by searches, its entries
+    searched for words of prediction, the openings of D1, D4, D9, D23, D27,
+    D33, D41, D82 and D105, a sentence of D81, and D112 and the lines after it
+    to line 9127, D112 also as this session generated it, for the form.
+  - **What was seen.** For this entry: times, hashes, statuses, job steps and
+    annotations, the author's words, the registrations' titles, descriptions
+    and dates, the strip's tag, the test files' names, the lines named above
+    and the review's reports. No value of P5's was computed or printed for it.
+    The snapshot opened the files under `output/` and the `__pycache__` folders
+    only to hash them. The generator opened none of them; it read the log, the
+    README, the frozen draft, the transcript and this sitting's reports and
+    compared working copies with their blobs. The last live reads compared
+    bytes and printed no page.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (56 tool uses), given the entry's draft and the
+    sources and not this sitting's conclusions. It rebuilt the insertion
+    independently and found it pure and in the form of D111 and D112. It found
+    the other times, every hash, parent and tree, the checks' names and times,
+    the quotations and the counts right. It found eight statements wrong or too
+    strong, all changed, this session having re-read at source GitHub's
+    annotation, deployments, builds list and PR times, lines 7 and 15 in the
+    parts named above, and D81 and D105: "GitHub's record gives no reason",
+    when the `build` check carries the annotation above; a G2 test that "drew
+    the sealed test set in memory", against line 15's words and last sentence
+    and D105; "The snapshot and the generator opened files only to hash them";
+    "The author wrote the citation's sentence and entry", against what was
+    merged; the number of searches of the log; lines 7 and 15 named as read,
+    when only their first 4,200 characters were; a send time given for
+    DataCite's read; and "it had read the strip", for two searches that counted
+    one line each. Its smaller points were taken up: reads and two failed runs
+    undeclared; "by this session" in the Summary, CI's suite having run on the
+    PRs and merges; line endings in "the merged blob"; times stamped after
+    their acts; the two meanings of "the entry"; the Pages builds list; the
+    PRs' own creation times; the branch's name; what "the pilot runs" covers;
+    PR #270's body; and some wording. It also read the citation block and the
+    strip as merged, which nobody independent had read. It found the block
+    right field by field, and parsing, and the sentence true to the record and
+    not too strong on its main claim, the second clause not being false though
+    it does not cover all that lines 7 and 15 declare. It found that styles
+    which ignore `doi` and `publisher` in `@misc` would print v2's and v1's
+    DOIs and not v3's; the block is unchanged on that. It found the strip as
+    the author gave it, well formed, its link reaching the P5 page. It wrote
+    nothing in the repository or on GitHub or OSF, and ran none of P5's scripts
+    and no test. It used the network, GET only: GitHub's API, OSF, DataCite,
+    doi.org, the site and the README on GitHub. It ran the generator with no
+    flags and `d111_snapshot.py` under its own output name, finding 2,011 files
+    with none new, gone or changed by 21:04:26, and opened no value under
+    `output/`. Beyond the sources named to it, it read, for this review, the
+    frozen draft's lines 1 to 15, 91 to 95 and the start of 137 and a diff
+    against `740b0ca`, the log's lines 3684 to 3697 and 6992 to 7005 and four
+    searches of it, the workflow and test files by search, `CITATION.cff`'s
+    lines 1 to 9, the helper `ghx.py`, file histories and three git files'
+    modification times. It wrote two temporary copies of the protocol to the
+    shell's temporary folder, not this session's, and removed them by 21:06:40.
+    Its helper files are in this session's folder, outside the repository. One
+    of its citations, D82 for a sentence of D81's, was itself wrong, which this
+    session's re-reading caught. It read this entry's first draft, before the
+    abstract and these corrections were written. At 21:17:32 this session asked
+    it for a second pass on the abstract and the corrected wording; the author
+    gave the word before it reported, so nobody independent has read the final
+    wording, and the next entry records that report.
+  - **Who did what.** The author wrote the first form of the citation's
+    sentence and its BibTeX entry and chose the two changes; the sentence as
+    merged and the note's opening are this session's wording, recommended at
+    the hold, and the title is the record's. The author wrote the new abstract,
+    took this session's wording for one of its sentences and for the citation's
+    second clause, gave the word for the commits and to delete the branch,
+    merged both PRs and asked for this entry. The checks against OSF and
+    DataCite and of the abstract, the edits, commits, pushes, PRs, reads, merge
+    checks, the move of `main`, the deletions and this sitting were this
+    session's. It wrote D100 to D112 and ran on Claude Opus 5.5
+    (`claude-opus-5-5`), the model its transcript records for every message
+    from 19:44 UTC.
+  - **Not written.** Any amendment; anything on OSF; any re-run; any change to
+    `docs/p5/` or `docs/tour/` after their merges; any change to `README.md`
+    but that clause or to `CITATION.cff` but its abstract; any change to the
+    frozen draft or the files it binds, the amendment file, v2's documents, v1,
+    the decision sheet or an earlier entry; anything under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

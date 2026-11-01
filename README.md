@@ -408,7 +408,7 @@ always resolving to the latest release). A BibTeX entry is provided below for co
 }
 ```
 
-P5 was pre-registered before its test set was used or any of its calibrators trained; the pilot runs already seen are declared in the protocol. To cite the study's design, cite its registration:
+P5 was pre-registered before its test set was used or any of its calibrators trained; what had already been run and seen is declared in the protocol. To cite the study's design, cite its registration:
 
 ```bibtex
 @misc{lumor2026p5,
