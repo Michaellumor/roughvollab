@@ -14,6 +14,8 @@ One tested engine and five honest questions about how rough markets really are �
 
 **New to the project?** Start with the [plain-English guide](https://roughvollab.com/guide/) — no installation needed — then drive every result yourself in the [interactive tour](https://roughvollab.com/tour/).
 
+**A pre-registered study.** [Faithful, or leaning on its prior?](https://roughvollab.com/p5/) is an interactive tour of P5, which measures two neural calibrators against the exact posterior on an emulated rough Heston model.
+
 **An open-source research programme on rough stochastic volatility — built on the principle of honest measurement over confident numbers.**
 
 RoughVolLab interrogates the rough-volatility paradigm rather than assuming it: **is it identifiable, priceable, tradeable, and hedgeable?** The paradigm holds that log-volatility behaves as a fractional process with a small Hurst exponent (H ≈ 0.1). This programme asks five falsifiable questions about that claim and reports what the mathematics and the data actually yield — four of the answers are negative. It is an independent research programme carried out at the University of Salford, built to publication standard, where every numerical claim is backed by a committed, reproducible run.
