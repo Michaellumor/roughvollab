@@ -1,0 +1,3409 @@
+{
+ "stage1": {
+  "cuts": [
+   0.9,
+   0.5
+  ],
+  "n_accepted": 1200,
+  "n_reference_failures": 0,
+  "n_negative_c": 0,
+  "bins": {
+   "Identified": {
+    "count": 842,
+    "share": 0.7016666666666667,
+    "per_level": {
+     "0.001": 400,
+     "0.003": 303,
+     "0.005": 139
+    },
+    "n_distinct_theta": 400,
+    "untestable": false,
+    "floor": {
+     "share_min": 0.1,
+     "count_min": 100
+    },
+    "n_well_covered": 365,
+    "share_well_covered": 0.4334916864608076
+   },
+   "Partial": {
+    "count": 328,
+    "share": 0.2733333333333333,
+    "per_level": {
+     "0.001": 0,
+     "0.003": 97,
+     "0.005": 231
+    },
+    "n_distinct_theta": 261,
+    "untestable": false,
+    "floor": {
+     "share_min": 0.1,
+     "count_min": 100
+    },
+    "n_well_covered": 285,
+    "share_well_covered": 0.8689024390243902
+   },
+   "Flat": {
+    "count": 30,
+    "share": 0.025,
+    "per_level": {
+     "0.001": 0,
+     "0.003": 0,
+     "0.005": 30
+    },
+    "n_distinct_theta": 30,
+    "untestable": true,
+    "floor": {
+     "share_min": 0.1,
+     "count_min": 100
+    },
+    "n_well_covered": 30,
+    "share_well_covered": 1.0
+   }
+  },
+  "near_cutoff": {
+   "0.9": {
+    "at_or_above": 83,
+    "below": 54
+   },
+   "0.5": {
+    "at_or_above": 2,
+    "below": 4
+   }
+  },
+  "window": 0.02,
+  "c_by_level": {
+   "0.001": {
+    "n": 400,
+    "quartiles": [
+     0.98716747494161,
+     0.9935615404852062,
+     0.9958400347176716
+    ]
+   },
+   "0.003": {
+    "n": 400,
+    "quartiles": [
+     0.9019424132006131,
+     0.9461357630643489,
+     0.9669488511485428
+    ]
+   },
+   "0.005": {
+    "n": 400,
+    "quartiles": [
+     0.7680359019642475,
+     0.863711679300337,
+     0.9162111833282325
+    ]
+   }
+  }
+ },
+ "stage2": {
+  "ensemble": {
+   "seed_slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "hypotheses": {
+    "H-a": {
+     "name": "Faithful when informed",
+     "measure": "abs_dA",
+     "bin": "Identified",
+     "expected": 0.01,
+     "refuted": 0.03,
+     "direction": "below",
+     "n_pairs": 842,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      1,
+      2,
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 842,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": false
+     },
+     "untestable_reason": null,
+     "point": 0.001341843715765692,
+     "interval": [
+      0.0012090901180459696,
+      0.0014778171453028732
+     ],
+     "per_seed": [
+      0.001384552112424671,
+      0.0013943599685264096,
+      0.0013097552084996023,
+      0.0013215867495310896,
+      0.0013224089912390602
+     ],
+     "n_cells": 4210,
+     "bootstrap": {
+      "n_live_pairs": 842,
+      "n_live_seeds": 5,
+      "n_dropped_replicates": 0
+     },
+     "seed_floor": null,
+     "verdict": "Confirmed",
+     "per_level": {
+      "0.001": {
+       "median": 0.0010535299117169217,
+       "n_cells": 2000,
+       "n_pairs": 400
+      },
+      "0.003": {
+       "median": 0.0014377295158138348,
+       "n_cells": 1515,
+       "n_pairs": 303
+      },
+      "0.005": {
+       "median": 0.0019053391469992173,
+       "n_cells": 695,
+       "n_pairs": 139
+      }
+     }
+    },
+    "H-b": {
+     "name": "Excess prior dependence",
+     "measure": "E",
+     "bin": "Partial",
+     "expected": 0.15,
+     "refuted": 0.05,
+     "direction": "above",
+     "n_pairs": 328,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      1,
+      2,
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 328,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": false
+     },
+     "untestable_reason": null,
+     "point": 0.02515109171334906,
+     "interval": [
+      0.020044031973920767,
+      0.03164715452590644
+     ],
+     "per_seed": [
+      0.035819252733639284,
+      0.02058690522493481,
+      0.02721935655001173,
+      0.021383478339010165,
+      0.02144179373638766
+     ],
+     "n_cells": 1640,
+     "bootstrap": {
+      "n_live_pairs": 328,
+      "n_live_seeds": 5,
+      "n_dropped_replicates": 0
+     },
+     "seed_floor": null,
+     "verdict": "Refuted",
+     "per_level": {
+      "0.003": {
+       "median": 0.02591727917971326,
+       "n_cells": 485,
+       "n_pairs": 97
+      },
+      "0.005": {
+       "median": 0.024950845117565346,
+       "n_cells": 1155,
+       "n_pairs": 231
+      }
+     }
+    },
+    "H-c": {
+     "name": "Leak into the identified regime",
+     "measure": "E",
+     "bin": "Identified",
+     "expected": 0.05,
+     "refuted": 0.02,
+     "direction": "above",
+     "n_pairs": 842,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      1,
+      2,
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 842,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": false
+     },
+     "untestable_reason": null,
+     "point": 0.001041549618327059,
+     "interval": [
+      -0.0006647439397530763,
+      0.002771791681163982
+     ],
+     "per_seed": [
+      0.001858493551128576,
+      0.0008082028854053402,
+      -0.0006940647730610539,
+      0.0028731030512069156,
+      0.00018162905268293006
+     ],
+     "n_cells": 4210,
+     "bootstrap": {
+      "n_live_pairs": 842,
+      "n_live_seeds": 5,
+      "n_dropped_replicates": 0
+     },
+     "seed_floor": 0.007137317955493994,
+     "verdict": "Refuted",
+     "per_level": {
+      "0.001": {
+       "median": 0.00133750267769156,
+       "n_cells": 2000,
+       "n_pairs": 400
+      },
+      "0.003": {
+       "median": -0.0006387110549541108,
+       "n_cells": 1515,
+       "n_pairs": 303
+      },
+      "0.005": {
+       "median": 0.005572148267556434,
+       "n_cells": 695,
+       "n_pairs": 139
+      }
+     }
+    },
+    "H-d": {
+     "name": "Interval infidelity",
+     "measure": "m",
+     "bin": "Flat",
+     "expected": 0.8,
+     "refuted": 0.85,
+     "direction": "below",
+     "n_pairs": 30,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      1,
+      2,
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 30,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": true
+     },
+     "untestable_reason": "stage 1 floor",
+     "point": null,
+     "interval": null,
+     "per_seed": null,
+     "n_cells": 0,
+     "verdict": "Untestable"
+    }
+   },
+   "failure_floor": {
+    "Identified": {
+     "n_pairs": 842,
+     "n_failed": 0,
+     "share_failed": 0.0,
+     "n_failed_cells": 0,
+     "n_cells": 4210,
+     "reading": "a pair failed at any seed",
+     "untestable": false,
+     "failed": []
+    },
+    "Partial": {
+     "n_pairs": 328,
+     "n_failed": 0,
+     "share_failed": 0.0,
+     "n_failed_cells": 0,
+     "n_cells": 1640,
+     "reading": "a pair failed at any seed",
+     "untestable": false,
+     "failed": []
+    },
+    "Flat": {
+     "n_pairs": 30,
+     "n_failed": 0,
+     "share_failed": 0.0,
+     "n_failed_cells": 0,
+     "n_cells": 150,
+     "reading": "a pair failed at any seed",
+     "untestable": true,
+     "failed": []
+    }
+   },
+   "seed_floor": {
+    "Identified": {
+     "per_prior": {
+      "A": 0.006546885520219738,
+      "B": 0.007137317955493994
+     },
+     "floor": 0.007137317955493994,
+     "n_pairs": 842
+    },
+    "Partial": {
+     "per_prior": {
+      "A": 0.012822331488132471,
+      "B": 0.012451981008052837
+     },
+     "floor": 0.012822331488132471,
+     "n_pairs": 328
+    },
+    "Flat": {
+     "per_prior": {
+      "A": 0.017066350579261896,
+      "B": 0.015331947803497309
+     },
+     "floor": 0.017066350579261896,
+     "n_pairs": 30
+    }
+   },
+   "levels_lost_g3": {
+    "A": [],
+    "B": []
+   },
+   "null": {
+    "stands": false,
+    "H_a_confirmed_and_others_refuted": false,
+    "all_four_refuted": false,
+    "H_d_interval_within_band": false,
+    "band": [
+     0.85,
+     0.95
+    ],
+    "rule": "H-a Confirmed; H-b, H-c and H-d Refuted; H-d's interval wholly within the band (line 128, D81)",
+    "note": "an Inconclusive or untestable outcome anywhere leaves the null unproven (line 128)"
+   }
+  },
+  "nre": {
+   "seed_slots": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "hypotheses": {
+    "H-a": {
+     "name": "Faithful when informed",
+     "measure": "abs_dA",
+     "bin": "Identified",
+     "expected": 0.01,
+     "refuted": 0.03,
+     "direction": "below",
+     "n_pairs": 842,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      1,
+      2,
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 842,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": false
+     },
+     "untestable_reason": null,
+     "point": 0.018588281391920203,
+     "interval": [
+      0.014050449673520106,
+      0.024874298179907897
+     ],
+     "per_seed": [
+      0.012355337620272466,
+      0.019152966255425008,
+      0.01910042396279754,
+      0.02605422595840956,
+      0.02215003850016317
+     ],
+     "n_cells": 4210,
+     "bootstrap": {
+      "n_live_pairs": 842,
+      "n_live_seeds": 5,
+      "n_dropped_replicates": 0
+     },
+     "seed_floor": null,
+     "verdict": "Inconclusive",
+     "per_level": {
+      "0.001": {
+       "median": 0.0676702278132682,
+       "n_cells": 2000,
+       "n_pairs": 400
+      },
+      "0.003": {
+       "median": 0.008696161784878198,
+       "n_cells": 1515,
+       "n_pairs": 303
+      },
+      "0.005": {
+       "median": 0.006838709520455011,
+       "n_cells": 695,
+       "n_pairs": 139
+      }
+     }
+    },
+    "H-b": {
+     "name": "Excess prior dependence",
+     "measure": "E",
+     "bin": "Partial",
+     "expected": 0.15,
+     "refuted": 0.05,
+     "direction": "above",
+     "n_pairs": 231,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 231,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": false
+     },
+     "untestable_reason": null,
+     "point": 0.23179120550620366,
+     "interval": [
+      0.1837983882065855,
+      0.3145263897271963
+     ],
+     "per_seed": [
+      0.19650292426486277,
+      0.1932102563280606,
+      0.20235529163216692,
+      0.22113916066989395,
+      0.3516005385793226
+     ],
+     "n_cells": 1155,
+     "bootstrap": {
+      "n_live_pairs": 231,
+      "n_live_seeds": 5,
+      "n_dropped_replicates": 0
+     },
+     "seed_floor": null,
+     "verdict": "Confirmed",
+     "per_level": {
+      "0.001": {
+       "lost": "a network this measure needs failed G3 at this level"
+      },
+      "0.003": {
+       "lost": "a network this measure needs failed G3 at this level"
+      },
+      "0.005": {
+       "median": 0.23179120550620366,
+       "n_cells": 1155,
+       "n_pairs": 231
+      }
+     }
+    },
+    "H-c": {
+     "name": "Leak into the identified regime",
+     "measure": "E",
+     "bin": "Identified",
+     "expected": 0.05,
+     "refuted": 0.02,
+     "direction": "above",
+     "n_pairs": 139,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 139,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": false
+     },
+     "untestable_reason": null,
+     "point": 0.12811198457918532,
+     "interval": [
+      0.04075562567838059,
+      0.25828540113853815
+     ],
+     "per_seed": [
+      0.11150121188992959,
+      0.11653803120866058,
+      0.26431471335875645,
+      0.0352469875836281,
+      0.22117738679277155
+     ],
+     "n_cells": 695,
+     "bootstrap": {
+      "n_live_pairs": 139,
+      "n_live_seeds": 5,
+      "n_dropped_replicates": 0
+     },
+     "seed_floor": 0.10829523018788485,
+     "verdict": "Inconclusive",
+     "per_level": {
+      "0.001": {
+       "lost": "a network this measure needs failed G3 at this level"
+      },
+      "0.003": {
+       "lost": "a network this measure needs failed G3 at this level"
+      },
+      "0.005": {
+       "median": 0.12811198457918532,
+       "n_cells": 695,
+       "n_pairs": 139
+      }
+     }
+    },
+    "H-d": {
+     "name": "Interval infidelity",
+     "measure": "m",
+     "bin": "Flat",
+     "expected": 0.8,
+     "refuted": 0.85,
+     "direction": "below",
+     "n_pairs": 30,
+     "n_failed_pairs": 0,
+     "n_failed_cells": 0,
+     "levels_pooled": [
+      1,
+      2,
+      3
+     ],
+     "failure_floor": {
+      "n_pairs": 30,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "untestable": true
+     },
+     "untestable_reason": "stage 1 floor",
+     "point": null,
+     "interval": null,
+     "per_seed": null,
+     "n_cells": 0,
+     "verdict": "Untestable"
+    }
+   },
+   "failure_floor": {
+    "Identified": {
+     "n_pairs": 842,
+     "n_failed": 0,
+     "share_failed": 0.0,
+     "n_failed_cells": 0,
+     "n_cells": 4210,
+     "reading": "a pair failed at any seed",
+     "untestable": false,
+     "failed": []
+    },
+    "Partial": {
+     "n_pairs": 328,
+     "n_failed": 0,
+     "share_failed": 0.0,
+     "n_failed_cells": 0,
+     "n_cells": 1640,
+     "reading": "a pair failed at any seed",
+     "untestable": false,
+     "failed": []
+    },
+    "Flat": {
+     "n_pairs": 30,
+     "n_failed": 0,
+     "share_failed": 0.0,
+     "n_failed_cells": 0,
+     "n_cells": 150,
+     "reading": "a pair failed at any seed",
+     "untestable": true,
+     "failed": []
+    }
+   },
+   "seed_floor": {
+    "Identified": {
+     "per_prior": {
+      "A": 0.0766278982264422,
+      "B": 0.10829523018788485
+     },
+     "floor": 0.10829523018788485,
+     "n_pairs": 842
+    },
+    "Partial": {
+     "per_prior": {
+      "A": 0.07328623677559702,
+      "B": 0.07147092801760721
+     },
+     "floor": 0.07328623677559702,
+     "n_pairs": 328
+    },
+    "Flat": {
+     "per_prior": {
+      "A": 0.13380013781215477,
+      "B": 0.04381784802111863
+     },
+     "floor": 0.13380013781215477,
+     "n_pairs": 30
+    }
+   },
+   "levels_lost_g3": {
+    "A": [],
+    "B": [
+     1,
+     2
+    ]
+   },
+   "null": {
+    "stands": false,
+    "H_a_confirmed_and_others_refuted": false,
+    "all_four_refuted": false,
+    "H_d_interval_within_band": false,
+    "band": [
+     0.85,
+     0.95
+    ],
+    "rule": "H-a Confirmed; H-b, H-c and H-d Refuted; H-d's interval wholly within the band (line 128, D81)",
+    "note": "an Inconclusive or untestable outcome anywhere leaves the null unproven (line 128)"
+   }
+  }
+ },
+ "re_scoring": {
+  "+0.05": {
+   "cuts": [
+    0.95,
+    0.55
+   ],
+   "verdicts": {
+    "ensemble": {
+     "H-a": "Confirmed",
+     "H-b": "Refuted",
+     "H-c": "Refuted",
+     "H-d": "Untestable"
+    },
+    "nre": {
+     "H-a": "Inconclusive",
+     "H-b": "Confirmed",
+     "H-c": "Untestable",
+     "H-d": "Untestable"
+    }
+   },
+   "stage1": {
+    "cuts": [
+     0.95,
+     0.55
+    ],
+    "n_accepted": 1200,
+    "n_reference_failures": 0,
+    "n_negative_c": 0,
+    "bins": {
+     "Identified": {
+      "count": 590,
+      "share": 0.49166666666666664,
+      "per_level": {
+       "0.001": 389,
+       "0.003": 184,
+       "0.005": 17
+      },
+      "n_distinct_theta": 389,
+      "untestable": false,
+      "floor": {
+       "share_min": 0.1,
+       "count_min": 100
+      },
+      "n_well_covered": 229,
+      "share_well_covered": 0.38813559322033897
+     },
+     "Partial": {
+      "count": 575,
+      "share": 0.4791666666666667,
+      "per_level": {
+       "0.001": 11,
+       "0.003": 216,
+       "0.005": 348
+      },
+      "n_distinct_theta": 383,
+      "untestable": false,
+      "floor": {
+       "share_min": 0.1,
+       "count_min": 100
+      },
+      "n_well_covered": 416,
+      "share_well_covered": 0.7234782608695652
+     },
+     "Flat": {
+      "count": 35,
+      "share": 0.029166666666666667,
+      "per_level": {
+       "0.001": 0,
+       "0.003": 0,
+       "0.005": 35
+      },
+      "n_distinct_theta": 35,
+      "untestable": true,
+      "floor": {
+       "share_min": 0.1,
+       "count_min": 100
+      },
+      "n_well_covered": 35,
+      "share_well_covered": 1.0
+     }
+    },
+    "near_cutoff": {
+     "0.95": {
+      "at_or_above": 146,
+      "below": 118
+     },
+     "0.55": {
+      "at_or_above": 3,
+      "below": 2
+     }
+    },
+    "window": 0.02,
+    "c_by_level": {
+     "0.001": {
+      "n": 400,
+      "quartiles": [
+       0.98716747494161,
+       0.9935615404852062,
+       0.9958400347176716
+      ]
+     },
+     "0.003": {
+      "n": 400,
+      "quartiles": [
+       0.9019424132006131,
+       0.9461357630643489,
+       0.9669488511485428
+      ]
+     },
+     "0.005": {
+      "n": 400,
+      "quartiles": [
+       0.7680359019642475,
+       0.863711679300337,
+       0.9162111833282325
+      ]
+     }
+    }
+   },
+   "calibrators": {
+    "ensemble": {
+     "seed_slots": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "hypotheses": {
+      "H-a": {
+       "name": "Faithful when informed",
+       "measure": "abs_dA",
+       "bin": "Identified",
+       "expected": 0.01,
+       "refuted": 0.03,
+       "direction": "below",
+       "n_pairs": 590,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 590,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.0010800484447309189,
+       "interval": [
+        0.0009539922646592536,
+        0.0012370455963907762
+       ],
+       "per_seed": [
+        0.0011793179239181772,
+        0.0010333699329021229,
+        0.001062909959767433,
+        0.0011248181699104465,
+        0.0010530165059352559
+       ],
+       "n_cells": 2950,
+       "bootstrap": {
+        "n_live_pairs": 590,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Confirmed",
+       "per_level": {
+        "0.001": {
+         "median": 0.0010060584361189506,
+         "n_cells": 1945,
+         "n_pairs": 389
+        },
+        "0.003": {
+         "median": 0.0012044338214385261,
+         "n_cells": 920,
+         "n_pairs": 184
+        },
+        "0.005": {
+         "median": 0.0017064227461666692,
+         "n_cells": 85,
+         "n_pairs": 17
+        }
+       }
+      },
+      "H-b": {
+       "name": "Excess prior dependence",
+       "measure": "E",
+       "bin": "Partial",
+       "expected": 0.15,
+       "refuted": 0.05,
+       "direction": "above",
+       "n_pairs": 575,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 575,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.01714624784059149,
+       "interval": [
+        0.013404812236163799,
+        0.022748521286075074
+       ],
+       "per_seed": [
+        0.026848440361366965,
+        0.013900077457277282,
+        0.01832564060138875,
+        0.014611139772307269,
+        0.013303914808036887
+       ],
+       "n_cells": 2875,
+       "bootstrap": {
+        "n_live_pairs": 575,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Refuted",
+       "per_level": {
+        "0.001": {
+         "median": 0.0641201948246381,
+         "n_cells": 55,
+         "n_pairs": 11
+        },
+        "0.003": {
+         "median": 0.01563773208917235,
+         "n_cells": 1080,
+         "n_pairs": 216
+        },
+        "0.005": {
+         "median": 0.01770213531017889,
+         "n_cells": 1740,
+         "n_pairs": 348
+        }
+       }
+      },
+      "H-c": {
+       "name": "Leak into the identified regime",
+       "measure": "E",
+       "bin": "Identified",
+       "expected": 0.05,
+       "refuted": 0.02,
+       "direction": "above",
+       "n_pairs": 590,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 590,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": -0.0008231704215397317,
+       "interval": [
+        -0.002452335745252998,
+        0.000959658062505845
+       ],
+       "per_seed": [
+        -0.0014166359881748192,
+        0.0002214497442551422,
+        -0.0025467387189975765,
+        0.0014353005743122926,
+        -0.001498412665003751
+       ],
+       "n_cells": 2950,
+       "bootstrap": {
+        "n_live_pairs": 590,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": 0.006197115778922985,
+       "verdict": "Refuted",
+       "per_level": {
+        "0.001": {
+         "median": 0.000802175674908534,
+         "n_cells": 1945,
+         "n_pairs": 389
+        },
+        "0.003": {
+         "median": -0.006299113214060029,
+         "n_cells": 920,
+         "n_pairs": 184
+        },
+        "0.005": {
+         "median": 0.0019398580487534067,
+         "n_cells": 85,
+         "n_pairs": 17
+        }
+       }
+      },
+      "H-d": {
+       "name": "Interval infidelity",
+       "measure": "m",
+       "bin": "Flat",
+       "expected": 0.8,
+       "refuted": 0.85,
+       "direction": "below",
+       "n_pairs": 35,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 35,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": true
+       },
+       "untestable_reason": "stage 1 floor",
+       "point": null,
+       "interval": null,
+       "per_seed": null,
+       "n_cells": 0,
+       "verdict": "Untestable"
+      }
+     },
+     "failure_floor": {
+      "Identified": {
+       "n_pairs": 590,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 2950,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Partial": {
+       "n_pairs": 575,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 2875,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Flat": {
+       "n_pairs": 35,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 175,
+       "reading": "a pair failed at any seed",
+       "untestable": true,
+       "failed": []
+      }
+     },
+     "seed_floor": {
+      "Identified": {
+       "per_prior": {
+        "A": 0.005371829867363009,
+        "B": 0.006197115778922985
+       },
+       "floor": 0.006197115778922985,
+       "n_pairs": 590
+      },
+      "Partial": {
+       "per_prior": {
+        "A": 0.011360053718090096,
+        "B": 0.011163859814405444
+       },
+       "floor": 0.011360053718090096,
+       "n_pairs": 575
+      },
+      "Flat": {
+       "per_prior": {
+        "A": 0.017554153501987482,
+        "B": 0.016594964265823353
+       },
+       "floor": 0.017554153501987482,
+       "n_pairs": 35
+      }
+     },
+     "levels_lost_g3": {
+      "A": [],
+      "B": []
+     },
+     "null": {
+      "stands": null,
+      "note": "not read on this analysis: the null is read on the primary verdicts only"
+     }
+    },
+    "nre": {
+     "seed_slots": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "hypotheses": {
+      "H-a": {
+       "name": "Faithful when informed",
+       "measure": "abs_dA",
+       "bin": "Identified",
+       "expected": 0.01,
+       "refuted": 0.03,
+       "direction": "below",
+       "n_pairs": 590,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 590,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.028627277530068385,
+       "interval": [
+        0.02027408728059234,
+        0.039745008033032464
+       ],
+       "per_seed": [
+        0.01528302171708032,
+        0.03026582579749787,
+        0.03468138237878837,
+        0.03257776120416797,
+        0.04131856949929644
+       ],
+       "n_cells": 2950,
+       "bootstrap": {
+        "n_live_pairs": 590,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Inconclusive",
+       "per_level": {
+        "0.001": {
+         "median": 0.0653331908416313,
+         "n_cells": 1945,
+         "n_pairs": 389
+        },
+        "0.003": {
+         "median": 0.0074861647039686785,
+         "n_cells": 920,
+         "n_pairs": 184
+        },
+        "0.005": {
+         "median": 0.006170128172199189,
+         "n_cells": 85,
+         "n_pairs": 17
+        }
+       }
+      },
+      "H-b": {
+       "name": "Excess prior dependence",
+       "measure": "E",
+       "bin": "Partial",
+       "expected": 0.15,
+       "refuted": 0.05,
+       "direction": "above",
+       "n_pairs": 348,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 348,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.20131669551835432,
+       "interval": [
+        0.15266906608175243,
+        0.27288262172454114
+       ],
+       "per_seed": [
+        0.16062418189758343,
+        0.17359897234856425,
+        0.20243466256865544,
+        0.17338550389599444,
+        0.31466178474397266
+       ],
+       "n_cells": 1740,
+       "bootstrap": {
+        "n_live_pairs": 348,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Confirmed",
+       "per_level": {
+        "0.001": {
+         "lost": "a network this measure needs failed G3 at this level"
+        },
+        "0.003": {
+         "lost": "a network this measure needs failed G3 at this level"
+        },
+        "0.005": {
+         "median": 0.20131669551835432,
+         "n_cells": 1740,
+         "n_pairs": 348
+        }
+       }
+      },
+      "H-c": {
+       "name": "Leak into the identified regime",
+       "measure": "E",
+       "bin": "Identified",
+       "expected": 0.05,
+       "refuted": 0.02,
+       "direction": "above",
+       "n_pairs": 17,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 17,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": true
+       },
+       "untestable_reason": "calibrator failure floor",
+       "point": null,
+       "interval": null,
+       "per_seed": null,
+       "n_cells": 0,
+       "verdict": "Untestable"
+      },
+      "H-d": {
+       "name": "Interval infidelity",
+       "measure": "m",
+       "bin": "Flat",
+       "expected": 0.8,
+       "refuted": 0.85,
+       "direction": "below",
+       "n_pairs": 35,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 35,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": true
+       },
+       "untestable_reason": "stage 1 floor",
+       "point": null,
+       "interval": null,
+       "per_seed": null,
+       "n_cells": 0,
+       "verdict": "Untestable"
+      }
+     },
+     "failure_floor": {
+      "Identified": {
+       "n_pairs": 590,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 2950,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Partial": {
+       "n_pairs": 575,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 2875,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Flat": {
+       "n_pairs": 35,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 175,
+       "reading": "a pair failed at any seed",
+       "untestable": true,
+       "failed": []
+      }
+     },
+     "seed_floor": {
+      "Identified": {
+       "per_prior": {
+        "A": 0.09732783550531698,
+        "B": 0.11245744851993852
+       },
+       "floor": 0.11245744851993852,
+       "n_pairs": 590
+      },
+      "Partial": {
+       "per_prior": {
+        "A": 0.06150049353290728,
+        "B": 0.08359606191946589
+       },
+       "floor": 0.08359606191946589,
+       "n_pairs": 575
+      },
+      "Flat": {
+       "per_prior": {
+        "A": 0.12579594880365258,
+        "B": 0.0450105032056522
+       },
+       "floor": 0.12579594880365258,
+       "n_pairs": 35
+      }
+     },
+     "levels_lost_g3": {
+      "A": [],
+      "B": [
+       1,
+       2
+      ]
+     },
+     "null": {
+      "stands": null,
+      "note": "not read on this analysis: the null is read on the primary verdicts only"
+     }
+    }
+   },
+   "note": "the intervals, floors and seed floors recomputed on the shifted bins; reported beside the verdicts; decides nothing (lines 89, 111)"
+  },
+  "-0.05": {
+   "cuts": [
+    0.85,
+    0.45
+   ],
+   "verdicts": {
+    "ensemble": {
+     "H-a": "Confirmed",
+     "H-b": "Refuted",
+     "H-c": "Refuted",
+     "H-d": "Untestable"
+    },
+    "nre": {
+     "H-a": "Inconclusive",
+     "H-b": "Confirmed",
+     "H-c": "Inconclusive",
+     "H-d": "Untestable"
+    }
+   },
+   "stage1": {
+    "cuts": [
+     0.85,
+     0.45
+    ],
+    "n_accepted": 1200,
+    "n_reference_failures": 0,
+    "n_negative_c": 0,
+    "bins": {
+     "Identified": {
+      "count": 971,
+      "share": 0.8091666666666667,
+      "per_level": {
+       "0.001": 400,
+       "0.003": 348,
+       "0.005": 223
+      },
+      "n_distinct_theta": 400,
+      "untestable": false,
+      "floor": {
+       "share_min": 0.1,
+       "count_min": 100
+      },
+      "n_well_covered": 463,
+      "share_well_covered": 0.4768280123583934
+     },
+     "Partial": {
+      "count": 205,
+      "share": 0.17083333333333334,
+      "per_level": {
+       "0.001": 0,
+       "0.003": 52,
+       "0.005": 153
+      },
+      "n_distinct_theta": 177,
+      "untestable": false,
+      "floor": {
+       "share_min": 0.1,
+       "count_min": 100
+      },
+      "n_well_covered": 193,
+      "share_well_covered": 0.9414634146341463
+     },
+     "Flat": {
+      "count": 24,
+      "share": 0.02,
+      "per_level": {
+       "0.001": 0,
+       "0.003": 0,
+       "0.005": 24
+      },
+      "n_distinct_theta": 24,
+      "untestable": true,
+      "floor": {
+       "share_min": 0.1,
+       "count_min": 100
+      },
+      "n_well_covered": 24,
+      "share_well_covered": 1.0
+     }
+    },
+    "near_cutoff": {
+     "0.85": {
+      "at_or_above": 46,
+      "below": 27
+     },
+     "0.45": {
+      "at_or_above": 1,
+      "below": 3
+     }
+    },
+    "window": 0.02,
+    "c_by_level": {
+     "0.001": {
+      "n": 400,
+      "quartiles": [
+       0.98716747494161,
+       0.9935615404852062,
+       0.9958400347176716
+      ]
+     },
+     "0.003": {
+      "n": 400,
+      "quartiles": [
+       0.9019424132006131,
+       0.9461357630643489,
+       0.9669488511485428
+      ]
+     },
+     "0.005": {
+      "n": 400,
+      "quartiles": [
+       0.7680359019642475,
+       0.863711679300337,
+       0.9162111833282325
+      ]
+     }
+    }
+   },
+   "calibrators": {
+    "ensemble": {
+     "seed_slots": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "hypotheses": {
+      "H-a": {
+       "name": "Faithful when informed",
+       "measure": "abs_dA",
+       "bin": "Identified",
+       "expected": 0.01,
+       "refuted": 0.03,
+       "direction": "below",
+       "n_pairs": 971,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 971,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.0014625438419896691,
+       "interval": [
+        0.0013240617519632548,
+        0.0015958980433146502
+       ],
+       "per_seed": [
+        0.0015199730006675016,
+        0.0015531837089783063,
+        0.001388649790341423,
+        0.0014401034931928042,
+        0.0014197690829316698
+       ],
+       "n_cells": 4855,
+       "bootstrap": {
+        "n_live_pairs": 971,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Confirmed",
+       "per_level": {
+        "0.001": {
+         "median": 0.0010535299117169217,
+         "n_cells": 2000,
+         "n_pairs": 400
+        },
+        "0.003": {
+         "median": 0.0015570710474716587,
+         "n_cells": 1740,
+         "n_pairs": 348
+        },
+        "0.005": {
+         "median": 0.002023656123957107,
+         "n_cells": 1115,
+         "n_pairs": 223
+        }
+       }
+      },
+      "H-b": {
+       "name": "Excess prior dependence",
+       "measure": "E",
+       "bin": "Partial",
+       "expected": 0.15,
+       "refuted": 0.05,
+       "direction": "above",
+       "n_pairs": 205,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 205,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.030961284860426264,
+       "interval": [
+        0.024937118021554072,
+        0.03778122096913
+       ],
+       "per_seed": [
+        0.04089661265387959,
+        0.02574223235984585,
+        0.034500287056425105,
+        0.02561330418059643,
+        0.026963139485522702
+       ],
+       "n_cells": 1025,
+       "bootstrap": {
+        "n_live_pairs": 205,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Refuted",
+       "per_level": {
+        "0.003": {
+         "median": 0.030593221157387274,
+         "n_cells": 260,
+         "n_pairs": 52
+        },
+        "0.005": {
+         "median": 0.03110110448361028,
+         "n_cells": 765,
+         "n_pairs": 153
+        }
+       }
+      },
+      "H-c": {
+       "name": "Leak into the identified regime",
+       "measure": "E",
+       "bin": "Identified",
+       "expected": 0.05,
+       "refuted": 0.02,
+       "direction": "above",
+       "n_pairs": 971,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 971,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.002548160014796408,
+       "interval": [
+        0.000880106414448089,
+        0.004380359877845791
+       ],
+       "per_seed": [
+        0.004379465309113512,
+        0.0018694824956502765,
+        0.0013254212748206595,
+        0.004387525316028873,
+        0.001544292607951192
+       ],
+       "n_cells": 4855,
+       "bootstrap": {
+        "n_live_pairs": 971,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": 0.0076835215091705655,
+       "verdict": "Refuted",
+       "per_level": {
+        "0.001": {
+         "median": 0.00133750267769156,
+         "n_cells": 2000,
+         "n_pairs": 400
+        },
+        "0.003": {
+         "median": 0.0019371712620552817,
+         "n_cells": 1740,
+         "n_pairs": 348
+        },
+        "0.005": {
+         "median": 0.008112864678228582,
+         "n_cells": 1115,
+         "n_pairs": 223
+        }
+       }
+      },
+      "H-d": {
+       "name": "Interval infidelity",
+       "measure": "m",
+       "bin": "Flat",
+       "expected": 0.8,
+       "refuted": 0.85,
+       "direction": "below",
+       "n_pairs": 24,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 24,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": true
+       },
+       "untestable_reason": "stage 1 floor",
+       "point": null,
+       "interval": null,
+       "per_seed": null,
+       "n_cells": 0,
+       "verdict": "Untestable"
+      }
+     },
+     "failure_floor": {
+      "Identified": {
+       "n_pairs": 971,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 4855,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Partial": {
+       "n_pairs": 205,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 1025,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Flat": {
+       "n_pairs": 24,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 120,
+       "reading": "a pair failed at any seed",
+       "untestable": true,
+       "failed": []
+      }
+     },
+     "seed_floor": {
+      "Identified": {
+       "per_prior": {
+        "A": 0.007149793207645513,
+        "B": 0.0076835215091705655
+       },
+       "floor": 0.0076835215091705655,
+       "n_pairs": 971
+      },
+      "Partial": {
+       "per_prior": {
+        "A": 0.013818843662738826,
+        "B": 0.013286177814006775
+       },
+       "floor": 0.013818843662738826,
+       "n_pairs": 205
+      },
+      "Flat": {
+       "per_prior": {
+        "A": 0.01846847981214518,
+        "B": 0.016225916147232095
+       },
+       "floor": 0.01846847981214518,
+       "n_pairs": 24
+      }
+     },
+     "levels_lost_g3": {
+      "A": [],
+      "B": []
+     },
+     "null": {
+      "stands": null,
+      "note": "not read on this analysis: the null is read on the primary verdicts only"
+     }
+    },
+    "nre": {
+     "seed_slots": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "hypotheses": {
+      "H-a": {
+       "name": "Faithful when informed",
+       "measure": "abs_dA",
+       "bin": "Identified",
+       "expected": 0.01,
+       "refuted": 0.03,
+       "direction": "below",
+       "n_pairs": 971,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 971,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.017447346960258847,
+       "interval": [
+        0.013508166805283996,
+        0.02277889539176566
+       ],
+       "per_seed": [
+        0.011883401411920402,
+        0.016754577437084764,
+        0.017045955065399188,
+        0.025206882444228876,
+        0.02118811314758688
+       ],
+       "n_cells": 4855,
+       "bootstrap": {
+        "n_live_pairs": 971,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Inconclusive",
+       "per_level": {
+        "0.001": {
+         "median": 0.0676702278132682,
+         "n_cells": 2000,
+         "n_pairs": 400
+        },
+        "0.003": {
+         "median": 0.009811316073918247,
+         "n_cells": 1740,
+         "n_pairs": 348
+        },
+        "0.005": {
+         "median": 0.007911207705878748,
+         "n_cells": 1115,
+         "n_pairs": 223
+        }
+       }
+      },
+      "H-b": {
+       "name": "Excess prior dependence",
+       "measure": "E",
+       "bin": "Partial",
+       "expected": 0.15,
+       "refuted": 0.05,
+       "direction": "above",
+       "n_pairs": 153,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 153,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.257138811107228,
+       "interval": [
+        0.1952980325422643,
+        0.322907643670876
+       ],
+       "per_seed": [
+        0.21039686548433564,
+        0.22177669169061054,
+        0.19381537195182247,
+        0.2499020409371892,
+        0.37443258339787655
+       ],
+       "n_cells": 765,
+       "bootstrap": {
+        "n_live_pairs": 153,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": null,
+       "verdict": "Confirmed",
+       "per_level": {
+        "0.001": {
+         "lost": "a network this measure needs failed G3 at this level"
+        },
+        "0.003": {
+         "lost": "a network this measure needs failed G3 at this level"
+        },
+        "0.005": {
+         "median": 0.257138811107228,
+         "n_cells": 765,
+         "n_pairs": 153
+        }
+       }
+      },
+      "H-c": {
+       "name": "Leak into the identified regime",
+       "measure": "E",
+       "bin": "Identified",
+       "expected": 0.05,
+       "refuted": 0.02,
+       "direction": "above",
+       "n_pairs": 223,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 223,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": false
+       },
+       "untestable_reason": null,
+       "point": 0.15197970530713048,
+       "interval": [
+        0.08431664975530773,
+        0.24790101900215358
+       ],
+       "per_seed": [
+        0.12780806862266583,
+        0.13358683379237463,
+        0.23864942814338624,
+        0.08431664975530773,
+        0.2533932535096492
+       ],
+       "n_cells": 1115,
+       "bootstrap": {
+        "n_live_pairs": 223,
+        "n_live_seeds": 5,
+        "n_dropped_replicates": 0
+       },
+       "seed_floor": 0.09896873633548742,
+       "verdict": "Inconclusive",
+       "per_level": {
+        "0.001": {
+         "lost": "a network this measure needs failed G3 at this level"
+        },
+        "0.003": {
+         "lost": "a network this measure needs failed G3 at this level"
+        },
+        "0.005": {
+         "median": 0.15197970530713048,
+         "n_cells": 1115,
+         "n_pairs": 223
+        }
+       }
+      },
+      "H-d": {
+       "name": "Interval infidelity",
+       "measure": "m",
+       "bin": "Flat",
+       "expected": 0.8,
+       "refuted": 0.85,
+       "direction": "below",
+       "n_pairs": 24,
+       "n_failed_pairs": 0,
+       "n_failed_cells": 0,
+       "levels_pooled": [
+        1,
+        2,
+        3
+       ],
+       "failure_floor": {
+        "n_pairs": 24,
+        "n_failed": 0,
+        "share_failed": 0.0,
+        "untestable": true
+       },
+       "untestable_reason": "stage 1 floor",
+       "point": null,
+       "interval": null,
+       "per_seed": null,
+       "n_cells": 0,
+       "verdict": "Untestable"
+      }
+     },
+     "failure_floor": {
+      "Identified": {
+       "n_pairs": 971,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 4855,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Partial": {
+       "n_pairs": 205,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 1025,
+       "reading": "a pair failed at any seed",
+       "untestable": false,
+       "failed": []
+      },
+      "Flat": {
+       "n_pairs": 24,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "n_failed_cells": 0,
+       "n_cells": 120,
+       "reading": "a pair failed at any seed",
+       "untestable": true,
+       "failed": []
+      }
+     },
+     "seed_floor": {
+      "Identified": {
+       "per_prior": {
+        "A": 0.07415258666995661,
+        "B": 0.09896873633548742
+       },
+       "floor": 0.09896873633548742,
+       "n_pairs": 971
+      },
+      "Partial": {
+       "per_prior": {
+        "A": 0.085321626376176,
+        "B": 0.06560816609669909
+       },
+       "floor": 0.085321626376176,
+       "n_pairs": 205
+      },
+      "Flat": {
+       "per_prior": {
+        "A": 0.13258539461917573,
+        "B": 0.04308332777806165
+       },
+       "floor": 0.13258539461917573,
+       "n_pairs": 24
+      }
+     },
+     "levels_lost_g3": {
+      "A": [],
+      "B": [
+       1,
+       2
+      ]
+     },
+     "null": {
+      "stands": null,
+      "note": "not read on this analysis: the null is read on the primary verdicts only"
+     }
+    }
+   },
+   "note": "the intervals, floors and seed floors recomputed on the shifted bins; reported beside the verdicts; decides nothing (lines 89, 111)"
+  }
+ },
+ "secondary": {
+  "label": "secondary: H-a to H-d re-scored on the well-covered pairs only, with the same measures, thresholds, floors (recomputed on that set), bootstrap streams and verdict rule; reported beside the primary verdicts; the null is read on the primary verdicts only (D81)",
+  "n_pairs": 680,
+  "share_of_accepted": 0.5666666666666667,
+  "stage1": {
+   "cuts": [
+    0.9,
+    0.5
+   ],
+   "n_accepted": 680,
+   "n_reference_failures": 0,
+   "n_negative_c": 0,
+   "bins": {
+    "Identified": {
+     "count": 365,
+     "share": 0.5367647058823529,
+     "per_level": {
+      "0.001": 156,
+      "0.003": 149,
+      "0.005": 60
+     },
+     "n_distinct_theta": 211,
+     "untestable": false,
+     "floor": {
+      "share_min": 0.1,
+      "count_min": 100
+     },
+     "n_well_covered": 365,
+     "share_well_covered": 1.0
+    },
+    "Partial": {
+     "count": 285,
+     "share": 0.41911764705882354,
+     "per_level": {
+      "0.001": 0,
+      "0.003": 79,
+      "0.005": 206
+     },
+     "n_distinct_theta": 235,
+     "untestable": false,
+     "floor": {
+      "share_min": 0.1,
+      "count_min": 100
+     },
+     "n_well_covered": 285,
+     "share_well_covered": 1.0
+    },
+    "Flat": {
+     "count": 30,
+     "share": 0.04411764705882353,
+     "per_level": {
+      "0.001": 0,
+      "0.003": 0,
+      "0.005": 30
+     },
+     "n_distinct_theta": 30,
+     "untestable": true,
+     "floor": {
+      "share_min": 0.1,
+      "count_min": 100
+     },
+     "n_well_covered": 30,
+     "share_well_covered": 1.0
+    }
+   },
+   "near_cutoff": {
+    "0.9": {
+     "at_or_above": 45,
+     "below": 39
+    },
+    "0.5": {
+     "at_or_above": 2,
+     "below": 4
+    }
+   },
+   "window": 0.02,
+   "c_by_level": {
+    "0.001": {
+     "n": 156,
+     "quartiles": [
+      0.9854075587359807,
+      0.9929234169594034,
+      0.9955223159954661
+     ]
+    },
+    "0.003": {
+     "n": 228,
+     "quartiles": [
+      0.8663910180248875,
+      0.9306992832847036,
+      0.957757240820384
+     ]
+    },
+    "0.005": {
+     "n": 296,
+     "quartiles": [
+      0.7121442640551469,
+      0.8298092703403157,
+      0.890686648725399
+     ]
+    }
+   }
+  },
+  "calibrators": {
+   "ensemble": {
+    "seed_slots": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "hypotheses": {
+     "H-a": {
+      "name": "Faithful when informed",
+      "measure": "abs_dA",
+      "bin": "Identified",
+      "expected": 0.01,
+      "refuted": 0.03,
+      "direction": "below",
+      "n_pairs": 365,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       1,
+       2,
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 365,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": false
+      },
+      "untestable_reason": null,
+      "point": 0.0011504268539845874,
+      "interval": [
+       0.0010060183958383595,
+       0.0013097019890940947
+      ],
+      "per_seed": [
+       0.001236897915797508,
+       0.0012002598378871854,
+       0.0010507450598966073,
+       0.001145871701752399,
+       0.0011034869455394392
+      ],
+      "n_cells": 1825,
+      "bootstrap": {
+       "n_live_pairs": 365,
+       "n_live_seeds": 5,
+       "n_dropped_replicates": 0
+      },
+      "seed_floor": null,
+      "verdict": "Confirmed",
+      "per_level": {
+       "0.001": {
+        "median": 0.000750983980455755,
+        "n_cells": 780,
+        "n_pairs": 156
+       },
+       "0.003": {
+        "median": 0.0014310612630364372,
+        "n_cells": 745,
+        "n_pairs": 149
+       },
+       "0.005": {
+        "median": 0.001717579820095294,
+        "n_cells": 300,
+        "n_pairs": 60
+       }
+      }
+     },
+     "H-b": {
+      "name": "Excess prior dependence",
+      "measure": "E",
+      "bin": "Partial",
+      "expected": 0.15,
+      "refuted": 0.05,
+      "direction": "above",
+      "n_pairs": 285,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       1,
+       2,
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 285,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": false
+      },
+      "untestable_reason": null,
+      "point": 0.024950845117565346,
+      "interval": [
+       0.02005481331206621,
+       0.03110110448361028
+      ],
+      "per_seed": [
+       0.03385677028022019,
+       0.021441201409501398,
+       0.028297791717653564,
+       0.020810938075803836,
+       0.02015848282639482
+      ],
+      "n_cells": 1425,
+      "bootstrap": {
+       "n_live_pairs": 285,
+       "n_live_seeds": 5,
+       "n_dropped_replicates": 0
+      },
+      "seed_floor": null,
+      "verdict": "Refuted",
+      "per_level": {
+       "0.003": {
+        "median": 0.023061821494642643,
+        "n_cells": 395,
+        "n_pairs": 79
+       },
+       "0.005": {
+        "median": 0.02560631241048661,
+        "n_cells": 1030,
+        "n_pairs": 206
+       }
+      }
+     },
+     "H-c": {
+      "name": "Leak into the identified regime",
+      "measure": "E",
+      "bin": "Identified",
+      "expected": 0.05,
+      "refuted": 0.02,
+      "direction": "above",
+      "n_pairs": 365,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       1,
+       2,
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 365,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": false
+      },
+      "untestable_reason": null,
+      "point": 0.0034218528511979762,
+      "interval": [
+       0.001653619345722973,
+       0.005082645853642931
+      ],
+      "per_seed": [
+       0.0024746245786139154,
+       0.0028345954467323686,
+       0.0025731807816369023,
+       0.00577086592243925,
+       0.0032652774310946986
+      ],
+      "n_cells": 1825,
+      "bootstrap": {
+       "n_live_pairs": 365,
+       "n_live_seeds": 5,
+       "n_dropped_replicates": 0
+      },
+      "seed_floor": 0.005846677720546811,
+      "verdict": "Refuted",
+      "per_level": {
+       "0.001": {
+        "median": 0.0015830738014691037,
+        "n_cells": 780,
+        "n_pairs": 156
+       },
+       "0.003": {
+        "median": 0.004014827061688819,
+        "n_cells": 745,
+        "n_pairs": 149
+       },
+       "0.005": {
+        "median": 0.009345316514653701,
+        "n_cells": 300,
+        "n_pairs": 60
+       }
+      }
+     },
+     "H-d": {
+      "name": "Interval infidelity",
+      "measure": "m",
+      "bin": "Flat",
+      "expected": 0.8,
+      "refuted": 0.85,
+      "direction": "below",
+      "n_pairs": 30,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       1,
+       2,
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 30,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": true
+      },
+      "untestable_reason": "stage 1 floor",
+      "point": null,
+      "interval": null,
+      "per_seed": null,
+      "n_cells": 0,
+      "verdict": "Untestable"
+     }
+    },
+    "failure_floor": {
+     "Identified": {
+      "n_pairs": 365,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "n_failed_cells": 0,
+      "n_cells": 1825,
+      "reading": "a pair failed at any seed",
+      "untestable": false,
+      "failed": []
+     },
+     "Partial": {
+      "n_pairs": 285,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "n_failed_cells": 0,
+      "n_cells": 1425,
+      "reading": "a pair failed at any seed",
+      "untestable": false,
+      "failed": []
+     },
+     "Flat": {
+      "n_pairs": 30,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "n_failed_cells": 0,
+      "n_cells": 150,
+      "reading": "a pair failed at any seed",
+      "untestable": true,
+      "failed": []
+     }
+    },
+    "seed_floor": {
+     "Identified": {
+      "per_prior": {
+       "A": 0.005846677720546811,
+       "B": 0.005272199213504844
+      },
+      "floor": 0.005846677720546811,
+      "n_pairs": 365
+     },
+     "Partial": {
+      "per_prior": {
+       "A": 0.012126699090003884,
+       "B": 0.012443001568317458
+      },
+      "floor": 0.012443001568317458,
+      "n_pairs": 285
+     },
+     "Flat": {
+      "per_prior": {
+       "A": 0.017066350579261896,
+       "B": 0.015331947803497309
+      },
+      "floor": 0.017066350579261896,
+      "n_pairs": 30
+     }
+    },
+    "levels_lost_g3": {
+     "A": [],
+     "B": []
+    },
+    "null": {
+     "stands": null,
+     "note": "not read on this analysis: the null is read on the primary verdicts only"
+    }
+   },
+   "nre": {
+    "seed_slots": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "hypotheses": {
+     "H-a": {
+      "name": "Faithful when informed",
+      "measure": "abs_dA",
+      "bin": "Identified",
+      "expected": 0.01,
+      "refuted": 0.03,
+      "direction": "below",
+      "n_pairs": 365,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       1,
+       2,
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 365,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": false
+      },
+      "untestable_reason": null,
+      "point": 0.015129893520433507,
+      "interval": [
+       0.011495938788574966,
+       0.020605421038225
+      ],
+      "per_seed": [
+       0.01012700206748085,
+       0.016643030836052994,
+       0.017440976817818754,
+       0.018568662252678753,
+       0.017565603019355447
+      ],
+      "n_cells": 1825,
+      "bootstrap": {
+       "n_live_pairs": 365,
+       "n_live_seeds": 5,
+       "n_dropped_replicates": 0
+      },
+      "seed_floor": null,
+      "verdict": "Inconclusive",
+      "per_level": {
+       "0.001": {
+        "median": 0.05916205075405112,
+        "n_cells": 780,
+        "n_pairs": 156
+       },
+       "0.003": {
+        "median": 0.007970029650892052,
+        "n_cells": 745,
+        "n_pairs": 149
+       },
+       "0.005": {
+        "median": 0.007191192293562548,
+        "n_cells": 300,
+        "n_pairs": 60
+       }
+      }
+     },
+     "H-b": {
+      "name": "Excess prior dependence",
+      "measure": "E",
+      "bin": "Partial",
+      "expected": 0.15,
+      "refuted": 0.05,
+      "direction": "above",
+      "n_pairs": 206,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 206,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": false
+      },
+      "untestable_reason": null,
+      "point": 0.24398379116018082,
+      "interval": [
+       0.19614860226181446,
+       0.322907643670876
+      ],
+      "per_seed": [
+       0.20418955894949228,
+       0.21621688268506828,
+       0.22946063064738964,
+       0.2315182181682379,
+       0.3664686623795249
+      ],
+      "n_cells": 1030,
+      "bootstrap": {
+       "n_live_pairs": 206,
+       "n_live_seeds": 5,
+       "n_dropped_replicates": 0
+      },
+      "seed_floor": null,
+      "verdict": "Confirmed",
+      "per_level": {
+       "0.001": {
+        "lost": "a network this measure needs failed G3 at this level"
+       },
+       "0.003": {
+        "lost": "a network this measure needs failed G3 at this level"
+       },
+       "0.005": {
+        "median": 0.24398379116018082,
+        "n_cells": 1030,
+        "n_pairs": 206
+       }
+      }
+     },
+     "H-c": {
+      "name": "Leak into the identified regime",
+      "measure": "E",
+      "bin": "Identified",
+      "expected": 0.05,
+      "refuted": 0.02,
+      "direction": "above",
+      "n_pairs": 60,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 60,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": true
+      },
+      "untestable_reason": "calibrator failure floor",
+      "point": null,
+      "interval": null,
+      "per_seed": null,
+      "n_cells": 0,
+      "verdict": "Untestable"
+     },
+     "H-d": {
+      "name": "Interval infidelity",
+      "measure": "m",
+      "bin": "Flat",
+      "expected": 0.8,
+      "refuted": 0.85,
+      "direction": "below",
+      "n_pairs": 30,
+      "n_failed_pairs": 0,
+      "n_failed_cells": 0,
+      "levels_pooled": [
+       1,
+       2,
+       3
+      ],
+      "failure_floor": {
+       "n_pairs": 30,
+       "n_failed": 0,
+       "share_failed": 0.0,
+       "untestable": true
+      },
+      "untestable_reason": "stage 1 floor",
+      "point": null,
+      "interval": null,
+      "per_seed": null,
+      "n_cells": 0,
+      "verdict": "Untestable"
+     }
+    },
+    "failure_floor": {
+     "Identified": {
+      "n_pairs": 365,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "n_failed_cells": 0,
+      "n_cells": 1825,
+      "reading": "a pair failed at any seed",
+      "untestable": false,
+      "failed": []
+     },
+     "Partial": {
+      "n_pairs": 285,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "n_failed_cells": 0,
+      "n_cells": 1425,
+      "reading": "a pair failed at any seed",
+      "untestable": false,
+      "failed": []
+     },
+     "Flat": {
+      "n_pairs": 30,
+      "n_failed": 0,
+      "share_failed": 0.0,
+      "n_failed_cells": 0,
+      "n_cells": 150,
+      "reading": "a pair failed at any seed",
+      "untestable": true,
+      "failed": []
+     }
+    },
+    "seed_floor": {
+     "Identified": {
+      "per_prior": {
+       "A": 0.07301103095497027,
+       "B": 0.09556379703525852
+      },
+      "floor": 0.09556379703525852,
+      "n_pairs": 365
+     },
+     "Partial": {
+      "per_prior": {
+       "A": 0.07138729210613322,
+       "B": 0.07001375379582217
+      },
+      "floor": 0.07138729210613322,
+      "n_pairs": 285
+     },
+     "Flat": {
+      "per_prior": {
+       "A": 0.13380013781215477,
+       "B": 0.04381784802111863
+      },
+      "floor": 0.13380013781215477,
+      "n_pairs": 30
+     }
+    },
+    "levels_lost_g3": {
+     "A": [],
+     "B": [
+      1,
+      2
+     ]
+    },
+    "null": {
+     "stands": null,
+     "note": "not read on this analysis: the null is read on the primary verdicts only"
+    }
+   }
+  },
+  "verdicts": {
+   "ensemble": {
+    "H-a": "Confirmed",
+    "H-b": "Refuted",
+    "H-c": "Refuted",
+    "H-d": "Untestable"
+   },
+   "nre": {
+    "H-a": "Inconclusive",
+    "H-b": "Confirmed",
+    "H-c": "Untestable",
+    "H-d": "Untestable"
+   }
+  },
+  "dose_response": {
+   "ensemble": {
+    "spearman": -0.553869137463787,
+    "interval": [
+     -0.591588714846051,
+     -0.3900099734113144
+    ],
+    "n_pairs": 680,
+    "n_dropped_pairs": 0,
+    "n_live_seeds": 5,
+    "expected_sign": "negative",
+    "n_replicates": 2000,
+    "n_dropped_replicates": 0,
+    "note": "descriptive; no verdict (line 134)"
+   },
+   "nre": {
+    "spearman": 0.12981649537965875,
+    "interval": [
+     -0.08303459052489592,
+     0.33695490631297975
+    ],
+    "n_pairs": 680,
+    "n_dropped_pairs": 0,
+    "n_live_seeds": 5,
+    "expected_sign": "negative",
+    "n_replicates": 2000,
+    "n_dropped_replicates": 0,
+    "note": "descriptive; no verdict (line 134)"
+   }
+  },
+  "covered_means": "a mass of 0.001 is about 10 of a network's training surfaces at n = 10,000 and about 160 at n = 160,000 (line 136, D82)"
+ },
+ "dose_response": {
+  "ensemble": {
+   "spearman": -0.3655404899586736,
+   "interval": [
+    -0.40864990349064806,
+    -0.250074805311311
+   ],
+   "n_pairs": 1200,
+   "n_dropped_pairs": 0,
+   "n_live_seeds": 5,
+   "expected_sign": "negative",
+   "n_replicates": 2000,
+   "n_dropped_replicates": 0,
+   "note": "descriptive; no verdict (line 134)"
+  },
+  "nre": {
+   "spearman": 0.26061897265206435,
+   "interval": [
+    0.10457296587435634,
+    0.38636985487865894
+   ],
+   "n_pairs": 1200,
+   "n_dropped_pairs": 0,
+   "n_live_seeds": 5,
+   "expected_sign": "negative",
+   "n_replicates": 2000,
+   "n_dropped_replicates": 0,
+   "note": "descriptive; no verdict (line 134)"
+  }
+ },
+ "verdicts": {
+  "ensemble": {
+   "H-a": "Confirmed",
+   "H-b": "Refuted",
+   "H-c": "Refuted",
+   "H-d": "Untestable"
+  },
+  "nre": {
+   "H-a": "Inconclusive",
+   "H-b": "Confirmed",
+   "H-c": "Inconclusive",
+   "H-d": "Untestable"
+  }
+ },
+ "null": {
+  "ensemble": {
+   "stands": false,
+   "H_a_confirmed_and_others_refuted": false,
+   "all_four_refuted": false,
+   "H_d_interval_within_band": false,
+   "band": [
+    0.85,
+    0.95
+   ],
+   "rule": "H-a Confirmed; H-b, H-c and H-d Refuted; H-d's interval wholly within the band (line 128, D81)",
+   "note": "an Inconclusive or untestable outcome anywhere leaves the null unproven (line 128)"
+  },
+  "nre": {
+   "stands": false,
+   "H_a_confirmed_and_others_refuted": false,
+   "all_four_refuted": false,
+   "H_d_interval_within_band": false,
+   "band": [
+    0.85,
+    0.95
+   ],
+   "rule": "H-a Confirmed; H-b, H-c and H-d Refuted; H-d's interval wholly within the band (line 128, D81)",
+   "note": "an Inconclusive or untestable outcome anywhere leaves the null unproven (line 128)"
+  }
+ },
+ "g3_levels_lost": {
+  "nre_B": [
+   1,
+   2
+  ]
+ },
+ "stage1_output": {
+  "file": "output\\p5_stage1_report.json",
+  "refs_digest": "c31157882c54a16bb5397451a76e5ed6a0b99f7abe2a8b365a246e7075329f18",
+  "refs_sha256": "9eab6c3e221a6fafd87705d1f3eac32a2c7748c9555167465432dc88b29a7477",
+  "made_utc": "2026-10-29T17:50:21Z"
+ },
+ "emulator": {
+  "path": "output\\p5_g1_emulator.npz",
+  "sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add"
+ },
+ "multiplicity": "the eight verdicts are read individually at 95% without adjustment (line 126)",
+ "bootstrap": {
+  "n_boot": 2000,
+  "seed": 127,
+  "streams": "default_rng([seed, calibrator index, row index]); the dose-response uses row index 9",
+  "interval": "percentile",
+  "ci": [
+   2.5,
+   97.5
+  ],
+  "median": "the lower weighted median, for the point, the per-seed medians and every replicate",
+  "note": "a percentile interval over five seeds is narrower than nominal; declared, not corrected (line 132); the per-seed medians are reported beside each interval"
+ },
+ "m_note": "m is the exact posterior probability under A of the A-trained network's interval (line 110)",
+ "n_reference_failures": 0,
+ "reference_failures": [],
+ "n_pairs_expected": 1200,
+ "n_pairs_missing_from_record": 0,
+ "seed_slots": {
+  "ensemble": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "nre": [
+   1,
+   2,
+   3,
+   4,
+   5
+  ]
+ },
+ "seed_slot_note": "a slot is one unit across levels and priors; a seed-6 replacement sits in the slot it replaced, per (prior, level) cell (line 75)",
+ "inputs": {
+  "refs": "output\\p5v3_ref_test.jsonl",
+  "samples": "output\\p5v3_ref_test_samples.npz",
+  "scores": "output\\p5_scores_test.jsonl",
+  "g3_report": "output\\p5_g3_report.json"
+ },
+ "input_headers": {
+  "refs": {
+   "kind": "header",
+   "script": "p5_g2_reference.py",
+   "commit": "56d28661f89608f6001739d503b1359239cf16e7",
+   "clean_tree": true,
+   "set": "test",
+   "n_points": 400,
+   "seeds": {
+    "points": 20261002,
+    "noise": 20261022
+   },
+   "seed_ref": 83,
+   "emulator": "output\\p5_g1_emulator.npz",
+   "emulator_meta": {
+    "stage": "base",
+    "commit": "3db18b5697ecd50f50c2be423e938aa8e44e9a3b",
+    "nodes": [
+     16,
+     8,
+     6,
+     12
+    ]
+   },
+   "emulator_sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add",
+   "box": {
+    "H": [
+     0.02,
+     0.48
+    ],
+    "nu": [
+     0.05,
+     0.35
+    ],
+    "rho": [
+     -0.9,
+     -0.7
+    ],
+    "xi0": [
+     0.04,
+     0.25
+    ]
+   },
+   "noise_levels": [
+    0.001,
+    0.003,
+    0.005
+   ],
+   "n_chains": 4,
+   "burn": 10000,
+   "sample": 40000,
+   "adapt_every": 500,
+   "scale": 1.4161,
+   "diag_floor": 1e-10,
+   "start": {
+    "n_starts": 16,
+    "ls_method": "trf",
+    "ls_jac": "2-point",
+    "ls_ftol": 1e-10,
+    "ls_xtol": 1e-10,
+    "ls_gtol": 1e-08,
+    "ls_max_nfev": 2000,
+    "fd_rel_step": 1.4901161193847656e-08,
+    "lbfgs_ftol": 1e-10,
+    "lbfgs_gtol": 1e-05,
+    "lbfgs_maxiter": 200,
+    "eps_H": 1e-06,
+    "keep_max": 4,
+    "distinct": 0.01,
+    "mass_log": 9.210340371976184,
+    "eig_lo": 1e-10,
+    "eig_hi": 0.08333333333333333,
+    "perturb_cap": 0.0025,
+    "perturb_mult": 4.0,
+    "kappa_u_floor": 0.01,
+    "scale": 1.4161,
+    "n_chains": 4,
+    "adapt_every": 500,
+    "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+   },
+   "rhat_max": 1.01,
+   "ess_min": 2000.0,
+   "kish_min": 1000.0,
+   "reweighting_rule": "(Kish / pooled sampling steps) x ESS of H >= kish_min (D81)",
+   "cover_min": 0.001,
+   "priors": {
+    "A": [
+     2.5,
+     9.0
+    ],
+    "B": [
+     10.217391304347826,
+     5.449275362318841
+    ]
+   },
+   "var_prior_A": 0.0028799999999999993,
+   "grid_n": 32,
+   "extend": 0.2,
+   "whole_n": 48,
+   "tol_mean": 0.001,
+   "tol_c": 0.01,
+   "tol_q": 0.002,
+   "tol_mc_k": 4.0,
+   "tolerance_rule": "each tolerance the larger of its value and tol_mc_k Monte Carlo standard errors (D81)",
+   "quant": 65535,
+   "python": "3.14.3",
+   "numpy": "2.4.4",
+   "scipy": "1.17.1",
+   "versions": {
+    "numpy": "2.4.4",
+    "scipy": "1.17.1",
+    "expected": {
+     "numpy": "2.4.4",
+     "scipy": "1.17.1"
+    },
+    "checked": true,
+    "override": false,
+    "mismatch": {}
+   },
+   "platform": "Windows-11-10.0.26200-SP0",
+   "cpu_count": 8,
+   "pool": 4,
+   "utc_created": "2026-10-28T09:22:47Z",
+   "n_test": 400,
+   "n_test_written": 400,
+   "noise_seed_written": 20261022,
+   "g2": {
+    "passed": true,
+    "p5_stops": false,
+    "retry_due": false,
+    "attempt": 1,
+    "burn": 10000,
+    "sample": 40000,
+    "go": true,
+    "projected_core_hours": 29.13304770370208,
+    "emulator_sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add",
+    "reason": "G2 passed on attempt 1 with a go; the reference's lengths are burn 10000, sample 40000"
+   },
+   "lengths": {
+    "burn": 10000,
+    "sample": 40000,
+    "kish_min": 1000.0,
+    "rhat_max": 1.01,
+    "ess_min": 2000.0,
+    "levels": [
+     0.001,
+     0.003,
+     0.005
+    ],
+    "start": {
+     "n_starts": 16,
+     "ls_method": "trf",
+     "ls_jac": "2-point",
+     "ls_ftol": 1e-10,
+     "ls_xtol": 1e-10,
+     "ls_gtol": 1e-08,
+     "ls_max_nfev": 2000,
+     "fd_rel_step": 1.4901161193847656e-08,
+     "lbfgs_ftol": 1e-10,
+     "lbfgs_gtol": 1e-05,
+     "lbfgs_maxiter": 200,
+     "eps_H": 1e-06,
+     "keep_max": 4,
+     "distinct": 0.01,
+     "mass_log": 9.210340371976184,
+     "eig_lo": 1e-10,
+     "eig_hi": 0.08333333333333333,
+     "perturb_cap": 0.0025,
+     "perturb_mult": 4.0,
+     "kappa_u_floor": 0.01,
+     "scale": 1.4161,
+     "n_chains": 4,
+     "adapt_every": 500,
+     "draw_order": "16x4 uniform starts, 4x4 standard normal perturbations, then proposals and acceptance draws"
+    }
+   }
+  },
+  "scores": {
+   "kind": "header",
+   "script": "p5_g3_calibrators.py",
+   "mode": "score",
+   "commit": "5668b391135562d85b10909e01787bf937d93d7f",
+   "clean_tree": true,
+   "hidden": [
+    128,
+    128,
+    128
+   ],
+   "n_members": 5,
+   "lr": 0.001,
+   "betas": [
+    0.9,
+    0.999
+   ],
+   "batch": 256,
+   "patience": 50,
+   "max_epochs": 1000,
+   "var_floor": 1e-06,
+   "n_valid": 4000,
+   "seeds": {
+    "train": 109,
+    "valid": 113,
+    "nre": 107,
+    "torch_base": 109000000
+   },
+   "ladder": [
+    10000,
+    20000,
+    40000,
+    80000,
+    160000
+   ],
+   "draw_n": 320000,
+   "budget_surfaces": 320000,
+   "budget_wall_s": 14400.0,
+   "slope_min": 0.95,
+   "stability_tol": 0.002,
+   "n_seeds": 5,
+   "priors": {
+    "A": [
+     2.5,
+     9.0
+    ],
+    "B": [
+     10.217391304347826,
+     5.449275362318841
+    ]
+   },
+   "noise_levels": [
+    0.001,
+    0.003,
+    0.005
+   ],
+   "threads": 4,
+   "torch": "2.14.1+cpu",
+   "python": "3.14.3",
+   "numpy": "2.5.4",
+   "scipy": "1.18.1",
+   "versions": {
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "torch": "2.14.1",
+    "expected": {
+     "numpy": "2.5.4",
+     "scipy": "1.18.1",
+     "torch": "2.14.1"
+    },
+    "checked": true,
+    "override": false,
+    "mismatch": {}
+   },
+   "platform": "Windows-11-10.0.26200-SP0",
+   "cpu_count": 8,
+   "utc_created": "2026-10-30T08:56:43Z",
+   "set": "test",
+   "post_kw": {
+    "burn": 10000,
+    "sample": 40000
+   },
+   "expected": [
+    [
+     "ensemble",
+     "A",
+     1,
+     1
+    ],
+    [
+     "ensemble",
+     "A",
+     1,
+     2
+    ],
+    [
+     "ensemble",
+     "A",
+     1,
+     3
+    ],
+    [
+     "ensemble",
+     "A",
+     1,
+     4
+    ],
+    [
+     "ensemble",
+     "A",
+     1,
+     5
+    ],
+    [
+     "ensemble",
+     "A",
+     2,
+     1
+    ],
+    [
+     "ensemble",
+     "A",
+     2,
+     2
+    ],
+    [
+     "ensemble",
+     "A",
+     2,
+     3
+    ],
+    [
+     "ensemble",
+     "A",
+     2,
+     4
+    ],
+    [
+     "ensemble",
+     "A",
+     2,
+     5
+    ],
+    [
+     "ensemble",
+     "A",
+     3,
+     1
+    ],
+    [
+     "ensemble",
+     "A",
+     3,
+     2
+    ],
+    [
+     "ensemble",
+     "A",
+     3,
+     3
+    ],
+    [
+     "ensemble",
+     "A",
+     3,
+     4
+    ],
+    [
+     "ensemble",
+     "A",
+     3,
+     5
+    ],
+    [
+     "ensemble",
+     "B",
+     1,
+     1
+    ],
+    [
+     "ensemble",
+     "B",
+     1,
+     2
+    ],
+    [
+     "ensemble",
+     "B",
+     1,
+     3
+    ],
+    [
+     "ensemble",
+     "B",
+     1,
+     4
+    ],
+    [
+     "ensemble",
+     "B",
+     1,
+     5
+    ],
+    [
+     "ensemble",
+     "B",
+     2,
+     1
+    ],
+    [
+     "ensemble",
+     "B",
+     2,
+     2
+    ],
+    [
+     "ensemble",
+     "B",
+     2,
+     3
+    ],
+    [
+     "ensemble",
+     "B",
+     2,
+     4
+    ],
+    [
+     "ensemble",
+     "B",
+     2,
+     5
+    ],
+    [
+     "ensemble",
+     "B",
+     3,
+     1
+    ],
+    [
+     "ensemble",
+     "B",
+     3,
+     2
+    ],
+    [
+     "ensemble",
+     "B",
+     3,
+     3
+    ],
+    [
+     "ensemble",
+     "B",
+     3,
+     4
+    ],
+    [
+     "ensemble",
+     "B",
+     3,
+     5
+    ],
+    [
+     "nre",
+     "A",
+     1,
+     1
+    ],
+    [
+     "nre",
+     "A",
+     1,
+     2
+    ],
+    [
+     "nre",
+     "A",
+     1,
+     3
+    ],
+    [
+     "nre",
+     "A",
+     1,
+     4
+    ],
+    [
+     "nre",
+     "A",
+     1,
+     5
+    ],
+    [
+     "nre",
+     "A",
+     2,
+     1
+    ],
+    [
+     "nre",
+     "A",
+     2,
+     2
+    ],
+    [
+     "nre",
+     "A",
+     2,
+     3
+    ],
+    [
+     "nre",
+     "A",
+     2,
+     4
+    ],
+    [
+     "nre",
+     "A",
+     2,
+     5
+    ],
+    [
+     "nre",
+     "A",
+     3,
+     1
+    ],
+    [
+     "nre",
+     "A",
+     3,
+     2
+    ],
+    [
+     "nre",
+     "A",
+     3,
+     3
+    ],
+    [
+     "nre",
+     "A",
+     3,
+     4
+    ],
+    [
+     "nre",
+     "A",
+     3,
+     5
+    ],
+    [
+     "nre",
+     "B",
+     3,
+     1
+    ],
+    [
+     "nre",
+     "B",
+     3,
+     2
+    ],
+    [
+     "nre",
+     "B",
+     3,
+     3
+    ],
+    [
+     "nre",
+     "B",
+     3,
+     4
+    ],
+    [
+     "nre",
+     "B",
+     3,
+     5
+    ]
+   ],
+   "stage1_refs_digest": "c31157882c54a16bb5397451a76e5ed6a0b99f7abe2a8b365a246e7075329f18",
+   "emulator": {
+    "path": "output\\p5_g1_emulator.npz",
+    "sha256": "c3adb2e2d01eeb4cf9105ce0011329c66de3cebfbf4ea970af1c306e4a2f4add"
+   },
+   "nre_skipped": {}
+  }
+ },
+ "files": {
+  "stage1_report": "output\\p5_stage1_report.json",
+  "stage1_csv": "output\\p5_stage1.csv",
+  "stage1_png": "output\\p5_stage1.png",
+  "cells_csv": "output\\p5_stage2_cells.csv",
+  "report": "output\\p5_stage2_report.json"
+ },
+ "commit": "69d281f106deaf480d8c7e317b37ab2ab300732e",
+ "clean_tree": true,
+ "python": "3.14.3",
+ "numpy": "2.4.4",
+ "scipy": "1.17.1",
+ "versions": {
+  "numpy": "2.4.4",
+  "scipy": "1.17.1",
+  "expected": {
+   "numpy": "2.4.4",
+   "scipy": "1.17.1"
+  },
+  "checked": true,
+  "override": false,
+  "mismatch": {}
+ },
+ "utc": "2026-11-01T02:26:30Z"
+}

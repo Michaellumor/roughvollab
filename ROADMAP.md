@@ -7960,6 +7960,536 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     decision sheet or an earlier entry; anything on OSF; anything committed
     under `output/` beyond the one file above.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D109** *(2026-11-01)* **P5 v3: Stage 2 run and recorded (the ensemble: H-a
+  Confirmed, H-b and H-c Refuted; the ratio estimator: H-a and H-c
+  Inconclusive, H-b Confirmed; H-d untestable and the null unproven for both;
+  the two outputs committed; the ROADMAP's P5 paragraph brought up to date).**
+  - **Summary.** Stage 2 was run on 1 November 2026, the author's run, from the
+    test set's references (D105), Stage 1's output (D106), G3's report (D104)
+    and the scoring's record (D108). The ensemble's verdicts are H-a Confirmed,
+    H-b Refuted, H-c Refuted and H-d untestable; the ratio estimator's are H-a
+    Inconclusive, H-b Confirmed, H-c Inconclusive and H-d untestable. H-d, on
+    the networks' 90% intervals, is untestable for both by Stage 1's floor
+    (line 101; D106), so each calibrator's null is unproven (line 128), the
+    ratio estimator's also by its two Inconclusives. No reference failed and no
+    calibrator failed on any pair. The ratio estimator's H-b and H-c rest on
+    the pairs at s = 0.005 alone, its networks under B at the two lower levels
+    having failed G3 (line 144; D104); its network under A at s = 0.001 trained
+    at 10,000 surfaces and under B at s = 0.005 at 40,000, the rungs G3 passed,
+    the others at 160,000 (D104, D107). This entry reports every hypothesis
+    with its verdict and interval, for both calibrators (line 197), commits the
+    two outputs and brings the ROADMAP's P5 paragraph up to date. Its readings
+    are labelled as such and decide nothing. It does not settle line 199; a
+    later entry will, on the author's word.
+  - **The run.** The author's command, `py -3 p5_stage2.py --run`, from
+    `69d281f` (D108's merge) with a clean tree, in the core interpreter: Python
+    3.14.3, with numpy 2.4.4 and scipy 1.17.1 checked and no override, and with
+    G̃ by its hash, which the references, the scoring's record, G3's report and
+    Stage 1's output all carry. The process table shows it started at 02:25:21
+    UTC on 1 November 2026, the machine being on mains at the next read,
+    02:25:41. It wrote the cells and the report at 02:26:30, the report's `utc`
+    and both files' modification times, about 69 s later, in one launch; D108
+    had estimated a minute or two, and this session told the author at the
+    pre-flight to expect a few minutes. Its memory peak was not measured: at
+    02:25:41, with 20 s of CPU used, it held 1.29 GB in RAM and 1.71 GB
+    committed. The author pasted its last lines: "=== Stage 1: 1200 accepted
+    pairs, 0 reference failures; bins Identified 842 (70.2%), Partial 328
+    (27.3%), Flat 30 (2.5%, untestable) === ensemble: H-a Confirmed, H-b
+    Refuted, H-c Refuted, H-d Untestable; null unproven nre: H-a Inconclusive,
+    H-b Confirmed, H-c Inconclusive, H-d Untestable; null unproven written:
+    output\p5_stage2_report.json". No Stage 2 process was running at 02:27:18
+    UTC.
+  - **How to read the verdicts.** Each row gives the lower median over the
+    bin's (pair, seed) cells and its 95% interval, by line 132's crossed
+    bootstrap, 2,000 replicates from `default_rng([127, c, r])`, percentile.
+    Line 133 reads the interval: Confirmed, the whole of it on the expected
+    side of the expected value (for H-c, also wholly above the seed floor, line
+    123); Refuted, the whole of it beyond the refutation threshold;
+    Inconclusive otherwise. The verdicts are read individually at 95% without
+    adjustment for multiplicity (line 126). A percentile interval over five
+    seeds is narrower than nominal, declared and not corrected (line 132),
+    which is why the five seeds' medians stand beside each one. The reference's
+    Monte Carlo error is not resampled (line 132). No pair failed at any seed,
+    so nothing was excluded beyond the levels G3 removed. Figures are rounded
+    here to four places; the rule was applied to the report's own.
+  - **The ensemble's verdicts.** Its six cells, at both priors and the three
+    levels, trained at n* = 160,000 except under B at s = 0.005, at 40,000
+    (D104, D107):
+    - **H-a**, faithful when informed, the median of abs(d) in Identified,
+      expected below 0.01 and refuted above 0.03: **Confirmed**, 0.0013
+      [0.0012, 0.0015]. 842 pairs and 4,210 cells; the five seeds' medians
+      0.0014, 0.0014, 0.0013, 0.0013 and 0.0013.
+    - **H-b**, excess prior dependence, the median E in Partial, expected above
+      0.15 and refuted below 0.05: **Refuted**, 0.0252 [0.0200, 0.0316]. 328
+      pairs and 1,640 cells; the five seeds' medians 0.0358, 0.0206, 0.0272,
+      0.0214 and 0.0214.
+    - **H-c**, the leak into the identified regime, the median E in Identified,
+      expected above 0.05 and above the seed floor and refuted below 0.02:
+      **Refuted**, 0.0010 [−0.0007, 0.0028], the seed floor 0.0071. 842 pairs
+      and 4,210 cells; the five seeds' medians 0.0019, 0.0008, −0.0007, 0.0029
+      and 0.0002.
+    - **H-d**, interval infidelity, the median m in Flat, expected below 0.80
+      and refuted above 0.85: **untestable**, by Stage 1's floor, the bin
+      holding 30 of the 1,200 pairs (line 101; D106); no median and no share
+      above 0.95 (line 126) were taken.
+  - **The ratio estimator's verdicts.** Its four cells: under A at s = 0.001 at
+    n* = 10,000 and at 0.003 and 0.005 at 160,000, and under B at 0.005 alone,
+    at 40,000 (D104, D107):
+    - **H-a**, faithful when informed, the median of abs(d) in Identified,
+      expected below 0.01 and refuted above 0.03: **Inconclusive**, 0.0186
+      [0.0141, 0.0249]. 842 pairs and 4,210 cells; the five seeds' medians
+      0.0124, 0.0192, 0.0191, 0.0261 and 0.0222.
+    - **H-b**, excess prior dependence, the median E in Partial, expected above
+      0.15 and refuted below 0.05: **Confirmed**, 0.2318 [0.1838, 0.3145]. At
+      s = 0.005 alone (line 144; D104). 231 pairs and 1,155 cells; the five
+      seeds' medians 0.1965, 0.1932, 0.2024, 0.2211 and 0.3516.
+    - **H-c**, the leak into the identified regime, the median E in Identified,
+      expected above 0.05 and above the seed floor and refuted below 0.02:
+      **Inconclusive**, 0.1281 [0.0408, 0.2583], the seed floor 0.1083. At
+      s = 0.005 alone (line 144; D104). 139 pairs and 695 cells; the five
+      seeds' medians 0.1115, 0.1165, 0.2643, 0.0352 and 0.2212.
+    - **H-d**, interval infidelity, the median m in Flat, expected below 0.80
+      and refuted above 0.85: **untestable**, by Stage 1's floor, the bin
+      holding 30 of the 1,200 pairs (line 101; D106); no median and no share
+      above 0.95 (line 126) were taken.
+  - **The null.** Line 128 asks, per calibrator, H-a Confirmed, H-b, H-c and
+    H-d Refuted, and H-d's interval within [0.85, 0.95], and says that an
+    Inconclusive or untestable outcome anywhere leaves the null unproven. The
+    ensemble's first three verdicts are those the null asks, so H-d's being
+    untestable is what leaves its null unproven. The ratio estimator's H-a and
+    H-c, being Inconclusive, leave its null unproven by line 128, and its H-b
+    Confirmed is the opposite of the Refuted that line 128 asks. The report's
+    `stands` is false for both. Line 128's finding and the recommendation it
+    would carry are claimed for neither.
+  - **Beside the verdicts, deciding nothing.** All from the report, which also
+    holds the seeds' and levels' medians beside each interval of the re-scoring
+    and the secondary analysis.
+    - **By level (line 126).** The ensemble's H-a is 0.0011 at s = 0.001 on 400
+      pairs, 0.0014 at 0.003 on 303 and 0.0019 at 0.005 on 139; its H-b is
+      0.0259 at 0.003 on 97 and 0.0250 at 0.005 on 231; its H-c is 0.0013,
+      −0.0006 and 0.0056 on H-a's pairs. The ratio estimator's H-a is 0.0677,
+      0.0087 and 0.0068 on those pairs; its H-b and H-c have the one level.
+    - **Seed floors (line 111).** Ordinary medians, over each bin at the levels
+      each prior has: the ensemble, Identified 0.0071 (under A 0.0065, under B
+      0.0071), Partial 0.0128 (under A 0.0128, under B 0.0125), Flat 0.0171
+      (under A 0.0171, under B 0.0153); the ratio estimator, Identified 0.1083
+      (under A 0.0766, under B 0.1083), Partial 0.0733 (under A 0.0733, under B
+      0.0715), Flat 0.1338 (under A 0.1338, under B 0.0438), its values under B
+      from s = 0.005 alone. Only H-c's rule reads one, on H-c's own pairs: for
+      the ratio estimator those at s = 0.005, where the value under A is 0.0408
+      (post hoc) and the floor the same.
+    - **The re-scoring (lines 89 and 111).** The cut-offs moved by +0.05, to
+      0.95 and 0.55, give bins of 590, 575 and 35: the ensemble's verdicts are
+      unchanged (H-a 0.0011 [0.0010, 0.0012]; H-b 0.0171 [0.0134, 0.0227]; H-c
+      −0.0008 [−0.0025, 0.0010]); the ratio estimator has H-a Inconclusive and
+      H-b Confirmed (H-a 0.0286 [0.0203, 0.0397]; H-b 0.2013 [0.1527, 0.2729])
+      and H-c untestable, 17 pairs at s = 0.005 being under the floor of 100
+      (lines 75 and 144). Moved by −0.05, to 0.85 and 0.45, they give 971, 205
+      and 24: the ensemble's verdicts are unchanged (H-a 0.0015
+      [0.0013, 0.0016]; H-b 0.0310 [0.0249, 0.0378]; H-c 0.0025
+      [0.0009, 0.0044]), and so are the ratio estimator's (H-a 0.0174
+      [0.0135, 0.0228]; H-b 0.2571 [0.1953, 0.3229]; H-c 0.1520
+      [0.0843, 0.2479]), H-c's interval there lying above 0.05 but not above
+      that bin's seed floor, 0.0990. H-d is untestable throughout.
+    - **The secondary analysis (line 136).** On the 680 well-covered pairs
+      (56.7%), bins of 365, 285 and 30, which are 43.3%, 86.9% and all of the
+      primary bins (D106): the ensemble's verdicts are unchanged (H-a 0.0012
+      [0.0010, 0.0013]; H-b 0.0250 [0.0201, 0.0311]; H-c 0.0034
+      [0.0017, 0.0051]); the ratio estimator has H-a Inconclusive and H-b
+      Confirmed (H-a 0.0151 [0.0115, 0.0206]; H-b 0.2440 [0.1961, 0.3229]), the
+      latter on 206 pairs, and H-c untestable, on 60. H-d is untestable. The
+      null is not read on these (line 128).
+    - **The dose-response (line 134).** Spearman's correlation of c with the
+      median over seeds of abs(d), expected negative: the ensemble −0.3655
+      [−0.4086, −0.2501], the ratio estimator 0.2606 [0.1046, 0.3864]; on the
+      well-covered pairs −0.5539 [−0.5916, −0.3900] and 0.1298
+      [−0.0830, 0.3370].
+  - **A reading, this session's, labelled as such.** It decides nothing. The
+    figures marked post hoc are not in the report: this sitting took them from
+    the cells CSV and Stage 1's CSV, and no line of the draft pre-specifies
+    them. Those marked exploratory also cut by bands of true H, which comes
+    close to line 135's first item; they came from the reviews, and this
+    sitting recomputed each.
+    - **The ensemble.** H-a's whole interval lies below a sixth of its bound,
+      and all three testable verdicts stay the same at both shifted cut-offs
+      and on the well-covered pairs. So on these surfaces, at these training
+      sizes, its median error in H lies far inside H-a's bound where H is
+      identified, and its median excess prior dependence lies below H-b's
+      refutation threshold where H is partly identified. Neither bounds any one
+      pair: post hoc, abs(d) exceeds 0.01 on 10.3% of the Identified cells and
+      0.03 on 1.3%, and E exceeds 0.05 on 23.3% of the Partial cells. H-b
+      Refuted does not mean none: the median, 0.0252, is about 0.0050 in H by
+      E = (d_B − d_A) / 0.20, and its interval lies above zero and above the
+      Partial bin's seed floor. H-c's interval holds zero and lies below its
+      seed floor. None of this speaks to the ensemble's 90% intervals, since
+      H-d is untestable.
+    - **The ratio estimator's H-a.** s = 0.001 holds 400 of the bin's 842
+      pairs, and its network there trained at n* = 10,000, the only size at
+      which that cell passed G3; the other two levels trained at 160,000. The
+      median of abs(d) is 0.0677 there, against 0.0087 and 0.0068 at the
+      others, so the pooled median, 0.0186, sits between the two groups and
+      belongs to neither: post hoc, 19% of the cells at s = 0.001 and 78% of
+      the others lie below it, and over the other 442 pairs it would be 0.0080,
+      though its interval, [0.0064, 0.0102], still reaches 0.01. The verdict is
+      Inconclusive at both shifted cut-offs and on the well-covered pairs as
+      well. Post hoc, abs(d) exceeds 0.01 on 64.8% of the Identified cells and
+      0.03 on 39.8%: at s = 0.001 on 89.2% and 71.0%, at the other two levels
+      on 42.6% and 11.6%. At s = 0.001 the error has a direction, not a
+      zero-mean scatter: the signed median is −0.0644 (post hoc), and,
+      exploratory, it moves with true H, from 0.0247 below 0.12, prior A's
+      mean, to −0.2129 at 0.40 and above, the estimate lying from the exact
+      mean towards A's mean on 92% of the cells. The seeds' medians of abs(d)
+      run from 0.0324 to 0.1154 (post hoc). G3's rule took that size because it
+      tests stability under a doubling, not the size of the error (line 144):
+      on its 16 pilot surfaces, which enter no result (line 140), the median
+      ran 0.0338, 0.0329, 0.0451, 0.0142, 0.0274 and, at 320,000, 0.0092, the
+      first two within its 0.002 and no later rung stable. The data here cannot
+      separate the training size, 10,000, from the two sources line 126 names,
+      a pull towards A's mean and extrapolation outside A's training support:
+      on the well-covered pairs the median at s = 0.001 is still 0.0592, on 156
+      pairs, and, exploratory, the same direction appears at 160,000: over all
+      pairs with true H at 0.40 and above, 59 θ at each level, the signed
+      medians are −0.0332 at s = 0.003 and −0.0291 at 0.005, and on the
+      Identified pairs among them −0.0230 and −0.0141. The dose-response's
+      unexpected sign is a between-level effect: the level with the highest c,
+      s = 0.001, carries the largest median error, while within each level the
+      correlation is negative, −0.374, −0.457 and −0.494 for the ratio
+      estimator and −0.345, −0.322 and −0.201 for the ensemble, each on 400
+      pairs, post hoc and without an interval.
+    - **The ratio estimator's H-b and H-c.** At s = 0.005, E pairs a network
+      under A at 160,000 with one under B at 40,000, the only rung G3 passed
+      for it. H-b's Confirmed holds at both shifted cut-offs and on the
+      well-covered pairs; post hoc, E exceeds 0.15 on 63.9% of the Partial
+      cells and 0.05 on 79.2%, and is negative on 14.7%. On the Identified
+      pairs the median of abs(d) is 0.0068 under A, the report's, and post hoc
+      0.0526 under B; on the Partial pairs, post hoc, 0.0136 and 0.0410. G3's
+      pilot medians, on 16 surfaces and entering no result (line 140), were
+      0.0129 under A and 0.0402 under B at 40,000, and 0.0109 and 0.0171 at
+      160,000. By line 75 any excess is error in the learned ratio, an exact
+      ratio giving E = 0 up to Monte Carlo error. So H-b's Confirmed is error
+      in the learned ratios at s = 0.005, in the direction of a lean on the
+      prior, and the data cannot say how much of it comes from the smaller
+      training set under B or how much more training would remove; the
+      well-covered pairs limit extrapolation (line 136), not training size. On
+      the Partial pairs the post hoc signed medians are −0.0129 under A and
+      0.0227 under B, the direction line 126 reads as a pull towards each
+      network's prior mean: by E = (d_B − d_A) / 0.20 they alone would give E
+      of about 0.06 and 0.11, and an error of 0.04 of one sign in B alone would
+      give 0.2; medians do not add, and the median of the per-pair E is 0.2318.
+      Size alone does not produce such an error in every calibrator: the
+      ensemble under B at s = 0.005 also stands at 40,000, with post hoc
+      medians of abs(d) under B of 0.0034 on the Identified and 0.0033 on the
+      Partial pairs, which says nothing about how the ratio estimator's own
+      error depends on size. Exploratory, E falls with true H: on the Partial
+      pairs 0.499 below 0.1875, B's first percentile, 0.216 up to 0.32, B's
+      mean, and 0.057 above; on the Identified pairs 0.411, 0.080 and −0.177.
+      So H-c's median pools pairs of both signs, E being positive on 62.7% of
+      its cells (post hoc), and its seeds disagree: their medians run from
+      0.0352 to 0.2643, and its seed floor is 0.1083.
+    - **The limits.** All of this is on an emulated rough Heston surface, with
+      well-specified noise at three levels, two calibrators and two priors
+      against an exact reference; real surfaces, quotes at fixed strikes,
+      misspecified noise and other models are out of scope (lines 148 and 150).
+      The ratio estimator has no E at the two lower levels.
+  - **What follows.** Nothing is re-run, retrained or re-scored on the reading
+    above; any later change is a dated amendment stating what had been seen
+    (line 198). Line 135's exploratory items are not implemented in
+    `p5_stage2.py` and have not been run as such; the cuts by bands of true H
+    above come close to the first, and are labelled. Line 199 asks that code,
+    seeds, emulator, reference posteriors and trained networks be committed,
+    and it is not yet met: the 224 network files (56,977,753 bytes) and the
+    test set's stored samples (the archive of 173,486,939 bytes, over GitHub's
+    limit for a file) stand pinned by hashes and not committed (D104, D105,
+    D107), and D74 said the networks would be force-added by name after the
+    runs. D108's lean that this entry would settle it is not followed. At
+    07:54:47 UTC the author took this session's lean: a separate later entry
+    commits the networks as D74 said, and deposits the archive outside GitHub
+    under its pinned hash, with a dated amendment stating what changed, why,
+    and what had been seen (line 198), the place of deposit not yet chosen.
+    This sitting found that the archive alone holds every stored array Stage 2
+    read, each equal to its part file.
+  - **The commit of D108, and what OneDrive brought back, declared.** On the
+    author's word ("Commit Go", 01:28:50 UTC on 1 November 2026), having found
+    the Claude Code session of D97 idle, this session checked at 01:29:08 that
+    no Python process ran, that `HEAD`, `main`, `origin/main` and GitHub's
+    `main` were at D107's merge, and that exactly D108's two files were staged,
+    their blobs those the generator gave. `git commit` then stopped with
+    `.git/index.lock`: File exists. It read the lock at 01:29:23, 0 bytes, with
+    no git or Python process running, and the app's list of its recent
+    sessions, none running. At 01:30:08 it tried to move the lock into its own
+    folder, which failed with "Device or resource busy" and changed nothing. At
+    01:30:32 Windows' Restart Manager named no process holding it. It scanned
+    `.git` by date at 01:31:06 and `.git` and the working tree at 01:32:19,
+    reading git's refs, what was staged, `AUTO_MERGE` and two settings between
+    them. From 01:32:25 to 01:32:42 it hashed `output/` and `__pycache__`,
+    unchanged, and found `HEAD`, `main` and GitHub's `main` where they were,
+    git's status differing only by one restored file. The scans showed that
+    from 01:28:51 to 01:29:03 UTC, after the author's word and before the first
+    commit attempt, 1,055 files had come back with old dates, most of them
+    OneDrive's online-only placeholders: 716 under `.git`, being 509 under
+    `objects`, 99 under `refs` and 99 under `logs` (deleted branches and their
+    logs), 7 under `worktrees`, `AUTO_MERGE`, and `index.lock`, dated 25
+    October, this session having at first taken its time of day, 00:53:56, for
+    that day's; and 339 in the working tree, an old worktree under
+    `.claude/worktrees/` and `P5_v2_prefreeze_review_2026-10-22.md` at the
+    root, which has the name of a record under `docs/protocols/`. At 01:33:24,
+    under that go and on its own judgement, with no git process running, it
+    removed the lock with `rm`, and at 01:33:27 it committed D108 as `16d43a4`,
+    with both blobs as held. It pushed the branch by 01:33:42 and opened
+    PR #264 through GitHub's API at 01:33:51, the app's status showing no PR
+    attached and its request to attach this one being refused, and read the
+    PR's checks at 01:34:09, both running. At 01:36:38 the author gave the
+    cause: they had accepted a OneDrive prompt about old files. Left as they
+    came back, for the author's word: everything but the lock,
+    `objects/maintenance.lock` among it. None is under `output/` or tracked,
+    and git's clean-tree field, which ignores untracked files, is not affected.
+    The restored branches of P5's numbered entries are local only (this
+    sitting's read of GitHub's branches, below).
+  - **The merge of D108, declared.** This session read the PR's checks at
+    01:52:46, both passed, the last at 01:51:27. The author merged D108
+    (PR #264) at 01:52:57 UTC as `69d281f`, whose parents are D107's merge and
+    `16d43a4` and whose tree is `16d43a4`'s; the five checks on `main` passed,
+    the last at 02:10:15. On the author's word ("merged, check and delete the
+    branch", 02:14:53), having found the session of D97 idle and no Python or
+    git process, it read the PR, its merge commit and checks, `main` and the
+    branch through GitHub's API at 02:15:08; from 02:15:29 to 02:15:48 it moved
+    `main` to `69d281f` by a fetch and switched to it, so that no file was
+    touched (the hashes of `output/` and `__pycache__` unchanged, and the
+    modification times and sizes of `ROADMAP.md` and the 48 tracked files under
+    `output/`); and, the branch's heads, local and on GitHub, being at
+    `16d43a4`, it deleted the branch locally at 02:15:52 and on GitHub at
+    02:15:58, in two commands, GitHub then returning 404 for it, read by
+    02:16:20.
+  - **The pre-flight of Stage 2, declared.** On the author's word ("do the
+    pre-flight", 02:20:04), read-only and from D108's merge, from 02:22:34 to
+    02:23:33 UTC, by two helpers of this session's in its own folder, outside
+    the repository: git; the 13 files and G̃ against line 7; the 48 tracked
+    files under `output/` against their blobs; the scoring's record against
+    D108's hash and `HEAD`'s blob; the pins of D104, D105 and D107, recomputed;
+    G3's and Stage 1's reports; Stage 2's outputs absent; no file under
+    `output/` and none of the 13 an online-only placeholder, after what
+    OneDrive had done; then in the core interpreter, with
+    `PYTHONDONTWRITEBYTECODE=1`, `version_check()` and `git_state()`, and the
+    script's own read-only guards in the order `run()` calls them, from
+    `load_scores()`, which reads the record's rows, to `refuse_overwrite()`;
+    `load_refs()` with the stored samples, 1,200 pairs and 1,432 arrays; and
+    `weights_for()` on three pairs, for its time and size alone. It stopped
+    before `measures()`: no measure, bin or verdict was computed, and it
+    printed no score, posterior or surface value. The script's hold mode. All
+    passed, and `output/` and `__pycache__` were unchanged (hashed before and
+    after). The machine was on battery at 60%, with 3.2 of 15.6 GB of memory
+    free against an estimated peak of about 3.6 GB; this session read the
+    memory by application at 02:24:07 and asked the author to plug in, to free
+    memory and to decline any OneDrive prompt during the run. The author then
+    plugged in and launched.
+  - **Reads around the run, declared.** At 02:25:41, the author having said it
+    had started: the power, on mains; the memory, 1.9 GB of RAM and 3.7 GB of
+    commit free; the one Stage 2 process, its parent, start, CPU, memory and
+    command line; and no output yet. At 02:27:18, on the author's "check
+    progress" and paste: the power, on mains; the memory; no Stage 2 process;
+    and the two outputs' sizes and times. At 01:11:19, before D108's commit and
+    not declared there, the author having said they could not find the record
+    under a `.json` name: its path, size, time and attributes, and that no such
+    file exists. At 01:12:56 the author said they would open the record later,
+    and this session asked them to say if they did so before Stage 2 ran; at
+    07:54:47 UTC, shown this entry as held, they said they had not. Stage 2
+    read the record as D108 committed it, equal to its hash, and its
+    calculation and thresholds were fixed by the frozen draft and the bound
+    scripts. At 02:27:43 and 02:28:01 it printed the report, and at 02:28:37
+    G3's rungs for the ratio estimator's six cells and one of the ensemble's,
+    with a search of `HEAD`'s `ROADMAP.md` for 10,000. At 02:29:38 it gave the
+    author the verdicts with a first reading, labelled as its own, which said
+    that the ensemble showed no excess prior dependence in Identified or
+    Partial and that an error of 0.04 under B alone could give E of about 0.2;
+    the reading above replaces it and corrects both. It also asked for the
+    author's word on line 199 and on the record.
+  - **This sitting's checks.** Read-only, by a script of this session's in its
+    own folder, outside the repository, with a second for the post hoc and
+    exploratory figures, extended after the reviews; neither imports a script
+    of P5's, and both were written after reading `p5_stage2.py`, so they repeat
+    its definitions by separate code and are no test of those definitions;
+    outside the test run below, no script of P5's was imported and nothing was
+    trained, scored or drawn; `output/` and `__pycache__` are unchanged (hashed
+    before the test run and after the last generation of this entry). It found
+    no P5 process, the Claude Code session of D97 idle, and `main` at
+    `69d281f`, equal to GitHub's. 1, the cells: 12,000 rows, one per
+    calibrator, seed and pair, in the script's order; each row's i, j, s and
+    bin equal to the references and Stage 1's CSV; Ĥ under A and B and the
+    interval under A equal to the scoring's record; d, abs(d), S_exact, S_net
+    and E equal to those recomputed from it and the references' means, and E
+    within 1e-12 of (d_B − d_A) / 0.20; the 4,000 rows of the ratio estimator
+    at the two lower levels having no B network and those columns empty; and no
+    failure. 2, m: all 12,000 recomputed from the stored samples within 1e-13,
+    1,072 pairs by reweighting and 128 direct, compared and not printed, and no
+    median of m in the Flat bin taken; each of the archive's 1,432 arrays equal
+    to its part file. 3, the report: every figure recomputed from the cells and
+    c: the bins at the cut-offs, at both shifts and on the well-covered pairs;
+    the 32 rows of the four analyses, 22 scored and 10 untestable; each scored
+    row's point, its five seeds' medians and its per-level medians exactly, its
+    interval from the same streams within 1e-12, and its verdict by line 133;
+    the seed floors; the four dose-responses, each with its interval; and the
+    null. 4, the report's other fields: its commit, clean tree and versions, as
+    above; its input headers equal to the references' and the record's; Stage
+    1's digest and the G̃ hash that all carry, which G̃'s file hashes to. 5,
+    the pins of D104, D105 and D107 and the record's hash in D108, recomputed.
+    6, `output/` and `__pycache__` against their hashes after the pre-flight:
+    `output/` has gained the two files of Stage 2 and no other file in either
+    has changed or gone. 7, at 07:02 UTC, GitHub's list of branches: none of
+    P5's numbered entries' is on it, and the three local branches with P5 in
+    their name that are on it are older ones, which have no loose ref and did
+    not come back. The two committed blobs, with LF line endings and their
+    working copies CRLF, as with the earlier outputs:
+    - `output/p5_stage2_cells.csv`, 2,989,875 bytes,
+      `44e2746b1620592ee35f352f9e10a5d4a9d169cbdd418dbc95edc706fd1ac0f8`
+    - `output/p5_stage2_report.json`, 71,758 bytes,
+      `af49b308aa19ad0df1bb7fffe75a822f70816d03eeee4679ff0143a74533211a`
+  - **The tests.** While this entry was being drafted, before it was first
+    generated, on its branch, created in that command from D108's merge, this
+    sitting ran the eight P5 test files in the core interpreter, which like
+    CI's job has no torch, with `PYTHONDONTWRITEBYTECODE=1` and pytest's cache
+    off so that nothing is written in the repository, and with Stage 2's
+    outputs in place: 97 passed and 9 skipped, in 280 s, the machine on
+    battery, the counts and progress line of D108's run. `output/` and
+    `__pycache__` were unchanged (hashed before and after). No test reads Stage
+    2's outputs here: `test_p5_stage2.py` writes and reads files of those names
+    in temporary folders of its own.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    its sentence "The test set was scored from 30 October to 1 November 2026,
+    all 20,000 results ok (D108); nothing after it has been run." now reads
+    "The test set was scored from 30 October to 1 November 2026, all 20,000
+    results ok (D108). Stage 2 ran on 1 November 2026: for the ensemble H-a
+    Confirmed, H-b and H-c Refuted; for the ratio estimator H-a and H-c
+    Inconclusive, H-b Confirmed (H-b and H-c at s = 0.005 alone); H-d
+    untestable and the null unproven for both (D109); nothing after it has been
+    run." The rest of the bullet is unchanged.
+  - **Readings, declared.** For the pre-flight: `p5_stage2.py` at lines 113 to
+    150, 274 to 333, 439 to 490, 776 to 811 and 945 to 983;
+    `p5_g2_reference.py` at 862 to 901, 1092 to 1137 and 1215 to 1246;
+    `p5_g0_pilot.py` at 548 to 563; `p5_g1_emulator.py` at 119 to 188; a search
+    of the P5 scripts for definitions; and the frozen draft's line 7, by
+    Python, for its hashes. After the run: the draft's lines 115 to 138. In
+    this sitting: the draft's lines 77 to 88, 97 to 155 and 195 to 200, line 75
+    in part, by Python, for the learned ratio, and searches of it for the
+    re-scoring; `p5_stage2.py` from line 1 to 339 and from 430 to its end;
+    `p5_g2_reference.py` at 186 to 227, 725 to 739, 862 to 901 and 1092 to
+    1137, with searches of it for definitions; `test_p5_stage2.py`, searched
+    for the outputs' names and read at 362 to 393; a search of the README for
+    P5, which found none; `.gitignore`'s rule for `output/`, git's attributes
+    for the outputs and its line-ending setting; the tracked state of
+    everything under `output/`; G3's report, every cell's rungs; Stage 1's CSV
+    and report; `ROADMAP.md`, D106 for the form, lines 6890 to 6909, and
+    searches of it for P5's entries and line 199; and this session's own
+    transcript, notes and generator of D108, for the times of its acts, the
+    model and the form.
+  - **What was seen.** Stage 2's printed lines, as the author pasted them; its
+    report in the main, printed by this session's helpers at 02:27:43 and
+    02:28:01 and again in this sitting; the cells CSV's header and its first
+    three rows; G3's rungs for every cell; this sitting's table of correlations
+    and of post hoc medians by calibrator, level and bin, of which the reading
+    quotes some; and the two reviews' reports, with their further figures, and
+    this sitting's recomputation of them. The scoring's record, the references
+    and the stored samples were read by the scripts above and compared, not
+    printed. No median of m in the Flat bin has been taken, though the
+    committed CSV holds m at every pair.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (61 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, recomputed every figure from
+    the files with its own code, the intervals by the same streams, and found
+    every figure and verdict right, and the entry's form and its statement of
+    line 199. It found four statements wrong, all corrected: no P5 process at
+    02:27:18, when that read looked only for Stage 2's; 0.0068 marked post hoc,
+    when it is the report's; this sitting's post hoc figures given as those
+    above, when its table held more; and the hashing after the last generation
+    stated before it had been made, since made. A fifth point, that only seven
+    of G3's twelve cells' rungs had been shown, does not stand: all twelve are
+    in the output at 07:00:53, which its helper had cut short. It found
+    missing, now added: the seed floor that leaves H-c Inconclusive at the
+    −0.05 shift; the reads at 02:28:37, 06:48:13 and 07:06:15 and the first
+    reading given to the author at 02:29:38; the share above 0.95, not taken;
+    that the re-scoring's and the secondary analysis's seeds' and levels'
+    medians are in the report; and D108's lean, not followed. In the reading it
+    found three claims the data did not support as written, all changed: that
+    the Inconclusive mostly reflects one cell, when without that level the
+    median's interval still reaches 0.01; that the error was one-sided and not
+    scatter, when its sign moves with true H and the seeds' medians differ; and
+    that an error of 0.04 under B alone gives E of 0.2, which set an unsigned
+    median against a signed measure. It also asked for, and the reading now
+    has: the ensemble's statements put as medians that bound no one pair, with
+    their tails; G3's ladder quoted whole and the same sizes set side by side,
+    as pilot figures; line 75's reading of any excess as error in the learned
+    ratio; a pull towards the training mass named beside training size; and
+    H-c's median described as pooling both signs. Its wording points were taken
+    up: line 128's word for the ratio estimator; when the files came back; what
+    was left; the three older branches; the floors' median and H-c's own pairs;
+    and the paragraph's bare H-b. Beyond what it was asked, it cut the cells by
+    bands of true H, close to line 135's first exploratory item; the figures
+    quoted above from those cuts are labelled exploratory, and this sitting
+    recomputed each and found it equal. It wrote nothing in the repository, ran
+    no script of P5's and imported none, took no median of m, and saw m on two
+    pairs outside the Flat bin through this session's record. It read one
+    helper of this session's, its snapshots and one saved tool result, and ran
+    `stat` on `.git/refs/heads`; its one search from the repository's root
+    returned nothing from under the old worktree. Its helper files are in this
+    session's folder, outside the repository.
+  - **The second review.** One further independent read-only reader, which the
+    author asked for: a subagent on Claude Fable 5.1 (`claude-fable-5-1`, 31
+    tool uses), started by this session with none of its context, this session
+    having no way to open a separate one. Given the staged entry and the
+    sources, scoped to the science and barred from this session's transcript
+    and notes, it recomputed from the cells and the references all 32 rows of
+    the four analyses, the four dose-responses, the floors, the null and the
+    reading's figures, and found every verdict and every figure of the report
+    right. It found one pair wrong, corrected: the ensemble's post hoc medians
+    under B, right in value but given in the wrong order for the pairs. It
+    found three sentences misleading, all reworded: the signed medians at
+    160,000, taken over all pairs in a paragraph on the Identified bin, now
+    given on both; "mostly reflects that one cell", which a median pooled from
+    two groups does not; and "probably explains", where the per-level figures
+    show a between-level effect directly. For a fair reader it asked for the
+    ratio estimator's tails and the stability of its verdicts beside the
+    ensemble's, the training sizes and what H-d is in the Summary, and line
+    198's three elements, all now here, this sitting having recomputed each new
+    figure and found it equal. One sentence it proposed was not taken as
+    written: it put the ratio estimator's H-a interval between 0.01 and 0.03 at
+    each re-scoring, when at +0.05 it reaches 0.0397. Its wording points were
+    taken up: H-c's second condition; the Summary on the ratio estimator's
+    null; line 128 on H-b; the direction at s = 0.001; the two sources line 126
+    names; the learned ratios, with the error under A not left out as its
+    wording had it; that medians do not add; and H-b's threshold for the
+    ensemble. It found no place where the script departs from the protocol's
+    text so as to change a verdict or a stated figure. It noted that the lower
+    median, which the report labels, reads differently from the ordinary median
+    at two points outside the primary rows, the ratio estimator's H-b at +0.05
+    and on the well-covered pairs, 0.2013 against 0.2015 and 0.2440 against
+    0.2444, no verdict changing anywhere; and that the floor of 100 is applied
+    with no failures to the kept level's pairs, which is what leaves H-c
+    untestable at +0.05 and on the well-covered pairs, no primary verdict being
+    touched. It judged the entry fit to commit once its points were taken up,
+    and none as needing the author's decision. It also noted that each of the
+    1,432 part files is under GitHub's limit for a file, so that committing
+    them is an alternative to a deposit, a choice for the entry that settles
+    line 199. It wrote nothing in the repository, ran no script of P5's and
+    imported none, and took no median of m; it listed the names and sizes of
+    the files under `output/`. Its helper files are in this session's folder,
+    outside the repository. This final wording has had no third reading; the
+    author's "Commit Go" was given before this reader was started.
+  - **Who did what.** The author ran Stage 2, gave the word for D108's commit
+    and for its branch's deletion, merged D108, asked for the pre-flight,
+    plugged the machine in, and asked for this entry; shown it as held, they
+    said they had not opened the scoring's record before Stage 2 ran, took this
+    session's lean on line 199, and asked for a second review on Claude Fable
+    5.1. The commit, the PR, the reads, the merge check, the deletion, the
+    pre-flight and this sitting were held in the Claude Code session that wrote
+    D100 to D108, on Claude Opus 5.5 (`claude-opus-5-5`), the model its
+    transcript records for every message on 1 November 2026; it ran the checks
+    and the tests above, started the reviews, and wrote this entry, its reading
+    and the paragraph's change.
+  - **Not written.** Line 135's exploratory items; the entry that will settle
+    line 199, with its amendment and its deposit; any other amendment; any
+    change to the frozen draft or the files it binds, the amendment file, v2's
+    documents, v1, the decision sheet or an earlier entry; anything on OSF;
+    anything committed under `output/` beyond the two files above.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -8040,8 +8570,11 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   calibrator's null can be proven (D106). Seeds 2 to 5 were trained on 29 and
   30 October 2026, all 40 runs finishing with no retraining (D107). The test
   set was scored from 30 October to 1 November 2026, all 20,000 results ok
-  (D108); nothing after it has been run. Targets unchanged: arXiv q-fin.CP,
-  then SIFIN, Quantitative Finance or ACM ICAIF.
+  (D108). Stage 2 ran on 1 November 2026: for the ensemble H-a Confirmed, H-b
+  and H-c Refuted; for the ratio estimator H-a and H-c Inconclusive, H-b
+  Confirmed (H-b and H-c at s = 0.005 alone); H-d untestable and the null
+  unproven for both (D109); nothing after it has been run. Targets unchanged:
+  arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
