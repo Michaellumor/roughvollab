@@ -4,6 +4,8 @@
 
 One tested engine and five honest questions about how rough markets really are — each a hands-on explorer you can drive in the browser. No install.
 
+**▶ Featured study: [Faithful, or leaning on its prior?](https://roughvollab.com/p5/)** — P5, pre-registered, scores two neural calibrators against the exact posterior on an emulated rough Heston model.
+
 [![RoughVolLab — the five questions](docs/guide/roughvollab_map_v2.png)](https://roughvollab.com/tour/)
 
 [![tests](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml/badge.svg)](https://github.com/Michaellumor/roughvollab/actions/workflows/tests.yml)
@@ -13,8 +15,6 @@ One tested engine and five honest questions about how rough markets really are �
 ![Status](https://img.shields.io/badge/status-active%20research-orange)
 
 **New to the project?** Start with the [plain-English guide](https://roughvollab.com/guide/) — no installation needed — then drive every result yourself in the [interactive tour](https://roughvollab.com/tour/).
-
-**A pre-registered study.** [Faithful, or leaning on its prior?](https://roughvollab.com/p5/) is an interactive tour of P5, which measures two neural calibrators against the exact posterior on an emulated rough Heston model.
 
 **An open-source research programme on rough stochastic volatility — built on the principle of honest measurement over confident numbers.**
 
