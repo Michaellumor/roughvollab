@@ -9,17 +9,27 @@ title: >
   under rough stochastic volatility
 
 abstract: >
-  RoughVolLab is an open-source Python platform providing a unified
-  codebase for rough volatility research. It covers four layers:
-  (1) fractional Brownian motion simulation and Hurst estimation;
-  (2) multilevel Monte Carlo pricing of Asian and path-dependent
-  options under rough dynamics; (3) market friction modelling with
-  linear temporary price impact (Almgren-Chriss) and rough execution
-  slippage; and (4) a risk-aware deep hedging engine using path
-  signature features and direct CVaR (Rockafellar-Uryasev)
-  minimisation. The software accompanies an independent research
-  programme and each module is built to publication standard and is
-  individually citable.
+  RoughVolLab is an open-source Python laboratory for research on rough
+  stochastic volatility, built on the principle of honest measurement
+  over confident numbers. Rather than assuming the rough-volatility
+  paradigm, it asks whether roughness is identifiable, priceable,
+  tradeable and hedgeable. One heavily tested simulation engine
+  underlies the estimation, pricing, execution and hedging layers:
+  Hurst-exponent estimation from realised variance; pricing of
+  path-dependent options by multilevel and conditional Monte Carlo;
+  execution benchmarked against the Almgren-Chriss schedule; and deep
+  hedging with path-signature features and a CVaR objective. A
+  characteristic-function pricer underlies the calibration layer, which
+  fits the rough Heston model to option surfaces, including a live
+  Deribit pipeline. Five falsifiable questions are answered with what
+  the mathematics and the data yield, and four of the answers are
+  negative. Beside them, a pre-registered study (P5) audits the tools
+  used on the paradigm, scoring two neural calibrators against exact
+  reference posteriors on an emulated rough Heston model. Significant
+  design decisions are recorded with their predicted outcomes before
+  the result is known, an interactive tour lets readers drive each
+  result in the browser, and a plain-English guide explains the
+  paradigm.
 
 authors:
   - family-names: "Lumor"
