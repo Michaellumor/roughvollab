@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Faithful or Prior-Driven?</title>
+<meta name="description" content="An interactive tour of a pre-registered study: do neural calibrators for an emulated rough Heston model give the exact Bayesian answer, or lean on their priors more than it does?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+/* Layout: the repository tour's hub and explorers, its navy ground, serif questions and mono data; dark only, as that tour is. */
+:root{
+  color-scheme:dark;
+  --bg:#0d1420;--bg2:#111a2b;--panel:#131e30;--panel2:#0f1826;
+  --ink:#e8eef5;--dim:#9aaabd;--faint:#8c9baf;--line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.055);
+  --teal:#2dd4a7;--coral:#f26d4b;--amber:#e0a92e;--violet:#8b7cf0;
+  --identified:#22c497;--partial:#dca52a;--flat:#ef6444;--ens:#38bdd8;--nre:#a08ff5;
+  --serif:'Newsreader',Georgia,serif;--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg) radial-gradient(1400px 900px at 50% -10%,var(--bg2),var(--bg)) no-repeat;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;margin:0}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.eyebrow{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:16px}
+h1{font-family:var(--serif);font-size:clamp(32px,4.8vw,54px);font-weight:500;line-height:1.05;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1 em{font-style:italic;color:var(--violet)} h1 .g{color:var(--teal)}
+.lede{font-size:17px;color:var(--dim);max-width:760px;margin:18px 0 0;font-weight:300}
+.lede strong,.lede em{color:var(--ink);font-weight:400} .lede em{font-style:italic}
+.masthead{margin-bottom:26px}
+.mono{font-family:var(--mono)}
+code{font-family:var(--mono);font-size:.9em;color:var(--ink);background:rgba(255,255,255,.05);padding:1px 5px;border-radius:5px}
+
+/* tour navigation */
+.tournav{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:var(--mono)}
+.tournav.top{padding:4px 0 26px}
+.tournav.bot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
+.tn{display:inline-flex;align-items:center;gap:9px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);text-decoration:none;font-size:12.5px;max-width:40%;min-width:0;cursor:pointer;transition:border-color .15s,background .15s}
+.tn:hover{border-color:rgba(45,212,167,.55);background:rgba(45,212,167,.07)}
+.tn[disabled]{opacity:.3;pointer-events:none;border-style:dashed}
+.tn .ar{color:var(--teal);font-size:17px;line-height:1;flex:none}
+.tn .tx{display:flex;flex-direction:column;line-height:1.25;min-width:0;text-align:left}
+.tn.next .tx{text-align:right}
+.tn .bd{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.tn .tt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tn.hub{border-color:transparent;background:none;color:var(--dim);font-size:12px;white-space:nowrap;max-width:none}
+.tn.hub .pos{color:var(--faint);border-left:1px solid var(--line);padding-left:9px}
+@media(max-width:640px){.tn .tt{display:none}.tn .bd{font-size:11px;letter-spacing:.05em}.tn{max-width:none}.tn.hub .pos{display:none}}
+
+/* hub */
+.map{display:grid;grid-template-columns:1fr minmax(236px,290px) 1fr;gap:22px;align-items:start;margin-top:40px}
+.fam{display:flex;flex-direction:column;gap:18px;min-width:0}
+.fam-head{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;display:flex;align-items:center;gap:9px;color:var(--dim)}
+.fam-head i{width:9px;height:9px;border-radius:50%;flex:none}
+.card{position:relative;display:block;text-align:left;width:100%;text-decoration:none;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-left-width:3px;border-radius:15px;padding:17px 18px;transition:transform .18s,box-shadow .18s;cursor:pointer}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.3)}
+.chead{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+.qbadge{font-family:var(--mono);font-weight:700;font-size:11.5px;padding:3px 8px;border-radius:7px;color:#08131f;flex:none}
+.qtag{font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+.qtitle{font-family:var(--serif);font-size:20px;font-weight:500;line-height:1.14;margin-bottom:7px}
+.qdesc{font-size:13px;color:var(--dim);line-height:1.5;margin-bottom:14px}
+.cfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cv{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.cta{font-family:var(--mono);font-size:11.5px;color:var(--dim);white-space:nowrap;margin-left:auto}
+.card:hover .cta{color:var(--ink)}
+.card.teal{border-left-color:var(--teal)} .card.teal .qbadge{background:var(--teal)} .card.teal .cv{color:var(--teal);background:rgba(45,212,167,.1)}
+.card.coral{border-left-color:var(--coral)} .card.coral .qbadge{background:var(--coral)} .card.coral .cv{color:var(--coral);background:rgba(242,109,75,.1)}
+.card.amber{border-left-color:var(--amber)} .card.amber .qbadge{background:var(--amber)} .card.amber .cv{color:var(--amber);background:rgba(224,169,46,.1)}
+.card.violet{border-left-color:var(--violet)} .card.violet .qbadge{background:var(--violet)} .card.violet .cv{color:#b6abf7;background:rgba(139,124,240,.12)}
+.enginewrap{display:flex;justify-content:center;position:relative;align-self:center}
+.engine{display:block;width:100%;text-align:center;text-decoration:none;color:var(--ink);cursor:pointer;background:linear-gradient(165deg,rgba(45,212,167,.16),rgba(45,212,167,.03));border:1px solid rgba(45,212,167,.42);border-radius:20px;padding:26px 22px;transition:transform .18s,box-shadow .18s,border-color .18s}
+.engine:hover{transform:translateY(-3px);border-color:rgba(45,212,167,.75);box-shadow:0 16px 44px rgba(45,212,167,.18)}
+.engine .foundtag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+.engine .etitle{font-family:var(--serif);font-size:24px;font-weight:500;line-height:1.1;margin-top:6px}
+.engine .ecode{font-family:var(--mono);font-size:12px;color:var(--teal);margin-top:4px}
+.engine .edesc{font-size:12.5px;color:var(--dim);margin-top:13px;line-height:1.5}
+.engine .ecta{font-family:var(--mono);font-size:12px;color:var(--teal);margin-top:15px;display:inline-block}
+.bridge{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px}
+.meta{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:30px;padding:16px 20px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.02);font-family:var(--mono);font-size:12px;color:var(--dim)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--dim);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.legend i.dia{border-radius:1px;transform:rotate(45deg)}
+.legend i.hol{background:none!important;border:2px solid var(--dim)}
+.legend i.bar{height:3px;width:16px;border-radius:2px}
+.legend i.off{width:0;height:0;border-radius:0;border-style:solid;border-width:4px 0 4px 7px;border-color:transparent transparent transparent var(--dim)}
+.legend i.off.l{border-width:4px 7px 4px 0;border-color:transparent var(--dim) transparent transparent}
+.foot{margin-top:40px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;color:var(--faint);line-height:1.6;max-width:880px}
+.foot a{color:var(--dim)}
+@media(max-width:860px){.map{grid-template-columns:1fr;gap:16px}.enginewrap{order:-1}.bridge{grid-template-columns:1fr}}
+
+/* explorers */
+.guide{margin:0 0 26px;border:1px solid rgba(139,124,240,.28);border-radius:16px;background:linear-gradient(180deg,rgba(139,124,240,.06),rgba(139,124,240,.02));overflow:hidden}
+.fold-head{display:flex;align-items:center;gap:14px;padding:18px 24px;cursor:pointer;width:100%;background:none;border:0;text-align:left}
+.fold-head .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.fold-head h2{font-size:16px;font-weight:600;flex:1;margin:0;min-width:0}
+.fold-head .toggle{font-family:var(--mono);font-size:13px;color:var(--dim);white-space:nowrap}
+.fold-head .tag2{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--teal);border:1px solid rgba(45,212,167,.35);padding:3px 9px;border-radius:6px;white-space:nowrap}
+.guide .fold-head .dot{background:var(--violet)}
+.guide-body{padding:0 24px 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.step .n{font-family:var(--mono);font-size:13px;color:#b6abf7;font-weight:600;margin-bottom:8px}
+.step h3{font-size:15px;font-weight:600;margin:0 0 6px}
+.step p{font-size:14px;color:var(--dim);line-height:1.5;margin:0}
+@media(max-width:760px){.guide-body{grid-template-columns:1fr;gap:18px}.fold-head{padding:16px}.guide-body{padding:0 16px 18px}}
+.explorer{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+@media(max-width:900px){.explorer{grid-template-columns:minmax(0,1fr)}}
+.plotcard,.controls,.panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:20px;min-width:0}
+.plot-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.plot-title{font-size:14px;font-weight:600}
+.plot-sub{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.plotbox{width:100%;min-width:0}
+.plotbox svg{display:block;touch-action:pan-y}
+.readouts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:18px}
+.ro{border-radius:12px;padding:14px;border:1px solid var(--line2);background:rgba(255,255,255,.03);text-align:center;min-width:0}
+.ro .rn{font-size:11.5px;font-weight:600;letter-spacing:.03em;margin-bottom:7px;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:6px}
+.ro .rn i{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.ro .rn i.dia{border-radius:1px;transform:rotate(45deg)}
+.ro .rv{font-family:var(--mono);font-size:23px;font-weight:600;line-height:1.1}
+.ro .rd{font-size:11px;color:var(--faint);margin-top:6px}
+.verdict{margin-top:18px;padding:16px 18px;border-radius:12px;display:flex;gap:14px;align-items:flex-start}
+.verdict.ok{background:rgba(45,212,167,.08);border:1px solid rgba(45,212,167,.35)}
+.verdict.warn{background:rgba(224,169,46,.08);border:1px solid rgba(224,169,46,.35)}
+.verdict.bad{background:rgba(242,109,75,.08);border:1px solid rgba(242,109,75,.35)}
+.verdict.none{background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.verdict .ico{font-family:var(--mono);font-weight:700;font-size:18px;flex:none;line-height:1.3}
+.verdict.ok .ico{color:var(--teal)} .verdict.warn .ico{color:var(--amber)} .verdict.bad .ico{color:var(--coral)} .verdict.none .ico{color:var(--dim)}
+.verdict .vt{font-size:14px;line-height:1.55;color:var(--dim);min-width:0}
+.verdict .vt b{color:var(--ink);font-weight:600}
+.controls{position:sticky;top:calc(20px + env(safe-area-inset-top,0px))}
+@media(max-width:900px){.controls{position:static}}
+.ctl-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:10px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.chip{font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--violet);color:var(--ink)}
+.chip[aria-pressed="true"]{background:rgba(139,124,240,.14);border-color:var(--violet);color:var(--ink)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:999px;background:linear-gradient(90deg,var(--flat),var(--partial) 50%,var(--identified));outline-offset:6px;margin:8px 0 4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--bg);cursor:pointer}
+input[type=range].plain{background:rgba(255,255,255,.14)}
+.rng-ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--faint);margin-bottom:16px}
+.hint{font-size:12px;color:var(--faint);line-height:1.5;margin:0 0 14px}
+.bigval{font-family:var(--mono);font-size:34px;font-weight:600;line-height:1.1}
+.divider{height:1px;background:var(--line);margin:16px 0}
+.btn{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(139,124,240,.4);background:rgba(139,124,240,.12);color:var(--ink);font-size:13px;font-weight:500;cursor:pointer}
+.btn:hover{background:rgba(139,124,240,.22)}
+.advanced{margin-top:26px;border:1px solid rgba(45,212,167,.3);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,var(--panel),var(--panel2))}
+.advanced .fold-head .dot{background:var(--teal)}
+.adv-body{padding:0 24px 26px}
+@media(max-width:760px){.adv-body{padding:0 16px 20px}}
+.adv-intro{font-size:15px;color:var(--dim);max-width:780px;margin:0 0 16px;line-height:1.6}
+.adv-intro b{color:var(--ink);font-weight:600}
+.subcard{border-radius:14px;padding:16px;border:1px solid var(--line2);background:rgba(255,255,255,.025);margin-bottom:18px;min-width:0}
+.punchline{margin-top:16px;padding:16px 20px;border-radius:12px;background:rgba(139,124,240,.07);border:1px solid rgba(139,124,240,.28);font-size:14px;color:var(--dim);line-height:1.6}
+.punchline b{color:var(--ink);font-weight:600}
+.tablewrap{overflow-x:auto;margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:440px}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line2);font-variant-numeric:tabular-nums;white-space:nowrap}
+th{font-weight:600;color:var(--dim);font-size:12px} td{color:var(--ink);font-family:var(--mono);font-size:12.5px}
+th:first-child,td:first-child{text-align:left;font-family:var(--sans);white-space:normal}
+.src{font-family:var(--mono);font-size:10.5px;color:var(--faint);background:rgba(255,255,255,.04);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.tagp{font-family:var(--mono);font-size:10.5px;color:#f0c75e;background:rgba(224,169,46,.1);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.tagx{font-family:var(--mono);font-size:10.5px;color:#b6abf7;background:rgba(139,124,240,.14);border-radius:5px;padding:1px 6px;white-space:nowrap}
+.tip{position:fixed;z-index:30;pointer-events:none;background:#07101b;border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:8px 11px;font-size:12px;line-height:1.45;color:var(--ink);max-width:260px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+.tip .mono{color:var(--dim)}
+
+/* the journey */
+.journey{display:grid;grid-template-columns:330px minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.journey{grid-template-columns:minmax(0,1fr)}}
+.rail{display:flex;flex-direction:column;gap:2px;position:relative}
+.rail button{display:flex;gap:12px;align-items:flex-start;text-align:left;padding:9px 10px;border-radius:10px;border:1px solid transparent;background:none;cursor:pointer;color:var(--dim);font-size:13.5px;line-height:1.3}
+.rail button:hover{background:rgba(255,255,255,.04);color:var(--ink)}
+.rail button[aria-current="true"]{background:rgba(139,124,240,.12);border-color:rgba(139,124,240,.45);color:var(--ink)}
+.rail .nd{font-family:var(--mono);font-size:11px;color:var(--faint);flex:none;width:26px;padding-top:1px}
+.rail .st{flex:none;width:9px;height:9px;border-radius:50%;margin-top:4px}
+.jtitle{font-family:var(--serif);font-size:28px;font-weight:500;line-height:1.12;margin:0 0 12px;text-wrap:balance}
+.jtext{font-size:15px;color:var(--dim);line-height:1.6;margin:0 0 14px;max-width:680px}
+.jrow{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:11px 0;border-top:1px solid var(--line2);font-size:14px;line-height:1.5}
+.jrow .k{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding-top:2px}
+.jrow .v{color:var(--ink);min-width:0}
+@media(max-width:560px){.jrow{grid-template-columns:minmax(0,1fr);gap:3px}}
+.jnav{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.jnav .chip{flex:none}
+
+/* the verdict board */
+.board{display:flex;flex-direction:column;gap:18px}
+.hrow{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel),var(--panel2));padding:18px 20px;min-width:0}
+.hrow h3{font-family:var(--serif);font-size:20px;font-weight:500;line-height:1.18;margin:0 0 4px;text-wrap:balance}
+.hrow .bet{font-size:13px;color:var(--dim);margin:0 0 14px}
+.hcells{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.hcells{grid-template-columns:minmax(0,1fr)}.hrow{padding:16px}}
+.hcell{border:1px solid var(--line2);border-radius:12px;padding:14px;background:rgba(255,255,255,.025);min-width:0}
+.hc-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.hc-name{font-size:12.5px;font-weight:600;color:var(--dim);display:flex;align-items:center;gap:7px}
+.hc-name i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.hc-name i.dia{border-radius:1px;transform:rotate(45deg)}
+.pill{font-family:var(--mono);font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:20px;border:1px solid var(--line);color:var(--ink);background:rgba(255,255,255,.05);white-space:nowrap}
+.hc-num{font-family:var(--mono);font-size:15px;font-weight:600;margin-bottom:4px}
+.hc-note{font-size:12.5px;color:var(--dim);line-height:1.5;margin-top:8px}
+.nullbox{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+@media(max-width:760px){.nullbox{grid-template-columns:minmax(0,1fr)}}
+.banner{font-size:13px;color:var(--dim);padding:10px 14px;border-radius:10px;background:rgba(224,169,46,.08);border:1px solid rgba(224,169,46,.3);margin-bottom:16px}
+.banner b{color:var(--ink);font-weight:600}
+ul.plain{margin:0;padding-left:18px;color:var(--dim);font-size:14px;line-height:1.6}
+ul.plain li{margin-bottom:8px}
+ul.plain b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<nav class="tournav top" id="navTop" aria-label="tour navigation" hidden></nav>
+
+<!-- =============================== the hub =============================== -->
+<section id="v-hub" class="view">
+  <div class="eyebrow">RoughVolLab · P5 · a pre-registered study</div>
+  <h1>Faithful, or <span class="g">leaning on its prior?</span></h1>
+  <p class="lede">One question, asked carefully. Two kinds of neural network learn to calibrate an emulated rough Heston model: <em>do they give the exact Bayesian answer, or lean on their training more than that answer does?</em> Each card opens something you can drive yourself, and every result comes from the committed record.</p>
+
+  <div class="map">
+    <div class="fam">
+      <div class="fam-head"><i style="background:var(--teal)"></i>What the data can tell you</div>
+      <a class="card teal" href="#map" data-go="map">
+        <div class="chead"><span class="qbadge">Q1</span><span class="qtag">stage 1 · no network</span></div>
+        <div class="qtitle">How much does one surface tell you about H?</div>
+        <div class="qdesc">400 parameter points at three noise levels. At the lowest noise all 400 test surfaces are Identified, on this grid and box. At the highest, about a third are.</div>
+        <div class="cfoot"><span class="cv">— it depends on the noise</span><span class="cta">Open →</span></div>
+      </a>
+      <a class="card teal" href="#intervals" data-go="intervals">
+        <div class="chead"><span class="qbadge">H-d</span><span class="qtag">the intervals</span></div>
+        <div class="qtitle">Can you trust their error bars?</div>
+        <div class="qdesc">P5 bet that the networks' 90% intervals would hold too little of the exact answer where the data say least. Too few surfaces landed there to test it.</div>
+        <div class="cfoot"><span class="cv">— untestable here</span><span class="cta">Open →</span></div>
+      </a>
+    </div>
+    <div class="enginewrap">
+      <a class="engine" href="#journey" data-go="journey">
+        <div class="foundtag">the foundation</div>
+        <div class="etitle">The exact reference</div>
+        <div class="ecode">and how the study ran</div>
+        <div class="edesc">The answer every network is measured against, and the chain of gates that had to pass before any network saw the test set. Walk it step by step, including the version that stopped.</div>
+        <div class="ecta">Walk the study →</div>
+      </a>
+    </div>
+    <div class="fam">
+      <div class="fam-head"><i style="background:var(--coral)"></i>What the networks do with it</div>
+      <a class="card coral" href="#fidelity" data-go="fidelity">
+        <div class="chead"><span class="qbadge">H-a</span><span class="qtag">stage 2 · fidelity</span></div>
+        <div class="qtitle">When the data are clear, do they match the exact answer?</div>
+        <div class="qdesc">Set each network beside the exact answer on any of the 1,200 recorded surfaces.</div>
+        <div class="cfoot"><span class="cv">— ensemble's median yes; ratio estimator undecided</span><span class="cta">Open →</span></div>
+      </a>
+      <a class="card coral" href="#lean" data-go="lean">
+        <div class="chead"><span class="qbadge">H-b · H-c</span><span class="qtag">stage 2 · the prior</span></div>
+        <div class="qtitle">Do they lean on their training more than they should?</div>
+        <div class="qdesc">Train on two different beliefs about H, show the same surface, and see how far the answer moves compared with Bayes' rule.</div>
+        <div class="cfoot"><span class="cv">— ensemble little; ratio estimator yes where H is partly identified, at 0.5 vol point</span><span class="cta">Open →</span></div>
+      </a>
+    </div>
+  </div>
+
+  <div class="bridge">
+    <a class="card amber" href="#training" data-go="training">
+      <div class="chead"><span class="qbadge">G3</span><span class="qtag">the gate · training size</span></div>
+      <div class="qtitle">How much training is enough?</div>
+      <div class="qdesc">The gate that set each network's training size checks stability under a doubling. Climb its ladder and see why that matters for the ratio estimator.</div>
+      <div class="cfoot"><span class="cv">— stable is not the same as accurate</span><span class="cta">Open →</span></div>
+    </a>
+    <a class="card violet" href="#verdicts" data-go="verdicts">
+      <div class="chead"><span class="qbadge">8</span><span class="qtag">stage 2 · the verdicts</span></div>
+      <div class="qtitle">What did the study conclude?</div>
+      <div class="qdesc">The six scored verdicts with their intervals, and H-d, untestable, against the bets made in advance. Move the cut-offs and see what holds.</div>
+      <div class="cfoot"><span class="cv">— each null unproven</span><span class="cta">Open →</span></div>
+    </a>
+  </div>
+
+  <div class="meta">
+    <div>6 explorers · a 13-step walk · 1,200 recorded surfaces · 50 networks</div>
+    <div class="legend">
+      <span><i style="background:var(--teal)"></i>the data</span>
+      <span><i style="background:var(--coral)"></i>the networks</span>
+      <span><i style="background:var(--amber)"></i>the gate</span>
+      <span><i style="background:var(--violet)"></i>the verdicts</span>
+    </div>
+  </div>
+  <div class="foot">Michael Lumor. Part of <a href="../tour/">RoughVolLab</a>. Built from <code>main</code> at <code id="commitTag"></code> of <a href="https://github.com/Michaellumor/roughvollab">the repository</a>: Stage 2's report and cells (D109), G3's report (D104) and the frozen protocol v3, registered as <a href="https://doi.org/10.17605/OSF.IO/JUMHF">OSF JUMHF</a>. "Line N" means a line of that protocol, <a href="https://github.com/Michaellumor/roughvollab/blob/main/docs/protocols/P5_protocol_v3_draft.md"><code>P5_protocol_v3_draft.md</code></a>, and "D" numbers are entries in the repository's decision log, <a href="https://github.com/Michaellumor/roughvollab/blob/main/ROADMAP.md"><code>ROADMAP.md</code></a>. Results are recorded, so nothing here recomputes a posterior. The page runs in your browser.</div>
+</section>
+
+<!-- =============================== the journey =============================== -->
+<section id="v-journey" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · the foundation</div>
+    <h1>How did the study <em>run?</em></h1>
+    <p class="lede">P5 measures networks against an <strong>exact reference</strong>. Before any network saw the test set, a chain of gates had to pass, and each one could stop the study in public. One version did stop. Walk the chain below.</p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>What "exact" means here</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">the model</div><h3>A frozen emulator</h3><p>The pricer is too slow for this many runs, so G̃, interpolated from it with no training, replaces it. Networks and reference face the same G̃, so their gap, beyond Monte Carlo error, is the network's. <span class="src">lines 24, 48, 50, 54</span></p></div>
+      <div class="step"><div class="n">the reference</div><h3>Four long chains per surface</h3><p>Each surface gets a Metropolis sampler: four chains, 10,000 burn-in and 40,000 sampling steps each, kept only if R-hat is at most 1.01 and the effective sample size of H is at least 2,000. <span class="src">line 68</span></p></div>
+      <div class="step"><div class="n">the limit</div><h3>Exact, for the emulator</h3><p>It is exact up to Monte Carlo error, on synthetic surfaces with noise of a known form. It says nothing directly about real quotes or other models. <span class="src">lines 50, 150</span></p></div>
+    </div>
+  </div>
+  <div class="journey">
+    <div class="panel"><div class="ctl-label">The chain, in order</div><div class="rail" id="jRail"></div></div>
+    <div class="panel" id="jPanel"></div>
+  </div>
+  <div class="foot">Dates and counts from the decision log in <code>ROADMAP.md</code>, by entry, and from the frozen protocol, by line.</div>
+</section>
+
+<!-- =============================== Q1, the map =============================== -->
+<section id="v-map" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · stage 1 · <span class="mono" style="letter-spacing:0;text-transform:none">no network involved</span></div>
+    <h1>How much does one surface<br>tell you about <em>H?</em></h1>
+    <p class="lede">Show the exact calculation one noisy option surface. It starts from a prior belief about H and ends with a narrower one. <strong>Contraction, c,</strong> is under prior A and compares variances: 1 means the data settled it, 0 means the data added nothing. <span class="src">line 81</span></p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>Start here: a two-minute guided tour</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">01 · low noise</div><h3>Start at 0.1 vol point</h3><p>Each dot is one test surface. All 400 sit at the top: with quotes this clean, every test surface is Identified.</p></div>
+      <div class="step"><div class="n">02 · raise the noise</div><h3>Go to 0.3, then 0.5</h3><p>The same 400 parameter points, now with more noise. The cloud falls through the bands, from Identified to Partial and a few to Flat.</p></div>
+      <div class="step"><div class="n">03 · ask where</div><h3>Change the x-axis</h3><p>Switch between H, ν, ρ and ξ₀ to see how c varies with each. Line 99 names only H and ν. Tap a dot to read that surface.</p></div>
+    </div>
+  </div>
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top"><span class="plot-title">Contraction of each test surface</span><span class="plot-sub" id="mapSub"></span></div>
+      <div class="plotbox" id="mapPlot"></div>
+      <div class="legend" style="margin-top:10px"><span><i style="background:var(--identified)"></i>Identified</span><span><i style="background:var(--partial)"></i>Partial</span><span><i style="background:var(--flat)"></i>Flat</span></div>
+      <div class="readouts" id="mapRo"></div>
+      <div class="verdict none" id="mapV"><span class="ico"></span><span class="vt"></span></div>
+    </div>
+    <div class="controls">
+      <div class="ctl-label">Noise on the quotes</div>
+      <div class="chips" id="mapLevel"></div>
+      <div class="ctl-label">Plot c against</div>
+      <div class="chips" id="mapX"></div>
+      <div class="ctl-label">Where the bins are cut</div>
+      <div class="chips" id="mapCut"></div>
+      <p class="hint">The protocol cuts at 0.9 and 0.5. The two shifts are its own re-scoring, which decides nothing. <span class="src">line 89</span></p>
+      <div class="divider"></div>
+      <div class="ctl-label">The surface you tapped</div>
+      <div id="mapSel" class="hint">Tap a dot to read it here.</div>
+      <button class="btn" id="mapGo" type="button" hidden>See it in the fidelity explorer</button>
+    </div>
+  </div>
+  <div class="advanced" data-fold>
+    <button class="fold-head" type="button" aria-expanded="false"><span class="dot"></span><h2>Advanced: the whole map, in numbers</h2><span class="tag2">THE DETAIL</span><span class="toggle">show ▼</span></button>
+    <div class="adv-body" hidden>
+      <p class="adv-intro">Stage 1 used the references alone, before any network scored the test set. All 1,200 pairs were accepted. Each hypothesis is scored in one bin, so these counts decide what can be tested. <span class="src">line 101; D106</span></p>
+      <div class="subcard"><div class="tablewrap"><table id="mapTable"></table></div></div>
+      <p class="adv-intro"><b>Well covered</b> means each prior puts at least 0.001 of its mass on the exact 90% interval under that prior. A pair not well covered sits where a network has seen very few training surfaces. A well-covered pair may still. <span class="src">lines 99, 136</span></p>
+      <div class="punchline"><b>What it means.</b> The noise level is how the design reaches the weakly informed regime. At 0.1 vol point all 400 test surfaces are Identified, on this grid and box. By 0.5 vol point most surfaces only partly identify it, and just 30 of the 1,200 pairs are Flat. That shortage is why H-d could not be tested.</div>
+    </div>
+  </div>
+  <div class="foot">From <code>output/p5_stage1.csv</code> and the test set's references (D105, D106). The sentences beside the plot are computed from those numbers as you move the controls.</div>
+</section>
+
+<!-- =============================== H-a, fidelity =============================== -->
+<section id="v-fidelity" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · stage 2 · H-a</div>
+    <h1>When the data are clear,<br>do they match the <em>exact answer?</em></h1>
+    <p class="lede">A network's answer is one number, <strong>Ĥ</strong>. The exact posterior gives its own mean for the same surface, under the prior the network was trained on. The gap is <strong>d</strong>. H-a bet that where a surface pins H down, the median of |d| stays below 0.01. It uses the networks trained under prior A. <span class="src">lines 107, 121</span></p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>Start here: a two-minute guided tour</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">01 · one surface</div><h3>Read the three rows</h3><p>The top row is the exact answer, with its 90% interval. Below it are the two networks, one mark per training seed. Marks on the white dot mean no gap.</p></div>
+      <div class="step"><div class="n">02 · lowest noise</div><h3>Move through 0.1 vol point</h3><p>Drag the slider. The ensemble usually stays close to the exact mean, though not on every surface. Watch the ratio estimator, whose network here trained on 10,000 surfaces.</p></div>
+      <div class="step"><div class="n">03 · more noise</div><h3>Try 0.3 and 0.5</h3><p>The ratio estimator's networks at these levels trained on larger sets, 160,000 under prior A. Compare the gaps again, and turn on zoom when the marks crowd.</p></div>
+    </div>
+  </div>
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top"><span class="plot-title">One recorded surface, trained under prior A</span><span class="plot-sub" id="fSub"></span></div>
+      <div class="plotbox" id="fPlot"></div>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--ink)"></i>exact mean</span><span><i class="bar" style="background:rgba(232,238,245,.4)"></i>exact 90% interval</span><span><i style="background:var(--ens)"></i>ensemble, per seed</span><span><i class="dia" style="background:var(--nre)"></i>ratio estimator, per seed</span><span><i class="bar" style="background:var(--teal)"></i>true H</span><span id="fOffKey" hidden><i class="off l"></i><i class="off r"></i>outside H's range, at the axis edge</span></div>
+      <div class="readouts" id="fRo"></div>
+      <div class="verdict none" id="fV"><span class="ico"></span><span class="vt"></span></div>
+    </div>
+    <div class="controls">
+      <div class="ctl-label">Noise on the quotes</div>
+      <div class="chips" id="fLevel"></div>
+      <div class="ctl-label">Pick a surface</div>
+      <div class="bigval" id="fC"></div>
+      <div class="hint" id="fCh" style="margin:4px 0 0"></div>
+      <input type="range" id="fSlider" min="0" max="399" step="1" value="200" aria-label="Pick a recorded surface">
+      <div class="rng-ends" id="fEnds"></div>
+      <div class="ctl-label">Line the surfaces up by</div>
+      <div class="chips" id="fOrder"></div>
+      <div class="ctl-label">View</div>
+      <div class="chips" id="fZoom"></div>
+      <p class="hint">Recorded, not live. One ratio-estimator posterior took about 18 s at four threads, so you choose among recorded surfaces. <span class="src">D108</span></p>
+      <p class="hint">A <b>deep ensemble</b> is five networks, each giving a mean and a variance; Ĥ is their average. A <b>ratio estimator</b> is a classifier whose output, with the prior, gives a posterior; Ĥ is that posterior's mean, by sampling. <span class="src">line 75</span></p>
+    </div>
+  </div>
+  <div class="advanced" data-fold data-onopen="fidEcdf">
+    <button class="fold-head" type="button" aria-expanded="false"><span class="dot"></span><h2>Advanced: every Identified cell, and the verdict</h2><span class="tag2">THE DETAIL</span><span class="toggle">show ▼</span></button>
+    <div class="adv-body" hidden>
+      <p class="adv-intro">H-a pools every pair in the Identified bin at all five seeds: 842 pairs, 4,210 cells for each calibrator. The curve shows the share of those cells with |d| at or below each size. Further left means closer to the exact answer.</p>
+      <div class="chips" id="fGroup" style="margin-bottom:10px"></div>
+      <div class="subcard"><div class="plotbox" id="fEcdf"></div>
+        <div class="legend" style="margin-top:10px"><span><i class="bar" style="background:var(--ens)"></i>ensemble</span><span><i class="bar" style="background:var(--nre)"></i>ratio estimator</span><span><i class="bar" style="background:var(--dim)"></i>H-a's 0.01 and 0.03</span></div>
+      </div>
+      <div class="subcard"><div class="tablewrap"><table id="fTable"></table></div></div>
+      <div class="punchline" id="fPunch"></div>
+    </div>
+  </div>
+  <div class="foot">From <code>output/p5_stage2_cells.csv</code> and the test set's references. Verdicts and intervals are the report's (D109). Sentences beside the plot are computed from the cells and are about one surface; one surface decides nothing.</div>
+</section>
+
+<!-- =============================== H-b, H-c, the lean =============================== -->
+<section id="v-lean" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · stage 2 · H-b and H-c</div>
+    <h1>Do they lean on their training<br>more than they <em>should?</em></h1>
+    <p class="lede">Some lean is correct. Bayes' rule says a prior should move the answer when the data are weak. So P5 trains each network twice, under <strong>prior A</strong> (mean H 0.12) and <strong>prior B</strong> (mean H 0.32), and shows both the same surface. The exact answer moves too. <strong>E</strong> is how much further the network moves than the exact answer does, in units of the 0.20 between the priors' means. <span class="src">lines 62, 63, 108, 109</span></p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>Start here: a two-minute guided tour</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">01 · read a bar</div><h3>Filled is A, hollow is B</h3><p>Each row runs from the answer under prior A to the answer under prior B. A longer bar means the prior moved the answer further. The top row is what Bayes' rule requires.</p></div>
+      <div class="step"><div class="n">02 · weaken the data</div><h3>Drag toward low c</h3><p>The exact bar grows as the data weaken. That growth is correct. The question is whether a network's bar is longer still.</p></div>
+      <div class="step"><div class="n">03 · the missing rows</div><h3>Try 0.1 and 0.3 vol point</h3><p>The ratio estimator under B failed gate G3 at these levels, so it scores nothing there and has no E. Its H-b and H-c rest on 0.5 vol point alone. <span class="src">line 144; D104</span></p></div>
+    </div>
+  </div>
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top"><span class="plot-title">The same surface, under two priors</span><span class="plot-sub" id="lSub"></span></div>
+      <div class="plotbox" id="lPlot"></div>
+      <div class="legend" style="margin-top:8px"><span><i style="background:var(--dim)"></i>trained under A</span><span><i class="hol"></i>trained under B</span><span><i style="background:var(--ink)"></i>exact</span><span><i style="background:var(--ens)"></i>ensemble</span><span><i class="dia" style="background:var(--nre)"></i>ratio estimator</span><span><i class="bar" style="background:var(--teal)"></i>true H</span><span id="lOffKey" hidden><i class="off l"></i><i class="off r"></i>outside H's range, at the axis edge</span></div>
+      <div class="readouts" id="lRo"></div>
+      <div class="verdict none" id="lV"><span class="ico"></span><span class="vt"></span></div>
+    </div>
+    <div class="controls">
+      <div class="ctl-label">Noise on the quotes</div>
+      <div class="chips" id="lLevel"></div>
+      <div class="ctl-label">Pick a surface</div>
+      <div class="bigval" id="lC"></div>
+      <div class="hint" id="lCh" style="margin:4px 0 0"></div>
+      <input type="range" id="lSlider" min="0" max="399" step="1" value="200" aria-label="Pick a recorded surface">
+      <div class="rng-ends" id="lEnds"></div>
+      <p class="hint">The curves at the top are the two priors. A network has seen few training surfaces where its prior's curve is near zero. <span class="src">line 66</span></p>
+    </div>
+  </div>
+  <div class="advanced" data-fold data-onopen="leanScatter">
+    <button class="fold-head" type="button" aria-expanded="false"><span class="dot"></span><h2>Advanced: E across the whole test set</h2><span class="tag2">THE DETAIL</span><span class="toggle">show ▼</span></button>
+    <div class="adv-body" hidden>
+      <p class="adv-intro">Each dot is one surface, at the median over five seeds. H-b is scored on the Partial pairs and H-c on the Identified pairs. <span class="tagx">exploratory</span> Plotting E against true H comes close to line 135's first item, is not in the report and decides nothing.</p>
+      <div class="chips" id="lCal" style="margin-bottom:8px"></div>
+      <div class="chips" id="lGrp" style="margin-bottom:10px"></div>
+      <div class="subcard"><div class="plotbox" id="lScatter"></div>
+        <div class="legend" style="margin-top:10px"><span><i style="background:var(--identified)"></i>Identified</span><span><i style="background:var(--partial)"></i>Partial</span><span><i style="background:var(--flat)"></i>Flat</span></div>
+      </div>
+      <div class="verdict none" id="lBand"><span class="ico"></span><span class="vt"></span></div>
+      <div class="punchline" id="lPunch"></div>
+    </div>
+  </div>
+  <div class="foot">From <code>output/p5_stage2_cells.csv</code> and the test set's references. Verdicts and intervals are the report's (D109). The reading is the one D109 labels as such.</div>
+</section>
+
+<!-- =============================== H-d, the intervals =============================== -->
+<section id="v-intervals" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · H-d</div>
+    <h1>Can you trust their<br><em>error bars?</em></h1>
+    <p class="lede">A network also reports a 90% interval. <strong>m</strong> takes the networks trained under prior A, and is how much of the exact posterior under A falls inside that interval: a faithful interval scores 0.90. H-d bet that where the data say least, m falls below 0.80. <strong>P5 could not test this.</strong> This page shows what the test would have measured, and why it could not be run. <span class="src">lines 110, 124</span></p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>Start here: a two-minute guided tour</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">01 · the exact bell</div><h3>Faithful scores 0.90</h3><p>The curve is an exact posterior and the band is a network's interval. With the right width and centre, 90% of the bell is inside.</p></div>
+      <div class="step"><div class="n">02 · overconfidence</div><h3>Narrow the interval</h3><p>Drag the width down. At 0.78 of the exact width, m reaches H-d's 0.80. At 0.875 it reaches 0.85.</p></div>
+      <div class="step"><div class="n">03 · off-centre</div><h3>Slide the centre</h3><p>The right width, half a posterior standard deviation off, scores 0.858. Being off-centre also costs mass.</p></div>
+    </div>
+  </div>
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top"><span class="plot-title">What m measures</span><span class="tagx">a worked example, not P5's data</span></div>
+      <div class="plotbox" id="iPlot"></div>
+      <div class="readouts" id="iRo"></div>
+      <div class="verdict none" id="iV"><span class="ico"></span><span class="vt"></span></div>
+    </div>
+    <div class="controls">
+      <div class="ctl-label">Interval width, against exact</div>
+      <div class="bigval" id="iW"></div>
+      <input class="plain" type="range" id="iWidth" min="0.5" max="1.5" step="0.005" value="1" aria-label="Interval width against the exact width">
+      <div class="rng-ends"><span>0.5 · overconfident</span><span>1.5 · too wide</span></div>
+      <div class="ctl-label">Centre, in posterior SDs off</div>
+      <div class="bigval" id="iO"></div>
+      <input class="plain" type="range" id="iOff" min="0" max="1.5" step="0.01" value="0" aria-label="Centre offset in posterior standard deviations">
+      <div class="rng-ends"><span>0</span><span>1.5</span></div>
+      <div class="ctl-label">Line 126's cases</div>
+      <div class="chips" id="iPre"></div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:24px">
+    <div class="plot-top"><span class="plot-title">Why H-d could not be run: the Flat bin against its floor</span><span class="src">line 101</span></div>
+    <p class="hint" style="margin-top:0">A bin needs at least 10% of the accepted pairs and at least 100 pairs. H-d is scored in the Flat bin, and in every version of the analysis it falls short.</p>
+    <div class="plotbox" id="iFloor"></div>
+    <div class="verdict bad" id="iFv"><span class="ico">—</span><span class="vt"></span></div>
+  </div>
+  <div class="advanced" data-fold>
+    <button class="fold-head" type="button" aria-expanded="false"><span class="dot"></span><h2>Advanced: what follows from untestable</h2><span class="tag2">THE DETAIL</span><span class="toggle">show ▼</span></button>
+    <div class="adv-body" hidden>
+      <ul class="plain">
+        <li><b>It was declared first.</b> Stage 1 made this call from the references alone, before any network scored the test set, and nothing was adjusted to fill the bin. <span class="src">line 101; D106</span></li>
+        <li><b>It leaves each null unproven.</b> The null needs H-d's interval inside [0.85, 0.95], so an untestable H-d alone keeps the ensemble's null unproven. <span class="src">line 128; D109</span></li>
+        <li><b>No median was taken.</b> The cells file holds m at every pair, because Stage 2 computes it. No median of m in the Flat bin has been taken, and this page carries no m at all. <span class="src">D109</span></li>
+        <li><b>What stays unknown.</b> The verdicts say nothing about whether either calibrator's 90% intervals are honest where the data are weakest.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">The bell is the Gaussian reading in line 126, computed in your browser. The counts are from Stage 2's report (D109).</div>
+</section>
+
+<!-- =============================== G3, training =============================== -->
+<section id="v-training" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · gate G3</div>
+    <h1>How much training<br>is <em>enough?</em></h1>
+    <p class="lede">Gate G3 trained each network on 10,000 to 320,000 surfaces and checked two things on 16 pilot surfaces: that ξ₀ is recovered, and that the median |d| at a size stays within 0.002 of the median at <strong>twice</strong> that size. The training size is the largest that passes. <span class="src">line 144</span></p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>Start here: a two-minute guided tour</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">01 · the ensemble</div><h3>A quiet ladder</h3><p>Choose the ensemble. Its median |d| is small at every size, and most rungs pass.</p></div>
+      <div class="step"><div class="n">02 · the ratio estimator</div><h3>Prior A, 0.1 vol point</h3><p>The median jumps around. Only the first rung is stable, so the rule takes 10,000, though the median there is above H-a's 0.03.</p></div>
+      <div class="step"><div class="n">03 · the two failures</div><h3>Prior B, 0.1 or 0.3 vol point</h3><p>No rung passes, so these cells' seeds were not trained and they score nothing. That is why the ratio estimator has no E at those levels.</p></div>
+    </div>
+  </div>
+  <div class="explorer">
+    <div class="plotcard">
+      <div class="plot-top"><span class="plot-title">Median |d| on G3's 16 pilot surfaces, by training size</span><span class="plot-sub" id="tSub"></span></div>
+      <div class="plotbox" id="tPlot"></div>
+      <div class="legend" style="margin-top:8px" id="tLegend"></div>
+      <div class="readouts" id="tRo"></div>
+      <div class="verdict none" id="tV"><span class="ico"></span><span class="vt"></span></div>
+    </div>
+    <div class="controls">
+      <div class="ctl-label">Calibrator</div>
+      <div class="chips" id="tCal"></div>
+      <div class="ctl-label">Trained under</div>
+      <div class="chips" id="tPrior"></div>
+      <div class="ctl-label">Noise on the quotes</div>
+      <div class="chips" id="tLevel"></div>
+      <p class="hint">These are pilot figures. They set the training sizes and enter no result. <span class="src">line 140</span></p>
+    </div>
+  </div>
+  <div class="advanced" data-fold>
+    <button class="fold-head" type="button" aria-expanded="false"><span class="dot"></span><h2>Advanced: all twelve cells, and why it matters</h2><span class="tag2">THE DETAIL</span><span class="toggle">show ▼</span></button>
+    <div class="adv-body" hidden>
+      <div class="subcard"><div class="tablewrap"><table id="tTable"></table></div></div>
+      <div class="punchline"><b>A reading, labelled as such (D109).</b> G3 tests stability under a doubling, not the size of the error. So the rule can take a size where the error is still large and happens to hold steady for one step. For the ratio estimator under A at 0.1 vol point, it took 10,000 with a pilot median of 0.0338. On the test set the median of |d| at that level is 0.0677. E at 0.5 vol point pairs a network at 160,000 under A with one at 40,000 under B, so H-b's Confirmed cannot say how much of that excess comes from the smaller training set. Nothing was re-run or retrained on this reading.</div>
+    </div>
+  </div>
+  <div class="foot">From <code>output/p5_g3_report.json</code> (D104). By line 144 each cell passes or fails on its own, and P5 goes on with the cells that passed.</div>
+</section>
+
+<!-- =============================== the verdicts =============================== -->
+<section id="v-verdicts" class="view" hidden>
+  <div class="masthead">
+    <div class="eyebrow">P5 · stage 2 · the verdicts</div>
+    <h1>What did the study <em>conclude?</em></h1>
+    <p class="lede">Four bets, made in advance, scored for two calibrators. Each testable row gives a median and its 95% interval, set against the bet. <strong>Confirmed</strong> needs the whole interval on the expected side. <strong>Refuted</strong> needs the whole interval beyond the refutation line. Anything else is <strong>Inconclusive</strong>. <span class="src">lines 119 to 124, 133</span></p>
+  </div>
+  <div class="guide" data-fold>
+    <button class="fold-head" type="button" aria-expanded="true"><span class="dot"></span><h2>Start here: how to read a row</h2><span class="toggle">hide ▲</span></button>
+    <div class="guide-body">
+      <div class="step"><div class="n">01 · the shaded zones</div><h3>Two zones on each line</h3><p>The violet zone is what the bet expected. The grey zone is where it counts as refuted. The space between them is the gap.</p></div>
+      <div class="step"><div class="n">02 · the bar</div><h3>Where the interval sits</h3><p>The white bar is the 95% interval and the dot is the median. The small ticks are the five seeds' medians. The whole bar has to clear a line. The seed floor, on H-c, is how far two networks differ when only the training seed changes: the median abs(S) between seeds, the larger of the two priors' values. <span class="src">line 111</span></p></div>
+      <div class="step"><div class="n">03 · a bet, not a grade</div><h3>Refuted on H-b or H-c is not bad news</h3><p>H-b bet on a lean. For the ensemble, Refuted means the median lies below the refutation line. A smaller lean remains. Move the cut-offs above the board to see what holds.</p></div>
+    </div>
+  </div>
+  <div class="chips" id="vAn" style="margin-bottom:10px"></div>
+  <div class="banner" id="vBanner" hidden></div>
+  <div class="board" id="vBoard"></div>
+  <div class="panel" style="margin-top:22px">
+    <div class="plot-top"><span class="plot-title">The null, per calibrator</span><span class="src">line 128</span></div>
+    <p class="hint" style="margin-top:0">The null is the finding that a calibrator is faithful and its prior dependence is exactly Bayes' rule. It needs H-a Confirmed, H-b, H-c and H-d Refuted, and H-d's interval inside [0.85, 0.95]. It is read on the primary verdicts only.</p>
+    <div class="nullbox">
+      <div class="hcell"><div class="hc-top"><span class="hc-name"><i style="background:var(--ens)"></i>Ensemble</span><span class="pill">○ unproven</span></div><div class="hc-note">Its first three verdicts are what the null asks. H-d being untestable is what leaves it unproven.</div></div>
+      <div class="hcell"><div class="hc-top"><span class="hc-name"><i class="dia" style="background:var(--nre)"></i>Ratio estimator</span><span class="pill">○ unproven</span></div><div class="hc-note">Its H-a and H-c are Inconclusive, and its H-b Confirmed is the opposite of the Refuted the null asks.</div></div>
+    </div>
+    <p class="hint" style="margin:14px 0 0">So line 128's finding, and the recommendation it would carry, are claimed for neither calibrator.</p>
+  </div>
+  <div class="advanced" data-fold>
+    <button class="fold-head" type="button" aria-expanded="false"><span class="dot"></span><h2>Advanced: the reading, and its limits</h2><span class="tag2">D109'S READING</span><span class="toggle">show ▼</span></button>
+    <div class="adv-body" hidden id="vReading"></div>
+  </div>
+  <div class="foot">All verdicts, medians and intervals are from <code>output/p5_stage2_report.json</code> (D109), recomputed from the committed files by two AI reviewers. 2,000 replicates resampling seeds and pairs, percentile; read individually at 95% without adjustment for multiplicity; narrower than nominal over five seeds, as line 132 declares. Figures are rounded to four places.</div>
+</section>
+
+<nav class="tournav bot" id="navBot" aria-label="tour navigation" hidden></nav>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const D=/*__DATA__*/null;
+</script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const SC=D.scale,LV=['0.1','0.3','0.5'],BN=['Identified','Partial','Flat'],BC=['var(--identified)','var(--partial)','var(--flat)'];
+const CN={ensemble:'Ensemble',nre:'Ratio estimator'},CC={ensemble:'var(--ens)',nre:'var(--nre)'};
+const pH=p=>D.theta[Math.floor(p/3)][0]/SC,pJ=p=>p%3,pC=p=>D.pairs.c[p]/SC,pB=p=>D.pairs.bin[p],pA=p=>D.pairs.exA[p]/SC,pEB=p=>D.pairs.exB[p]/SC;
+const net=(cal,pr,p,q)=>{const v=D.nets[cal][pr][p*5+q];return v==null?null:v/SC};
+const low=a=>{a=[...a].sort((x,y)=>x-y);return a.length?a[Math.floor((a.length-1)/2)]:null};
+const minus=s=>s.replace(/-/g,'−');
+const f4=x=>minus(x.toFixed(4)),f3=x=>minus(x.toFixed(3)),f2=x=>minus(x.toFixed(2));
+const ivS=v=>`[${f4(v[0])}, ${f4(v[1])}]`;
+const NS='http://www.w3.org/2000/svg';
+function E(tag,a,txt){const e=document.createElementNS(NS,tag);for(const k in a||{})e.setAttribute(k,a[k]);if(txt!=null)e.textContent=txt;return e}
+function frame(host,h){host.innerHTML='';const w=Math.max(200,Math.floor(host.getBoundingClientRect().width)||640);const s=E('svg',{viewBox:`0 0 ${w} ${h}`,width:w,height:h,role:'img'});host.appendChild(s);return{s,w,h}}
+const Tx=(s,x,y,t,o)=>{const e=E('text',Object.assign({x,y,fill:'var(--dim)','font-size':11,'font-family':'JetBrains Mono, ui-monospace, monospace'},o||{}),t);s.appendChild(e);return e};
+const Ln=(s,x1,y1,x2,y2,o)=>{const e=E('line',Object.assign({x1,y1,x2,y2,stroke:'rgba(255,255,255,.09)','stroke-width':1},o||{}));s.appendChild(e);return e};
+const Ci=(s,cx,cy,r,o)=>{const e=E('circle',Object.assign({cx,cy,r},o||{}));s.appendChild(e);return e};
+const Re=(s,x,y,w,h,o)=>{const e=E('rect',Object.assign({x,y,width:Math.max(0,w),height:Math.max(0,h)},o||{}));s.appendChild(e);return e};
+const Di=(s,cx,cy,r,o)=>{const e=E('polygon',Object.assign({points:`${cx},${cy-r} ${cx+r},${cy} ${cx},${cy+r} ${cx-r},${cy}`},o||{}));s.appendChild(e);return e};
+const Off=(s,x,y,dir,o)=>{const e=E('polygon',Object.assign({points:`${x+dir*7},${y} ${x},${y-4} ${x},${y+4}`},o||{}));s.appendChild(e);return e};
+const onAx=(v,d)=>Math.min(d[1],Math.max(d[0],v)),offAx=(v,d)=>v<d[0]?-1:(v>d[1]?1:0);
+const offNote=n=>n?` ${n===1?'One estimate here falls':n+' estimates here fall'} outside H's range of 0.02 to 0.48, so the plot marks ${n===1?'it':'them'} at the axis edge. The ensemble's estimate is not clipped to that range. <span class="src">line 75</span>`:'';
+const offKey=(id,lo,hi)=>{const k=$(id);k.hidden=!(lo||hi);k.querySelector('.l').hidden=!lo;k.querySelector('.r').hidden=!hi};
+const sc=(d0,d1,r0,r1)=>v=>r0+(v-d0)/(d1-d0)*(r1-r0);
+const tip=$('#tip');
+function showTip(cx,cy,html){tip.innerHTML=html;tip.hidden=false;const r=tip.getBoundingClientRect();let x=cx+14,y=cy+14;if(x+r.width>innerWidth-8)x=cx-r.width-14;if(y+r.height>innerHeight-8)y=cy-r.height-14;tip.style.left=Math.max(6,x)+'px';tip.style.top=Math.max(6,y)+'px'}
+function hideTip(){tip.hidden=true}
+function nearest(s,pts,html,onPick){const ring=E('circle',{r:8,fill:'none',stroke:'var(--ink)','stroke-width':1.5,visibility:'hidden','pointer-events':'none'});s.appendChild(ring);
+  const find=ev=>{const r=s.getBoundingClientRect(),k=s.viewBox.baseVal.width/r.width,mx=(ev.clientX-r.left)*k,my=(ev.clientY-r.top)*k;let b=null,bd=26*26;for(const p of pts){const d=(p.x-mx)**2+(p.y-my)**2;if(d<bd){bd=d;b=p}}return b};
+  s.addEventListener('pointermove',ev=>{const b=find(ev);if(b){showTip(ev.clientX,ev.clientY,html(b));ring.setAttribute('cx',b.x);ring.setAttribute('cy',b.y);ring.setAttribute('visibility','visible')}else{hideTip();ring.setAttribute('visibility','hidden')}});
+  s.addEventListener('pointerleave',()=>{hideTip();ring.setAttribute('visibility','hidden')});
+  if(onPick)s.addEventListener('click',ev=>{const b=find(ev);if(b)onPick(b)})}
+function chips(id,opts,get,set){const h=$(id);h.innerHTML='';for(const o of opts){const b=document.createElement('button');b.type='button';b.className='chip';b.textContent=o.label;b.setAttribute('aria-pressed',String(get()===o.v));b.addEventListener('click',()=>{set(o.v);chips(id,opts,get,set)});h.appendChild(b)}}
+function setV(id,cls,ico,html){const v=$(id);v.className='verdict '+cls;v.querySelector('.ico').textContent=ico;v.querySelector('.vt').innerHTML=html.replace(/H-([a-d])\b/g,'<span style="white-space:nowrap">H-$1</span>')}
+function ro(n,v,d,mark){return `<div class="ro"><div class="rn">${mark||''}${n}</div><div class="rv">${v}</div><div class="rd">${d||''}</div></div>`}
+const mkE='<i style="background:var(--ens)"></i>',mkN='<i class="dia" style="background:var(--nre)"></i>';
+
+/* ---------- the surfaces, lined up ---------- */
+const cache={};
+function lineup(level,order){const k=level+order;if(cache[k])return cache[k];const a=[];for(let i=0;i<400;i++)a.push(i*3+level);a.sort(order==='c'?(x,y)=>pC(x)-pC(y):(x,y)=>pH(x)-pH(y));return cache[k]=a}
+
+/* ---------- Q1, the map ---------- */
+const M={level:0,x:0,cut:'primary',sel:null};
+const XV=[{label:'H',d:[.02,.48]},{label:'ν',d:[.05,.35]},{label:'ρ',d:[-.9,-.7]},{label:'ξ₀',d:[.04,.25]}];
+const cutsOf=k=>k==='plus'?[.95,.55]:k==='minus'?[.85,.45]:[.9,.5];
+const binAt=(c,cu)=>c>=cu[0]?0:(c>=cu[1]?1:2);
+function renderMap(){
+  chips('#mapLevel',LV.map((l,i)=>({label:l+' vol pt',v:i})),()=>M.level,v=>{M.level=v;renderMap()});
+  chips('#mapX',XV.map((o,i)=>({label:o.label,v:i})),()=>M.x,v=>{M.x=v;renderMap()});
+  chips('#mapCut',[{label:'0.9, 0.5',v:'primary'},{label:'+0.05',v:'plus'},{label:'−0.05',v:'minus'}],()=>M.cut,v=>{M.cut=v;renderMap()});
+  const cu=cutsOf(M.cut),xv=XV[M.x],host=$('#mapPlot'),{s,w,h}=frame(host,340),l=44,r=86,t=10,b=40;
+  const X=sc(xv.d[0],xv.d[1],l,w-r),Y=sc(0,1,h-b,t),ps=[];for(let i=0;i<400;i++)ps.push(i*3+M.level);
+  const ymin=Math.min(0,...ps.map(pC));
+  Re(s,l,Y(1),w-r-l,Y(cu[0])-Y(1),{fill:'rgba(34,196,151,.07)'});Re(s,l,Y(cu[0]),w-r-l,Y(cu[1])-Y(cu[0]),{fill:'rgba(220,165,42,.06)'});Re(s,l,Y(cu[1]),w-r-l,Y(0)-Y(cu[1]),{fill:'rgba(239,100,68,.06)'});
+  [0,.25,.5,.75,1].forEach(v=>{Ln(s,l,Y(v),w-r,Y(v));Tx(s,l-8,Y(v)+4,v.toFixed(2),{'text-anchor':'end'})});
+  for(let k=0;k<5;k++){const v=xv.d[0]+k*(xv.d[1]-xv.d[0])/4;Ln(s,X(v),h-b,X(v),h-b+4);Tx(s,X(v),h-b+18,minus(v.toFixed(2)),{'text-anchor':'middle'})}
+  Tx(s,(l+w-r)/2,h-6,xv.label==='H'?'true H':'true '+xv.label,{'text-anchor':'middle',fill:'var(--faint)'});
+  Tx(s,w-r+8,Y((1+cu[0])/2)+4,'Identified',{fill:'var(--ink)'});Tx(s,w-r+8,Y((cu[0]+cu[1])/2)+4,'Partial',{fill:'var(--ink)'});Tx(s,w-r+8,Y(cu[1]/2)+4,'Flat',{fill:'var(--ink)'});
+  const n=[0,0,0],pts=[];
+  for(const p of ps){const c=pC(p),b_=binAt(c,cu);n[b_]++;const x=X(D.theta[Math.floor(p/3)][M.x]/SC),y=Y(Math.max(ymin,c));Ci(s,x,y,3.4,{fill:BC[b_],stroke:'var(--panel)','stroke-width':1});pts.push({x,y,p})}
+  nearest(s,pts,o=>{const th=D.theta[Math.floor(o.p/3)];return `<b>c = ${f3(pC(o.p))}</b> · ${BN[binAt(pC(o.p),cu)]}<br><span class="mono">H ${f3(th[0]/SC)} · ν ${f3(th[1]/SC)}<br>ρ ${f3(th[2]/SC)} · ξ₀ ${f3(th[3]/SC)}</span>`},o=>{M.sel=o.p;mapSel()});
+  $('#mapSub').textContent=`${LV[M.level]} vol point · 400 surfaces`;
+  $('#mapRo').innerHTML=ro('Identified',n[0],'c ≥ '+cu[0],'<i style="background:var(--identified)"></i>')+ro('Partial',n[1],cu[1]+' ≤ c < '+cu[0],'<i style="background:var(--partial)"></i>')+ro('Flat',n[2],'c < '+cu[1],'<i style="background:var(--flat)"></i>');
+  const cls=n[0]===400?'ok':(n[2]>0?'bad':'warn'),ic=n[0]===400?'✓':'!';
+  setV('#mapV',cls,ic,`At ${LV[M.level]} vol point, <b>${n[0]}</b> of 400 surfaces leave H Identified, <b>${n[1]}</b> Partial and <b>${n[2]}</b> Flat.`);
+  mapSel();
+}
+function mapSel(){const h=$('#mapSel'),b=$('#mapGo');if(M.sel==null||pJ(M.sel)!==M.level){h.textContent='Tap a dot to read it here.';b.hidden=true;return}
+  const p=M.sel,th=D.theta[Math.floor(p/3)],cov=D.pairs.wc[p]?'well covered':'not well covered';
+  h.innerHTML=`<span class="mono" style="color:var(--ink)">H ${f3(th[0]/SC)} · ν ${f3(th[1]/SC)}<br>ρ ${f3(th[2]/SC)} · ξ₀ ${f3(th[3]/SC)}<br>c ${f3(pC(p))}</span><br>${BN[pB(p)]} at the protocol's cut-offs, ${cov}.`;b.hidden=false}
+function mapTable(){const R=D.report.primary.bins,wc=['Identified','Partial','Flat'].map(b=>R[b].n_well_covered);const rows=BN.map((b,i)=>`<tr><td>${b}</td><td>${R[b].count}</td><td>${(R[b].count/12).toFixed(1)}%</td><td>${R[b].per_level['0.001']}</td><td>${R[b].per_level['0.003']}</td><td>${R[b].per_level['0.005']}</td><td>${wc[i]}</td></tr>`).join('');
+  $('#mapTable').innerHTML=`<tr><th>Bin</th><th>Pairs</th><th>Share</th><th>0.1 vol pt</th><th>0.3</th><th>0.5</th><th>Well covered</th></tr>${rows}<tr><td>All</td><td>1,200</td><td>100%</td><td>400</td><td>400</td><td>400</td><td>${wc[0]+wc[1]+wc[2]}</td></tr>`}
+
+/* ---------- rows on the H axis ---------- */
+function hAxis(s,w,h,dom,l,r,t,b){const X=sc(dom[0],dom[1],l,w-r);const span=dom[1]-dom[0],st=span>.2?.1:span>.08?.02:span>.03?.01:.005;let v=Math.ceil(dom[0]/st-1e-9)*st;for(;v<=dom[1]+1e-9;v+=st){Ln(s,X(v),t,X(v),h-b);Tx(s,X(v),h-b+16,v.toFixed(st<.01?3:2),{'text-anchor':'middle'})}Tx(s,(l+w-r)/2,h-4,'H',{'text-anchor':'middle',fill:'var(--faint)'});return X}
+
+/* ---------- H-a, fidelity ---------- */
+const F={level:0,order:'c',idx:200,zoom:false,group:'all'};
+function renderFid(){
+  chips('#fLevel',LV.map((l,i)=>({label:l+' vol pt',v:i})),()=>F.level,v=>{F.level=v;renderFid()});
+  chips('#fOrder',[{label:'contraction c',v:'c'},{label:'true H',v:'H'}],()=>F.order,v=>{const p=lineup(F.level,F.order)[F.idx];F.order=v;F.idx=lineup(F.level,v).indexOf(p);renderFid()});
+  chips('#fZoom',[{label:'whole range',v:false},{label:'zoom in',v:true}],()=>F.zoom,v=>{F.zoom=v;renderFid()});
+  const sl=$('#fSlider');sl.value=F.idx;const arr=lineup(F.level,F.order),p=arr[F.idx];
+  $('#fEnds').innerHTML=F.order==='c'?'<span>least informed</span><span>most informed</span>':'<span>lowest H</span><span>highest H</span>';
+  $('#fC').textContent='c = '+f3(pC(p));$('#fCh').textContent=`${BN[pB(p)]} · surface ${F.idx+1} of 400 by ${F.order==='c'?'c':'true H'}`;
+  $('#fSub').textContent=`${LV[F.level]} vol point`;
+  const ex=pA(p),tH=pH(p),q05=D.pairs.q05[p]/SC,q95=D.pairs.q95[p]/SC,E5=[0,1,2,3,4].map(q=>net('ensemble','A',p,q)),N5=[0,1,2,3,4].map(q=>net('nre','A',p,q));
+  let dom=[.02,.48];if(F.zoom){const all=[ex,tH,q05,q95,...E5,...N5],a=Math.min(...all),b=Math.max(...all),pad=Math.max(.004,(b-a)*.12);dom=[a-pad,b+pad]}
+  const nar=$('#fPlot').getBoundingClientRect().width<480,l=nar?70:118,r=14,t=26,b=34,{s,w,h}=frame($('#fPlot'),226),X=hAxis(s,w,h,dom,l,r,t,b),rows=[t+26,t+80,t+134];
+  if(.12>=dom[0]&&.12<=dom[1]){Ln(s,X(.12),t-4,X(.12),h-b,{stroke:'rgba(255,255,255,.28)'});Tx(s,X(.12),t-8,"A's mean",{'text-anchor':'middle',fill:'var(--faint)','font-size':10})}
+  Ln(s,X(tH),t,X(tH),h-b,{stroke:'var(--teal)','stroke-width':2});
+  ['Exact',CN.ensemble,nar?'Ratio':CN.nre].forEach((n,i)=>Tx(s,6,rows[i]+4,n,{fill:'var(--ink)','font-size':12,'font-family':'Inter, system-ui, sans-serif','font-weight':500}));
+  Re(s,X(q05),rows[0]-4,X(q95)-X(q05),8,{fill:'rgba(232,238,245,.34)',rx:4});
+  const pts=[{x:X(ex),y:rows[0],t:`<b>Exact mean</b> ${f4(ex)}<br>90% interval [${f3(q05)}, ${f3(q95)}]`},{x:X(tH),y:t+6,t:`<b>True H</b> ${f4(tH)}`}];
+  Ci(s,X(ex),rows[0],6,{fill:'var(--ink)',stroke:'var(--panel)','stroke-width':2});
+  let nLo=0,nHi=0;E5.forEach((v,q)=>{const y=rows[1]+(q-2)*5,xv=X(onAx(v,dom)),o=offAx(v,dom),st={fill:'var(--ens)',stroke:'var(--panel)','stroke-width':1.5};if(o){if(o<0)nLo++;else nHi++;Off(s,xv,y,o,st)}else Ci(s,xv,y,4.5,st);pts.push({x:xv,y,t:`<b>Ensemble, seed ${q+1}</b><br><span class="mono">Ĥ ${f4(v)} · d ${f4(v-ex)}</span>`})});
+  N5.forEach((v,q)=>{const y=rows[2]+(q-2)*5;Di(s,X(v),y,5.5,{fill:'var(--nre)',stroke:'var(--panel)','stroke-width':1.5});pts.push({x:X(v),y,t:`<b>Ratio estimator, seed ${q+1}</b><br><span class="mono">Ĥ ${f4(v)} · d ${f4(v-ex)}</span>`})});
+  nearest(s,pts,o=>o.t);
+  const dE=low(E5.map(v=>Math.abs(v-ex))),dN=low(N5.map(v=>Math.abs(v-ex)));
+  $('#fRo').innerHTML=ro('True H',f4(tH),'what set the surface','<i style="background:var(--teal)"></i>')+ro('Exact mean',f4(ex),'under prior A','<i style="background:var(--ink)"></i>')+ro('Ensemble |d|',f4(dE),'median of 5 seeds',mkE)+ro('Ratio est. |d|',f4(dN),'median of 5 seeds',mkN);
+  const say=d=>d<.01?'inside H-a\'s 0.01':(d<=.03?'between 0.01 and 0.03':'past 0.03');
+  const ctx=pB(p)===0?'':` <b>H-a is scored only on Identified pairs, and this one is ${BN[pB(p)]},</b> so it is context here.`;
+  const worst=Math.max(dE,dN),cls=pB(p)!==0?'none':(worst<.01?'ok':(worst<=.03?'warn':'bad'));
+  setV('#fV',cls,worst<.01?'✓':'!',`The ensemble's median |d| across seeds is <b>${f4(dE)}</b>, ${say(dE)}. The ratio estimator's is <b>${f4(dN)}</b>, ${say(dN)}.${ctx} One surface decides nothing: the verdict pools every Identified cell.${offNote(nLo+nHi)}`);
+  offKey('#fOffKey',nLo,nHi);
+}
+function fidEcdf(){
+  chips('#fGroup',[{label:'all levels',v:'all'},...LV.map((l,i)=>({label:l+' vol pt',v:i}))],()=>F.group,v=>{F.group=v;fidEcdf()});
+  const collect=cal=>{const a=[];for(let p=0;p<1200;p++){if(pB(p)!==0)continue;if(F.group!=='all'&&pJ(p)!==F.group)continue;for(let q=0;q<5;q++)a.push(Math.max(1e-5,Math.abs(net(cal,'A',p,q)-pA(p))))}return a.sort((x,y)=>x-y)};
+  const ce=collect('ensemble'),cn=collect('nre'),{s,w,h}=frame($('#fEcdf'),300),l=46,r=16,t=12,b=40,lg=sc(-5,-.5,l,w-r),Y=sc(0,1,h-b,t),X=v=>lg(Math.log10(v));
+  [0,.25,.5,.75,1].forEach(v=>{Ln(s,l,Y(v),w-r,Y(v));Tx(s,l-8,Y(v)+4,Math.round(v*100)+'%',{'text-anchor':'end'})});
+  [1e-5,1e-4,1e-3,.01,.1].forEach(v=>{Ln(s,X(v),h-b,X(v),h-b+4);Tx(s,X(v),h-b+18,v>=.001?String(v):v.toExponential(0),{'text-anchor':'middle'})});
+  Tx(s,(l+w-r)/2,h-6,'|d|, on a log scale',{'text-anchor':'middle',fill:'var(--faint)'});
+  [[.01,'0.01'],[.03,'0.03']].forEach(([v,lab])=>{Ln(s,X(v),t,X(v),h-b,{stroke:'var(--dim)'});Tx(s,X(v)+4,t+10,lab,{fill:'var(--ink)'})});
+  const path=(a,c)=>{let d='',step=Math.max(1,Math.floor(a.length/500));for(let i=0;i<a.length;i+=step)d+=(d?'L':'M')+X(a[i]).toFixed(1)+' '+Y((i+1)/a.length).toFixed(1);d+='L'+X(a[a.length-1]).toFixed(1)+' '+Y(1).toFixed(1);s.appendChild(E('path',{d,fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'}))};
+  path(ce,'var(--ens)');path(cn,'var(--nre)');
+  const cross=Ln(s,0,t,0,h-b,{stroke:'rgba(255,255,255,.3)',visibility:'hidden'}),share=(a,v)=>{let lo=0,hi=a.length;while(lo<hi){const m=(lo+hi)>>1;if(a[m]<=v)lo=m+1;else hi=m}return lo/a.length};
+  s.addEventListener('pointermove',ev=>{const r_=s.getBoundingClientRect(),k=s.viewBox.baseVal.width/r_.width,mx=(ev.clientX-r_.left)*k;if(mx<l||mx>w-r){hideTip();cross.setAttribute('visibility','hidden');return}const v=10**(-5+(mx-l)/(w-r-l)*4.5);cross.setAttribute('x1',mx);cross.setAttribute('x2',mx);cross.setAttribute('visibility','visible');showTip(ev.clientX,ev.clientY,`|d| ≤ <b>${v.toFixed(4)}</b><br><span class="mono">Ensemble ${(share(ce,v)*100).toFixed(1)}%<br>Ratio est. ${(share(cn,v)*100).toFixed(1)}%</span>`)});
+  s.addEventListener('pointerleave',()=>{hideTip();cross.setAttribute('visibility','hidden')});
+  const A=D.report.primary.cal,he=A.ensemble.hyp['H-a'],hn=A.nre.hyp['H-a'],pl=(x,k)=>x.per_level[k]?f4(x.per_level[k].median):'—';
+  $('#fTable').innerHTML=`<tr><th>H-a, median |d|</th><th>Verdict</th><th>All Identified</th><th>95% interval</th><th>0.1 vol pt</th><th>0.3</th><th>0.5</th></tr>`+
+   `<tr><td>Ensemble</td><td>${he.verdict}</td><td>${f4(he.point)}</td><td>${ivS(he.interval)}</td><td>${pl(he,'0.001')}</td><td>${pl(he,'0.003')}</td><td>${pl(he,'0.005')}</td></tr>`+
+   `<tr><td>Ratio estimator</td><td>${hn.verdict}</td><td>${f4(hn.point)}</td><td>${ivS(hn.interval)}</td><td>${pl(hn,'0.001')}</td><td>${pl(hn,'0.003')}</td><td>${pl(hn,'0.005')}</td></tr>`+
+   `<tr><td>Identified pairs</td><td></td><td>842</td><td></td><td>400</td><td>303</td><td>139</td></tr>`;
+  $('#fPunch').innerHTML=`<b>A reading, labelled as such (D109).</b> The ensemble's whole interval lies below a sixth of the bound: <b>Confirmed</b>. Its median error is small, though medians bound no single pair: |d| exceeds 0.01 on 10.3% of its Identified cells. <span class="tagp">post hoc</span> The ratio estimator's interval lies between 0.01 and 0.03: <b>Inconclusive</b>. Its pooled median sits between two groups and belongs to neither: 0.0677 at 0.1 vol point, trained on 10,000 surfaces, and 0.0087 and 0.0068 at the other levels, trained on 160,000. Over the other 442 pairs, post hoc, the median would be 0.0080, with an interval reaching 0.01, so the verdict would not change.`;
+}
+
+/* ---------- H-b and H-c, the lean ---------- */
+const L={level:2,idx:200,cal:'ensemble',grp:2};
+function lgam(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,.001208650973866179,-5395239384953e-18];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;for(const k of c)s+=k/++y;return -t+Math.log(2.5066282746310005*s/x)}
+const bpdf=(x,a,b)=>x<=0||x>=1?0:Math.exp((a-1)*Math.log(x)+(b-1)*Math.log(1-x)+lgam(a+b)-lgam(a)-lgam(b));
+function renderLean(){
+  chips('#lLevel',LV.map((l,i)=>({label:l+' vol pt',v:i})),()=>L.level,v=>{L.level=v;renderLean()});
+  const sl=$('#lSlider');sl.value=L.idx;const arr=lineup(L.level,'c'),p=arr[L.idx];
+  $('#lEnds').innerHTML='<span>least informed</span><span>most informed</span>';
+  $('#lC').textContent='c = '+f3(pC(p));$('#lCh').textContent=`${BN[pB(p)]} · surface ${L.idx+1} of 400 by c`;$('#lSub').textContent=`${LV[L.level]} vol point`;
+  const nar=$('#lPlot').getBoundingClientRect().width<480,l=nar?70:118,r=14,t=58,b=34,{s,w,h}=frame($('#lPlot'),300),dom=[.02,.48],X=hAxis(s,w,h,dom,l,r,t,b),rows=[t+24,t+84,t+150];
+  /* the two priors */
+  const curve=(a,b_,c)=>{let d='';for(let i=0;i<=120;i++){const u=i/120,H=.02+.46*u,y=t-6-bpdf(u,a,b_)/4.6*40;d+=(d?'L':'M')+X(H).toFixed(1)+' '+y.toFixed(1)}s.appendChild(E('path',{d,fill:'none',stroke:c,'stroke-width':1.5}))};
+  curve(2.5,9,'rgba(232,238,245,.55)');curve(235/23,376/69,'rgba(232,238,245,.55)');
+  Tx(s,X(.12),10,'prior A',{'text-anchor':'middle',fill:'var(--ink)','font-size':10.5});Tx(s,X(.33),10,'prior B',{'text-anchor':'middle',fill:'var(--ink)','font-size':10.5});
+  const tH=pH(p),exA=pA(p),exB=pEB(p);Ln(s,X(tH),t,X(tH),h-b,{stroke:'var(--teal)','stroke-width':2});
+  ['Exact',CN.ensemble,nar?'Ratio':CN.nre].forEach((n,i)=>Tx(s,6,rows[i]+4,n,{fill:'var(--ink)','font-size':12,'font-family':'Inter, system-ui, sans-serif','font-weight':500}));
+  const pts=[];Ln(s,X(exA),rows[0],X(exB),rows[0],{stroke:'var(--ink)','stroke-width':2});Ci(s,X(exA),rows[0],6,{fill:'var(--ink)',stroke:'var(--panel)','stroke-width':2});Ci(s,X(exB),rows[0],5,{fill:'var(--panel)',stroke:'var(--ink)','stroke-width':2});
+  pts.push({x:X(exA),y:rows[0],t:`<b>Exact, under A</b> ${f4(exA)}`},{x:X(exB),y:rows[0],t:`<b>Exact, under B</b> ${f4(exB)}`});
+  const Sx=(exB-exA)/.2,res={};let nLo=0,nHi=0;
+  for(const [cal,ri] of [['ensemble',1],['nre',2]]){const c=CC[cal],Es=[],Ss=[];let has=true;
+    for(let q=0;q<5;q++){const a=net(cal,'A',p,q),bb=net(cal,'B',p,q),y=rows[ri]+(q-2)*7;if(bb==null){has=false;continue}
+      const xa=X(onAx(a,dom)),xb=X(onAx(bb,dom)),oa=offAx(a,dom),ob=offAx(bb,dom),dr=cal==='nre'?Di:Ci,ra=cal==='nre'?4.5:3.8,sa={fill:c,stroke:'var(--panel)','stroke-width':1},sb={fill:'var(--panel)',stroke:c,'stroke-width':1.5};for(const o of [oa,ob]){if(o<0)nLo++;if(o>0)nHi++}
+      Ln(s,xa,y,xb,y,{stroke:c,'stroke-width':1.5,opacity:.8});if(oa)Off(s,xa,y,oa,sa);else dr(s,xa,y,ra,sa);if(ob)Off(s,xb,y,ob,sb);else dr(s,xb,y,ra-.6,sb);
+      const S=(bb-a)/.2,E_=S-Sx;Es.push(E_);Ss.push(S);pts.push({x:xa,y,t:`<b>${CN[cal]}, seed ${q+1}, under A</b><br><span class="mono">Ĥ ${f4(a)}</span>`},{x:xb,y,t:`<b>${CN[cal]}, seed ${q+1}, under B</b><br><span class="mono">Ĥ ${f4(bb)} · E ${f3(E_)}</span>`})}
+    if(!has){Tx(s,l+6,rows[ri]+4,'no scored network under B at this level: its G3 cell failed',{fill:'var(--faint)','font-size':11});for(let q=0;q<5;q++){const a=net(cal,'A',p,q),y=rows[ri]+(q-2)*7;if(a>=dom[0]&&a<=dom[1])Di(s,X(a),y,3.6,{fill:c,stroke:'var(--panel)','stroke-width':1,opacity:.5})}}
+    res[cal]={has,E:Es.length?low(Es):null,S:Ss.length?low(Ss):null}}
+  nearest(s,pts,o=>o.t);
+  const e=res.ensemble,n=res.nre;
+  $('#lRo').innerHTML=ro('Exact shift, S',f3(Sx),'what Bayes\' rule requires','<i style="background:var(--ink)"></i>')+ro('Ensemble E',f3(e.E),'median of 5 seeds',mkE)+ro('Ratio est. E',n.has?f3(n.E):'none',n.has?'median of 5 seeds':'no B network scored here',mkN);
+  const bn=pB(p),hy=bn===1?'H-b':(bn===0?'H-c':null),lines=bn===1?'H-b expected E above 0.15 and counted it refuted below 0.05':(bn===0?'H-c expected E above 0.05 and counted it refuted below 0.02':'E is not testable in the Flat bin, where the exact answer itself moves a long way');
+  const big=Math.max(Math.abs(e.E),n.has?Math.abs(n.E):0),cls=bn===2?'none':(big<.05?'ok':(big<.15?'warn':'bad'));
+  setV('#lV',cls,big<.05?'✓':'!',`Under the two priors the exact answer moves by <b>${f3(exB-exA)}</b> in H, S = ${f3(Sx)}. The ensemble's E is <b>${f3(e.E)}</b>${n.has?`, the ratio estimator's <b>${f3(n.E)}</b>`:', and the ratio estimator has none here'}. A positive E means leaning further than Bayes' rule requires. This pair is ${BN[bn]}: ${lines}. <span class="src">${hy?'line '+(hy==='H-b'?122:123):'line 126'}</span>${hy?' One surface decides nothing: the verdict pools the bin\'s cells.':''}${offNote(nLo+nHi)}`);
+  offKey('#lOffKey',nLo,nHi);
+}
+function leanScatter(){
+  chips('#lCal',[{label:'Ensemble',v:'ensemble'},{label:'Ratio estimator',v:'nre'}],()=>L.cal,v=>{L.cal=v;if(v==='nre')L.grp=2;leanScatter()});
+  const avail=L.cal==='nre'?[{label:'0.5 vol pt',v:2}]:[{label:'all levels',v:'all'},...LV.map((x,i)=>({label:x+' vol pt',v:i}))];
+  chips('#lGrp',avail,()=>L.grp,v=>{L.grp=v;leanScatter()});
+  const ps=[];for(let p=0;p<1200;p++){if(L.grp!=='all'&&pJ(p)!==L.grp)continue;const es=[];for(let q=0;q<5;q++){const a=net(L.cal,'A',p,q),b=net(L.cal,'B',p,q);if(b!=null)es.push((b-a)/.2-(pEB(p)-pA(p))/.2)}if(es.length)ps.push({p,E:low(es)})}
+  const ys=ps.map(o=>o.E),ymin=Math.min(-.3,...ys),ymax=Math.max(.3,...ys),{s,w,h}=frame($('#lScatter'),320),l=46,r=14,t=12,b=40,X=sc(.02,.48,l,w-r),Y=sc(ymin,ymax,h-b,t);
+  const yt=[];const stp=(ymax-ymin)>1.2?.5:((ymax-ymin)>.5?.2:.1);for(let v=Math.ceil(ymin/stp)*stp;v<=ymax+1e-9;v+=stp)yt.push(v);
+  yt.forEach(v=>{Ln(s,l,Y(v),w-r,Y(v),Math.abs(v)<1e-9?{stroke:'rgba(255,255,255,.3)'}:{});Tx(s,l-8,Y(v)+4,minus(v.toFixed(1)),{'text-anchor':'end'})});
+  [.1,.2,.3,.4].forEach(v=>{Ln(s,X(v),h-b,X(v),h-b+4);Tx(s,X(v),h-b+18,v.toFixed(1),{'text-anchor':'middle'})});
+  Tx(s,(l+w-r)/2,h-6,'true H',{'text-anchor':'middle',fill:'var(--faint)'});
+  [[.12,"A's mean"],[.32,"B's mean"]].forEach(([v,lab])=>{Ln(s,X(v),t,X(v),h-b,{stroke:'rgba(255,255,255,.2)'});Tx(s,X(v)+4,t+10,lab,{fill:'var(--faint)','font-size':10})});
+  const pts=[];for(const o of ps){const x=X(pH(o.p)),y=Y(o.E);Ci(s,x,y,3.2,{fill:BC[pB(o.p)],stroke:'var(--panel)','stroke-width':1});pts.push({x,y,p:o.p,E:o.E})}
+  nearest(s,pts,o=>`<b>E = ${f3(o.E)}</b> · ${BN[pB(o.p)]}<br><span class="mono">true H ${f3(pH(o.p))} · c ${f3(pC(o.p))}<br>${LV[pJ(o.p)]} vol point</span>`);
+  $('#lBand').hidden=L.cal!=='nre';
+  if(L.cal==='nre')setV('#lBand','none','~',`At 0.5 vol point E falls with true H. On the Partial pairs its median is <b>0.499</b> below 0.1875, <b>0.216</b> up to 0.32 and <b>0.057</b> above. On the Identified pairs it is <b>0.411</b>, <b>0.080</b> and <b>−0.177</b>. <span class="tagx">exploratory, D109</span>`);
+  const A=D.report.primary.cal,eb=A.ensemble.hyp['H-b'],ec=A.ensemble.hyp['H-c'],nb=A.nre.hyp['H-b'],nc=A.nre.hyp['H-c'];
+  $('#lPunch').innerHTML=`<b>A reading, labelled as such (D109).</b> <b>Ensemble:</b> H-b ${eb.verdict}, ${f4(eb.point)} ${ivS(eb.interval)}; H-c ${ec.verdict}, ${f4(ec.point)} ${ivS(ec.interval)}. Refuted does not mean none: its median E on the Partial pairs is about 0.0050 in H, and that interval lies above zero. <b>Ratio estimator, at 0.5 vol point alone:</b> H-b ${nb.verdict}, ${f4(nb.point)} ${ivS(nb.interval)}; H-c ${nc.verdict}, ${f4(nc.point)} ${ivS(nc.interval)}, with a seed floor of ${f4(nc.seed_floor)}. By line 75 any such excess beyond Monte Carlo error is error in the learned ratio. There E pairs a network at 160,000 under A with one at 40,000 under B, and the data cannot say how much of the excess comes from that smaller training set. On the full test set a positive E may also come from extrapolation outside the training support. <span class="src">line 126; D109</span>`;
+}
+
+/* ---------- H-d, the intervals ---------- */
+const I={w:1,o:0};
+function erf(x){const s=x<0?-1:1;x=Math.abs(x);const t=1/(1+.5*x),r=t*Math.exp(-x*x-1.26551223+t*(1.00002368+t*(.37409196+t*(.09678418+t*(-.18628806+t*(.27886807+t*(-1.13520398+t*(1.48851587+t*(-.82215223+t*.17087277)))))))));return s*(1-r)}
+const Phi=z=>.5*(1+erf(z/Math.SQRT2));
+function renderInt(){
+  const off=I.o,wd=I.w,lo=off-1.645*wd,hi=off+1.645*wd,m=Phi(hi)-Phi(lo);
+  $('#iWidth').value=wd;$('#iOff').value=off;$('#iW').textContent=wd.toFixed(3);$('#iO').textContent=off.toFixed(2);
+  chips('#iPre',[{label:'faithful',v:'f'},{label:'m = 0.80',v:'a'},{label:'m = 0.85',v:'b'},{label:'off by ½ SD',v:'c'}],()=>I.w===1&&I.o===0?'f':I.w===.78&&I.o===0?'a':I.w===.875&&I.o===0?'b':I.w===1&&I.o===.5?'c':null,v=>{if(v==='f'){I.w=1;I.o=0}if(v==='a'){I.w=.78;I.o=0}if(v==='b'){I.w=.875;I.o=0}if(v==='c'){I.w=1;I.o=.5}renderInt()});
+  const {s,w,h}=frame($('#iPlot'),230),l=16,r=16,t=14,b=30,X=sc(-4,4,l,w-r),Y=sc(0,.42,h-b,t),pdf=z=>Math.exp(-z*z/2)/Math.sqrt(2*Math.PI);
+  let d='';for(let i=0;i<=200;i++){const z=-4+i*.04;d+=(d?'L':'M')+X(z).toFixed(1)+' '+Y(pdf(z)).toFixed(1)}
+  let ar=`M${X(Math.max(-4,lo)).toFixed(1)} ${Y(0).toFixed(1)}`;for(let z=Math.max(-4,lo);z<=Math.min(4,hi);z+=.02)ar+='L'+X(z).toFixed(1)+' '+Y(pdf(z)).toFixed(1);ar+=`L${X(Math.min(4,hi)).toFixed(1)} ${Y(0).toFixed(1)}Z`;
+  s.appendChild(E('path',{d:ar,fill:'rgba(139,124,240,.26)'}));s.appendChild(E('path',{d,fill:'none',stroke:'var(--ink)','stroke-width':2}));
+  Ln(s,l,Y(0),w-r,Y(0),{stroke:'rgba(255,255,255,.2)'});[-3,-2,-1,0,1,2,3].forEach(v=>{Ln(s,X(v),Y(0),X(v),Y(0)+4);Tx(s,X(v),Y(0)+18,minus(String(v)),{'text-anchor':'middle'})});
+  Ln(s,X(lo),t,X(lo),Y(0),{stroke:'var(--violet)','stroke-width':2});Ln(s,X(hi),t,X(hi),Y(0),{stroke:'var(--violet)','stroke-width':2});
+  Tx(s,X(off),t+8,"the network's 90% interval",{'text-anchor':'middle',fill:'var(--ink)','font-size':11});
+  const zone=m<.80?'below 0.80, on the side H-d bet on':m<=.85?'in the gap between 0.80 and 0.85: Inconclusive if the whole interval sat here':m<=.95?'above 0.85, inside the null\'s band of [0.85, 0.95]':'above 0.95: too wide. H-d reads this as Refuted, but the null\'s band excludes it';
+  $('#iRo').innerHTML=ro('m',m.toFixed(3),'mass inside the interval')+ro('Faithful',"0.900",'the same width and centre')+ro('Against 0.90',Math.abs(m-.9)<.0005?'0.000':minus((m-.9>=0?'+':'')+(m-.9).toFixed(3)),Math.abs(m-.9)<.0005?'exactly nominal':(m<.9?'too little mass':'more than nominal'));
+  setV('#iV',m<.8?'bad':m<=.85?'warn':m<=.95?'ok':'warn',m<.8?'!':m<=.85?'~':m<=.95?'✓':'!',`With this width and centre, <b>m = ${m.toFixed(3)}</b>: ${zone}. <span class="src">line 126</span>`);
+}
+function renderFloor(){
+  const R=D.report,rows=[{k:'The protocol\'s cut-offs',a:R.primary},{k:'Cut-offs +0.05',a:R.plus},{k:'Cut-offs −0.05',a:R.minus},{k:'Well-covered pairs',a:R.secondary}];
+  const nar=$('#iFloor').getBoundingClientRect().width<520,l=nar?10:170,r=60,rowH=nar?58:42,{s,w,h}=frame($('#iFloor'),rows.length*rowH+8),X=sc(0,130,l,w-r);
+  rows.forEach((o,i)=>{const y=i*rowH+(nar?26:12),f=o.a.bins.Flat.count,fl=Math.max(100,Math.ceil(.1*o.a.n));
+    Tx(s,nar?l:l-12,nar?y-8:y+10,o.k,{'text-anchor':nar?'start':'end',fill:'var(--ink)','font-size':12,'font-family':'Inter, system-ui, sans-serif'});
+    Re(s,l,y,X(fl)-l,14,{fill:'rgba(255,255,255,.06)',rx:3});Re(s,l,y,X(f)-l,14,{fill:'var(--flat)',rx:3});
+    Ln(s,X(fl),y-3,X(fl),y+17,{stroke:'var(--ink)','stroke-width':2});
+    Tx(s,X(f)+6,y+11,f+' pairs',{fill:'var(--ink)','font-size':11});Tx(s,X(fl)+6,y+11,'floor '+fl,{fill:'var(--dim)','font-size':11})});
+  const p=R.primary.bins.Flat.count;$('#iFv .vt').innerHTML=`<b>Untestable.</b> ${p} of the 1,200 accepted pairs are Flat, against a floor of 120. It stays short at both shifted cut-offs and on the well-covered pairs, where 10% of 680 is 68 and the count of 100 governs. Untestable is a fourth outcome beside the three verdicts. <span class="src">line 101; D106</span>`;
+}
+
+/* ---------- G3, training ---------- */
+const G={cal:'nre',prior:'A',j:1};
+function renderTrain(){
+  chips('#tCal',[{label:'Ensemble',v:'ensemble'},{label:'Ratio estimator',v:'nre'}],()=>G.cal,v=>{G.cal=v;renderTrain()});
+  chips('#tPrior',[{label:'A',v:'A'},{label:'B',v:'B'}],()=>G.prior,v=>{G.prior=v;renderTrain()});
+  chips('#tLevel',LV.map((l,i)=>({label:l+' vol pt',v:i+1})),()=>G.j,v=>{G.j=v;renderTrain()});
+  const key=`${G.cal}_${G.prior}_j${G.j}`,C=D.ladder[key],sizes=[10000,20000,40000,80000,160000,320000],lab=['10k','20k','40k','80k','160k','320k'];
+  const {s,w,h}=frame($('#tPlot'),300),l=52,r=82,t=14,b=38,X=i=>l+i/5*(w-l-r),Yl=sc(Math.log10(.0005),Math.log10(.2),h-b,t),Y=v=>Yl(Math.log10(Math.max(.0005,v)));
+  [.001,.01,.1].forEach(v=>{Ln(s,l,Y(v),w-r,Y(v));Tx(s,l-8,Y(v)+4,String(v),{'text-anchor':'end'})});
+  sizes.forEach((n,i)=>{Ln(s,X(i),h-b,X(i),h-b+4);Tx(s,X(i),h-b+18,lab[i],{'text-anchor':'middle'})});
+  Tx(s,(l+w-r)/2,h-6,'training surfaces',{'text-anchor':'middle',fill:'var(--faint)'});
+  [[.01,'0.01'],[.03,'0.03']].forEach(([v,x])=>{Ln(s,l,Y(v),w-r,Y(v),{stroke:'rgba(255,255,255,.3)'});Tx(s,w-r+6,Y(v)+4,"H-a's "+x,{fill:'var(--faint)','font-size':10})});
+  for(const k in D.ladder){const o=D.ladder[k];if(o.cal!==G.cal||k===key)continue;const v=[...o.rungs.map(r_=>r_.med),o.rungs[4].med2];let d='';v.forEach((y,i)=>d+=(d?'L':'M')+X(i).toFixed(1)+' '+Y(y).toFixed(1));s.appendChild(E('path',{d,fill:'none',stroke:'rgba(255,255,255,.14)','stroke-width':1}))}
+  const c=CC[G.cal],vals=[...C.rungs.map(r_=>r_.med),C.rungs[4].med2],pts=[];
+  C.rungs.forEach((r_,i)=>{Ln(s,X(i),Y(vals[i]),X(i+1),Y(vals[i+1]),{stroke:c,'stroke-width':r_.passed?3.5:1.5,opacity:r_.passed?1:.55,'stroke-linecap':'round'})});
+  vals.forEach((v,i)=>{const star=sizes[i]===C.n_star;Ci(s,X(i),Y(v),star?7:4.5,{fill:star?'var(--ink)':c,stroke:'var(--panel)','stroke-width':2});const r_=C.rungs[i];pts.push({x:X(i),y:Y(v),t:`<b>${lab[i]} surfaces</b><br><span class="mono">median |d| ${f4(v)}</span>`+(r_?`<br>${r_.stable?'stable':'not stable'} against ${lab[i+1]}, difference ${f4(Math.abs(r_.med2-r_.med))}<br>ξ₀ slope ${r_.slope.toFixed(3)}`:'<br>check run only')})});
+  nearest(s,pts,o=>o.t);
+  $('#tLegend').innerHTML=`<span><i class="bar" style="background:${c};height:4px"></i>a rung that passed</span><span><i class="bar" style="background:${c};opacity:.55"></i>a rung that did not</span>`+(C.n_star?'<span><i style="background:var(--ink)"></i>the size taken, n*</span>':'')+'<span><i class="bar" style="background:rgba(255,255,255,.25)"></i>the other cells of this calibrator</span>';
+  $('#tSub').textContent=`${CN[G.cal]} · prior ${G.prior} · ${LV[G.j-1]} vol pt`;
+  const pass=C.rungs.filter(r_=>r_.passed),atStar=C.n_star?C.rungs.find(r_=>r_.n===C.n_star):null;
+  $('#tRo').innerHTML=ro('n*, the size taken',C.n_star?C.n_star.toLocaleString('en-GB'):'none',C.passed?'largest rung that passed':'no rung passed')+ro('Median |d| there',atStar?f4(atStar.med):'—','on 16 pilot surfaces')+ro('Rungs passed',pass.length+' of 5','each n against 2n');
+  if(!C.passed)setV('#tV','bad','✗',`<b>No rung passed,</b> so this cell's seeds were not trained and it scores nothing. Every measure that needs it loses this level for this calibrator, and P5 goes on with the cells that passed. <span class="src">line 144; D104</span>`);
+  else{const say=atStar.med<.01?'inside H-a\'s 0.01':(atStar.med<=.03?'between H-a\'s 0.01 and 0.03':'past H-a\'s 0.03');
+    setV('#tV',atStar.med<.01?'ok':(atStar.med<=.03?'warn':'bad'),atStar.med<.01?'✓':'!',`Passed at ${pass.map(r_=>r_.n.toLocaleString('en-GB')).join(', ')}. The rule takes the largest, <b>n* = ${C.n_star.toLocaleString('en-GB')}</b>. The pilot median there is <b>${f4(atStar.med)}</b>, ${say}. G3 checks that this holds steady under a doubling, and does not check its size. These are pilot figures and enter no result.`)}
+  const order=['ensemble','nre'],rows=[];for(const ca of order)for(const pr of ['A','B'])for(const j of [1,2,3]){const o=D.ladder[`${ca}_${pr}_j${j}`],a=o.n_star?o.rungs.find(r_=>r_.n===o.n_star):null;rows.push(`<tr><td>${CN[ca]}</td><td>${pr}</td><td>${LV[j-1]}</td><td>${o.n_star?o.n_star.toLocaleString('en-GB'):'none'}</td><td>${a?f4(a.med):'—'}</td><td>${o.rungs.filter(r_=>r_.passed).length} of 5</td><td>${o.passed?'passed':'failed'}</td></tr>`)}
+  $('#tTable').innerHTML='<tr><th>Calibrator</th><th>Prior</th><th>Vol pt</th><th>n*</th><th>Median |d| at n*</th><th>Rungs passed</th><th>Cell</th></tr>'+rows.join('');
+}
+
+/* ---------- the verdicts ---------- */
+const V={an:'primary'};
+const HY=[{h:'H-a',q:'When the data pin H down, does the network land on the exact answer?',bet:'The median of |d| in Identified: expected below 0.01, refuted above 0.03.',dom:[0,.05],exp:[0,.01],ref:[.03,.05]},
+ {h:'H-b',q:'When the data only partly pin H down, does a network lean on its training too much?',bet:'The median E in Partial: expected above 0.15, refuted below 0.05.',dom:[-.05,.40],exp:[.15,.40],ref:[-.05,.05]},
+ {h:'H-c',q:'Does that lean leak in even when the data are clear?',bet:'The median E in Identified: expected above 0.05 and above the seed floor, refuted below 0.02.',dom:[-.05,.40],exp:[.05,.40],ref:[-.05,.02]},
+ {h:'H-d',q:'Where the data say least, are a network\'s 90% intervals honest?',bet:'The median m in Flat: expected below 0.80, refuted above 0.85.',dom:null}];
+const VI={Confirmed:'●',Refuted:'○',Inconclusive:'◐',Untestable:'—'};
+const NOTE={primary:{ensemble:{'H-a':'Median error far inside the bound. The whole interval lies below a sixth of it. Medians bound no single pair.','H-b':'Less lean than the bet. Small, not none: the interval lies above zero and above the seed floor.','H-c':'Below the refutation line. The interval holds zero and lies below the seed floor.','H-d':'Stage 1\'s floor: 30 of 1,200 pairs. No median was taken.'},
+  nre:{'H-a':'Between the bound and the refutation line. The pooled median sits between two groups and belongs to neither.','H-b':'At 0.5 vol point alone, 160,000 under A against 40,000 under B. Holds at both shifts and on the well-covered pairs.','H-c':'At 0.5 vol point alone. The interval clears neither 0.05 nor the seed floor, and the seeds disagree.','H-d':'Stage 1\'s floor: 30 of 1,200 pairs. No median was taken.'}}};
+function miniLine(host,hy,x){const {s,w,h}=frame(host,54),l=6,r=6,t=14,b=18,X=sc(hy.dom[0],hy.dom[1],l,w-r),clip=v=>Math.min(hy.dom[1],Math.max(hy.dom[0],v));
+  Re(s,X(hy.exp[0]),t,X(hy.exp[1])-X(hy.exp[0]),h-t-b,{fill:'rgba(139,124,240,.2)'});Re(s,X(hy.ref[0]),t,X(hy.ref[1])-X(hy.ref[0]),h-t-b,{fill:'rgba(255,255,255,.08)'});
+  const ticks=hy.h==='H-a'?[0,.01,.03,.05]:(hy.h==='H-b'?[0,.05,.15,.3]:[0,.02,.05,.2]);ticks.forEach(v=>{Ln(s,X(v),h-b,X(v),h-b+3,{stroke:'rgba(255,255,255,.3)'});Tx(s,X(v),h-b+14,v===0?'0':String(v),{'text-anchor':v===0&&X(0)<16?'start':(X(v)>w-16?'end':'middle'),'font-size':10})});
+  const m=(t+h-b)/2;x.per_seed.forEach(v=>{Ln(s,X(clip(v)),m-7,X(clip(v)),m+7,{stroke:'rgba(232,238,245,.5)','stroke-width':1.5})});
+  Ln(s,X(clip(x.interval[0])),m,X(clip(x.interval[1])),m,{stroke:'var(--ink)','stroke-width':3,'stroke-linecap':'round'});Ci(s,X(clip(x.point)),m,4.5,{fill:'var(--ink)',stroke:'var(--panel)','stroke-width':2});
+  if(hy.h==='H-c'&&x.seed_floor!=null){const f=clip(x.seed_floor);Ln(s,X(f),t-6,X(f),h-b,{stroke:'var(--amber)','stroke-width':1.5});Tx(s,X(f),t-8,'seed floor',{'text-anchor':'middle','font-size':9.5,fill:'var(--ink)'})}}
+function renderBoard(){
+  chips('#vAn',[{label:'The verdicts',v:'primary'},{label:'Cut-offs +0.05',v:'plus'},{label:'Cut-offs −0.05',v:'minus'},{label:'Well-covered pairs',v:'secondary'}],()=>V.an,v=>{V.an=v;renderBoard()});
+  const A=D.report[V.an],bn=$('#vBanner'),isP=V.an==='primary';bn.hidden=isP;
+  if(!isP)bn.innerHTML=`<b>This view decides nothing.</b> ${V.an==='secondary'?`The 680 well-covered pairs limit extrapolation outside the training support. Bins of ${A.bins.Identified.count}, ${A.bins.Partial.count} and ${A.bins.Flat.count}. <span class="src">line 136</span>`:`Both cut-offs moved together, to ${A.cuts[0]} and ${A.cuts[1]}. Bins of ${A.bins.Identified.count}, ${A.bins.Partial.count} and ${A.bins.Flat.count}. <span class="src">line 89</span>`}`;
+  const B=$('#vBoard');B.innerHTML='';
+  HY.forEach(hy=>{const r=document.createElement('div');r.className='hrow';r.innerHTML=`<h3><span class="mono" style="font-size:14px;color:var(--dim);margin-right:8px">${hy.h}</span>${hy.q}</h3><p class="bet">${hy.bet}</p><div class="hcells"></div>`;const cs=r.querySelector('.hcells');
+    ['ensemble','nre'].forEach(cal=>{const x=A.cal[cal].hyp[hy.h],c=document.createElement('div');c.className='hcell';const mk=cal==='nre'?`<i class="dia" style="background:var(--nre)"></i>`:`<i style="background:var(--ens)"></i>`;
+      const note=isP?NOTE.primary[cal][hy.h]:(x.verdict==='Untestable'?(hy.h==='H-d'?`${A.bins.Flat.count} Flat pairs, under the floor.`:`Only ${x.n_pairs} pairs at 0.5 vol point, under the floor of 100.`):'');
+      const pairs=x.n_pairs!=null?`${x.n_pairs.toLocaleString('en-GB')} pairs${x.n_cells?', '+x.n_cells.toLocaleString('en-GB')+' cells':''}${x.levels_pooled&&x.levels_pooled.length===1?', 0.5 vol pt only':''}`:'';
+      c.innerHTML=`<div class="hc-top"><span class="hc-name">${mk}${CN[cal]}</span><span class="pill">${VI[x.verdict]} ${x.verdict}</span></div>`+(x.point!=null?`<div class="hc-num">${f4(x.point)} <span style="color:var(--dim);font-weight:400">${ivS(x.interval)}</span></div><div class="plotbox" data-mini></div>`:'')+`<div class="hc-note">${note}${note&&pairs?' ':''}<span style="color:var(--faint)">${pairs}</span></div>`;
+      cs.appendChild(c);if(x.point!=null){c.__draw=()=>miniLine(c.querySelector('[data-mini]'),hy,x)}});
+    B.appendChild(r)});
+  $$('#vBoard .hcell').forEach(c=>c.__draw&&c.__draw());
+  const dr=D.report.dose;
+  $('#vReading').innerHTML=`<ul class="plain">
+    <li><b>The ensemble.</b> On these surfaces, at these training sizes, its median error in H lies far inside H-a's bound where H is identified, and its median excess prior dependence lies below H-b's refutation line where H is partly identified. Neither bounds any one pair. None of this speaks to its 90% intervals, since H-d is untestable.</li>
+    <li><b>The ratio estimator's H-a.</b> Its network at 0.1 vol point trained on 10,000 surfaces, the only size at which that cell passed G3. The data here cannot separate that training size from the two sources line 126 names, a pull towards A's mean and extrapolation outside A's training support.</li>
+    <li><b>The ratio estimator's H-b and H-c.</b> By line 75 any excess beyond Monte Carlo error is error in the learned ratio. H-b's Confirmed is error in the learned ratios at 0.5 vol point, in the direction of a lean on the prior, and the data cannot say how much comes from the smaller training set under B, or how much more training would remove.</li>
+    <li><b>The dose-response.</b> Line 134 expected a negative correlation of c with |d|. The ensemble's is ${f4(dr.primary.ensemble.rho)} ${ivS(dr.primary.ensemble.iv)}. The ratio estimator's is ${f4(dr.primary.nre.rho)} ${ivS(dr.primary.nre.iv)}, a between-level effect: within each level, post hoc and without an interval, it is negative. <span class="src">D109</span></li>
+    <li><b>The limits.</b> An emulated rough Heston surface, with well-specified noise at three levels, two calibrators and two priors, against an exact reference. Real surfaces, quotes at fixed strikes, misspecified noise and other models are out of scope. <span class="src">lines 148, 150</span></li>
+    <li><b>The statistics.</b> Eight verdicts read individually at 95% without adjustment. Percentile intervals over five seeds are narrower than nominal, declared and not corrected. The reference's Monte Carlo error is not resampled. <span class="src">lines 126, 132</span></li>
+  </ul>`;
+}
+
+/* ---------- the journey ---------- */
+const STEPS=[
+ {c:'var(--teal)',t:'G0: the pricer',q:'Does the pricer converge across the parameter box?',x:'Before v2 was frozen, P5 checked the rough Heston pricer on pilot points. A written order chose the box, the grid and the resolution. That order\'s settings were written with a scoping run\'s output in view. These are checks of convergence, not a bound on the pricer\'s error.',r:'625 tasks, 0 errors. A box of H 0.02 to 0.48, ν 0.05 to 0.35, ρ −0.90 to −0.70 and ξ₀ 0.04 to 0.25, on 35 quotes.',s:'If no candidate box passed, the draft could not be frozen as it stood.',e:'D62; lines 39, 41, 141'},
+ {c:'var(--violet)',t:'v2 frozen',q:'The bets go on record',x:'The hypotheses, their thresholds and the analysis plan were frozen and registered before any test surface existed. The directions and numbers are the author\'s bets. v2 replaced v1, frozen on 2 October 2026 (OSF APSF7), whose predictions an exact posterior would have confirmed as readily as a network.',r:'v2 frozen at 59ca589 and registered as OSF 695FW.',s:'After freezing, any change is a dated amendment.',e:'D86; lines 7, 9, 117, 198'},
+ {c:'var(--teal)',t:'G1: the emulator',q:'Can a fast stand-in replace the pricer?',x:'G̃ is a Chebyshev interpolant of the pricer, built with no training and no seed. Networks and reference both use it, so a gap between them, beyond Monte Carlo error, is the network\'s and not the model\'s.',r:'The error e is 0.000021 against a bound of 0.0002 at 0.1 vol point, with no refinement. Q1 is claimed at all three noise levels.',s:'A point with non-finite quotes after re-pricing stops P5.',e:'D88; lines 54, 142'},
+ {c:'var(--coral)',t:'G2 under v2: the stop',q:'The exact reference fails its check',x:'G2 compares the sampler with a brute-force grid on pilot surfaces. Under v2, chains started uniformly on the box. The failures concentrated at 0.1 vol point, where the posterior is sharpest.',r:'Not passed on attempt 1 (9 reference failures) or on its retry (5), so P5 v2 stopped, as its rule required. The sealed test set had never been drawn.',s:'This is the stop. It is v2\'s result, posted on OSF.',e:'D89, D90; line 143'},
+ {c:'var(--violet)',t:'v3 frozen',q:'A new protocol, openly written with that failure in view',x:'v3 changes how the chains start, finding the modes first. A development study tried the change on v2\'s pilot surfaces, a review by a separate AI session followed, and v3 declares what had been seen.',r:'Study: all 36 pairs accepted at the first attempt. v3 frozen at 740b0ca and registered as OSF JUMHF on 26 October 2026.',s:'No reference of v3\'s gates, no network and no test surface existed at the freeze (line 7).',e:'D91, D94, D95, D97, D100'},
+ {c:'var(--teal)',t:'G2 under v3',q:'Does the reference now match the grid?',x:'The same check, on fresh pilot surfaces, with G2\'s measured cost deciding whether P5 goes ahead.',r:'Passed on its first attempt: all 20 reference runs accepted and all 120 comparisons within tolerance. Projected cost 29.1 core-hours against a budget of 1,344.',s:'A failure and a failed retry, or a cost above budget, would stop P5.',e:'D102; line 143'},
+ {c:'var(--amber)',t:'G3: training size',q:'How much training is enough?',x:'Each calibrator, prior and noise level climbed a ladder of training sizes, after 48 pilot references had been computed. The training-size explorer drives this step.',r:'10 of 12 cells passed. The ratio estimator under B failed at 0.1 and 0.3 vol point. Scoring projected at 155.2 core-hours against 1,344.',s:'P5 stops only if every cell fails, or if the projected cost is over budget or cannot be projected.',e:'D103, D104; line 144',go:'training'},
+ {c:'var(--teal)',t:'The test set is drawn',q:'The sealed test set, used for the first time',x:'400 parameter points from a seed retained since v1, each at three noise levels. The exact reference ran on all 1,200 pairs.',r:'All 1,200 accepted, each of the 1,432 runs at its first attempt, no reference failure.',s:'Reference failures above 10% at any level would stop P5 at Stage 1.',e:'D105; lines 93, 101'},
+ {c:'var(--teal)',t:'Stage 1: the map',q:'What can each surface tell you?',x:'Binning each pair by contraction, from the references alone and before any network scored the test set.',r:'Identified 842, Partial 328, Flat 30. Flat is under the floor, so H-d is untestable for both calibrators and neither null can be proven, whatever the networks then did.',s:'Nothing is adjusted to fill a bin.',e:'D106; lines 79 to 101',go:'map'},
+ {c:'var(--coral)',t:'The training',q:'Five seeds per passing cell',x:'Seeds 2 to 5 at the size G3 chose, in the 10 passing cells. With each cell\'s seed 1 from G3, that makes the 50 networks the scoring reads, fixed before they saw the test set.',r:'All 40 runs finished, with no retraining and no empty slot: 10.75 hours, 43.0 core-hours.',s:'A failed run is retrained once. A second failure leaves the cell with four seeds.',e:'D107; line 75'},
+ {c:'var(--coral)',t:'The scoring',q:'Every network meets the 400 test surfaces at its noise level',x:'12,000 ensemble rows and 8,000 ratio-estimator posteriors. Each posterior is its own sampler run, about 18 seconds at four threads.',r:'All 20,000 results ok, in one launch of 39.59 hours and 158.1 core-hours, against a projection of 155.2. The record was committed before Stage 2 ran.',s:'A calibrator\'s failed pairs above 10% of a bin make that bin untestable for it. None failed.',e:'D108; line 75'},
+ {c:'var(--violet)',t:'Stage 2: the verdicts',q:'The calculation the bets were waiting for',x:'A frozen script reads the committed record and applies the frozen rule. It took about 69 seconds. Two AI reviewers then recomputed the report\'s figures from the committed files.',r:'Ensemble: H-a Confirmed, H-b and H-c Refuted. Ratio estimator: H-a and H-c Inconclusive, H-b Confirmed. H-d untestable and the null unproven for both.',s:'Nothing is re-run or retrained on the result. Any later change is a dated amendment.',e:'D109; lines 119 to 128, 133',go:'verdicts'},
+ {c:'var(--teal)',t:'Line 199: what is committed',q:'What can someone check?',x:'The protocol promised code, seeds, emulator, reference posteriors and trained networks committed. The last pieces went in after the verdicts.',r:'224 network files and 1,432 sample files committed. The 50 scored networks are among the 224. The 173 MB archive stays out, over GitHub\'s limit for a file. It was rebuilt byte for byte from the parts, with numpy 2.4.4.',s:'Line 199 is met as written, with no amendment. A re-run from a clone has not been made, and nothing here says it would reproduce the report.',e:'D110; line 199'}
+];
+let J=0;
+function renderJourney(){const R=$('#jRail');R.innerHTML='';STEPS.forEach((o,i)=>{const b=document.createElement('button');b.type='button';if(i===J)b.setAttribute('aria-current','true');b.innerHTML=`<span class="st" style="background:${o.c}"></span><span>${o.t}</span>`;b.addEventListener('click',()=>{J=i;renderJourney()});R.appendChild(b)});
+  const o=STEPS[J];$('#jPanel').innerHTML=`<div class="plot-sub" style="margin-bottom:8px">Step ${J+1} of ${STEPS.length} · ${o.t}</div><h2 class="jtitle">${o.q}</h2><p class="jtext">${o.x}</p><div class="jrow"><span class="k">What happened</span><span class="v">${o.r}</span></div><div class="jrow"><span class="k">The rule here</span><span class="v" style="color:var(--dim)">${o.s}</span></div><div class="jrow"><span class="k">Where it's recorded</span><span class="v"><span class="src">${o.e}</span></span></div><div class="jnav"><button class="chip" type="button" id="jPrev" ${J===0?'disabled style="opacity:.3"':''}>‹ Previous</button><button class="chip" type="button" id="jNext" ${J===STEPS.length-1?'disabled style="opacity:.3"':''}>Next ›</button>${o.go?`<button class="chip" type="button" id="jOpen" aria-pressed="true">Open the explorer →</button>`:''}</div>`;
+  $('#jPrev').addEventListener('click',()=>{if(J>0){J--;renderJourney()}});$('#jNext').addEventListener('click',()=>{if(J<STEPS.length-1){J++;renderJourney()}});if(o.go)$('#jOpen').addEventListener('click',()=>go(o.go))}
+
+/* ---------- routing ---------- */
+const ORDER=[['journey','How the study ran','Foundation'],['map','How much a surface tells you','Q1'],['fidelity','When the data are clear','H-a'],['lean','The lean on training','H-b · H-c'],['intervals','The error bars','H-d'],['training','How much training','G3'],['verdicts','The verdicts','Verdicts']];
+const RENDER={hub:()=>{},journey:renderJourney,map:()=>{renderMap();mapTable()},fidelity:()=>{renderFid();openDraw('fidelity')},lean:()=>{renderLean();openDraw('lean')},intervals:()=>{renderInt();renderFloor()},training:renderTrain,verdicts:renderBoard};
+const OPEN={fidEcdf,leanScatter};
+function openDraw(v){const a=$(`#v-${v} .advanced`);if(a&&!a.querySelector('.adv-body').hidden&&a.dataset.onopen)OPEN[a.dataset.onopen]()}
+let cur='hub';
+function navHtml(){const i=ORDER.findIndex(o=>o[0]===cur);if(i<0)return '';const pv=i>0?ORDER[i-1]:null,nx=i<ORDER.length-1?ORDER[i+1]:null;
+  return `<button class="tn prev" type="button" data-go="${pv?pv[0]:'hub'}"><span class="ar">‹</span><span class="tx"><span class="bd">${pv?pv[2]:'Hub'}</span><span class="tt">${pv?pv[1]:'Faithful or prior-driven?'}</span></span></button><button class="tn hub" type="button" data-go="hub">⌂ the hub<span class="pos">${i+1} / ${ORDER.length}</span></button><button class="tn next" type="button" data-go="${nx?nx[0]:'hub'}"><span class="tx"><span class="bd">${nx?nx[2]:'Hub'}</span><span class="tt">${nx?nx[1]:'Faithful or prior-driven?'}</span></span><span class="ar">›</span></button>`}
+function go(v,noscroll){if(!document.getElementById('v-'+v))v='hub';cur=v;$$('.view').forEach(s=>s.hidden=s.id!=='v-'+v);const nt=$('#navTop'),nb=$('#navBot');nt.hidden=nb.hidden=v==='hub';nt.innerHTML=nb.innerHTML=navHtml();hideTip();RENDER[v]();if(!noscroll)window.scrollTo(0,0);try{history.replaceState(null,'','#'+v)}catch(e){}}
+document.addEventListener('click',ev=>{const a=ev.target.closest('[data-go]');if(a){ev.preventDefault();go(a.dataset.go)}});
+$$('[data-fold]').forEach(f=>{const b=f.querySelector('.fold-head'),body=f.querySelector('.guide-body,.adv-body'),t=b.querySelector('.toggle');b.addEventListener('click',()=>{const open=body.hidden;body.hidden=!open;b.setAttribute('aria-expanded',String(open));t.textContent=open?'hide ▲':'show ▼';if(open&&f.dataset.onopen)OPEN[f.dataset.onopen]()})});
+$('#fSlider').addEventListener('input',e=>{F.idx=+e.target.value;renderFid()});
+$('#lSlider').addEventListener('input',e=>{L.idx=+e.target.value;renderLean()});
+$('#iWidth').addEventListener('input',e=>{I.w=+e.target.value;renderInt()});
+$('#iOff').addEventListener('input',e=>{I.o=+e.target.value;renderInt()});
+$('#mapGo').addEventListener('click',()=>{F.level=pJ(M.sel);F.order='c';F.idx=lineup(F.level,'c').indexOf(M.sel);go('fidelity')});
+$('#commitTag').textContent=D.commit;
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>RENDER[cur](),120)});
+addEventListener('hashchange',()=>go(location.hash.slice(1)||'hub'));
+go(((location.hash||'').replace('#',''))||'hub',true);
+</script>
+</body>
+</html>

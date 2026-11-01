@@ -8728,6 +8728,213 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     or an earlier entry; anything committed under `output/` beyond the files
     above.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D111** *(2026-11-01)* **P5 v3: an interactive tour of the study added to
+  the site (`docs/p5/`, its source in `analysis/p5_tour/`), which decides
+  nothing; D110's commit, push and merge declared; the ROADMAP's P5 paragraph
+  brought up to date.**
+  - **Summary.** On the author's word ("all good to be made public on repo",
+    16:41:40 UTC on 1 November 2026) this entry adds a static page that lets a
+    reader drive P5's recorded results in the browser: `docs/p5/index.html`,
+    served from https://roughvollab.com/p5/ once merged. It states the verdicts
+    as D109 reports them and adds none. None of the scripts line 137 lists was
+    run, nothing was trained, scored or drawn, no file under `output/` changed,
+    and no verdict, figure or reading of D109 is touched. This entry also
+    declares D110's commit, push and merge and brings the ROADMAP's P5
+    paragraph up to date.
+  - **The page.** One file of 362,199 bytes, its data inside it and its web
+    fonts from Google Fonts, SHA-256
+    `0565fd012fe5f49da823b3ff37545716fe5a01adae217a9ba88e0400908d523d`, in the
+    form of the site's tour: a hub with the study's question as its title,
+    "Faithful, or leaning on its prior?", a walk through the study in 13 steps,
+    and six explorers, for Q1, H-a, H-b and H-c, H-d, G3 and the verdicts.
+    Nothing on it recomputes a posterior. It uses P5 as a small label. It
+    carries no AI-assistance line, as the site's tour pages carry none; where
+    it cites a review it says the reviewers were AI, and this entry declares
+    the tool's part.
+  - **What it states.** Verdicts, medians, intervals, per-seed and per-level
+    medians, seed floors, bin counts and the dose-response come from
+    `output/p5_stage2_report.json`, shown as the report gives them, and G3's
+    ladder from `output/p5_g3_report.json`, labelled as pilot figures that
+    enter no result (line 140). The walk's dates and counts come from this log,
+    by entry, and from the frozen draft, by line. Figures tagged post hoc or
+    exploratory are D109's, with its labels. The H-d page's bell is the
+    Gaussian reading of line 126, labelled as a worked example and not P5's
+    data. The page carries no value of m, `build.py` asserting that no key
+    named m is carried, and no median of m in the Flat bin has been taken.
+  - **What the browser computes.** From the committed cells and references the
+    page carries: each network's estimate on a chosen surface, with d, S and E
+    and their medians over that surface's five seeds; the map's counts, which
+    `check.py` compares with the report; and three plots: c against each of H,
+    ν, ρ and ξ₀, where line 99 names H and ν; the distribution of abs(d) over
+    the Identified cells, by level, with its shares on hover; and the median E
+    per surface against true H, tagged exploratory. These are views of
+    committed numbers. They are not in the report and decide nothing. A draft
+    of the page also stated new medians across surfaces, of c either side of a
+    split and of E by bands of true H. They are taken out, so that the page
+    states no summary figure the record does not hold; the bands it now shows
+    are D109's, for the ratio estimator at s = 0.005.
+  - **Estimates outside the box, post hoc.** Nothing is clipped to the box
+    (line 75), so the page has to draw what falls outside it. From
+    `output/p5_stage2_cells.csv`: under B the ensemble's estimate of H lies
+    below 0.02 on 37 of its 6,000 cells, and below zero on 12 of those, on the
+    pairs `test_0107_0`, `test_0107_1`, `test_0197_0` and `test_0317_0`; under
+    A it lies above 0.48 on 31; the ratio estimator's all lie inside. The
+    report's medians already count them. The page marks them at the edge of its
+    axis, with a note citing line 75. These counts decide nothing.
+  - **The source.** `analysis/p5_tour/template.html` is the page with a slot
+    for its data. `build.py` reads `output/p5_stage2_report.json`,
+    `output/p5_g3_report.json`, `output/p5_stage1.csv`,
+    `output/p5_stage2_cells.csv` and `output/p5v3_ref_test.jsonl`, imports
+    nothing from the repository, reproduces six of the report's primary medians
+    from the numbers the page carries, to within 2e-5, asserts that `output/`
+    is clean, and writes only the page. The page's tag names `6306189`, the
+    commit it was built from, and a rebuild at a later commit changes only that
+    tag. `check.py` walks every surface of the page through both explorers in
+    headless Chrome and writes only in a temporary folder. Its last run found
+    no script error on what it walks, every S, E and abs(d) readout within
+    rounding of the cells, the map's counts equal to the report's in all nine
+    views, no mark off either explorer's plot, no clipped label, and no
+    overflow at 400 or 320 px. It is not part of the test suite or of CI.
+  - **The links.** The footer of `docs/tour/index.html` gains one link to the
+    page, and `README.md` gains one sentence after "New to the project?".
+    Nothing else on the site changes.
+  - **The commit of D110, declared.** On the author's word ("Commit Go, I meant
+    the entry", 10:29:54 UTC on 1 November 2026) this session found the session
+    of D97 idle, generated D110's last text at 10:30:28, and at 10:30:50 found
+    no Python or git process, `HEAD`, `main`, `origin/main` and GitHub's `main`
+    at D109's merge, and exactly D110's 1,657 files staged. It committed D110
+    as `b6917a1` at 10:30:56. Its push, started in the background at 10:31:13,
+    failed: `curl 55`, the connection reset. The job's next read of GitHub
+    failed with `Could not resolve host`, and the job ended at 10:36:37. The
+    job's own exit status was 0, set by a later command in it, so it reported
+    success; the push's own exit status in its output was 1. This session read
+    that output at 13:44:32, after the author's "Try again" at 13:44:26. At
+    13:44:37 GitHub still had no such branch and the local head was `b6917a1`.
+    It pushed again from 13:45:01 to 13:45:53, with `http.postBuffer` and
+    `http.version` set for that command alone, and opened PR #266 through
+    GitHub's API at 13:46:09, the app's status showing no PR attached and its
+    request to attach this one being refused. It read the PR's checks at
+    13:46:26, both running, and, on the author's word ("check CI"), at
+    13:58:57, both passed, the last at 13:57:19 by the API.
+  - **The clock.** The hour's offset D110 declared in GitHub's API was gone by
+    these reads: the checks started at 13:46:11 by the API, and the merge below
+    is dated 14:00:04 by the API. The cause is still not known.
+  - **The merge of D110, declared.** The author merged D110 (PR #266) at
+    14:00:04, as `6306189`, whose parents are D109's merge and `b6917a1` and
+    whose tree, `e90fa22`, is `b6917a1`'s; the five checks on `main` passed,
+    the last at 14:09:47. On the author's word ("merged, check and delete the
+    branch", 14:13:11), having found the session of D97 idle and no Python or
+    git process, this session read the PR, its merge commit and checks, `main`
+    and the branch through GitHub's API at 14:13:22. From 14:13:40 to 14:17:50
+    it moved `main` to `6306189` by a fetch and switched to it, so that no file
+    was touched, the hashes of `output/` and `__pycache__` and the modification
+    times and sizes of the files it listed being unchanged and `HEAD` the only
+    difference. That step ran in the background past 240 s, on a check of each
+    of 1,707 files. The branch's heads, local and on GitHub, being at
+    `b6917a1`, it deleted the branch locally at 14:18:01 and on GitHub at
+    14:18:08, in two commands, GitHub then returning 404 for it, read by
+    14:18:27.
+  - **The author's review of the page.** The author read the draft and reported
+    what follows, all taken up. The draft stored a missing value as a negative
+    number, so that on the four pairs above it read the ensemble's negative
+    estimates as missing: it said the ensemble's G3 cell had failed, which is
+    false, showed E from fewer than five seeds, wrong on two of those pairs,
+    left one dot out of a plot, and stopped with an error on `test_0107_0`,
+    leaving the previous surface's figures on the screen. This was the draft's
+    alone: the report, the cells and D109 read the record directly. A missing
+    value is now `null`. They also reported a clipped axis label, the contrast
+    of the page's quietest text, the wording of the H-d card, of G̃, which is
+    interpolated and not fitted, and of the H-b and H-c card, and the direction
+    of the off-scale key, and they set the page's title, its label and its
+    browser tab.
+  - **This sitting's checks.** Read-only but for the files this entry lists. At
+    16:47:35 this session found no Python or git process, the session of D97
+    idle, and `HEAD`, `main` and `origin/main` at `6306189`, and it created
+    this entry's branch at 16:49:02 from it. `build.py` and `check.py` ran with
+    Python's bytecode writing off; screenshots, the snapshot and this entry's
+    generator are this session's scripts in its own folder, outside the
+    repository, none of which imports a script of P5's. All 2,011 files under
+    `output/` and the `__pycache__` folders hash as they did at D110's last
+    generation. No test was run for this entry, nothing the tests read having
+    changed; CI runs the suite on the PR.
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    after its sentence ending "line 199 (D110)." it now adds "An interactive
+    tour of the study is at https://roughvollab.com/p5/ and decides nothing
+    (D111)." The rest of the bullet is unchanged.
+  - **Readings, declared.** For the page: the frozen draft at its lines 7, 9,
+    15 to 22, 24 and 26 to 200; D109's reading and the entries the page cites;
+    the five outputs `build.py` reads; `p5_g2_reference.py` at its `surfaces()`
+    and each script's flags, for the walk; `layer4_calibrate_surface.py` and
+    `rough_heston_cf.py`, searched for the parameters; the site's `docs/tour/`
+    pages, the workflows, the test files searched for globs, and `.gitignore`'s
+    rules, for where the page and its source can sit. For D110's acts: this
+    session's transcript and the two push logs in its folder.
+  - **What was seen.** The figures above, the page's readouts, the draft's
+    medians since taken out, and the review's report. The counts of estimates
+    outside the box are new and post hoc.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (61 tool uses), given the uncommitted change and
+    the sources and not this sitting's conclusions. It found that the page
+    equals the template and its data; that all 12,000 cells and all per-pair
+    arrays the page carries match the outputs; that every figure in the walk,
+    the G3 rungs, the report rows and the counts of estimates outside the box
+    match; that D110's other times, hashes, parents and tree match the
+    transcript, the logs and git; that the page carries no m and names only
+    rough Heston; and that no test reads the files changed. It ran no second
+    check of those after the changes below. It found the page's words stronger
+    than the record in many places, all changed: an H-a note D109's reviews had
+    struck, "Mostly the level trained on 10,000 surfaces"; "No measurable leak"
+    for the ensemble's H-c, a reading D109 had withdrawn; "Faithful" and "get H
+    right", where H-a measures the median gap to the exact posterior mean;
+    "independent" readers, who were AI, now named so; "Everything committed"
+    and "Could someone check all this?", now line 199 as met, with the re-run
+    not made; "Every network meets every test surface", when each meets the 400
+    at its noise level; "Can the pricer be trusted" and "nothing was picked by
+    hand", against lines 141 and 39; a lede that set the exact answer against
+    leaning, when the exact answer leans too; "THE FINDING" over post hoc
+    figures and readings, and "What it means" over D109's reading; "a real
+    pre-registration", which no record states; "H is always identified", when
+    the record holds 400 test pairs; "eight verdicts with their intervals",
+    when two have none; "the lean it predicted was not there", against "Refuted
+    does not mean none"; and the citations of four statements. The lean page
+    now says that a positive E may also come from extrapolation (line 126). In
+    this entry it found "No other result", the source and time of the push's
+    failed read, what `check.py` covers, what `build.py` asserts, "every
+    message" and the branch's time, all corrected. In `check.py` it found
+    tolerances twice the rounding and an error at the first render unseen at
+    phone width, and it found a test for one word that this entry did not
+    declare, now removed; in `build.py`, no check that `output/` is clean, now
+    added. Its smaller points were taken up: definitions of the two calibrators
+    and the seed floor, E's units, prior A named for H-a and m, the walk's
+    wording at G2, the training and the scoring, v1 named, the sample time of
+    about 18 s, the scope of the post hoc tags, the views listed above, plots
+    at 320 px, a listener for changes of the hash, and the ticks' range on the
+    verdict lines. One point was not taken as it asked: it wanted the tag on
+    the H-b and H-c card replaced, whose words the author had set; told at this
+    entry's hold, the author kept them and added "at 0.5 vol point". It wrote
+    nothing in the repository, ran no script of P5's and no test, and took no
+    median of m and printed no m. It ran `check.py` and its own walk of a
+    temporary copy, with no network. Beyond the sources named to it, it read
+    this session's check output and snapshot helper, the head of
+    `docs/tour/index.html`, the README's lines 12 to 20 and searches of the
+    test files and workflows, and it searched the transcript for the time of
+    the author's word, for rows without a model, and for the branch's and the
+    checks' times. Its helper files are in this session's folder, outside the
+    repository. Nobody independent has read the final wording.
+  - **Who did what.** The author gave the word for D110's commit, its retry,
+    its CI read and its branch's deletion, merged it, reviewed the page as
+    above, and gave the word for this entry. D110's commit, push, PR, reads,
+    merge check and deletion, the page, its source and this sitting were held
+    in the Claude Code session that wrote D100 to D110, on Claude Opus 5.5
+    (`claude-opus-5-5`), the model its transcript records for every message on
+    1 November 2026 from 10:29 UTC, but for one `<synthetic>` row at 10:39:41;
+    it wrote the page and its source, ran the checks above, asked for the
+    review, and wrote this entry and the paragraph's change.
+  - **Not written.** Any amendment, none being needed; anything on OSF; any
+    re-run; line 135's exploratory items as such; any change to the frozen
+    draft or the files it binds, the amendment file, v2's documents, v1, the
+    decision sheet or an earlier entry; anything under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -8813,8 +9020,9 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   Confirmed (H-b and H-c at s = 0.005 alone); H-d untestable and the null
   unproven for both (D109); nothing after it has been run. The trained networks
   and the test set's stored samples were committed on 1 November 2026, meeting
-  the protocol's line 199 (D110). Targets unchanged: arXiv q-fin.CP, then
-  SIFIN, Quantitative Finance or ACM ICAIF.
+  the protocol's line 199 (D110). An interactive tour of the study is at
+  https://roughvollab.com/p5/ and decides nothing (D111). Targets unchanged:
+  arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
