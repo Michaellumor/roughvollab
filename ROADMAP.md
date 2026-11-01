@@ -8935,6 +8935,168 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     draft or the files it binds, the amendment file, v2's documents, v1, the
     decision sheet or an earlier entry; anything under `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D112** *(2026-11-01)* **P5 v3: D111's commit and merge declared; a new
+  README line on P5's page, above the map image, in place of D111's sentence
+  (PR #268); and a strip for that page on the site's tour page.**
+  - **Summary.** D111 was committed and merged after it was generated, and its
+    page was read live at https://roughvollab.com/p5/ at 19:40:29 UTC. On the
+    author's word a new README line, in their wording and higher up, then
+    replaced the sentence D111 added, and this entry's commit adds a strip for
+    the page to the site's tour page, beside the footer link D111 added. This
+    entry records all three. None of the scripts line 137 lists was run,
+    nothing was trained, scored or drawn, no file under `output/` changed, and
+    no verdict, figure or reading is touched. Only this entry changes
+    `ROADMAP.md`, and the P5 paragraph stands as D111 left it.
+  - **The last change to D111's page.** The author's word for D111 ("Commit Go,
+    add "at 0.5 vol point" to the chip", 17:31:35 UTC on 1 November 2026) also
+    set the tag on the hub's H-b and H-c card, now "ensemble little; ratio
+    estimator yes where H is partly identified, at 0.5 vol point". This
+    session's first try at this edit, at 17:32:03, was refused, the file having
+    changed since it last read it, and the rebuild, the check and the
+    generation sent with that edit, at 17:32:11, ran on the old wording. It
+    read the line back at 17:33:05 and sent the edit at 17:33:07; the file's
+    modification time is 17:33:15. It then rebuilt the page, written at
+    17:33:16, ran `check.py`, which passed, re-hashed `output/` and generated
+    D111 again. The hash D111 gives is that of this last build.
+  - **The commit of D111, declared.** At 17:34:08 this session found the
+    session of D97 idle. At 17:34:23 it found no Python or git process and
+    `HEAD`, `main` and `origin/main` at `6306189`, staged D111's seven files by
+    name, and read the blobs of `ROADMAP.md` and `docs/p5/index.html` as the
+    hashes the generator and D111 give. It committed D111 as `8f66de6` at
+    17:34:36. It pushed from 17:34:37 to 17:34:41, the push's own exit status
+    being 0 and GitHub's head for the branch `8f66de6`, and opened PR #267
+    through GitHub's API by 17:34:51, the app's status showing no PR attached
+    and this session's request to attach this one being refused. It read the
+    PR's checks once, at 17:35:18, both running, and read them no more before
+    the merge.
+  - **The merge of D111, declared.** The PR's checks passed, the last at
+    17:46:23 by the API. The author merged D111 (PR #267) at 17:49:46, as
+    `4a44f56`, whose parents are D110's merge and `8f66de6` and whose tree,
+    `69f2add`, is `8f66de6`'s; the five checks on `main` passed, the last at
+    18:07:24. On the author's word ("merged, check and delete the branch",
+    18:08:57), having found the session of D97 idle and no Python or git
+    process, this session read the PR, its merge commit and checks, `main` and
+    the branch through GitHub's API from 18:09:33. It also read the live page:
+    HTTP 200, 362,199 bytes, its SHA-256 the committed page's,
+    `0565fd012fe5f49da823b3ff37545716fe5a01adae217a9ba88e0400908d523d`, and the
+    site's tour page carrying the link. From 18:09:52 to 18:09:55 it moved
+    `main` to `4a44f56` by a fetch and switched to it, the two trees being
+    equal and the modification times and sizes of the four files it listed
+    unchanged. The branch's heads, local and on GitHub, being at `8f66de6`, it
+    deleted the branch locally at 18:09:58 and on GitHub at 18:10:11, in two
+    commands, GitHub then returning 404 for it, read by 18:10:38.
+  - **The README's line.** D111 added one sentence to `README.md`, after "New
+    to the project?". At 18:36:49 the author asked for a line in their own
+    wording directly under the one-line description of the site's tour, above
+    the map image: "▶ Featured study: Faithful, or leaning on its prior?",
+    linking the page, then "P5, pre-registered, scores two neural calibrators
+    against the exact posterior on an emulated rough Heston model." D111's
+    sentence is removed, so the README links the page once, and "Try the
+    interactive tour" stays the heading above it, as the author asked. The
+    commit carried no entry, as past README-only commits did not; this entry
+    records it. No independent reader read the line before its merge.
+  - **Its commit and merge.** At 18:37:04 this session found the session of D97
+    idle, and at 18:37:21 no Python or git process and `HEAD`, `main` and
+    `origin/main` at `4a44f56`. It created the branch at 18:37:33 and made the
+    two edits, and on the author's "Commit Go" (18:47:46) checked for processes
+    again at 18:48:00, staged `README.md` alone and committed `472c6f4` at
+    18:48:03. It pushed from 18:48:04 to 18:48:08, the push's own exit status
+    being 0, and opened PR #268 through GitHub's API by 18:48:17, the app's
+    status again showing no PR attached and this session's request to attach
+    this one being refused. It read the PR's checks at 18:48:26, both running,
+    and, on the author's word ("check CI", 19:01:25), at 19:01:32, both passed,
+    the last at 18:55:11 by the API, the PR having been merged by then. The
+    author merged it at 19:00:48 by the API, its commit dated 19:00:47, as
+    `de82882`, whose parents are D111's merge and `472c6f4` and whose tree,
+    `09a39bd`, is `472c6f4`'s; the five checks on `main` passed, the last at
+    19:10:37. On the author's word ("merged, check and delete the branch",
+    19:12:35), having found the session of D97 idle and no Python or git
+    process, this session read the PR, its merge commit and checks, `main` and
+    the branch from 19:12:57. From 19:13:11 to 19:13:15 it moved `main` to
+    `de82882` by a fetch and switched to it, the two trees being equal and the
+    modification times and sizes of the four files it listed unchanged. The
+    branch's heads being at `472c6f4`, it deleted the branch locally at
+    19:13:19 and on GitHub at 19:13:27, GitHub then returning 404 for it, read
+    by 19:13:44. By 19:13:46 the README on GitHub's `main` had one "Featured
+    study" and no "A pre-registered study".
+  - **The strip on the site's tour page.** D111 linked P5's page from the
+    footer of `docs/tour/index.html`, under the author line. At 19:22:26 the
+    author asked for a strip under that page's intro, matching the README's
+    line, above the map, and gave its markup and one CSS rule. Both are in this
+    entry's commit as given: `.card.violet`, and a link to `../p5/` reading
+    "featured study · P5 · pre-registered", "Faithful, or leaning on its
+    prior?" and "Open the study →". The file's modification time is 19:23:27.
+    The map and the footer's link are unchanged. This session rendered the page
+    at desktop width and at 400 and 320 px, by a script in its own folder, by
+    19:23:39: no script error and no overflow, the link dropping to its own
+    line on phones. No independent reader has read the strip.
+  - **The clock.** The API's times show no hour's offset: the PRs opened by
+    17:34:51 and 18:48:17, their checks starting at 17:34:55 and 18:48:22.
+  - **This sitting's checks.** In the repository, read-only but for this entry,
+    its branch and the strip. At 19:15:23 this session found the session of D97
+    idle, and at 19:15:29 no Python or git process and `HEAD`, `main` and
+    `origin/main` at `de82882`, and it created this entry's branch from it at
+    19:17:03. The generator, the snapshot and the page's render are this
+    session's scripts in its own folder, outside the repository, and import
+    nothing of P5's. At 19:40:40 all 2,011 files under `output/` and the
+    `__pycache__` folders hash as they did at D110's last generation. No test
+    was run for this entry; no test file names `docs/tour/` or `docs/p5/`, and
+    CI runs the suite on the PR.
+  - **Readings, declared.** This session's transcript and notes, for the times
+    above; git's objects, log and reflog; GitHub's API, for the two PRs, their
+    merge commits and checks, and the branches; the live page and the site's
+    tour page; the README's lines 3 to 19, and the README on GitHub's `main`,
+    by two searches; the log's mentions of the README from its line 7000; the
+    test files, searched for the README and for these two pages;
+    `docs/tour/index.html`, its styles and anchors, for the strip, and its
+    history; and D110 and D111, as this session read and generated them
+    earlier, for the form.
+  - **What was seen.** For this entry: times, hashes, statuses, the README's
+    and the log's lines named above, the build's and the check's output,
+    screenshots of the hub and of the tour page, and the review's report. No
+    value of P5's was computed or printed for it. The snapshot and the
+    generator opened files only to hash them, and the rebuilds above read P5's
+    outputs and reproduced six medians, as D111 says of `build.py`.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (39 tool uses), given the entry's draft and the
+    sources and not this sitting's conclusions. It rebuilt the insertion
+    independently and found it pure and in the form of D110 and D111. It found
+    the other times, every hash, parent and tree, the page's size and hash, all
+    the quotations and the counts right. It found seven statements wrong or too
+    strong, all changed: "No result of P5's was computed or opened", when the
+    rebuilds and the hashing opened them; "Read-only but for this entry" and
+    "changes only the log", against the strip; "its one main heading", when
+    `# RoughVolLab` heads the README; send times given as the times of an edit
+    and a rebuild; "first edit of the template", when this was the first try at
+    this edit; the time and the strength of the last read of the README; and an
+    unqualified list under What was seen. Its smaller points were taken up: who
+    set the tag's words; which acts were this session's and the model's clause;
+    three reads undeclared and one overstated; "the tour" meaning two things;
+    the times of the live page's read and of the hashing; the trees' equality
+    at each move; "any change to the page"; no independent read of the README's
+    line; the merge's two times; the clock; and the wording of send and print
+    times. It read the draft before the strip was written, so it has not
+    reviewed the strip or this wording. It wrote nothing in the repository, ran
+    none of P5's scripts and no test, used no network, and ran its own
+    read-only scripts and git commands. Beyond the sources named to it, it read
+    the frozen draft's line 137, this session's snapshot helper and its
+    outputs, the strip's diff and files' modification times, and it searched
+    the tracked scripts and workflows for the two pages. Its helper files are
+    in this session's folder, outside the repository. Nobody independent has
+    read the final wording.
+  - **Who did what.** The author set the tag's final words, taking "at 0.5 vol
+    point" from this session's recommendation at the hold, wrote the README's
+    line and the strip's markup, gave the word for both commits and both
+    deletions, merged both PRs and asked for this entry. The edits, rebuilds,
+    commits, pushes, PRs, reads, merge checks, moves of `main`, deletions and
+    this sitting were this session's. It wrote D100 to D111 and ran on Claude
+    Opus 5.5 (`claude-opus-5-5`), the model its transcript records for every
+    message from 17:31 UTC.
+  - **Not written.** Any amendment; anything on OSF; any re-run; any change to
+    `docs/p5/` after D111's commit; any change to the frozen draft or the files
+    it binds, the amendment file, v2's documents, v1, the decision sheet or an
+    earlier entry; anything under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
