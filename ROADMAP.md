@@ -8490,6 +8490,244 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     documents, v1, the decision sheet or an earlier entry; anything on OSF;
     anything committed under `output/` beyond the two files above.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D110** *(2026-11-01)* **P5 v3: line 199 met (the 224 trained-network files
+  and the test set's 1,432 stored-sample files committed, in place of the
+  deposit D109 planned, so no amendment and nothing on OSF; the ROADMAP's P5
+  paragraph brought up to date).**
+  - **Summary.** Line 199 asks that code, seeds, emulator, reference posteriors
+    and trained networks be committed. Until this entry the trained networks
+    and the test set's stored samples stood pinned by hashes and not committed
+    (D104, D105, D107), and D109 said that, on the author's word, a later entry
+    would commit the networks and deposit the samples' archive outside GitHub
+    with a dated amendment. The author has since changed that route. This entry
+    commits the 224 network files, as D74 said of the line it then called 164,
+    and the test set's stored samples as their 1,432 part files, each far under
+    GitHub's limit for a file. Once merged, line 199 is met as written, no
+    amendment is needed, and nothing goes on OSF for now. None of the committed
+    files changes on disk, no P5 script was run from its command line, and no
+    verdict, figure or reading of D109 is touched. This entry also brings the
+    ROADMAP's P5 paragraph up to date.
+  - **What is committed.** Force-added by name, none of them changed. The `.pt`
+    and `.npy` blobs are the files byte for byte. The `.json` blobs have LF
+    line endings and their working copies CRLF, as with the earlier outputs, so
+    D104's and D107's hashes hold of those files as written, with CRLF. The
+    second hash of each network folder below is the same fingerprint taken over
+    its blobs, with LF, for a checkout that does not restore CRLF; the parts
+    have one hash, D105's:
+    - `output/p5_g3/`, 144 files, 72 `.pt` and 72 `.json`, 34,973,188 bytes on
+      disk, D104's hash, then 34,917,147 bytes as blobs:
+      `1a0fc6099890c73e4f3a1caa6cacfa5ddc89534d6e1750d6fafaa7324f6cea85`
+      `431d8e329d3ceb9a39ebfa7c066212c50898edb44cb1e07f929c4c11d40ebe4e`
+    - `output/p5_calibrators/`, 80 files, 40 `.pt` and 40 `.json`, 22,004,565
+      bytes on disk, D107's hash, then 21,969,403 bytes as blobs:
+      `e86cd6dda0299ed3ec415dc3da152a682f5834151862e4d477885c4b1a2d787f`
+      `92245e4f9a5388aac8e35cba4608a38c5e55fb55154c9a269da968c235518aa2`
+    - `output/p5v3_ref_test_samples_parts/`, 1,432 `.npy` files of 320,128
+      bytes each, 458,423,296 bytes, D105's hash:
+      `deb73013b68ee63165d5493397bb064cfa7e00836e5b94d154410c2867628f98`
+  - **Line 199, item by item.** Code and seeds: the scripts, the six P5 scripts
+    under line 7's hashes and the study's and the transcription check's beside
+    them, with the seeds in them and in the records' headers. Emulator:
+    `output/p5_g1_emulator.npz`. Reference posteriors: each set's record and
+    its samples: the test set's samples by this entry and its record by D105,
+    and G2's, G3's pilot's, the study's and the transcription check's by their
+    committed records and archives, as v2's two sets by theirs. Trained
+    networks: G3's 72 runs and the training's 40; the 50 networks that scored
+    the test set are all among them, 10 in `output/p5_g3/` and 40 in
+    `output/p5_calibrators/`.
+  - **What stays out.** `output/p5v3_ref_test_samples.npz`, 173,486,939 bytes,
+    over GitHub's limit for a file, stays pinned by D105's hash, and otherwise
+    only on the author's machine. Each of its 1,432 arrays equals its part file
+    (D109), and Stage 2 read the parts, which `load_samples()` lays over the
+    archive. This sitting rebuilt the archive in memory from the part files, in
+    the record's order, by `np.savez_compressed` with numpy 2.4.4: 173,486,939
+    bytes, equal to D105's hash, so the pin stays checkable from committed
+    files. The `_parts` folders of the six other sample sets stay out too, each
+    holding exactly what its committed archive holds, 226 arrays compared one
+    by one in this sitting. The other files git ignores under `output/` are not
+    P5's.
+  - **Why the route changed.** At 07:54:47 UTC on 1 November 2026 the author
+    took this session's lean, the deposit (D109). D109's second review noted
+    that each part file is under GitHub's limit, and this session told the
+    author so, still preferring the deposit, to keep the weight out of the
+    repository's history. At 09:31:08 the author said "put the archive on OSF,
+    prepare D110", and at 09:32:07, "is there a need to put archive on OSF?" At
+    09:32:30 this session had said that it could not make the upload, having no
+    sign-in to OSF, every OSF act having been the author's. At 09:34:05 it
+    answered: not for the verdicts, which rest on files already committed, the
+    stored samples feeding in Stage 2 only m, which fed only H-d, untestable;
+    but Stage 2 refuses to start without them, and line 199 promises them. It
+    then recommended committing the part files, reversing its lean, having
+    checked what the repository holds and where the site publishes from. At
+    09:43:04 the author said "commit the parts, prepare D110...no OSF FOR NOW".
+    A deposit can still be made later, if a journal asks for a data DOI, for
+    example: on OSF in a new component only by 15 November 2026, by its FAQ as
+    read on 26 October, or elsewhere. None has been made.
+  - **The cost.** The 1,656 blobs add 232,099 KiB of loose objects: `.git` went
+    from 448 MB to 678 MB by `du`, as staged, against this session's estimate
+    of about 670 MB. Every checkout carries about 515 MB more. The history
+    keeps them unless it is rewritten. The site publishes from `docs/` and is
+    not affected. Each CI checkout now fetches them; this entry's own checks
+    will show what that costs. Checking out any commit before this one takes
+    these files out of the working tree until git restores them, with new
+    modification times; the fetch and switch of the merge check avoids that.
+  - **A reading, this session's, labelled as such.** By the code and not by a
+    run, a clone now holds every file Stage 2 reads: `run()` accepts the parts
+    without the archive (`p5_stage2.py` line 831) and `load_samples()` reads
+    them (`p5_g2_reference.py` lines 1108 to 1119). Its outputs being tracked
+    and never written over (D82), a re-run on a clean tree needs a folder of
+    its own: `py -3 p5_stage2.py --stage1 --out-dir DIR`, then
+    `py -3 p5_stage2.py --run --out-dir DIR`, with numpy 2.4.4 and scipy
+    1.17.1, which the script checks and `requirements.txt` does not pin, so
+    that other versions need `--allow-other-versions`, which the output
+    records. This has not been run, and nothing here says that it would
+    reproduce the report.
+  - **The commit of D109, declared.** The author's word ("Commit Go", 07:54:47
+    UTC on 1 November 2026) came before D109's second review was started. At
+    08:19:54, after that review, with its points taken up, this session found
+    the Claude Code session of D97 idle; D109's last generation followed, by
+    08:20:12. At 08:20:30 it checked that no Python or git process ran, that
+    `HEAD`, `main`, `origin/main` and GitHub's `main` were at D108's merge, and
+    that exactly D109's three files were staged, their blobs those the
+    generator gave. It committed D109 as `d85c624` at 08:20:34, pushed its
+    branch by 08:20:45 and opened PR #265 through GitHub's API at 08:20:53, the
+    app's status showing no PR attached and its request to attach this one
+    being refused. It read the PR's checks at 08:21:10, both running.
+  - **The clock, declared.** GitHub's API gave the times of those checks, and
+    of the merge below, an hour ahead of this machine's clock: 09:20:57 for
+    checks started at about 08:20:57, and 09:40:16 for a merge whose commit is
+    dated 08:40:16. At 08:21:47 and 09:46:29 this session compared the
+    machine's clock with the `Date` header of GitHub's HTTP replies, and they
+    agreed within a second. In the first of those reads, from 08:21:40 to
+    08:21:51, it also read the time zone, GMT, the last time sync, the commit
+    date of `d85c624`, PR #265's state through GitHub's API and this session's
+    transcript for backward steps in its times, and tried Windows' time-change
+    events, none being readable. The cause is not known. D108's merge shows no
+    such offset. Times here are by the machine's clock, as in D109, except
+    where marked as the API's.
+  - **The merge of D109, declared.** At 08:31:10 the author quoted this
+    session's sentence that nobody independent had read D109's final wording,
+    and that the PR was their chance to read it, and wrote "what does this
+    mean? I read it". This session took that to mean they had read the entry,
+    said what D109's "no third reading" meant, namely no independent reader,
+    and said that this entry would record it. Asked at this entry's hold, they
+    said at 10:29:54 that they had meant the entry. At 08:39:54, on the
+    author's word, it read the PR's checks, both passed, the last at 09:38:21
+    by the API. The author merged D109 (PR #265) at 08:40:16, by its commit's
+    date, 09:40:16 by the API, as `8b95fde`, whose parents are D108's merge and
+    `d85c624` and whose tree is `d85c624`'s; the five checks on `main` passed,
+    the last at 09:47:07 by the API. On the author's word ("merged, check and
+    delete the branch", 08:47:47), having found the session of D97 idle and no
+    Python or git process, it read the PR, its merge commit and checks, `main`
+    and the branch through GitHub's API at 08:48:08; from 08:48:28 to 08:48:43
+    it moved `main` to `8b95fde` by a fetch and switched to it, so that no file
+    was touched (the hashes of `output/` and `__pycache__` unchanged, and the
+    modification times and sizes of `ROADMAP.md` and the 50 tracked files under
+    `output/`); and, the branch's heads, local and on GitHub, being at
+    `d85c624`, it deleted the branch locally at 08:48:46 and on GitHub at
+    08:48:53, in two commands, GitHub then returning 404 for it, read by
+    08:49:13.
+  - **This sitting's checks.** Read-only but for the staging, by this session's
+    scripts in its own folder, outside the repository: a stage check, a listing
+    of what stays out, the archive's rebuild, the generator for item 6 and the
+    snapshot helper for the hashes, none of which imports a script of P5's;
+    outside the test run below, no script of P5's was imported and nothing was
+    trained, scored or drawn; `output/` and `__pycache__` are unchanged (hashed
+    at the move to `main`, before and after the test run, and after the last
+    generation of this entry). It found no Python or git process, the session
+    of D97 idle, and `main` at `8b95fde`, equal to GitHub's, and created this
+    entry's branch at 09:44:55 from it. 1, the names: 1,656, the three folders'
+    files in byte order, the counts as pinned, and none an online-only
+    placeholder. 2, the staging, from 09:44:55 to 09:45:12: `git add -f` of
+    those names and no others. 3, the blobs: each staged blob's id recomputed
+    from its file, the `.pt` and `.npy` as they stand and the `.json` with CRLF
+    made LF, all equal, and all of mode 100644. 4, the pins: the hashes of
+    D104, D105 and D107 recomputed from the files, all equal, and each folder's
+    fingerprint over its blobs as given above. 5, what stays out: the listing
+    above, from the tracked names, and each of the six other `_parts` folders
+    against its committed archive, array by array, all equal, and the archive
+    rebuilt from the parts, as above. 6, the list of trained seeds: every
+    network it names has its `.pt` here. No score or posterior was printed.
+  - **The tests.** While this entry was being drafted, before it was first
+    generated, on its branch with the files staged, this sitting ran the eight
+    P5 test files in the core interpreter, which like CI's job has no torch,
+    with `PYTHONDONTWRITEBYTECODE=1` and pytest's cache off so that nothing is
+    written in the repository: 97 passed and 9 skipped, in 602 s, the machine
+    on battery, the counts and progress line of D109's run. `output/` and
+    `__pycache__` were unchanged (hashed before and after).
+  - **The P5 paragraph.** `ROADMAP.md`, the P5 bullet under Publication seeds:
+    after its sentence ending "nothing after it has been run." it now adds "The
+    trained networks and the test set's stored samples were committed on 1
+    November 2026, meeting the protocol's line 199 (D110)." The rest of the
+    bullet is unchanged.
+  - **Readings, declared.** The frozen draft's line 199 as D109 read it, and
+    the first 300 characters of its line 9. `docs/protocols/`, listed;
+    `ROADMAP.md`, searched for dated amendments and for D89 to D91, D100 and
+    D101, with its pins read by Python and D109's text as generated; the
+    tracked names, for `docs/CNAME` and `docs/.nojekyll`; the workflows,
+    searched for their checkouts and paths; `p5_stage2.py`, searched for its
+    readers of the samples, with lines 1 to 339 and 430 to its end as read for
+    D109, and 385 to 400 read after the review, D106 having read `out_paths()`
+    to `run_stage1()`; `p5_g2_reference.py` at 1108 to 1119, as read for D109,
+    and searched after the review for `consolidate_samples()`;
+    `requirements.txt`, for numpy and scipy; the commit dates of D108's and
+    D109's merges and of `d85c624`; git's attributes and `.gitignore`'s rule
+    for `output/`, as read for D109; `git grep` of the tracked files outside
+    the log, the protocols and `output/` for these folders and for "not
+    committed", which found nothing to change; the sizes under `output/`; the
+    list of trained seeds; and this session's own transcript and notes, and its
+    generator of D109, run and read in part, for the times of its acts, the
+    model and the form.
+  - **What was seen.** Names, sizes, hashes and counts, and the review's
+    report. The arrays and the networks' files were compared, not printed. No
+    new result of P5's has been computed.
+  - **The review.** One independent read-only reader, a subagent of this
+    session on Claude Opus 5.5 (63 tool uses), given the staged change and the
+    sources and not this sitting's conclusions, recomputed from the files and
+    the index every blob, pin, fingerprint, count and size and found them all
+    right, and read every blob back from the object store as well. It found
+    line 199 met as written once the commit is merged, with no amendment
+    needed; the two commands workable, by tracing `run()` through the code and
+    running nothing; and no real problem from committing the files. It found
+    four statements wrong, all corrected: the session of D97 found idle after
+    D109's last generation, when that read, at 08:19:54, came before it; "two
+    scripts", when the checks rest on more; "No file on disk changes, nothing
+    was run", against `ROADMAP.md` and the test run; and the author's "I read
+    it" given as having read the final wording, now quoted, with how this
+    session took it and the author's confirmation. It found the reads from
+    08:21:40 to 08:21:51 undeclared, now under The clock. Its wording points
+    were taken up: which scripts line 7 lists; the test set's record and
+    samples; the versions the commands need; the merge commit's own date, which
+    narrows The clock to the API's fields; the limit on a later deposit on OSF;
+    "No score or posterior"; the reads behind the reading and the use made of
+    D109's generator; D74's line number; and the date in the paragraph. It
+    noted one new behaviour, not a defect, now under The cost: what checking
+    out an earlier commit does to these files. It also noted that the parts
+    rebuild the archive byte for byte, to be redone before being stated; this
+    sitting redid it, with its own script, as above. It wrote nothing in the
+    repository, ran no script of P5's and no test, imported no repository
+    module, called no GitHub API and took no median of m. Beyond the sources
+    named to it, it read this entry's generator, the test runs' outputs, one
+    snapshot's status list and the imports of this session's helpers, searched
+    the tracked text files, read the scoring's record for labels and statuses
+    and the test set's record for its digest and order, printing no figure, and
+    rebuilt the archive in memory. Its helper files are in this session's
+    folder, outside the repository.
+  - **Who did what.** The author gave the word for D109's commit and asked for
+    its second review, read its final wording, merged it, gave the word for its
+    branch's deletion, asked whether a deposit was needed, chose this route and
+    asked for this entry. The commit, the PR, the reads, the merge check, the
+    deletion and this sitting were held in the Claude Code session that wrote
+    D100 to D109, on Claude Opus 5.5 (`claude-opus-5-5`), the model its
+    transcript records for every message on 1 November 2026; it recommended
+    this route, staged the files, ran the checks and the tests above, asked for
+    the review, and wrote this entry and the paragraph's change.
+  - **Not written.** Any amendment, none being needed; anything on OSF; line
+    135's exploratory items; any re-run; any change to the frozen draft or the
+    files it binds, the amendment file, v2's documents, v1, the decision sheet
+    or an earlier entry; anything committed under `output/` beyond the files
+    above.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
@@ -8573,8 +8811,10 @@ realised variance); P2 prices; P4 supplies the convergence foundation.
   (D108). Stage 2 ran on 1 November 2026: for the ensemble H-a Confirmed, H-b
   and H-c Refuted; for the ratio estimator H-a and H-c Inconclusive, H-b
   Confirmed (H-b and H-c at s = 0.005 alone); H-d untestable and the null
-  unproven for both (D109); nothing after it has been run. Targets unchanged:
-  arXiv q-fin.CP, then SIFIN, Quantitative Finance or ACM ICAIF.
+  unproven for both (D109); nothing after it has been run. The trained networks
+  and the test set's stored samples were committed on 1 November 2026, meeting
+  the protocol's line 199 (D110). Targets unchanged: arXiv q-fin.CP, then
+  SIFIN, Quantitative Finance or ACM ICAIF.
 
 - **Do the P-measure and Q-measure roughness readings agree?** Realised-variance
   estimation reads H under the physical measure; surface calibration reads it
