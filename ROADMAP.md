@@ -9380,6 +9380,185 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     frozen draft or the files it binds, the amendment file, v2's documents, v1,
     the decision sheet or an earlier entry; anything under `output/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D114** *(2026-11-02)* **P5 v3: D113's commit and merge declared; its
+  reader's second pass recorded and the statements it found wrong in D113
+  corrected here, D113 having merged as it stood; D113's branch deleted.**
+  - **Summary.** D113 was committed and merged after it was generated, and it
+    said this entry would record its reader's second pass. That pass reported
+    after the author's word for the commit and before the merge. It found four
+    statements of D113 wrong or too strong, some smaller points, and a sentence
+    of the abstract too strong. This session put them to the author, who merged
+    D113 as it stood. Merged entries are not edited, so this entry corrects
+    D113, and the abstract's sentence stands on the author's word. This session
+    ran none of the scripts line 137 lists and trained, scored and drew
+    nothing, no file under `output/` changed, and no verdict, figure or reading
+    is touched. Only this entry changes `ROADMAP.md`, and the P5 paragraph
+    stands as D111 left it.
+  - **The commit of D113, declared.** On the author's word ("Commit Go,
+    Significant, clause", 21:19:14 UTC on 1 November 2026) this session wrote
+    the abstract again at 21:21:25, changed the README's clause and generated
+    D113 again, and at 21:21:24 found the session of D97 idle. At 21:21:55 it
+    found no Python or git process and `HEAD`, `main`, `origin/main` and
+    GitHub's `main` at `387c134`, staged `CITATION.cff`, `README.md` and
+    `ROADMAP.md` by name, and read the blob of `ROADMAP.md` as the hash the
+    generator gave,
+    `cfb873eeeb46b013c4be1d9b7b6a5b933a73728bac03c03fcf71df8be500a461`, and the
+    diff's counts, 21 lines added and 11 removed, 1 and 1, and 283 and 0. It
+    committed D113 as `76d2e25`, on `docs/p5-d113-declared`, at 21:21:59. It
+    pushed from 21:22:00 to 21:22:03, the push's own exit status being 0 and
+    GitHub's head for the branch `76d2e25`, and opened PR #271 through GitHub's
+    API, the app's status showing no PR attached and this session's request to
+    attach this one being refused. It read the PR's checks by 21:22:29, both
+    running, and by 21:29:35, `compile P1` passed and `pytest` running, and
+    read them no more before the merge.
+  - **The merge of D113, declared.** The PR's checks passed, the last at
+    21:39:43 by the API. The author merged D113 (PR #271) at 21:56:02, as
+    `8128a94`, whose parents are `387c134` and `76d2e25` and whose tree,
+    `9cc9f5a`, is `76d2e25`'s. The five checks on `main` passed, `deploy` at
+    21:56:51 and the last, `pytest`, at 22:05:46. On the author's word ("merged
+    as stand", 22:09:24) this session read the PR, its merge commit and checks,
+    `main` and the branch through GitHub's API from 22:09:46, and by 22:09:54
+    three searches of GitHub's `main` had counted one "Significant" in
+    `CITATION.cff`, one line with the new clause in `README.md` and one D113 in
+    `ROADMAP.md`. That word did not ask for the branch's deletion, and the
+    branch stayed.
+  - **The second pass.** At 21:17:32 this session asked D113's reader, the same
+    subagent on Claude Opus 5.5, to read the abstract and D113's corrected
+    wording, and at 21:22:19 told it of the commit and asked it to finish
+    against `76d2e25`. Its report arrived at 21:29:05. It used 22 tool uses in
+    this pass. It found D113's corrections of its first pass made rightly and
+    the insertion pure: 283 lines, 79 columns or fewer, removing them giving
+    the parent's bytes. It found the commit carrying the author's block with
+    the one sentence changed, the lines outside the block identical and the
+    README differing by one line. From 21:29:32 this session re-read at source
+    the points below. At 21:30:18 it put them to the author, with the choice of
+    a second commit on the branch before the merge; the author's word was
+    "merged as stand". The reader added that the README's new clause, "what had
+    already been run and seen is declared in the protocol", now reads as
+    complete, and that it found no counter-example in lines 7 and 15 but did
+    not audit their completeness. It wrote nothing in the repository or on
+    GitHub or OSF, ran no P5 script and no test, opened nothing under
+    `output/`, and used the network for GitHub's API alone, GET only, for
+    PR #271 and its checks. Beyond the sources named to it, it read the heads
+    and function lists of `roughvol_core.py`, `layer1_rough_vol.py` and
+    `layer1b_mlmc_asian.py`, the head and counts of the test files, the text,
+    labels, slider and `Math.random` counts of the tour's index and six
+    explorers, the frozen draft's lines using "exact", and D104's head. It ran
+    its own scripts in this session's folder and PyYAML on the two blobs of
+    `CITATION.cff`, and stopped one script of its own that hung, about 21:27;
+    that script had written nothing.
+  - **D113 corrected.** D113 stands in the log as merged. Read it with these:
+    - **"do not import it".** `layer4_calibrate.py` and
+      `layer4_calibrate_surface.py` do not import `roughvol_core` directly and
+      use nothing of it. Each does run `from rough_heston import PARAMS` at
+      module level, and line 75 of `rough_heston.py` runs
+      `from roughvol_core import volterra_weights`, the chain line 137
+      describes, so "do not import it" is false through the chain.
+    - **"is imported by".** D113's list leaves out what two of the importers
+      take. `layer1b_mlmc_asian.py` and `rough_heston.py` take only
+      `volterra_weights`. `layer1b_mlmc_asian.py` runs its own path code,
+      `_volterra`, `_simulate_paths` and `_paths_from_increments`, and line 9
+      of `roughvol_core.py` calls its scheme "extracted verbatim from the
+      validated Layer 1b pricing engine". So the abstract's "underlies" holds
+      for pricing as a shared scheme and weights, not as one generator.
+    - **"It raised two points at the hold ... and left both fields".** "It"
+      means this session, not the modules before it. At the hold (21:17:56) the
+      author's two choices were "Every design decision" and the README's
+      clause. `version` and `date-released` were listed apart, as things this
+      session would leave alone, and the author's word named neither, so those
+      fields stand on this session's advice and the author's silence.
+    - **"had each been read once".** That is true of the last of three runs.
+      The command holding the live reads was sent at 20:46:50, 21:15:57 and
+      21:21:23, each reading the three pages once, and the hashing went with it
+      each time.
+    - **Smaller points.** "None being installed or in CI": only `cffconvert`
+      was tried, at 20:59:42, and no workflow names it. D113's Readings leave
+      out three searches: the tracked files for
+      `honest measurement|abstract: >` with a `git ls-files` filter, and
+      `.github`, the config files and `CONTRIBUTING.md` for
+      `cffconvert|CITATION\.cff`, both at 20:59:42; and the README,
+      `CONTRIBUTING.md`, `paper/paper.md` and the site's guide for the
+      prediction claim, at 21:00:33. In "at 15:51:47 and 16:25:02", the second
+      is a send time, the result coming at 16:25:03. "From that run", in D113's
+      merge of D112, means the next merge's run.
+  - **The abstract and two pages, standing.** The report judged "an interactive
+    tour lets readers drive each result in the browser" too strong. Three of
+    the five question pages label their curves illustrative
+    (`docs/tour/calibration_explorer.html`, `execution_explorer.html`,
+    `hedging_explorer.html`), and no page under `docs/tour` or `docs/p5`
+    mentions P4 or the weak-order result; line 17 of the README says the same
+    as the abstract. It suggested "explore each of the five answers". It also
+    found line 167 of `docs/tour/engine_explorer.html`, "Every result in
+    RoughVolLab is built on one path generator", at odds with the abstract's
+    statement on calibration. It called three words soft and not false:
+    "heavily", where the README says "One tested engine"; "path-dependent
+    options", where the modules price arithmetic-Asian ones; and "Significant
+    design decisions", still universal within "significant". It found the rest
+    of the abstract right against the README and the code. All of this was put
+    to the author, who merged as it stood, so the abstract, the README and the
+    page stand as they are, and this entry changes none of them.
+  - **The branch.** On the author's word ("prepare D114 and delete the branch",
+    16:12:02 UTC on 2 November 2026), having found the session of D97 idle at
+    16:12:46 and no Python or git process at 16:12:52, this session read the
+    PR, its merge commit and checks, `main` and the branch through GitHub's API
+    by 16:13:26. Its first read of the branch's head by git failed on an
+    unresolved host; the second, at 16:13:36, gave `76d2e25`, the PR's head and
+    the local branch's. From 16:13:39 to 16:13:43 it moved `main` to `8128a94`
+    by a fetch and switched to it, no file differing and the modification times
+    and sizes of the four files it listed unchanged. It deleted the branch
+    locally at 16:13:46 and on GitHub at 16:14:03, in two commands, GitHub then
+    returning 404 for it, read by 16:14:35. Until the move the checkout had
+    stayed on the branch, and local `main` at `387c134`.
+  - **The clock.** The API's times show no hour's offset: GitHub records the PR
+    as created at 21:22:11, after the push that ended at 21:22:03, and its
+    checks as starting at 21:22:15.
+  - **This sitting's checks.** In the repository, read-only but for this entry
+    and its branch, created from `main` at `8128a94` at 16:14:36. The
+    generator, the snapshot and the reads of the live pages and of GitHub's
+    records are this session's scripts in its own folder, outside the
+    repository, and import nothing of P5's. At 15:50:44 a read of GitHub's API
+    found no open PR or issue and the five checks on `main` passed. By 16:25:22
+    all 2,011 files under `output/` and the `__pycache__` folders hashed as
+    they did at D110's last generation. By 16:25:31 the live P5 page, the
+    site's tour page and the README on GitHub's `main` had each been read once
+    more and equalled `main`'s blobs byte for byte. No test was run for this
+    entry; no test file names `ROADMAP.md`, and CI runs the suite on the PR.
+  - **Readings, declared.** For this entry: this session's transcript and
+    notes, for the times above; git's objects, log, status, remote heads and
+    branch lists; GitHub's API, for PR #271, its merge commit and checks, the
+    branch, `main`, the open PRs and issues, the branches and the latest
+    release; the live P5 page, the site's tour page and the README on GitHub's
+    `main`; the second pass's report; D113 as committed. Re-reading the
+    report's points at source: the three explorers' labels, the tour's and the
+    P5 page's search for P4, line 167 of the engine page, the imports and
+    function names of `layer1b_mlmc_asian.py`, line 9 of `roughvol_core.py`,
+    line 75 of `rough_heston.py`, the imports of the two calibration modules,
+    the abstract and line 17 of the README.
+  - **What was seen.** For this entry: times, hashes, statuses, the lines named
+    above and the reports. No value of P5's was computed or printed for it. The
+    snapshot opened the files under `output/` and the `__pycache__` folders
+    only to hash them. The generator opened none of them; it read the log, the
+    files named above, the transcript and this sitting's reports. The last live
+    reads compared bytes and printed no page.
+  - **The review.** One independent read-only reader, a fresh subagent of this
+    session on Claude Opus 5.5, given this entry's draft and the sources and
+    not this sitting's conclusions, was reading it when the author gave the
+    word for the commit ("Commit Go", 16:24:39 UTC). It had not reported, so
+    nobody independent has read this entry, and the next entry records what it
+    finds.
+  - **Who did what.** The author gave the word for D113's commit with its two
+    changes, merged PR #271 as it stood, asked for this entry and the deletion,
+    and gave the word for this entry's commit before its reader had reported.
+    D113's commit, push, PR, reads, the move of `main`, the deletion and this
+    sitting were this session's, and it asked for the second pass. It wrote
+    D100 to D113 and ran on Claude Opus 5.5 (`claude-opus-5-5`), the model its
+    transcript records for every message from 21:19 UTC on 1 November.
+  - **Not written.** Any amendment; anything on OSF; any re-run; any change to
+    `README.md`, `CITATION.cff` or anything under `docs/`; any change to the
+    frozen draft or the files it binds, the amendment file, v2's documents, v1,
+    the decision sheet or an earlier entry, D113 among them; anything under
+    `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
