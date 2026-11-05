@@ -33,8 +33,8 @@ volatility-of-volatility and corrupted by a tenth of a volatility point of quote
 Second, the multi-maturity surface mitigates but does not cure this: the skew term
 structure tightens $H$ by roughly an order of magnitude at clean data, yet the degeneracy
 persists and returns under realistic noise. Third, on a live Deribit Bitcoin surface $H$
-is non-identifiable outright: it rails to its boundary, is the flat direction of the
-Jacobian, and two equally good fits land at different parameters. This non-identification
+is non-identifiable outright: it rails to its boundary, is strongly correlated with the
+volatility-of-volatility, and two equally good fits land at different parameters. This non-identification
 is \emph{intrinsic}---a structural $H$--volatility-of-volatility degeneracy---not a span
 artefact: a maturity-adapted Riccati resolution makes the full one-year span computable,
 identifiability is unchanged, and the longest tenor is the \emph{least} $H$-informative.
@@ -94,8 +94,8 @@ volatility point of quote noise. We then show that the multi-maturity surface he
 cure this: because $H$ governs the term structure of the skew, adding maturities tightens $H$ by
 about an order of magnitude at clean data---yet the degeneracy is softened rather than broken, and
 $H$ degrades again as noise rises. Finally we calibrate the model to a live Deribit Bitcoin surface
-and find $H$ non-identifiable outright: it rails to its bound, is the flat direction
-of the fit, and two equally good calibrations of the same data sit at different parameters along a
+and find $H$ non-identifiable outright: it rails to its bound, is strongly correlated
+with the volatility-of-volatility, and two equally good calibrations of the same data sit at different parameters along a
 flat valley.
 
 We then establish that this non-identification is \emph{intrinsic}. A single-market
@@ -108,7 +108,7 @@ the long maturity to be the \emph{least} $H$-informative tenor rather than the m
 non-identification is therefore a structural degeneracy between $H$ and the
 volatility-of-volatility, not a missing-span artefact. Finally, calibrating the same
 machinery to a second live market---Ethereum---reproduces every part of the picture: $H$
-rails to its bound, the same $H\leftrightarrow\nu$ degeneracy governs the flat direction,
+rails to its bound, the same $H\leftrightarrow\nu$ degeneracy recurs,
 the long tenor is again the least informative, and the crash tail is again under-produced.
 The non-identifiability and its mechanism are a cross-market structural feature of crypto
 option surfaces, not a property of any one asset. Alongside the identifiability result we
@@ -304,10 +304,11 @@ data does not pull it to an interior optimum at all.
 \subsection{Finding 1a: \texorpdfstring{$H$}{H} is non-identifiable}\label{sec:live-nonident}
 
 That $H$ sits at its bound is established as genuine non-identification, not a fitted value, by three
-independent diagnostics. The Gauss--Newton curvature at the optimum makes $H$ the flat direction of
-the fit---$|{\rm flat}[H]|=0.118$ under the forward-difference Jacobian diagnostic also used in
-Section~\ref{sec:live-intrinsic}---within a poorly-conditioned problem ($\mathrm{cond}=1.0\times
-10^{4}$) with $H$--$\nu$ correlation $-0.88$---the same diagnostic as the synthetic sections.
+independent diagnostics. The Gauss--Newton curvature at the optimum---the same diagnostic as the
+synthetic sections, here from the forward-difference Jacobian also used in
+Section~\ref{sec:live-intrinsic}---shows a poorly-conditioned problem ($\mathrm{cond}=1.0\times 10^{4}$)
+in which $H$ trades off against $\nu$ (correlation $-0.88$), although $H$ itself carries little of the
+flattest direction ($|{\rm flat}[H]|=0.118$).
 Resampling the surface, $H$ rails to the bound in every one of the bootstrap draws. And, most
 directly, two calibrations of the same data under identical settings land at different parameters at
 the same fit quality, with the level $\xi_0$ stable across both while the valley-coupled parameters
@@ -411,9 +412,9 @@ With a scale-appropriate cleaning, the Ethereum surface is $46$ points across si
 the one-year tenor, and the calibration reproduces every part of the Bitcoin picture. The fit converges
 to $\hat\theta = (H,\nu,\rho,\xi_0) = (0.0200,\ 0.713,\ -0.301,\ 0.397)$: $H$ again rails to its bound,
 and the volatility-of-volatility and correlation nearly coincide with Bitcoin's. The identifiability
-diagnostics match: the same $H\leftrightarrow\nu$ degeneracy governs the flat direction (correlation
+diagnostics match: the same $H\leftrightarrow\nu$ degeneracy recurs (correlation
 $-0.86$), and Ethereum is if anything \emph{more} degenerate than Bitcoin (a smaller minimum
-eigenvalue, and a smaller flat-direction weight for $H$). The mechanism matches: the per-maturity
+eigenvalue). The mechanism matches: the per-maturity
 $H$-sensitivity decays from the short end to near-zero at the long tenor on Ethereum exactly as on
 Bitcoin (Figure~\ref{fig:hsens}). And the crash-tail undershoot matches: Ethereum under-produces the
 deep-put wing as well, if anything slightly more than Bitcoin, worst at the long tenor. We note one
@@ -442,8 +443,8 @@ We state the limits of the result plainly. Two caveats bear on the central findi
 delimits scope.
 
 First, the diagnostics reported are local, evaluated at the fitted optimum: the curvature of the
-objective, the per-maturity sensitivities, and the cross-run instability all agree that $H$ is the
-flat direction, but they characterise the geometry \emph{at} the optimum rather than mapping the full
+objective, the per-maturity sensitivities, and the cross-run instability all agree that the inverse
+problem is degenerate, but they characterise the geometry \emph{at} the optimum rather than mapping the full
 objective surface. A global confirmation---calibrating from many dispersed starting points and
 checking that $H$ scatters across a range of values at essentially equal fit quality---would
 strengthen the picture further; it is a natural next step and is not claimed here. The local evidence
@@ -474,7 +475,7 @@ We asked whether the Hurst exponent of a rough volatility model can be identifie
 implied-volatility surface. From synthetic data the answer sharpens in three steps: a single smile
 cannot identify $H$, the multi-maturity surface mitigates this through the term structure of the skew
 but does not cure the underlying degeneracy, and on a live Bitcoin surface $H$ is non-identifiable
-outright, railing to its bound as the flat direction of a fit that two different parameter sets satisfy
+outright, railing to its bound in a fit that two different parameter sets satisfy
 equally well. We showed this non-identification to be intrinsic rather than an artefact of a truncated
 maturity span: making the full one-year span computable leaves $H$'s identifiability essentially
 unchanged, and the long maturity turns out to be the least $H$-informative tenor, not the most. The

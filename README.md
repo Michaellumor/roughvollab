@@ -36,7 +36,7 @@ Pricing options under the rough model needs large Monte Carlo simulations, and M
 If volatility has exploitable texture, could a reinforcement-learning agent time its execution to it and beat the classical Almgren–Chriss schedule? **Finding:** **no exploitable execution edge under linear impact.** A causal vol-reactive policy, compared on the matched-risk efficient frontier, is ~5 standard errors *worse* than Almgren–Chriss, with no advantage that grows with roughness — so deep RL was not pursued. The first run produced a convincing illusion (a look-ahead artefact); it was caught by a built-in sanity gate and corrected, and the honest negative recorded. *(Layer 2 execution arc, below.)*
 
 **4. Can the roughness be identified from an option surface? — *No (independently).***
-A rough model leaves its fingerprint on the implied-volatility smile, so the roughness should in principle be recoverable by *calibration* — a second route to Question 1, on prices rather than realised variance. **Finding:** it is not. Calibrating rough-Heston (via its El Euch–Rosenbaum characteristic function) to an IV surface, a **single smile cannot identify H** (the Hurst exponent is the flat direction of the inverse problem, cond ≈ 6×10⁵); a **multi-maturity surface helps but does not cure it** (≈order-of-magnitude tightening at clean data — H-spread 106%→10% — degrading under noise); and on a **live Deribit BTC surface H is non-identifiable outright** (it rails to the boundary, |flat[H]|=0.118, with cross-run instability) — while ξ₀/ρ/ν recover plausibly and the model fits the gross smile to ~0.9 vol-points. This **confirms Question 1's answer from a second independent angle**: the option-calibration route agrees with the realised-variance route that H-roughness resists identification in the regime real markets occupy. A distinct model-level finding falls out — rough-Heston **under-produces crypto's crash-fear put tail** even at maximal roughness (motivating jumps / steeper kernels). *(Layer 4, below.)*
+A rough model leaves its fingerprint on the implied-volatility smile, so the roughness should in principle be recoverable by *calibration* — a second route to Question 1, on prices rather than realised variance. **Finding:** it is not. Calibrating rough-Heston (via its El Euch–Rosenbaum characteristic function) to an IV surface, a **single smile cannot identify H** (the Hurst exponent is the flat direction of the inverse problem, cond ≈ 6×10⁵); a **multi-maturity surface helps but does not cure it** (≈order-of-magnitude tightening at clean data — H-spread 106%→10% — degrading under noise); and on a **live Deribit BTC surface H is non-identifiable outright** (it rails to the boundary, with H–ν correlation −0.88 and cross-run instability) — while ξ₀/ρ/ν recover plausibly and the model fits the gross smile to ~0.9 vol-points. This **confirms Question 1's answer from a second independent angle**: the option-calibration route agrees with the realised-variance route that H-roughness resists identification in the regime real markets occupy. A distinct model-level finding falls out — rough-Heston **under-produces crypto's crash-fear put tail** even at maximal roughness (motivating jumps / steeper kernels). *(Layer 4, below.)*
 
 **5. Can roughness be hedged better than classical methods? — *No — not beyond the generic frictions effect.***
 Under transaction costs, deep hedging beats delta-hedging in *any* model (a generic frictions effect, not a roughness story) — so the sharp question is whether the *rough structure* adds a hedging edge *beyond* that. RoughVolLab tests it as a contrast: the deep-vs-delta CVaR edge on a rough market (H = 0.10) vs the same edge on a smooth Markovian control (H = 0.5, identical generator, only H differs). **Finding:** deep hedging does beat delta under frictions, robustly (+1.1 CVaR, 8/8 seeds, both markets — the generic Buehler edge); but the **roughness-specific increment is modest/absent** (+0.06 ± 0.04, z = 1.4, not significant), and path-signature features add no advantage over the instantaneous Markovian state. Deep hedging works — the rough texture just isn't what makes it work. *(Layer 3 / D40.)*
@@ -56,7 +56,7 @@ identification question is split across two independent routes — from option p
 
 - **P1 — *Identifying roughness from an option surface: from a single smile to a live
   crypto market.*** Calibrating rough-Heston to an IV surface, H is the flat direction
-  of the inverse problem; a single smile cannot identify it, a multi-maturity surface
+  of the inverse problem on synthetic surfaces; a single smile cannot identify it, a multi-maturity surface
   tightens but does not cure it, and on live Deribit BTC/ETH H rails to its bound.
   The option-price answer to Question 4. *(Layer 4 calibration.)*
 - **P2 — *Turbocharged versus multilevel Monte Carlo for rough-volatility Asian
@@ -347,10 +347,10 @@ engine then fits θ=[H,ν,ρ,ξ₀] in implied-vol space against the CF:
 - On a **live Deribit BTC surface** (D39, D41) — 69 cleaned points across 6 maturities (11 days → 1 year),
   calibrated against the CF — the model **fits the gross smile to ~1.1 vol-points** with **ν=0.714,
   ρ=−0.306, ξ₀=0.236 plausible** (ATM vol ≈ 48%), but **H is non-identifiable**: it rails to the lower
-  bound (0.0200), |flat[H]|=0.118, with cross-run instability.
+  bound (0.0200), with H–ν correlation −0.88 and cross-run instability.
 - **The non-identification is intrinsic, not a span artefact** (D41). Making the full one-year span
   computable (a per-maturity Riccati schedule keeps the CF finite at the long tenor) leaves H's
-  identifiability essentially unchanged (Δ|flat[H]| = −0.001), and a per-maturity sensitivity analysis
+  identifiability essentially unchanged (flat-direction weight of H: 0.119 → 0.118), and a per-maturity sensitivity analysis
   shows the long tenor is the **least** H-informative, not the most (sensitivity decays ~64.5 → ~5.2
   from the short to the one-year tenor). H's signal lives at the short end, where it trades off against ν.
 - **The finding replicates on Ethereum** (D42): a second live surface rails H to its bound with the same
