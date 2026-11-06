@@ -49,8 +49,8 @@ Arc 2 — pricing (Layer 1b) · Arc 3 — execution (Layer 2).
 | `rough_heston_cf.py` · `rough_heston_lifted.py` · `layer4_calibrate*.py` · `deribit_surface.py` | Rough-Heston convergence + Markovian lift (O(N·n) vs O(n²)) + high-ν pricing + calibration engine (single-smile → multi-maturity surface → live Deribit BTC); see the Layer-4 narrative + spec §5/§8 | ✅ built (D31–D39) | 2026-06-29 |
 | `docs/gate_checks/` | Gate-check specs + recorded verdicts (index) | ✅ living | 2026-06-26 |
 | `ROADMAP.md` | This file — project memory | living document | 2026-06-27 |
-| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | ✅ submitted — Applied Mathematical Finance, 26 Sept 2026 (ID 266158357); IMAMAT declined on scope 23 Sept; QF held in reserve. Venue copies: OVERLEAF/P1/imamat/ (frozen), amf/ | 2026-09-26 |
-| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ submission-shaped for SIURO (PR #83); packet delivered to the project advisor 20 Aug; awaiting advisor letter | 2026-08-20 |
+| `OVERLEAF/P1` | Paper — *Identifying roughness from an option surface* (Q4; calibration route). Single-smile → multi-maturity → live Deribit BTC/ETH; H non-identifiable, rails to bound | declined — Applied Mathematical Finance, 13 Oct 2026 (submitted 26 Sept, ID 266158357; not appropriate for the journal in the editor's view, no reports; D115); IMAMAT declined on scope 23 Sept; QF held in reserve. Venue copies: OVERLEAF/P1/imamat/ (frozen), amf/ (live-surface wording corrected, PR #275) | 2026-11-05 |
+| `OVERLEAF/P2` | Paper — *Turbocharged vs multilevel MC* (Q2; pricing). MLMC does not pay; conditional single-grid wins (0.41–0.45); confirms Giles's β<γ theory | ✅ under review — Journal of Computational Finance (as the author checked on 31 Oct 2026; D115); SIURO dropped 5 Oct (shaped for it in PR #83) | 2026-11-05 |
 | `OVERLEAF/P3` | Paper — *When is volatility roughness identifiable?* (Q1; RV route). Identifiability map + BTC/ETH/SPX non-identified; 3 estimators, intrinsic biases | ✅ preprint posted — SSRN 7346318 (approved 26 Aug 2026); pins closed (PR #101: ftw merged, Cont–Das → Sankhyā B) | 2026-08-26 |
 | `OVERLEAF/P4` | Paper — *Weak convergence is faster than strong* (foundational). Weak order ≫ strong (H), measured in rough Heston and tested against the Gaussian-volatility weak-rate theory; rank-one-lift negative result; underpins P2's single-grid conclusion | ✅ preprint posted — SSRN 7346418 (26 Aug 2026; PR #104 title/pins). Journal: SIFIN Short Communications, desk-declined on scope (31 Aug, no referee reports); resubmitted to IJTAF 31 Aug, at referees (~5–6 months). Per-venue copies: OVERLEAF/P4/sifin/ (frozen record), ijtaf/ (PRs #118/#120/#122) | 2026-09-02 |
 
@@ -9638,6 +9638,296 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     any change to the frozen draft or the files it binds, the amendment file,
     v2's documents, v1, the decision sheet or an earlier entry, D113 among
     them; anything under `output/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
+- **D115** *(2026-11-05)* **D114's second commit, merge and deletion declared;
+  P1's use-of-AI statement (PR #273) and its live-surface wording (PR #275)
+  recorded; a prune of remote-tracking refs declared; D42, D53 and the frozen
+  protocols' account of P1 corrected here; rows 52 and 53 brought up to date.**
+  - **Summary.** D114 could not record its own second commit, merge or
+    deletion, and it said that nobody independent had read its final wording.
+    P1's use-of-AI statement reached `main` on 2 November 2026 and P1's
+    live-surface wording on 5 November, each as a plain `docs(p1):` commit with
+    its record left to this entry, and on 2 November this session ran a prune
+    that nobody had asked for. This entry declares all of it, corrects records
+    it cannot edit (D42's reading of a flat-direction weight, D53's description
+    of Reisinger and the frozen protocols' account of P1), and brings rows 52
+    and 53 up to date: AMF declined P1 on 13 October, and P2 is under review at
+    the Journal of Computational Finance. This session ran none of the scripts
+    line 137 lists and trained, scored and drew nothing; no file under
+    `output/` changed, and no verdict, figure or reading of P5 is touched. Only
+    `ROADMAP.md` changes.
+  - **D114's second commit, declared.** D114's reader reported at 16:39:13 UTC
+    on 2 November, after the author's word for D114's first commit, `d605ddb`;
+    D114 records the report and the corrections it led to. On the author's
+    "Commit Go" at 16:45:29, this session found no Python or git process at
+    16:45:45, the branch `docs/p5-d114-declared` at `d605ddb` locally and on
+    GitHub, and `main` at `8128a94` locally and on GitHub. It staged
+    `ROADMAP.md` alone (193 lines added and 113 removed against `d605ddb`),
+    found the staged file's sha256 (`24d4d1fc…`) equal to the generator's
+    output and no attribution in it, and committed `d0e1dc8` by 16:45:59 with
+    the one-line message "P5: D114 corrected after its reader's report" (parent
+    `d605ddb`; the commit's date carries +01:00, the machine's timezone then,
+    for the same instant). It pushed from 16:46:00 to 16:46:03, exit 0, the
+    branch on GitHub then equal to the local head, and by 16:46:25 had replaced
+    PR #272's description with the corrected text by a PATCH through GitHub's
+    API, read back equal to its file. The checks on `d0e1dc8` passed, compile
+    P1 at 16:47:36 and pytest at 16:56:04; reads at 16:46:28 and 17:20:31 found
+    the PR open, its checks running at the first and passed by the second.
+    Nobody independent has read D114's final wording, as D114 says.
+  - **The merge and deletion of D114's branch, declared.** The author merged PR
+    #272 at 19:52:01 as `2a4d2a6` (parents `8128a94` and `d0e1dc8`; its tree,
+    `02a641d8…`, is `d0e1dc8`'s), and the five checks on the merge passed,
+    pytest last at 20:09:25. On the author's word ("delete the branch",
+    20:51:10), this session read PRs #272 and #273 by 20:51:35 (#272 merged,
+    #273 open). From 20:51:45 to 20:51:49 it moved `main` to `2a4d2a6` by a
+    fetch and switched to it from `docs/p1-ai-statement`, where the checkout
+    had been; the switch rewrote `ROADMAP.md` and P1's two live sources to
+    `main`'s versions, and the modification times and sizes of
+    `output/p5_stage2_report.json`, `docs/p5/index.html` and `README.md` were
+    unchanged. It deleted the branch locally at 20:51:51 ("was d0e1dc8") and on
+    GitHub at 20:51:58, in two commands, and by 20:52:13 read it gone from both
+    (GitHub returning 404), `main` at `2a4d2a6` and nothing tracked changed.
+  - **P1's use-of-AI statement, recorded.** At 17:22:53 the author gave new
+    text for P1's "Use of generative AI" section, with a placeholder for the
+    models, and asked for it on P1. This session applied it to
+    `OVERLEAF/P1/amf/p1_qf.tex` and `OVERLEAF/P1/calibration_paper_revised.tex`
+    on a branch, `docs/p1-ai-statement`, from `8128a94` (17:25:42), leaving the
+    IMAMAT copy frozen, and filled the placeholder from this machine's
+    transcripts, which begin on 22 June. The author's later words settled the
+    models and the order. Their first, Haiku 5.5 for the claude.ai chats before
+    22 June (17:28:52), was not adopted: this session told the author at
+    17:29:51 that Anthropic's page dated that model 7 October 2026. Then came
+    "from my records it's Opus 4.8 in June", with the author's part first, the
+    tools' next and the author's last (19:39:17); "thinking through the line
+    200 its for p5" (19:41:13), so P5's line 200 does not carry to P1; and two
+    last edits (19:47:28), "In this work," and a claim said twice dropped. The
+    statement names Claude (claude.ai) and the Claude Code agentic coding tool,
+    with Claude Opus 4.8, Claude Fable 5, Claude Opus 5, Claude Fable 5.1 and
+    Claude Opus 5.5. On "Commit Go" (19:51:45) this session committed `72e519e`
+    at 19:52:38 (parent `8128a94`; 19 lines added and 16 removed in each
+    source), pushed it from 19:52:39 to 19:52:53, and opened PR #273 (created
+    19:53:07), whose checks passed, compile P1 at 19:53:55 and pytest at
+    20:00:18. The author merged it at 20:58:45 as `8224973` (parents `2a4d2a6`
+    and `72e519e`; tree `2be6770a…`); the merge's five checks passed, pytest
+    last at 21:16:29, which this session read on 5 November. P2, P3 and P4 keep
+    their statements.
+  - **The author's tense question.** At 20:55:14 the author asked whether P1's
+    section 2.2 should read "We calibrate" or the past tense. This session
+    searched P1's live source for "we" followed by a word and read the passage
+    (20:55:23 to 20:57:34), and answered that "We calibrate" stands: the paper
+    is in the present except where it looks back (its lines 487, 495 and 500 as
+    they then stood) or records a one-off choice. Nothing changed.
+  - **P1's merge check, its branch's deletion and a prune, declared.** The
+    author's word "merged, check and delete the branch" came at 20:58:25,
+    twenty seconds before the merge. This session's first command for it, sent
+    at 20:58:33, read the PR through GitHub's API and found it still open at
+    20:58:42; the second, sent at 20:58:36, began with `git fetch origin
+    --prune 2>&1 | head -20`; nobody had asked for `--prune`. The fetch, at
+    20:58:45 by FETCH_HEAD's time, deleted every remote-tracking ref whose
+    branch GitHub no longer had, among them those OneDrive had restored on 1
+    November (D109), which were held for the author's word. Their number is
+    known only by difference: 148 tracking refs at 01:32 on 1 November, plus
+    P1's branch, against 100 after (read at 20:59:33), so about 49, with their
+    reflogs. `head` cut the printed list at 19 names, and a search of this
+    session's transcript at 21:01:23 found no fuller list:
+    `chore/gitignore-claude-sessions`; `code/p5-d92-pool-fix`;
+    `code/p5-d93-study`; `code/p5-d95-v3-draft`; `code/p5-d98-fixes`;
+    `code/p5-g0-main-settings`; `code/p5-g0-scoping`; `code/p5-g1-emulator`;
+    `code/p5-g2-reference`; `docs/p5-d100-post-freeze`;
+    `docs/p5-d101-living-docs`; `docs/p5-d102-g2`; `docs/p5-d103-g3-pilot`;
+    `docs/p5-d104-g3`; `docs/p5-d105-test-refs`; `docs/p5-d106-stage1`;
+    `docs/p5-d107-training`; `docs/p5-d60-scoping-run`; `docs/p5-d62-main-run`.
+    They were not recreated, since they labelled branches GitHub had already
+    deleted. Nothing on GitHub changed, and a prune removes refs, not commits;
+    the local branches (154, then 153 after P1's deletion), the four tags and
+    `packed-refs` (last written on 5 October) were untouched, and there is no
+    sign of garbage collection (no `gc.log`; `objects/maintenance.lock`, 0
+    bytes and dated 16 October, still present). The author was told at
+    21:05:06. A read at 20:59:29 showed PR #273 merged. From 21:01:25 to
+    21:01:32, with no Python process running and nothing tracked changed, this
+    session fetched `main` and fast-forwarded local `main` to `8224973`, which
+    changed P1's two live sources; a `git diff` sent before the fetch failed on
+    the merge commit, not yet fetched, and wrote nothing. It read the heads at
+    21:01:48 (all `72e519e`), deleted the branch locally at 21:01:50 ("was
+    72e519e") and on GitHub at 21:01:57, in two commands, and by 21:02:20 read
+    it gone from GitHub (404) and from the local and tracking refs, `main` at
+    `8224973` locally and on GitHub, nothing tracked changed, and the new
+    statement in both live sources and not in the IMAMAT copy (last changed in
+    `b6e296d`, 10 September). Four of the merge's five checks had then passed,
+    pytest running. The same reads found three local branches whose upstream
+    had gone (`docs/gate-checks-index`, `feat/execution-rl-phase0-1` and
+    `feat/mlmc-estimators-kappa1`) and, at 21:03:53, the old worktree and 12
+    untracked files (by `git status`) present and no `AUTO_MERGE`; none were
+    touched. Earlier that day, after the author's notes at 16:48:42 asked
+    whether a results note on the JUMHF registration was needed, this session
+    read JUMHF through OSF's public API (GET only, 16:49 to 16:51) and proposed
+    such a note as the author's act; nothing has been written on OSF.
+  - **P1's live-surface wording (PR #275), recorded.** On 5 November the author
+    asked this session to help post P1 as a preprint (19:36:22). It first
+    re-checked a problem it had noted on 3 November: P1's section 5.3 calls H
+    "the flat direction" of the live fit with |flat[H]| = 0.118, against 0.89
+    on the synthetic surface. The claim stood in seven sentences of each live
+    source (the abstract, two in the introduction, one of them for Ethereum,
+    section 5.3, the Ethereum section, the limitations and the conclusion), and
+    the README's two P1 lines listed 0.118 as evidence. The record shows how:
+    commit `3796e9a` (1 July) changed the live figure from D39's 0.99 to 0.118,
+    the one-sided-Jacobian diagnostic of section 5.4, with an editorial flag
+    saying the meaning was unchanged, and PR #87 removed the flags with the
+    words kept. The finding's other evidence stood: H railing to its bound in
+    every bootstrap draw and two equally good fits at different parameters,
+    both run on D39's five-maturity surface, and the H–ν correlation of −0.88
+    on the full one. On the author's "yes, prepare fix (a)" (20:07:50) this
+    session made a plain fetch (20:11:02 to 20:11:05), opened issue #274
+    (20:11:14), branched `docs/p1-flat-direction` from `8224973` (20:11:25),
+    and replaced the seven sentences, identically in both sources, with what
+    the diagnostics show: H strongly correlated with, or trading off against,
+    the volatility-of-volatility (−0.88) in a poorly conditioned problem, the
+    Ethereum section losing a clause that read H's smaller flat-direction
+    weight as more degeneracy. The README's lines 39 and 350 now cite the
+    correlation in place of 0.118, line 59 limits "the flat direction" to
+    synthetic surfaces, and line 353 gives the weights it compares (0.119 →
+    0.118). No value changed: lines 39 and 350 replace 0.118 with −0.88, both
+    the paper's, and line 353 replaces the difference −0.001 with the two
+    weights it is the difference of, D41's 0.119 and 0.118. Each replacement
+    matched its target exactly once, CRLF was kept, and P1 compiled with
+    TinyTeX to 11 pages with no errors and no new warnings, at 20:12:16 and,
+    after the second round below, at 20:21:14.
+  - **PR #275's review.** One independent read-only reader, a fresh subagent of
+    this session on Claude Fable 5.1 (`claude-fable-5-1`; 17 tool uses), was
+    given the diff, the issue's account and the sources at 20:12:59 and
+    reported at 20:18:45. It found the changed wording accurate and supported
+    by the paper, the log and the code, with nothing in it that had to be
+    fixed. Around it, it found the IMAMAT copy unedited; README lines 58 and 59
+    still implying the live claim; section 5.3's paragraph counting the
+    curvature diagnostic among three while reading it as a concession, and
+    seeming to use two Jacobians; README line 353 left without a base value;
+    and the README's new bootstrap clause attached to a surface that bootstrap
+    was not run on. This session answered four of these on the branch at
+    20:20:59: section 5.3 names one Jacobian for all three numbers and makes
+    the H–ν trade-off its main clause, README lines 39 and 350 lose the
+    bootstrap clause, and lines 59 and 353 change as above. Asked again at
+    20:21:26, the reader (4 tool uses) reported at 20:23:09 that the four
+    resolved what they answered and introduced nothing of weight, with notes:
+    README line 350's cross-run instability also comes from D39's surface; line
+    39's ~0.9 vol-points is D39's, against line 348's ~1.1;
+    "forward-difference" simplifies a script that chooses forward or backward
+    per parameter, forward for H; and lines 59 and 353 run past the block's
+    wrap.
+  - **PR #275's commit, merge and deletion, declared.** The author's "Commit
+    Go, without the §5.3 clause" (20:33:51) left out a clause, offered at the
+    hold, saying that the bootstrap (24 draws) and the two fits were run on
+    D39's 63-point, five-maturity surface and not re-run on the full span,
+    though section 5.3, the abstract and the conclusion present them for it.
+    The hold had also reported, and the commit leaves: the IMAMAT copy, frozen
+    as the declined submission; section 5.4's use of a −0.001 change in the
+    weight section 5.3 now calls small; section 4's 8.5 × 10³ called workable
+    against section 5.3's 1.0 × 10⁴ called poor; and README line 39's 0.9
+    against line 348's 1.1. This session staged the three files by name and
+    committed `4077c6c` at 20:34:31 (parent `8224973`; 15 lines added and 14
+    removed in each source, 4 and 4 in the README; the commit's date carries
+    +10:00, the machine's timezone then). It pushed from 20:34:37 to 20:34:40,
+    exit 0, and opened PR #275, "Closes #274" (created 20:35:00); the app's PR
+    tools would not bind it (20:35:09), so its checks were read once by
+    20:35:29, both running, and again at 21:15:27, when the PR was mergeable
+    and both had passed (compile P1 at 20:35:53, pytest at 20:51:59). The
+    author merged it at 21:16:10 as `ba2d8d4` (parents `8224973` and `4077c6c`;
+    tree `630c5af2…`), closing #274 at 21:16:12; the merge's five checks
+    passed, pytest last at 21:23:10. On "merged" (22:08:53) this session read
+    the PR, the issue and the heads by 22:09:31, moved `main` to `ba2d8d4` by
+    `git fetch origin main:main` and switched to it (22:09:42 to 22:09:45; the
+    tree equal to the branch's, nothing tracked changed), compiled P1 from the
+    merged `main` in its own folder, outside the repository (22:10:05), and
+    read the merge's checks at 22:10:07. On "delete the branch" (22:17:32) it
+    read the PR's head against both copies (all `4077c6c`, contained in `main`)
+    by 22:17:44, deleted the branch locally at 22:17:48 and on GitHub at
+    22:17:56, in two commands, and read both gone by 22:18:05.
+  - **Corrections, made here.** Merged entries and registered texts are not
+    edited; read them with these. (i) D42 reads Ethereum's flat-direction
+    weight, 0.070 against Bitcoin's 0.118, as "ETH's H even less pinned". A
+    smaller weight means that H carries less of the flattest direction; it is
+    not evidence that H is less pinned, and P1 no longer uses it (PR #275).
+    (ii) The registered protocol's v1 (`docs/protocols/P5_protocol.md`, line
+    25; OSF APSF7) describes P1's finding as H "the flat direction of the
+    calibration Jacobian", and the v2 and v3 drafts (line 164; OSF 695FW and
+    JUMHF) as H railing "to its bound as the flat direction of the Jacobian".
+    Those clauses describe P1 as it stood before PR #275. (iii) D53 records
+    Reisinger as "excluded as an AMF Editor-in-Chief". AMF's page, read at
+    source on 5 November 2026 (marked "Updated 06-10-2025"), names Alvaro
+    Cartea as Editor-in-Chief and lists Reisinger on the Editorial Board; the
+    exclusion from D53's suggested referees stands as recorded.
+  - **Rows 52 and 53.** Neither row had changed since September. AMF's
+    editorial office declined to consider P1 on 13 October 2026, 17 days after
+    its submission, the editor finding it not appropriate for the journal; the
+    letter, as the author pasted it on 31 October, gives no reasons and
+    mentions no reports, and P1 has no journal at present. The author dropped
+    SIURO for P2 on 5 October, and P2 is under review at the Journal of
+    Computational Finance, as the author checked on 31 October; its submission
+    date and manuscript ID are not recorded here. Row 52 now says that P1 was
+    declined, keeps QF in reserve and notes PR #275. Row 53 says that P2 is
+    under review at JCF and that SIURO was dropped, and no longer carries
+    "packet delivered to the project advisor 20 Aug; awaiting advisor letter",
+    which belonged to the SIURO submission. Both are dated 5 November. Rows 54
+    and 55 are unchanged.
+  - **This sitting's checks.** In the repository, read-only but for this entry
+    and its branch, created from `main` at `ba2d8d4` at 23:16:23 on 5 November
+    after a plain fetch, with no Python or git process running and the session
+    of D97 idle since 26 October. The generator, the snapshot and the reads of
+    GitHub's records and of this session's transcript are this session's
+    scripts in its own folders, outside the repository, and import nothing of
+    P5's. All 2,011 files under `output/` and the `__pycache__` folders hashed
+    as they did at D110's last generation, by 23:16:02 and again by 23:46:20.
+    AMF's page was read in the author's Chrome. No test was run for this entry;
+    no test file names `ROADMAP.md`, and CI runs the suite on the PR.
+  - **Readings, declared.** For this entry: this session's transcript and
+    notes, for the times and words above; git's objects, log, remote heads and
+    branch lists; GitHub's API for PRs #272, #273 and #275, issue #274, their
+    commits, merge commits and checks; D39, D41, D42 and D53 at the lines
+    named; line 25 of the v1 protocol and line 164 of the v2 and v3 drafts;
+    rows 52 to 55; P1's two live sources and the README as merged; and AMF's
+    editorial board page.
+  - **What was seen.** For this entry: times, hashes, statuses, the author's
+    words, the branch names, the lines named above and the readers' reports. No
+    value of P5's was computed or printed for it. The snapshot opened the files
+    under `output/` and the `__pycache__` folders only to hash them; the
+    generator opened none of them.
+  - **The review.** One independent read-only reader, a fresh subagent of this
+    session on Claude Fable 5.1 (`claude-fable-5-1`; 58 tool uses), was given
+    this entry's draft, its generator and the sources, and not this sitting's
+    conclusions, at 23:24:13 on 5 November, and reported at 23:43:12. It found
+    nothing that had to be fixed: every hash, parent, tree, time, count and
+    quotation it checked held against git, GitHub's API, the log and the
+    transcript, and a copy of the generator, run into its own folder, gave a
+    pure insertion after D114 with rows 52 and 53 replaced, 79 columns and
+    CRLF. It found three statements to reword, all changed here: the prune's
+    command was the session's second for the author's word, not its first; the
+    author's first word on the models, Haiku 5.5, was not adopted, and the
+    entry now says why; and row 53's clause on the advisor's packet and letter
+    was dropped without a word, which the entry now declares. From its notes,
+    this entry now gives what the letter says in place of "no reports came",
+    describes the README's numbers line by line, counts the twelve untracked
+    files by `git status`, and declares four acts it had left out: the plain
+    fetches of 20:11:02 on 5 November and before this entry's branch, the reads
+    of OSF's public API on 2 November, and the compile of P1 outside the
+    repository at 22:10:05 on 5 November. It could not reach AMF's page (403)
+    and found the board list in this session's read of it. It wrote nothing in
+    the repository or on GitHub or OSF; its helper files are in this session's
+    folder, outside the repository. Nobody independent has read this wording.
+  - **Who did what.** The author gave the word for D114's second commit, merged
+    PRs #272, #273 and #275, gave the word for each deletion, wrote P1's
+    use-of-AI statement and settled its models and order, asked the tense
+    question, chose fix (a) for P1's wording and its commit without the section
+    5.3 clause, reported P1's and P2's journal status on 31 October, asked for
+    this entry at 22:59:57 on 5 November and approved its plan, with its
+    defaults, at 23:08:39. The edits behind PRs #273 and #275, the issue,
+    commits, pushes, PRs, the PATCH, reads, moves of `main`, deletions, the
+    prune and this entry were this session's, on Claude Opus 5.5
+    (`claude-opus-5-5`); PR #275's reader ran on Claude Fable 5.1, and D114's
+    on Claude Opus 5.5, as D114 says.
+  - **Not written.** Any amendment; anything on OSF; any re-run; any change to
+    the registered protocols or the files they bind, the amendment file or an
+    earlier entry, D39, D42, D53 and D114 among them; anything under `output/`;
+    any change to `README.md`, `CITATION.cff`, anything under `docs/` or P1's
+    sources after PR #275; and P1's preprint, which has not been posted.
   - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
