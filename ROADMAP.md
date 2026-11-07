@@ -10180,6 +10180,162 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     `README.md`, `CONTRIBUTING.md`, `CITATION.cff`, the ROADMAP's P5 paragraph
     or anything under `docs/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D117** *(2026-11-07)* **P5 v3: D116's commit, merge and deletion declared;
+  a statement of D116's on m corrected.**
+  - **Summary.** On the author's word ("prepare D117", 14:41:57 UTC on 7
+    November 2026) this entry declares D116's commit, push and PR, its merge,
+    the move of `main` and the deletion of its branch, all made earlier that
+    day, and corrects a statement of D116's on m. None of the scripts line 137
+    lists was run, nor the figure script D116 added; nothing was trained or
+    scored and no sample was drawn, no file under `output/` changed, and no
+    verdict, value or reading of D109 is touched. Only `ROADMAP.md` changes.
+  - **D116's commit, declared.** On the author's "Commit Go" (11:27:03 on 7
+    November) this session read, among its own files, the helper scripts it had
+    used for D115's commit; found, by 11:27:58, the checkout on the branch
+    `docs/p5-d116-figures`, `main` at `23acfa4`, `ROADMAP.md` changed and the
+    new script untracked, beside 12 other untracked files; and then read D116's
+    generator and its snapshot helper. With no Python or git process running
+    (11:28:58), a check of its own found, by 11:29:25, the branch and `main` at
+    `23acfa4` and GitHub's `main` the same by `git ls-remote`; nothing staged;
+    `ROADMAP.md` the only tracked file changed (251 lines added, none removed),
+    its SHA-256 `a7ce490b…`, and equal byte for byte to the generator's output
+    rebuilt from `main`'s file in its checked-out form; the script's SHA-256
+    `d0bb4130…` (355 lines, LF); and all 2,011 files under `output/` and the
+    `__pycache__` folders hashing as they did at D110's last generation. It
+    read the lines of its own copy of D116's text that mention SHA-256,
+    `core.autocrlf` (true), and the absence of a `.gitattributes` file and of
+    an index lock (11:29:36), and found in this session's transcript the
+    one-line commit message it had proposed on 6 November (11:29:43). It staged
+    the two files by name at 11:29:49, git warning that the script's LF would
+    be replaced by CRLF the next time git touched it, and committed `4b7e324`
+    at 11:29:56 (parent `23acfa4`; tree `3ee3ffe4…`) with the message the
+    author had approved. It read its GitHub helper's usage (11:30:01), its own
+    copy of D116's text (11:30:11 to 11:30:16), and the title, head branch and
+    end of the description of PR #276 through GitHub's API (11:30:32); pushed
+    from 11:30:54 to 11:30:58, exit 0, creating the branch on GitHub and
+    setting it as upstream, its tracking ref then at `4b7e324`; and opened PR
+    #277 (created 11:31:06), titled with the commit's subject and closing no
+    issue. The app's PR tools reported no PR bound (11:31:14) and would not
+    bind it (11:31:20), as with PR #276, so its checks were read once, at
+    11:31:26: compile P1 and pytest running, the PR open and mergeable, its
+    head `4b7e324`. Both passed, compile P1 at 11:31:47 and pytest at 11:40:43.
+    Nobody independent read D116's final wording, as D116 says.
+  - **The merge and deletion of D116's branch, declared.** The author merged PR
+    #277 at 11:48:15 as `986c43a` (parents `23acfa4` and `4b7e324`; its tree,
+    `3ee3ffe4…`, is `4b7e324`'s), and the five checks on the merge passed:
+    build at 11:48:45, report-build-status at 11:48:52, compile P1 at 11:48:56,
+    the Pages deploy at 11:48:57 and pytest at 12:05:34. On the author's
+    "merged" (13:09:02) this session read through GitHub's API the PR, the
+    merge commit, its checks and GitHub's `main` (13:09:21), and the PR's
+    checks again (13:09:24); read the local branch, its tracking ref and
+    GitHub's branch, all `4b7e324`, with the checkout on that branch, nothing
+    tracked changed and no index lock (13:09:40); moved `main` and its tracking
+    ref from `23acfa4` to `986c43a` by `git fetch origin main:main` (13:09:49
+    to 13:09:50, exit 0) and checked it out (13:09:51), the tree unchanged and
+    nothing tracked changed; and found, by 13:10:19, the 2,011 files hashing as
+    they did at D110's last generation and the first 16 hex digits of the
+    SHA-256 of the script and of `ROADMAP.md` unchanged. On "delete the branch"
+    (13:13:41) it read the local branch, its tracking ref and GitHub's branch,
+    all `4b7e324`, the PR's head as read at 13:09:21, and contained in `main`
+    (13:13:51); deleted the branch locally at 13:13:56 ("was 4b7e324") and on
+    GitHub at 13:14:06, in two commands; and by 13:14:15 read it gone from both
+    (GitHub returning 404 at 13:14:13), `main` at `986c43a` locally and on
+    GitHub and nothing tracked changed.
+  - **A statement of D116's, corrected.** At 22:31:13 on 6 November, during
+    D116's sitting, a subagent of this session on Claude Fable 5.1
+    (`claude-fable-5-1`) printed the header and first data row of
+    `output/p5_stage2_cells.csv`, the header and first two rows of
+    `output/p5_stage1.csv` and the top-level keys of
+    `output/p5_stage2_report.json`. At 22:31:30 it printed, from Stage 1's CSV,
+    the number of pairs; each bin's count of pairs, overall and by noise level,
+    and its counts of well-covered pairs and of distinct test points; the Flat
+    pairs' noise levels and ranges of ν and of true H, and whether every Flat ν
+    lay below 0.10; the median and range of ν over the Partial pairs; and the
+    range of ν over all pairs. The cell row carried m. It is the CSV's first
+    row, which this session printed on 3 November, as D116 declares, so the
+    nine cells on which m was seen stay nine; but D116's statement that this
+    session printed or viewed no value of m in its sitting is wrong, and is
+    corrected here. The subagent read nothing else under `output/`, and none of
+    its commands used the column m.
+  - **This sitting's checks.** In the repository, read-only but for this entry
+    and its branch, created from `main` at `986c43a` at 14:47:19, with no
+    Python or git process running (14:47:05), the tracked tree clean and
+    GitHub's `main` at `986c43a`; before the plan was approved it had found 12
+    untracked files, no branch named `docs/p5-d117…` or `docs/d117…` here or on
+    GitHub, and no D117 in the log (14:46:19). The app's list of this machine's
+    other sessions, read at 14:48:47, showed none running and, of the two whose
+    working folder is in the repository, the later, D97's, idle since 26
+    October. All 2,011 files under `output/` and the `__pycache__` folders
+    hashed as they did at D110's last generation, by 14:47:10 and again by
+    18:31:08. The generator, the snapshot and the reads of GitHub's records and
+    of this session's transcript are this session's own scripts and commands,
+    run outside the repository; they import nothing of P5's. The repository's
+    test suite was not run for this entry; no test file names or reads
+    `ROADMAP.md`, and CI runs the suite on the PR.
+  - **Readings, declared.** For this entry: this session's transcript, searched
+    for the commit message it had proposed on 6 November and for where its
+    snapshot helper lay, and read for the times, words and acts of 7 November
+    above; for the correction above, the transcript of the subagent of 6
+    November, its outputs read with every digit masked, and this session's and
+    its subagents' transcripts, searched for reads under `output/` since 21:42
+    on 6 November and for code taking a median of m; git's objects, log,
+    configuration, heads, branch lists, status and diffs, and GitHub's refs by
+    `git ls-remote`; GitHub's API for the title, head branch and end of the
+    description of PR #276, for PR #277 and its merge commit, for the checks on
+    `4b7e324` and `986c43a`, and for the refs of `main` and of D116's branch;
+    D116's text, in this session's copy, the title lines of D113 to D116, and
+    lines of the log matching a few searches; the test files' mentions of the
+    ROADMAP; the app's PR tools and its list of this machine's other sessions;
+    and the reader's report.
+  - **What was seen.** For this entry: times, hashes, statuses, the author's
+    words, the branch names and the lines named above; the counts the snapshot
+    printed; and the 6 November subagent's commands and, with every digit
+    masked, their outputs. This session printed or viewed no value of m from
+    the author's "Commit Go" at 11:27:03 until this entry was written, and no
+    median of m in the Flat bin has been taken. The snapshot opened the files
+    under `output/` and the `__pycache__` folders only to hash them; the
+    generator opened none of them.
+  - **The review.** One independent read-only reader, a fresh subagent of this
+    session on Claude Opus 5.5 (`claude-opus-5-5`), was given this entry's
+    draft and its generator and the sources (git, GitHub's API, this session's
+    transcript and its helper scripts), and not this sitting's conclusions, at
+    14:52:26; it began at 14:52:32 and ended at 15:18:48 (about 87 tool uses),
+    its report arriving at 15:20:35. It found every time, hash, count and name
+    it checked as git, GitHub's records and the transcript give them, and the
+    form's checks passing. It found two things to fix, both changed: the
+    sessions list was said to show more than it does, since it gives each
+    session's working folder and not where it acted; and the SHA-256 of
+    `ROADMAP.md` read as that of `main`'s file. It found five things to
+    tighten, all taken: the hashes compared after the move of `main` were their
+    first 16 hex digits; the transcript was searched beyond 7 November; the
+    lines of D116 read were those mentioning SHA-256; `git ls-remote` and git's
+    diffs were missing from the readings; and the read of 6 November corrected
+    above, which this session confirmed from the subagent's transcript with
+    every digit masked and which the author chose to have corrected here. Of
+    its other points, the order of the first reads, the account of the scripts
+    and commands, the branch names searched for and the window of the statement
+    on m are now in the entry. It reproduced the preview from the generator
+    byte for byte. It printed or viewed no value of m: from the transcripts it
+    printed only the cells CSV's column names and the number of fields in one
+    row. It opened no file under `output/` except to hash it, with a copy of
+    the snapshot helper, finding all 2,011 files as at D110's last generation
+    (15:00:22 to 15:00:27); it wrote nothing in the repository or on GitHub;
+    its helper files are in this session's folder, outside the repository.
+    Nobody independent has read this wording.
+  - **Who did what.** The author gave the word for D116's commit, merged PR
+    #277, gave the word for its branch's deletion, asked for this entry at
+    14:41:57, approved its plan, with its defaults, at 14:46:58, and chose at
+    18:29:00 that D116's statement on m be corrected here. D116's commit, push
+    and PR, the reads, the move of `main`, the deletion and this entry were
+    this session's, on Claude Opus 5.5 (`claude-opus-5-5`); this entry's reader
+    also ran on Claude Opus 5.5.
+  - **Not written.** Any amendment; anything on OSF; any run, retraining or
+    re-scoring; any run of the figure script; anything under `output/`; any
+    test; any change to the registered protocols or the files they bind, the
+    amendment file or an earlier entry; and any change to `README.md`,
+    `CONTRIBUTING.md`, `CITATION.cff`, the ROADMAP's P5 paragraph or anything
+    under `docs/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
