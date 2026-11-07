@@ -9929,6 +9929,257 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     any change to `README.md`, `CITATION.cff`, anything under `docs/` or P1's
     sources after PR #275; and P1's preprint, which has not been posted.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D116** *(2026-11-06)* **P5 v3: a script for two figures of Stage 1's and
+  Stage 2's results added (`analysis/p5_paper_figures.py`), which decides
+  nothing, with the reads made when it was written; D115's commit, merge and
+  deletion declared.**
+  - **Summary.** On the author's word ("commit p5_paper_figures.py", 21:42:45
+    UTC on 6 November 2026) this entry adds a plotting script,
+    `analysis/p5_paper_figures.py`, which plots two figures from the committed
+    outputs `output/p5_stage2_cells.csv` and `output/p5_stage1.csv`, so that
+    figures of P5's results can come from committed code. It recomputes no
+    result, states no verdict and decides nothing; the figures it writes are
+    not committed. The entry also declares the reads of P5's data made when the
+    script was written on 3 November, D115's commit, push and merge, and the
+    deletion of its branch. None of the scripts line 137 lists was run, nothing
+    was trained or scored and no sample was drawn, no file under `output/`
+    changed, and no verdict, value or reading of D109 is touched. Only
+    `ROADMAP.md` and the new script change.
+  - **D115's commit, declared.** On the author's "Commit Go" (14:36:22 on 6
+    November) this session found, by 14:37:01, the branch `docs/d115-declared`
+    and `main` at `ba2d8d4`, and `origin/main` the same, with `ROADMAP.md`
+    alone changed (292 lines added and 2 removed) and 12 untracked files. It
+    read its GitHub helper's usage, its own copies of the descriptions of PRs
+    #272 and #275 and of D114's push output, and the repository's hooks folder,
+    which holds no active hook. A first check that the file equalled the
+    generator's output failed at 14:38:32 on line endings, not on content:
+    `main`'s blob is stored with LF (`core.autocrlf` true, in the system's git
+    configuration; no `.gitattributes`) and the working tree has CRLF, which
+    this session read at 14:38:41. Rebuilt by the generator's own functions
+    from `main`'s file in its checked-out form (`git cat-file --filters`), the
+    expected file equalled the working tree byte for byte, SHA-256 `223b0806…`
+    (14:38:51); the first check's command had read GitHub's `main` at `ba2d8d4`
+    by `git ls-remote`. With no Python or git process running (14:38:57) it
+    staged `ROADMAP.md` alone at 14:39:11, its checked-out form the same
+    SHA-256, and committed `8aed53a` at 14:39:12 (parent `ba2d8d4`; tree
+    `a0357eb5…`) with the one-line message the author had approved. It pushed
+    from 14:39:18 to 14:39:26, exit 0, the branch on GitHub then at `8aed53a`;
+    read the titles of PRs #269, #271, #272, #273 and #275 through GitHub's API
+    (14:39:50) and lines 44 to 56 of `ROADMAP.md` and the status board's
+    heading (14:40:09 to 14:40:15); and opened PR #276 (created 14:40:28),
+    titled with the commit's subject and closing no issue. The app's PR tools
+    reported no PR bound (14:40:39) and would not bind it (14:40:45), as with
+    PR #275, so its checks were read once, at 14:40:56: compile P1 and pytest
+    running, the PR open and mergeable. Both passed, compile P1 at 14:41:11 and
+    pytest at 14:57:51. Nobody independent read D115's final wording, as D115
+    says.
+  - **The merge and deletion of D115's branch, declared.** The author merged PR
+    #276 at 15:54:24 as `23acfa4` (parents `ba2d8d4` and `8aed53a`; its tree,
+    `a0357eb5…`, is `8aed53a`'s), and the five checks on the merge passed:
+    build at 15:55:02, report-build-status at 15:55:09, compile P1 at 15:55:19,
+    the Pages deploy at 16:00:50 and pytest at 16:08:20. On the author's
+    "Merged" (21:08:45) this session read the PR, the merge commit and its
+    checks through GitHub's API (21:09:15) and the local heads (21:09:20, no
+    Python or git process running), moved `main` and its tracking ref from
+    `ba2d8d4` to `23acfa4` by `git fetch origin main:main` (21:09:28 to
+    21:09:30, exit 0) and switched to it (21:09:35 to 21:09:36), the tree
+    unchanged and nothing tracked changed, and read the PR's checks again
+    (21:09:37). On "delete the branch" (21:10:50) it read the PR's head, the
+    local branch, its tracking ref and GitHub's branch, all `8aed53a` and
+    contained in `main` (21:11:00), deleted the branch locally at 21:11:07
+    ("was 8aed53a") and on GitHub at 21:11:15, in two commands, and by 21:11:28
+    read it gone from both (GitHub returning 404), `main` at `23acfa4` locally
+    and on GitHub and nothing tracked changed.
+  - **The script.** `analysis/p5_paper_figures.py`, 355 lines, SHA-256
+    `d0bb4130…` (of its LF text, as committed; a checkout with `core.autocrlf`
+    true, as here, writes it with CRLF), uses numpy and matplotlib, both in
+    `requirements.txt`. It reads Stage 2's cells (`output/p5_stage2_cells.csv`,
+    12,000 rows; the columns calibrator, q, pair, s, bin, okA, okB, failure,
+    abs_dA and E) and Stage 1's CSV (`output/p5_stage1.csv`, 1,200 rows; pair,
+    s, H, c_A and bin), joined on the pair, and writes each figure as PDF and
+    PNG to `--out`, by default `output/`, which git ignores. Figure 1 plots
+    abs(d) under prior A, on a log axis, against the contraction c under A, for
+    every Identified and Partial cell at all three noise levels, 5,850 cells
+    per calibrator, the ensemble's panel beside the ratio estimator's, coloured
+    by noise level; it marks H-a's bound, 0.01, and its refutation threshold,
+    0.03, each labelled as applying to the Identified bin's median, and the bin
+    edge at c = 0.9, and plots any abs(d) below 10⁻⁵ at that floor, writing
+    their number on the panel. Figure 2 plots E against true H for every
+    Identified and Partial cell at s = 0.005, the one level at which both
+    calibrators have networks under both priors, 1,850 cells per calibrator,
+    marking prior B's first percentile, 0.1875, its mean, 0.32, and E = 0;
+    H-b's and H-c's thresholds are not marked, since they apply to medians over
+    a bin. Neither figure is pre-specified by the frozen draft, and neither
+    decides anything; Figure 2 is labelled exploratory, on the figure and in
+    the docstring, its view by true H coming close to line 135's first
+    exploratory item, as D109 says of its own cuts by true H. The Flat bin is
+    not plotted. The script refuses to plot, with a message or, for an empty s,
+    c_A or true H, Python's own error, unless Stage 1's bin counts are D106's
+    (842, 328 and 30; at s = 0.005, 139, 231 and 30), each bin agrees with its
+    c_A, the cells hold both calibrators with five seeds each and every pair
+    once per seed, each cell's bin and s agree with Stage 1, no cell carries a
+    failure, no plotted cell carries a missing value, the plotted counts are
+    exactly 5,850 and 1,850, and every plotted c and true H lies inside the
+    axes' ranges; Figure 1 is written before Figure 2's checks run. It reads
+    abs(d), E, c and the bins as the outputs give them and recomputes none.
+  - **Where it came from.** At the author's request (22:15:39 on 3 November) a
+    subagent of this session on Claude Fable 5.1 (`claude-fable-5-1`), sent at
+    22:17:46, wrote the script in this session's folder, outside the
+    repository, and ran it there three times (22:22:49 to 22:25:59), reading
+    the two committed CSVs in the repository and writing its figures in that
+    folder; this session then changed the wording of its two threshold labels
+    and ran it once more, in the same way, at 22:27:33. It was not committed
+    then. The reads of P5's data while the script was written: this session
+    printed the first two cell rows of the cells CSV, an Identified and a
+    Partial cell with all their values, and two rows of Stage 1's CSV and a
+    third through its ρ (22:16:26); the subagent printed the first seven cell
+    rows, five Identified and two Partial, and three Stage 1 rows (22:17:59),
+    then counts by calibrator, seed, bin and level and two further full cell
+    rows, one of the ratio estimator's in the Identified bin and one of the
+    ensemble's in the Flat bin (22:18:16), and then, over the Identified and
+    Partial cells per calibrator, the minimum, 1st and 5th percentiles, median
+    and maximum of abs(d), counts of abs(d) at zero and below 10⁻⁵, 3 × 10⁻⁵
+    and 10⁻⁴, and E's range at s = 0.005, with the range of c_A over the
+    Identified and Partial pairs, of true H over all pairs, and consistency
+    counts (22:20:01). Every full row carried m, so m was seen on nine cells,
+    one of them in the Flat bin; no median or other summary of m was taken. The
+    subagent viewed the two figures as images six times, three each (22:23:01
+    to 22:26:11), and this session twice, once each (22:27:00 and 22:27:02).
+  - **What changed from that text.** The committed script differs from the 3
+    November text (SHA-256 `396c1014…`) in these places only. In the docstring:
+    its first line, which is also the script's help text, is reworded; H-c's
+    thresholds are named beside H-b's as not drawn; and the paragraph on the
+    figures' standing says that neither is pre-specified and gives D109's
+    wording for Figure 2, in place of a sentence saying that nothing in the
+    frozen draft pre-specifies a per-cell view by true H, which overlooks line
+    135's first exploratory item. In comments: the reference values' sources,
+    by line of the frozen draft (39, 66, 89, 121 and 126), and colour notes
+    that no longer name the AI tool's chart guidance or its palette checker,
+    neither of which is in the repository, keeping the colours and their
+    reasons. In code: two guards that also refuse a missing c or true H, and
+    three labels, H-a's lines marked as applying to the Identified bin, Figure
+    1's axis naming prior A, and Figure 2's title naming H-c's thresholds
+    beside H-b's. The code that reads, checks and plots the points is otherwise
+    as it stood.
+  - **Its runs.** This session ran the script from this entry's branch twice,
+    with `--out` set to folders of its own outside the repository and its
+    inputs left at their defaults, the two committed CSVs: on its first
+    placement, which carried three changes in the docstring and comments, at
+    21:56:20 (exit 0 at 21:56:26), and on its final text at 22:39:12 (exit 0 at
+    22:39:16). Every guard passed, and the two runs printed the same lines.
+    Post hoc and deciding nothing, they give the counts above (for Figure 1,
+    2,000, 2,000 and 1,850 plotted cells per calibrator by noise level; for
+    Figure 2, 695 Identified and 1,155 Partial), the plotted cells below Figure
+    1's floor (20 of the ensemble's, none of the ratio estimator's), the
+    largest plotted abs(d) (0.0731 for the ensemble, 0.3181 for the ratio
+    estimator), E's range over the plotted cells at s = 0.005 (−0.3304 to
+    0.2245 for the ensemble, −0.5185 to 1.0461 for the ratio estimator), and
+    that the ratio estimator has no E at s = 0.001 or 0.003 (2,000 of 2,000
+    cells at each), since it has networks under prior B at s = 0.005 alone
+    (D104); the script's runs printed the same on 3 November. The first run's
+    two PNGs were byte for byte those written on 3 November at 22:27:36 and
+    22:27:38, and its PDFs equal apart from their creation dates; the final
+    figures differ from those in the three labels. This session viewed the
+    final figures as images at 22:39:21 and 22:39:23 to check the labels'
+    placing. A test of the new guard (22:39:41 to 22:39:44), on a copy of Stage
+    1's CSV in this session's folder with one plotted pair's true H set to nan,
+    refused Figure 2, exit 1, with the guard's message, which prints the range
+    of true H over the plotted cells (0.0205 to 0.4783).
+  - **This sitting's checks.** In the repository, read-only but for the new
+    script, this entry and its branch, created from `main` at `23acfa4` at
+    21:55:49 with no Python or git process running (21:55:11), the tracked tree
+    clean, GitHub's `main` at `23acfa4` and the session of D97 idle since 26
+    October. A script of this session's first placed the file at 21:56:09,
+    checking the first 16 hex digits of the 3 November text's SHA-256,
+    asserting that each of its changes matched exactly once and writing in a
+    mode that cannot overwrite a file; after the reader's report a second
+    replaced it at 22:38:59, checking that text's full SHA-256 and that the
+    file was still the first placement, and asserting that each change matched
+    exactly once. All 2,011 files under `output/` and the `__pycache__` folders
+    hashed as they did at D110's last generation, by 21:55:10, after the first
+    run by 21:56:51, after the final run and the test by 22:39:50, and again by
+    22:56:20. The generator, the snapshot, the placing scripts, the test and
+    the reads of GitHub's records and of this session's transcripts are this
+    session's scripts in its own folders, outside the repository, and import
+    nothing of P5's. The repository's test suite was not run for this entry; no
+    test file names the script, `CONTRIBUTING.md`'s count of 378 collected
+    tests stands, and CI runs the suite on the PR.
+  - **Readings, declared.** For this entry: this session's transcript and its
+    subagent's of 3 November, for the times, words and reads above, the
+    subagent's outputs read with every digit masked or as counts; git's
+    objects, log, configuration, heads and branch lists, and `.gitignore`'s
+    rule for `output/`; GitHub's API for PR #276, its commits, merge commit and
+    checks, the titles of PRs #269, #271, #272, #273 and #275, and the head
+    branches and closing references of PRs #255, #260, #262, #263, #265, #267
+    and #269, for the branch and issue convention; D104, D109, D111 and D115,
+    and lines of D106 to D115 matching a search; lines 39, 66, 68, 75, 89, 101,
+    121, 126, 135 and 144 of the frozen draft; the two CSVs' column names; the
+    CI workflow, `CONTRIBUTING.md`'s line 30, the requirements files, the
+    folder `analysis/` and two of its other files; the ROADMAP's P5 item, the
+    README's lines on P5 and a search of the tracked files; the app's list of
+    this machine's other sessions; the versions of the local Python, numpy and
+    matplotlib (3.14.3, 2.4.4 and 3.10.9); the 3 November script and its
+    figures, by hash; and the reader's reports.
+  - **What was seen.** For this entry: times, hashes, statuses, the author's
+    words, the branch names and the lines named above; the counts and ranges
+    the runs and the test printed, given above; the CSVs' column names; and the
+    final figures, viewed once each. This session printed or viewed no value of
+    m in this sitting, and no median of m in the Flat bin has been taken. The
+    snapshot opened the files under `output/` and the `__pycache__` folders
+    only to hash them; the generator opened none of them.
+  - **The review.** One independent read-only reader, a fresh subagent of this
+    session on Claude Opus 5.5 (`claude-opus-5-5`), was given the script as
+    written on 3 November and as placed, this entry's draft and its generator,
+    and the sources, and not this sitting's conclusions, at 22:03:39 on 6
+    November; it began at 22:03:53 and reported at 22:32:30 (94 tool uses). It
+    found three things to fix: the script's first line, also its help text,
+    named a purpose for the figures that this entry's plan had kept out of the
+    record, and is reworded; the entry's claim that the usage lines followed
+    the repository's other analysis scripts was wrong, since P5's own tour
+    scripts give another form, so that change was withdrawn and the usage lines
+    stand as written; and the changes were not all in comments. It found seven
+    things to reword or add, all taken: the reads and views of 3 November, now
+    declared; the run's values, now labelled post hoc and scoped to the plotted
+    cells; the branch's tracking ref, which did not then exist; the first
+    placing script's hash check, which read 16 hex digits; Figure 1's standing,
+    not pre-specified either; H-a's lines, now labelled as applying to the
+    Identified bin, with Figure 1's axis naming prior A and Figure 2's title
+    naming H-c beside H-b; and a missing true H, which passed a guard and now
+    does not. Of its notes, the reads list, the hash's line endings, the
+    reader's model and the P5 paragraph are now in the entry; its note that
+    0.1875 is not in the frozen draft was its own error, line 126 giving it.
+    Asked again at 22:43:49, it reported at about 22:55 (36 tool uses) that
+    each finding was resolved, with three exceptions, all changed here: the 3
+    November reads are those made while the script was written, not all of that
+    evening's; a third Stage 1 row, printed through its ρ, is now counted; and
+    the ranges of c_A and true H are now scoped as they were taken. It
+    reproduced the placed script from the 3 November text and the placing
+    script's edits byte for byte, and the preview from a copy of the generator;
+    its runs, one from the committed blobs alone, printed the same lines; a
+    pixel comparison found that only the labels changed; and its tests found
+    the guards behaving as the entry says. It printed or viewed no value of m
+    in either pass, though copies of the committed CSVs and of transcript text
+    in its folder hold them; it viewed its own run's figures once each, at
+    about 22:48. It wrote nothing in the repository or on GitHub or OSF; its
+    helper files are in this session's folder, outside the repository. Nobody
+    independent has read this wording.
+  - **Who did what.** The author gave the word for D115's commit, merged PR
+    #276, gave the word for its branch's deletion, asked on 3 November for the
+    figures and at 21:42:45 on 6 November for this script's commit, and
+    approved this entry's plan, with its defaults, at 21:53:49. The script was
+    written by a subagent of this session on Claude Fable 5.1. The change to
+    its two labels on 3 November, the changes above, its placing, runs and
+    test, D115's commit, push and PR, the reads, the move of `main`, the
+    deletion and this entry were this session's, on Claude Opus 5.5
+    (`claude-opus-5-5`); this entry's reader also ran on Claude Opus 5.5.
+  - **Not written.** Any amendment; anything on OSF; any re-run, retraining or
+    re-scoring; line 135's exploratory items; the figure files, which the
+    committed script regenerates from the committed outputs; any change to the
+    registered protocols or the files they bind, the amendment file or an
+    earlier entry; anything under `output/`; any test; and any change to
+    `README.md`, `CONTRIBUTING.md`, `CITATION.cff`, the ROADMAP's P5 paragraph
+    or anything under `docs/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds
