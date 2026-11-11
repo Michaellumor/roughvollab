@@ -10463,6 +10463,204 @@ neighbourhood; documented seeds; one-command reproduction of every figure.
     `CONTRIBUTING.md`, `CITATION.cff`, the ROADMAP's P5 paragraph or anything
     under `docs/`.
   - Drafted with AI assistance; every decision confirmed by the author.
+- **D119** *(2026-11-11)* **P5 v3: D118's commit, merge and deletion declared;
+  three OSF titles and a description changed, and the README's citation
+  matched.**
+  - **Summary.** On the author's word ("prepare D119", 19:14:56 UTC on 11
+    November 2026) this entry declares D118's commit, push and PR, made on 9
+    November, its merge, the move of `main` and the deletion of its branch on
+    10 November, and three titles and one description changed on OSF on 11
+    November, and it brings the README's citation of JUMHF into line with the
+    registration's new title. None of the scripts line 137 lists was run, nor
+    the figure script D116 added; nothing was trained or scored and no sample
+    was drawn, no file under `output/` changed, and no verdict, value or
+    reading of D109 is touched. `ROADMAP.md` and `README.md` change.
+  - **D118's commit, declared.** On the author's "COMMIT GO" (23:19:56 on 9
+    November), with no Python or git process running (23:20:19), a check of
+    this session's own found, by 23:20:26, the checkout on the branch
+    `docs/p5-d118-declared`, the branch and `main` at `2bd989f` and GitHub's
+    `main` the same by `git ls-remote`; nothing staged; `ROADMAP.md` the only
+    tracked file changed (127 lines added, none removed), its SHA-256
+    `5cf64877…`, equal byte for byte to the generator's output rebuilt from
+    `main`'s file in its checked-out form, the entry so rebuilt matching the
+    generator's preview, with CRLF line endings throughout and no attribution
+    line; and all 2,011 files under `output/` and the `__pycache__` folders
+    hashing as they did at D110's last generation. It staged `ROADMAP.md` by
+    name and committed `90f2bdd` at 23:20:32 (parent `2bd989f`; tree
+    `4a6bc211…`) with the message the author had approved, a single line with
+    no trailer; pushed from 23:20:38 to 23:20:42, exit 0, creating the branch
+    on GitHub and setting it as upstream, its tracking ref then at `90f2bdd`;
+    and opened PR #279 (created 23:20:50), titled with the commit's subject and
+    closing no issue. The app's PR tools reported no PR bound (23:20:52) and
+    would not bind it (23:20:57), so on 9 November its checks were read once,
+    at 23:21:01: compile P1 and pytest running, the PR open and mergeable, its
+    head `90f2bdd`. Read again at 19:15:32 on 11 November, both had passed,
+    compile P1 at 23:21:32 and pytest at 23:38:22. At D118's HOLD this session
+    had asked the author whether the plan they saw when approving at 22:47:45
+    was D118's, the record of the request carrying D117's plan; the author's
+    reply was "COMMIT GO", with no correction. Nobody independent read D118's
+    final wording, as D118 says.
+  - **The merge and deletion of D118's branch, declared.** The author merged PR
+    #279 at 06:42:59 on 10 November as `e9e9299` (parents `2bd989f` and
+    `90f2bdd`; its tree, `4a6bc211…`, is `90f2bdd`'s), and the five checks on
+    the merge passed: build at 06:43:32, compile P1 at 06:43:33,
+    report-build-status at 06:43:38, the Pages deploy at 06:43:45 and pytest at
+    06:52:38. On the author's "merged" (06:59:11) this session found no Python
+    or git process, the checkout on D118's branch, nothing tracked changed and
+    no index lock (06:59:26); read the PR, the merge commit, its checks and
+    GitHub's `main` through GitHub's API (06:59:30); read the local branch, its
+    tracking ref and GitHub's branch, all `90f2bdd`, the PR's head (06:59:36);
+    moved `main` and its tracking ref from `2bd989f` to `e9e9299` by `git fetch
+    origin main:main` (06:59:43 to 06:59:45, exit 0), found `90f2bdd` contained
+    in `main` and the two trees equal, and checked `main` out (06:59:45),
+    nothing tracked changed; and found, by 07:00:11, the 2,011 files hashing as
+    they did at D110's last generation. On "delete the branch" (07:38:25) it
+    read the local branch and GitHub's, both `90f2bdd` and contained in `main`
+    (07:38:33); deleted the branch locally at 07:38:38 ("was 90f2bdd") and on
+    GitHub at 07:38:40, in two commands; and read it gone from both, GitHub
+    returning 404 at 07:38:52 and the local branch and its tracking ref absent
+    at 07:38:53, `main` at `e9e9299` locally and on GitHub.
+  - **The OSF titles, changed.** On the author's word, this session changed
+    three titles and one description on OSF on 11 November, in the author's own
+    signed-in browser, reading each back through OSF's API. At 18:57:23, after
+    this session had suggested it, the author asked that the title of the OSF
+    project `gdsv7`, from which v1 was registered and whose two components hold
+    v2's and v3's frozen files, be updated to v3's; at 19:04:24, among options
+    this session put, the author chose v3's protocol title, a description
+    covering the three versions, and that this session make the change. Saved
+    at 19:05:11, by OSF's record, the project's title, until then v1's, "Does a
+    learned calibrator know what it cannot know? Prior dependence in deep
+    calibration of the rough Heston model", is now "Is a learned calibrator
+    more prior-driven than Bayes' rule requires?", and its description, until
+    then v1's alone, now reads `Pre-registration for P5 of the RoughVolLab
+    programme. Protocol v1 (commit 13bca7e, 2 October 2026) is registered as
+    OSF APSF7; v2 (commit 59ca589) as OSF 695FW, from the component "P5
+    protocol v2: frozen files"; v3 (commit 740b0ca) as OSF JUMHF, from the
+    component "P5 protocol v3: frozen files". Code, records and decision log:
+    github.com/Michaellumor/roughvollab.`. The project's visibility is
+    unchanged, as the read-back shows, and no file was touched. At 19:06:51 the
+    author asked that the registrations' titles be changed too. This session
+    told the author that those titles had been proposed "for continuity" with
+    the earlier records, as `docs/protocols/P5_v2_amendment.md` (line 25) and
+    `docs/protocols/P5_v3_amendment.md` (line 21) record, and registered so,
+    that `README.md` cites JUMHF's title, and that APSF7's title is v1's own;
+    at 19:10:30 the author chose to change 695FW's and JUMHF's and to leave
+    APSF7's. Through each registration's metadata, 695FW's title became, at
+    19:11:14, "Is a learned calibrator more prior-driven than Bayes' rule
+    requires? (protocol v2; supersedes OSF APSF7)", and JUMHF's, at 19:11:49,
+    "Is a learned calibrator more prior-driven than Bayes' rule requires?
+    (protocol v3; supersedes OSF 695FW)", each in place of v1's wording before
+    the same bracket. OSF's public API returned both new titles, and APSF7's
+    unchanged, at 19:11:59. The registrations' descriptions and dates of
+    registration are unchanged, as OSF's API shows, and no file was touched;
+    the titles are metadata, and the frozen protocols, whose title lines for v2
+    and v3 already read so, are untouched. The amendment files are not edited:
+    they record the titles proposed then, and this entry records the change.
+  - **The README's citation, matched.** `README.md`'s BibTeX entry for JUMHF
+    (`lumor2026p5`) gave the registration's earlier title over three lines; its
+    `title` now gives the registration's new title, over two lines, and nothing
+    else in the README changes (2 lines added, 3 removed). The README was
+    edited at 19:24:12 by a replacement that had to match exactly once; a check
+    begun at 19:24:38 staged it into a throwaway index kept outside the
+    repository, writing to git's object store the blob `1a5943c`, with LF line
+    endings as before, the one `git diff` gives as the README's new blob, and
+    found the same two lines added and three removed. No test or CI job reads
+    the README, and `CITATION.cff` carries no title of a registration.
+  - **This sitting's checks.** In the repository, read-only but for this entry,
+    the README's lines, that blob and the branch: a check at 19:23:17 found no
+    Python or git process running, the checkout on `main` at `e9e9299`, the
+    tracked tree clean, 12 untracked files, GitHub's `main` at `e9e9299` and no
+    branch named `docs/p5-d119…` here or on GitHub; the branch was created from
+    `main` at 19:23:56. The app's list of this machine's other sessions,
+    requested at 19:18:12 and returned by 19:21:14, showed none running, the
+    latest activity of any being on 27 October. All 2,011 files under `output/`
+    and the `__pycache__` folders hashed as they did at D110's last generation,
+    by 19:23:52 and again by 19:49:46. The generator, the README's edit, the
+    snapshot and the reads of GitHub's records and of this session's transcript
+    are this session's own scripts, kept outside the repository, and git's
+    commands, which wrote only the branch and the one blob; OSF's records were
+    read through its API in the author's browser, by a web fetch and with curl,
+    and changed in the browser; the scripts import nothing of P5's. The
+    repository's test suite was not run for this entry; a search at 19:47:37
+    found no test or CI file naming `ROADMAP.md` or `README.md`, and CI runs
+    the suite on the PR.
+  - **Readings, declared.** For this entry: this session's transcript, read for
+    the times, words and acts of 9 to 11 November above, and this session's and
+    its subagents' transcripts, searched for reads under `output/` since 23:14
+    on 9 November and for code taking a median of m; git's objects, log, heads,
+    branch lists, status, diffs and configuration, and GitHub's refs by `git
+    ls-remote`; GitHub's API for PR #279, its merge commit, the checks on
+    `90f2bdd` and `e9e9299`, and the refs of `main` and of D118's branch; OSF's
+    API for the titles, descriptions and dates of the project, of its two
+    components and of the three registrations, and the project's settings and
+    the registrations' metadata pages, in the author's browser; the title lines
+    of the three protocols and the two amendment files' lines named above;
+    `README.md`'s citation block, searches of `main` for the old title and the
+    registrations' IDs and of `CITATION.cff`, and searches of the tests and CI;
+    D110's line on OSF's acts, D118's header and the lines closing the log in
+    `main`'s file; D118's generator, as this session wrote it on 9 November;
+    the app's list of this machine's other sessions; and the reader's report.
+  - **What was seen.** For this entry: times, hashes, statuses, the author's
+    words, the branch names, the titles and descriptions and the lines named
+    above, and the counts the snapshot printed. This session printed or viewed
+    no value of m from 23:14 on 9 November, when D118 was written, until this
+    entry was written, and no median of m in the Flat bin has been taken. The
+    snapshot opened the files under `output/` and the `__pycache__` folders
+    only to hash them; the generator opened none of them.
+  - **The review.** One independent read-only reader, a fresh subagent of this
+    session on Claude Opus 5.5 (`claude-opus-5-5`), was given this entry's
+    draft and its generator, the README's change and the sources (git, GitHub's
+    API, OSF's public API, this session's transcript and its helper scripts),
+    and not this sitting's conclusions, at 19:27:51; it ended at 19:46:12 (85
+    tool uses), its report arriving at 19:46:56. It found every other time,
+    hash, count, name, title and quotation it checked as git, GitHub's and
+    OSF's records and the transcript give them, the README's change confined to
+    the citation's title lines, and the form's checks passing. It found two
+    things to fix, both changed: the author was said to have chosen that this
+    session make all the changes on OSF, where that choice was put for the
+    project alone and the registrations' changes rest on the author's request;
+    and this session's scripts kept outside the repository were said to have
+    made every read, where OSF was read and changed in the author's browser and
+    git wrote the branch and one blob. It found twelve things to tighten, all
+    taken: the project's description added to the title and the summary; the
+    amendment files' titles called proposed; the README's sentence on its two
+    lines; the throwaway index's time given as begun; this sitting's first
+    sentence given a verb; the readings corrected and completed; registration
+    updates told apart from the titles' edits; the question at D118's HOLD
+    restated; the blob named; the first acts on OSF by this session declared;
+    the search of the tests re-run for both files; and the project's
+    description set as code. It noted that this session first suggested the
+    project's new title, now said. It reproduced the preview from the generator
+    byte for byte. It printed or viewed no value of m, lines bearing m being
+    shown only with every digit masked. It opened no file under `output/`
+    except to hash it, with a copy of the snapshot helper, finding all 2,011
+    files as at D110's last generation (19:36:28 to 19:36:33); it wrote nothing
+    in the repository's files, on GitHub or on OSF; its files are in this
+    session's folders, outside the repository. Nobody independent has read this
+    wording.
+  - **Who did what.** The author gave the word for D118's commit, merged PR
+    #279 and, telling this session so (06:59:11), later gave the word for its
+    branch's deletion (07:38:25); asked at 18:57:23 that the project's title be
+    updated; chose at 19:04:24, among the options this session put, the
+    project's new title and description and that this session make that change
+    in the author's browser; asked at 19:06:51 that this session update the
+    registrations' titles too, and chose at 19:10:30 which of them to change;
+    and asked for this entry at 19:14:56 and approved its plan, with its
+    defaults, at 19:22:59. The changes on OSF are the first acts on OSF made by
+    this session rather than by the author, D110 recording that every OSF act
+    until then had been the author's. D118's commit, push and PR, the reads,
+    the move of `main`, the deletion, the changes on OSF, the README's lines
+    and this entry were this session's, on Claude Opus 5.5 (`claude-opus-5-5`);
+    this entry's reader also ran on Claude Opus 5.5.
+  - **Not written.** Any amendment; anything else on OSF: no file, no use of
+    OSF's process for updating a registration, no wiki and no change of
+    visibility; any run, retraining or re-scoring; any run of the figure
+    script; anything under `output/`; any test; any change to the registered
+    protocols or the files they bind, the amendment files or an earlier entry;
+    and any change to the README beyond its citation's title, to
+    `CONTRIBUTING.md`, `CITATION.cff`, the ROADMAP's P5 paragraph or anything
+    under `docs/`.
+  - Drafted with AI assistance; every decision confirmed by the author.
 ---
 
 ## Publication seeds

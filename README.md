@@ -413,9 +413,8 @@ P5 was pre-registered before its test set was used or any of its calibrators tra
 ```bibtex
 @misc{lumor2026p5,
   author    = {Michael Lumor},
-  title     = {Does a learned calibrator know what it cannot know? Prior
-               dependence in deep calibration of the rough Heston model
-               (protocol v3; supersedes OSF 695FW)},
+  title     = {Is a learned calibrator more prior-driven than Bayes' rule
+               requires? (protocol v3; supersedes OSF 695FW)},
   year      = {2026},
   publisher = {OSF Registries},
   doi       = {10.17605/OSF.IO/JUMHF},
