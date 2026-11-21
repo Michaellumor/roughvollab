@@ -27,7 +27,7 @@ RoughVolLab interrogates the rough-volatility paradigm rather than assuming it: 
 ### Five questions, five honest answers
 
 **1. Is the roughness identifiable from data? — *Often, no.***
-Roughness is measured through a noisy, discretely-sampled proxy of latent volatility. Rather than adjudicating whether measured roughness is genuine, RoughVolLab asks a prior question: *for what region of vol-of-vol and sampling parameters is the Hurst exponent identifiable at all?* Using a verified rough-Bergomi simulator, three roughness estimators (structure-function regression, a model-free *p*-variation index, and multifractal DFA) are characterised across the parameter space and formalised into an *identifiability map*. **Finding:** an identifiable region exists, but it is narrow: even multifractal DFA — the most favourable of the three estimators — recovers roughness across only ~30% of the parameter grid (concentrated at fine sampling), and the regime real assets occupy (BTC, ETH, S&P 500, whose calibration forces high vol-of-vol) falls **outside** it, where the inversion is non-identified. This reframes the "rough vs artefact" debate as a question of what the data can support. *(Layer 1c + Phase B, below.)*
+Roughness is measured through a noisy, discretely-sampled proxy of latent volatility. Rather than adjudicating whether measured roughness is genuine, RoughVolLab asks a prior question: *for what region of vol-of-vol and sampling parameters is the Hurst exponent identifiable at all?* Using a verified rough-Bergomi simulator, three roughness estimators (structure-function regression, a model-free *p*-variation index, and multifractal DFA) are characterised across the parameter space and formalised into an *identifiability map*. **Finding:** an identifiable region exists, but it is narrow: even multifractal DFA — the most favourable of the three estimators — recovers roughness across only ~30% of the parameter grid (concentrated at fine sampling), and BTC and ETH, whose calibration pins vol-of-vol at η ≈ 1.5, fall **outside** it, where the inversion is non-identified; the S&P 500 gives no identified reading either, though only as weak, proxy-confounded corroboration. This reframes the "rough vs artefact" debate as a question of what the data can support. *(Layer 1c + Phase B, below.)*
 
 **2. Can it be priced cheaply? — *Yes, but not with the fashionable tool.***
 Pricing options under the rough model needs large Monte Carlo simulations, and Multilevel Monte Carlo (MLMC) is the celebrated cost-cutting technique. **Does it pay here?** **Finding:** for arithmetic-Asian options under rough Bergomi, **MLMC does not earn its place.** A conditional ("turbocharged") *standard* Monte Carlo estimator is the method of choice — and conditioning works best as single-grid standard MC, *not* bolted onto the multilevel machinery (the decisive κ-invariant ratio std-MC / conditional-MLMC = 0.41–0.45 < 1). Exact near-cell integration (κ=1) sharpens the winner further (~1.3–1.5× cheaper) without changing the convergence rate. *(Layer 1b / P2, below.)*
@@ -178,10 +178,10 @@ engine and run on clean simulated paths with *known* Hurst exponent (the
 Rung-0 oracle check): the Gatheral-Jaisson-Rosenbaum structure-function
 estimator, the Cont-Das model-free *p*-variation estimator, and MF-DFA. All
 three recover H across the roughness range — but they **disagree in the sign
-of their small-H bias**. GJR and Cont-Das *over*-estimate roughness as
-H → 0 (positive bias, roughly +0.06 to +0.07 at H = 0.05); MF-DFA
-*under*-estimates (negative bias, about −0.02), and its bias is intrinsic
-rather than finite-sample.
+of their small-H bias**. GJR and Cont-Das *over*-estimate H as H → 0
+(positive bias, roughly +0.06 to +0.07 at H = 0.05), reading the path as
+smoother than it is; MF-DFA *under*-estimates H (negative bias, about
+−0.02), and its bias is intrinsic rather than finite-sample.
 
 That the *direction* of the error depends on which estimator is used — on
 perfect data, before any market microstructure noise enters — is concrete
@@ -192,7 +192,7 @@ The first corruption-ladder rung (the realised-volatility proxy) makes this
 sharper still. Spot volatility is unobservable, so in practice it is
 estimated from high-frequency price returns as realised variance over
 windows. Feeding a **genuinely smooth** process (true H = 0.5) through that
-proxy, all three estimators report **rough** H (≈ 0.05–0.16 at a 32-return
+proxy, all three estimators report **rough** H (≈ 0.02–0.16 at a 32-return
 window — the empirical H ≈ 0.1 signature) — even though the underlying
 volatility has no roughness at all. A control confirms the estimators read
 the *true* smooth signal correctly (≈ 0.5), so the spurious roughness is
@@ -246,8 +246,9 @@ volatility. It is seen only by the estimator that *assumes* a rough model; the
 model-free Cont–Das cannot resolve it and MF-DFA is unphysical; microstructure
 noise is ruled out by the sampling sweep; and de-biasing is non-identified at
 the vol-of-vol the data itself selects (calibrating η to the observed RV
-variability forces η ≥ 1.5, exactly the regime where rough and smooth are
-observationally equivalent through the proxy). An empirical demonstration, on
+variability pins it near 1.5 — BTC 1.57, ETH 1.45 — where no estimator
+identifies H at any sampling window, so rough and smooth are observationally
+equivalent through the proxy). An empirical demonstration, on
 crypto, of the Cont–Das / Rogers position — with the model dependence calibrated
 away rather than assumed.
 

@@ -55,10 +55,12 @@ detrended fluctuation analysis) and formalise their behaviour into an
 \emph{identifiability map} over the vol-of-vol $\eta$ and the proxy sampling
 window $\Delta$. We then pin $\eta$ to data rather than assuming it, by matching
 the model's daily-log-RV variability to each asset's. Applied to BTC and ETH
-(Binance, 2019--2025; $n = 2{,}557$ daily observations) and to the S\&P~500
-($n = 1{,}759$), the calibration forces $\eta \gtrsim 1.5$, and at that calibrated
-$\eta$ none of the three estimators returns an identified reading from daily RV:
-the inversion is non-identified, undefined, or beyond the model's range. The
+(Binance, 2019--2025; $n = 2{,}557$ daily observations), the calibration forces
+$\eta \gtrsim 1.5$, and at that calibrated $\eta$ none of the three estimators
+returns an identified reading from daily RV: the inversion is non-identified,
+undefined, or beyond the model's range. The S\&P~500 ($n = 1{,}759$) yields no
+identified reading either, but only through a daily range proxy whose vol-of-vol
+calibration bottoms out at the search floor, so it is weak corroboration. The
 identifiable region is non-empty---multifractal DFA recovers roughness across
 roughly $30\%$ of the grid, concentrated at fine sampling---but the real assets
 do not fall in it. For these estimators at daily sampling, the ``rough'' and
@@ -282,7 +284,8 @@ markers, respectively, rather than as a fictitious point.
 \subsection{Estimator operating characteristics}
 
 The audit reproduces the expected sign-disagreement: GJR and Cont--Das over-estimate
-roughness at small true $H$ while MF-DFA under-estimates it (Figure~\ref{fig:bias}).
+$H$ at small true $H$ (reading the path as smoother than it is) while MF-DFA
+under-estimates $H$ (Figure~\ref{fig:bias}).
 On the corruption ladder, the RV proxy alone is sufficient to manufacture apparent
 roughness from a smooth null; microstructure noise and finite-sample effects deepen
 the bias; calendar seasonality biases the estimators in opposite directions and is
@@ -296,7 +299,8 @@ not all---distortions are removable.
 \caption{Estimator bias curves: $\mathbb{E}[\hat H]$ versus true $H$ for GJR,
 Cont--Das and MF-DFA at $\eta = 1.5$, $\Delta = 288$, with the smooth-null reference
 (dotted, $H = \tfrac{1}{2}$) and the unbiased diagonal. GJR and Cont--Das
-over-estimate roughness at small $H$ while MF-DFA sits lower, and the estimators
+over-estimate $H$ at small $H$ (reading the path as smoother) while MF-DFA sits
+lower, and the estimators
 diverge sharply at large $H$ --- the sign disagreement that makes the inversion
 ill-posed.}
 \label{fig:bias}
@@ -312,8 +316,10 @@ structure-function (GJR) estimator in about $12\%$, with the identified cells
 clustered at the finest window ($\Delta = 288$) and all but vanishing at coarse
 sampling. The model-free Cont--Das index is identifiable almost nowhere (about
 $92\%$ non-identified) and returns no finite estimate over a further $8\%$. The
-identifiable region contracts sharply at coarser sampling and shifts with $\eta$,
-consistent with the proxy-error mechanism intensifying as vol-of-vol grows.
+identifiable region contracts sharply at coarser sampling and appears only at the
+higher vol-of-vol values on the grid: every identified cell has
+$\eta \in \{2.5, 3.5\}$, and no estimator identifies $H$ at $\eta = 0.5$ or $1.5$
+at any window.
 
 The headline of this figure is \emph{not} ``nothing is identifiable.'' It is that
 the method works in principle across a real region of parameter space---which makes
