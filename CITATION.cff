@@ -25,11 +25,11 @@ abstract: >
   the mathematics and the data yield, and four of the answers are
   negative. Beside them, a pre-registered study (P5) audits the tools
   used on the paradigm, scoring two neural calibrators against exact
-  reference posteriors on an emulated rough Heston model. Significant
-  design decisions are recorded with their predicted outcomes before
-  the result is known, an interactive tour lets readers drive each
-  result in the browser, and a plain-English guide explains the
-  paradigm.
+  reference posteriors on an emulated rough Heston model. A dated,
+  append-only development log records each significant design decision
+  with its rationale, its result and, where one was made, its
+  prediction; an interactive tour lets readers drive each result in the
+  browser; and a plain-English guide explains the paradigm.
 
 authors:
   - family-names: "Lumor"
@@ -86,7 +86,7 @@ references:
         given-names: Mikko S.
     journal: "Finance and Stochastics"
     year: 2017
-    doi: "10.1007/s00780-017-0327-7"
+    doi: "10.1007/s00780-017-0335-5"
 
   - type: article
     title: "Multilevel Monte Carlo path simulation"
