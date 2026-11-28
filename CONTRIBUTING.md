@@ -57,10 +57,11 @@ issues too — there is no separate support channel.
 
 ## The decision log
 
-Significant design decisions are recorded in `ROADMAP.md` as numbered entries
-(D1, D2, …), each written down — with its predicted outcome — *before* the
-corresponding experiment is run. If your change embodies a design decision,
-please add an entry in the same style.
+Significant design decisions are recorded in `ROADMAP.md` as numbered, dated
+entries (D1, D2, …) in an append-only log, each with its rationale, its result
+and, where one was made, its prediction. If your change embodies a design
+decision, please add an entry in the same style, writing any prediction down
+*before* the corresponding experiment is run.
 
 ## Conduct
 

@@ -164,7 +164,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   <div class="masthead">
     <div class="eyebrow">Rough volatility · teaching module · <span class="mono">roughvol_core.py</span></div>
     <h1>The <em>trusted</em> engine —<br>and why we test it.</h1>
-    <p class="lede">Every result in RoughVolLab is built on one path generator: <code>roughvol_core.py</code>, the κ=0 Volterra engine. It exists because an <strong>earlier engine had a silent bug</strong> — its variance was normalised wrong, so any analysis built on it would measure the bug, not the market. This tool lets you drive the real engine, and see the bug it was built to prevent.</p>
+    <p class="lede">The simulation layers of RoughVolLab — estimation, pricing, execution and hedging — rest on one engine: <code>roughvol_core.py</code>, the κ=0 Volterra scheme; calibration uses a separate characteristic-function pricer. The engine exists because an <strong>earlier engine had a silent bug</strong> — its variance was normalised wrong, so any analysis built on it would measure the bug, not the market. This tool lets you drive the real engine, and see the bug it was built to prevent.</p>
   </div>
 
   <!-- GUIDED INTRO -->
